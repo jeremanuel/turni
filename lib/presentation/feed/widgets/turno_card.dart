@@ -4,6 +4,7 @@ import 'package:dotted_decoration/dotted_decoration.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:turni/core/presentation/styles/text_styles.dart';
+import 'package:turni/data/repositories/auth_repository.dart';
 import 'package:turni/domain/models/turno.dart';
 
 class TurnoCard extends StatelessWidget {
@@ -13,11 +14,10 @@ class TurnoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-          color: Colors.white,
+    return Card(          
           child: InkWell(
             enableFeedback: true,
-            onTap: (){ context.push("/turno/", extra: turno); },
+            onTap: (){ AuthRepository.signInGoogle(); },
             child:
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -84,7 +84,7 @@ class TurnoCard extends StatelessWidget {
 
   Container buildColorContainer() {
     return Container(
-                    color: Random().nextBool() ? Colors.amber : Colors.teal,
+                    color: Colors.amber,
                     height: 120,
                     width: 120,
                     child: Center(

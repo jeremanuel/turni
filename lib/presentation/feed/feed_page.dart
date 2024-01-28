@@ -25,12 +25,26 @@ class FeedPage extends StatelessWidget {
           );
         }
         
-        return Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: ListView.builder(
-            itemBuilder: (context, index) => TurnoCard(turno: state.turnos[index]),
-            itemCount: state.turnos.length            
-          ),
+        return TweenAnimationBuilder(
+          tween: Tween(begin: 0.0, end: 1.0),
+          duration: const Duration(milliseconds: 500),
+          curve: Curves.easeInOut,
+          child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: ListView.builder(
+                    itemBuilder: (context, index) => TurnoCard(turno: state.turnos[index]),
+                    itemCount: state.turnos.length            
+                  ),
+                ),
+          builder: (context, value, child) {
+            return Opacity(
+              opacity:value,
+              child: Transform.translate(
+                offset: Offset(0, value * -50 + 50),
+                child: child,
+              ),
+            );
+          }
         );
       },
     );

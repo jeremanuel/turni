@@ -23,7 +23,7 @@ class AuthCubit extends Cubit<AuthState> with ChangeNotifier {
 
     emit(AuthLogged(userCredential: user ));
  */    
-    emit(AuthLogged(userCredential: User("givenName", "familyName", "email", "picture", "accessToken")));
+    emit(AuthNotLogged());
     notifyListeners();
   }
 

@@ -23,6 +23,30 @@ class TurnoRepositroy {
         place: Place("Beduinos", "Cancha 3", "Cancha del fondo, de cristal", ""),
         persons: 2,
         price: 3500
+      ),
+       Turno(
+        startAt: DateTime(2024, 01, 24, 20, 35),
+        createdAt: DateTime(2024, 01, 22, 20, 35),
+        duration: '01:30',
+        place: Place("Beduinos", "Cancha 3", "Cancha del fondo, de cristal", ""),
+        persons: 2,
+        price: 3500
+      ),
+       Turno(
+        startAt: DateTime(2024, 01, 24, 20, 35),
+        createdAt: DateTime(2024, 01, 22, 20, 35),
+        duration: '01:30',
+        place: Place("Beduinos", "Cancha 3", "Cancha del fondo, de cristal", ""),
+        persons: 2,
+        price: 3500
+      ),
+       Turno(
+        startAt: DateTime(2024, 01, 24, 20, 35),
+        createdAt: DateTime(2024, 01, 22, 20, 35),
+        duration: '01:30',
+        place: Place("Beduinos", "Cancha 3", "Cancha del fondo, de cristal", ""),
+        persons: 2,
+        price: 3500
       )
     ];
   }
