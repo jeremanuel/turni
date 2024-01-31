@@ -23,7 +23,7 @@ class _GoogleRenderButtonState extends State<GoogleRenderButton> {
   initializePlugin() async {
     await _plugin.initWithParams(const SignInInitParameters(
       clientId:
-          '745922452650-o1l0r76oaasjjhm60rjqj47gg64o9c82.apps.googleusercontent.com',
+          '745922452650-o1l0r76oaasjjhm60rjqj47gg64o9c82.apps.googleusercontent.com', // TODO: env var.
     ));
     _plugin.userDataEvents?.listen((GoogleSignInUserData? userData) {
       print(userData);
