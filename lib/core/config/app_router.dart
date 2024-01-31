@@ -1,7 +1,7 @@
 import 'package:go_router/go_router.dart';
 import 'package:turni/core/config/service_locator.dart';
 import 'package:turni/core/cubit/auth/auth_cubit.dart';
-import 'package:turni/domain/models/turno.dart';
+import 'package:turni/domain/models/session.dart';
 import 'package:turni/presentation/auth/auth_check.dart';
 import 'package:turni/presentation/auth/auth_login.dart';
 import 'package:turni/presentation/feed/feed_page.dart';
@@ -47,8 +47,8 @@ final router = GoRouter(
           GoRoute(
             path: '/turno',
             builder: (context, state) {
-              return TurnoPage(
-                turno: state.extra as Turno,
+              return SessionPage(
+                session: state.extra as Session,
               );
             },
           ),

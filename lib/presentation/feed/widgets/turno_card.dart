@@ -5,12 +5,12 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:turni/core/presentation/styles/text_styles.dart';
 import 'package:turni/data/repositories/auth_repository.dart';
-import 'package:turni/domain/models/turno.dart';
+import 'package:turni/domain/models/session.dart';
 
-class TurnoCard extends StatelessWidget {
+class SessionCard extends StatelessWidget {
 
-  final Turno turno;
-  const TurnoCard({super.key, required this.turno});
+  final Session session;
+  const SessionCard({super.key, required this.session});
 
   @override
   Widget build(BuildContext context) {
@@ -43,8 +43,8 @@ class TurnoCard extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.end,
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
-                          Text("\$ ${turno.price.floor()}", style: TextStyle(fontSize: 20)),
-                          Text("\$${(turno.price/turno.persons).floor()} c/u", style: TextStyle(fontSize: 12))
+                          Text("\$ ${session.price.floor()}", style: const TextStyle(fontSize: 20)),
+                          Text("\$${(session.price/ 4).floor()} c/u", style: const TextStyle(fontSize: 12)) // TODO aca es session.price / cantidad de personas del physical 
                         ],
                       ),
                     ),
@@ -64,20 +64,19 @@ class TurnoCard extends StatelessWidget {
                               Icons.timer_sharp,
                               size: 18,
                             ),
-                            Text(turno.duration)
+                            Text(session.duration)
                           ]),
                         const SizedBox(height: 5),
                         
-                          Row(
+                          const Row(
                             children: [
-                            const Icon(
+                             Icon(
                               Icons.person,
                               size: 18,
                             ),
-                            Text(turno.persons.toString())
+                            Text("4") // TODO obtener personas de el physical partition.
                           ]),
                           const SizedBox(height: 5),
-                          Text(turno.place.courtDescription, overflow: TextOverflow.ellipsis, maxLines: 2,)
                         ]),
                   );
   }
@@ -92,15 +91,11 @@ class TurnoCard extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          turno.startAt.hour.toString().padLeft(2, '0') + ":" + turno.startAt.minute.toString().padLeft(2, '0'),
+                          "${session.startTime.hour.toString().padLeft(2, '0')} : ${session.startTime.minute.toString().padLeft(2, '0')}",
                           style: TextStyles.h1,
                         ),
-                        Text(turno.place.name),
-                        if(turno.place.photo != "")
-                          CircleAvatar(
-                            radius: 16,
-                            child: ClipRect(child: Image.network(turno.place.photo), ),
-                          )
+                        Text("Beduinos"), // Obtener nombre de el physical partition.
+                    
                       ],
                     )),
                   );

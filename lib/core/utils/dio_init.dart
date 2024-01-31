@@ -7,6 +7,7 @@ class DioInit {
     final dio = Dio();
 
     dio.options = BaseOptions(contentType: 'application/json');
+    
     dio.interceptors.add(InterceptorsWrapper(
       onRequest: (RequestOptions requestOptions,
           RequestInterceptorHandler handler) async {

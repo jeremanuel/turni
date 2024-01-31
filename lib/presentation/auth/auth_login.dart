@@ -26,7 +26,7 @@ class AuthLogin extends StatelessWidget {
           const SizedBox(
             height: 50,
           ),
-          GoogleRenderButton()
+         const GoogleRenderButton()
           //buildGoogleButton(context),
         
         ],
@@ -45,9 +45,7 @@ class AuthLogin extends StatelessWidget {
               SizedBox(
                 height: 30,
                 width: 30,
-                child: Image.network(
-                    'http://pngimg.com/uploads/google/google_PNG19635.png',
-                    fit: BoxFit.cover),
+                child: Image.network('http://pngimg.com/uploads/google/google_PNG19635.png', fit: BoxFit.cover),
               ),
               const SizedBox(width: 15),
               const Text("Entra con Google", style: TextStyle(color: Colors.black87)),                          

@@ -32,7 +32,7 @@ class FeedPage extends StatelessWidget {
           child: Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: ListView.builder(
-                    itemBuilder: (context, index) => TurnoCard(turno: state.turnos[index]),
+                    itemBuilder: (context, index) => SessionCard(session: state.turnos[index]),
                     itemCount: state.turnos.length            
                   ),
                 ),

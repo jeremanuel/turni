@@ -1,0 +1,25 @@
+import 'package:json_annotation/json_annotation.dart';
+
+@JsonSerializable()
+class Session {
+  
+  final int sessionId;
+  final DateTime createdAt;
+  final DateTime startTime;
+  final String duration;
+  final int? clientId;
+  final double price;
+  final int adminCreatorId;
+  final int partitionPhysicalId;
+
+  Session(
+    this.sessionId, 
+    this.createdAt, 
+    this.startTime, 
+    this.duration, 
+    this.clientId, 
+    this.price, 
+    this.adminCreatorId, 
+    this.partitionPhysicalId
+  );
+}

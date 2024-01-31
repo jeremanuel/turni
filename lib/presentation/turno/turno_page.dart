@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:turni/domain/models/turno.dart';
+import 'package:turni/domain/models/session.dart';
 
-class TurnoPage extends StatelessWidget {
-  final Turno turno;
-  const TurnoPage({super.key, required this.turno});
+class SessionPage extends StatelessWidget {
+  final Session session;
+
+  const SessionPage({super.key, required this.session});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(),
       body: Center(
-      child: Text(turno.duration),
+      child: Text(session.duration),
     ),
     );
   }

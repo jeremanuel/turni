@@ -1,8 +1,8 @@
 
 import 'package:bloc/bloc.dart';
 import 'package:meta/meta.dart';
-import 'package:turni/data/repositories/turno_repositroy.dart';
-import 'package:turni/domain/models/turno.dart';
+import 'package:turni/data/repositories/session_repository.dart';
+import 'package:turni/domain/models/session.dart';
 
 part 'feed_state.dart';
 

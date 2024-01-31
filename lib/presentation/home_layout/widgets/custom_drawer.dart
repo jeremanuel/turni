@@ -41,7 +41,7 @@ class CustomDrawer extends StatelessWidget {
               SizedBox(
                 height: 80,
                 width: 80,
-                child: Center(child: Text(authCubit.state.userCredential!.givenName!, overflow: TextOverflow.clip, style: TextStyles.h2,)))
+                child: Center(child: Text(authCubit.state.userCredential!.name!, overflow: TextOverflow.clip, style: TextStyles.h2,)))
             ],
           )
         );
