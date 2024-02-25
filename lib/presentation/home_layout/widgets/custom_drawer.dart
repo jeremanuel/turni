@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:turni/core/config/service_locator.dart';
-import 'package:turni/core/cubit/auth/auth_cubit.dart';
-import 'package:turni/core/presentation/input/custom_outlined_button.dart';
-import 'package:turni/core/presentation/styles/text_styles.dart';
+import 'package:turni/presentation/core/cubit/auth/auth_cubit.dart';
+import 'package:turni/presentation/core/input/custom_outlined_button.dart';
+import 'package:turni/presentation/core/styles/text_styles.dart';
 
 class CustomDrawer extends StatelessWidget {
   CustomDrawer({super.key});
@@ -16,8 +16,8 @@ class CustomDrawer extends StatelessWidget {
       child: Column(
         children: [
           buildDrawerHeader(),
-          Spacer(),
-          CustomOutlinedButton(child: Center(child: Text("Salir")), onPressed: authCubit.signOutGoogle,)
+          const Spacer(),
+          CustomOutlinedButton(onPressed: authCubit.signOutGoogle, child: Center(child: Text("Salir")) )
         ],
       )
     );
@@ -25,7 +25,7 @@ class CustomDrawer extends StatelessWidget {
 
   DrawerHeader buildDrawerHeader() {
     return DrawerHeader(
-      decoration: BoxDecoration(),
+      
           child: Row(
             children: [
               SizedBox(
@@ -35,13 +35,13 @@ class CustomDrawer extends StatelessWidget {
                   backgroundImage: NetworkImage(authCubit.state.userCredential!.picture!),
                 ),
               ),
-              SizedBox(
+             const  SizedBox(
                 width: 20,
               ),
               SizedBox(
                 height: 80,
                 width: 80,
-                child: Center(child: Text(authCubit.state.userCredential!.name!, overflow: TextOverflow.clip, style: TextStyles.h2,)))
+                child: Center(child: Text(authCubit.state.userCredential!.person!.name, overflow: TextOverflow.clip, style: TextStyles.h2,)))
             ],
           )
         );

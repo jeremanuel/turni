@@ -1,13 +1,19 @@
 import 'dart:io';
 
 import 'package:dio/dio.dart';
+import 'package:turni/core/config/environment.dart';
 
 class DioInit {
   static Dio init() {
     final dio = Dio();
+  print(Environment.apiUrl);
+    dio.options = BaseOptions(
+      contentType: 'application/json',
+      baseUrl: Environment.apiUrl
+      );
 
-    dio.options = BaseOptions(contentType: 'application/json');
-    
+  
+
     dio.interceptors.add(InterceptorsWrapper(
       onRequest: (RequestOptions requestOptions,
           RequestInterceptorHandler handler) async {

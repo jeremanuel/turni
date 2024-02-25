@@ -1,14 +1,12 @@
 
 import 'package:bloc/bloc.dart';
 import 'package:meta/meta.dart';
-import 'package:turni/data/repositories/session_repository.dart';
-import 'package:turni/domain/models/session.dart';
+import 'package:turni/domain/entities/session.dart';
 
 part 'feed_state.dart';
 
 class FeedCubit extends Cubit<FeedState> {
 
-  final turnoRepositroy = TurnoRepositroy();
   
   FeedCubit() : super(FeedInitial()){
     getTurnos();
@@ -17,8 +15,7 @@ class FeedCubit extends Cubit<FeedState> {
   }
 
   void getTurnos() async {
-    final turnos = await turnoRepositroy.getTurnos();
-    emit(FeedLoaded(turnos));
+    emit(FeedLoaded([]));
   }
 
 /*   void openWhatsapp(Turnt t) async {

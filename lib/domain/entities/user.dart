@@ -1,27 +1,25 @@
 
 import 'package:google_sign_in_platform_interface/google_sign_in_platform_interface.dart';
 import 'package:json_annotation/json_annotation.dart';
+import 'package:turni/domain/entities/person.dart';
 
 part 'user.g.dart';
 
 @JsonSerializable()
 class User {
-  User({required this.name, required this.lastName, required this.email, this.socialId, this.picture});
+
+  User({this.userId, this.socialId, this.person, this.picture});
   
 
-  final String name;
-  final String lastName;
-  final String email;
-  final String? picture;
-
+  final String? userId;
   final String? socialId;
+  final String? picture;
+  final Person? person;
+
 
   factory User.fromGoogleSignInUserData(GoogleSignInUserData userData) => User(
-    name: userData.displayName!,
-    email: userData.email,
-    lastName: "",
-    picture: userData.photoUrl,
-    socialId: userData.id
+   socialId: userData.id,
+       person: Person(name: userData.displayName!.split(' ')[0], lastName: userData.displayName!.split(' ')[1], email: userData.email)
     
   );
         

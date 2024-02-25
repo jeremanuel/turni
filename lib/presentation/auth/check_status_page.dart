@@ -1,9 +1,7 @@
 
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 import 'package:turni/core/config/service_locator.dart';
-import 'package:turni/core/cubit/auth/auth_cubit.dart';
+import 'package:turni/presentation/core/cubit/auth/auth_cubit.dart';
 
 class AuthCheck extends StatelessWidget {
 

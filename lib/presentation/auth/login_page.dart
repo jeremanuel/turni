@@ -1,15 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 import 'package:turni/core/config/service_locator.dart';
-import 'package:turni/core/cubit/auth/auth_cubit.dart';
-import 'package:turni/core/presentation/input/custom_outlined_button.dart';
-import 'package:turni/presentation/auth/web/google_render_button.dart';
+import 'package:turni/presentation/core/cubit/auth/auth_cubit.dart';
+import 'package:turni/presentation/core/input/custom_outlined_button.dart';
+import 'package:turni/presentation/auth/widgets/web/google_button_web.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
-class AuthLogin extends StatelessWidget {
+class LoginPage extends StatelessWidget {
 
-  AuthLogin({super.key});
+  LoginPage({super.key});
 
   final authCubit = sl<AuthCubit>();
 
@@ -22,19 +20,24 @@ class AuthLogin extends StatelessWidget {
           const SizedBox(
             height: 50,
           ),
-          const  Center(child: Text("Bienvenido", style: TextStyle(fontSize: 25))),
+          const Center(
+            child: Text("Bienvenido", style: TextStyle(fontSize: 25))
+          ),
           const SizedBox(
             height: 50,
           ),
-         const GoogleRenderButton()
-          //buildGoogleButton(context),
-        
+          buildGoogleButton(context)
         ],
       ),
     );
   }
 
-  CustomOutlinedButton buildGoogleButton(context) {
+  Widget buildGoogleButton(context) {
+
+
+    if(kIsWeb){
+      return const GoogleButtonWeb();
+    }
 
     return CustomOutlinedButton(
       child: Row(

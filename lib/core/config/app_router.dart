@@ -1,9 +1,9 @@
 import 'package:go_router/go_router.dart';
 import 'package:turni/core/config/service_locator.dart';
-import 'package:turni/core/cubit/auth/auth_cubit.dart';
-import 'package:turni/domain/models/session.dart';
-import 'package:turni/presentation/auth/auth_check.dart';
-import 'package:turni/presentation/auth/auth_login.dart';
+import 'package:turni/domain/entities/session.dart';
+import 'package:turni/presentation/auth/check_status_page.dart';
+import 'package:turni/presentation/auth/login_page.dart';
+import 'package:turni/presentation/core/cubit/auth/auth_cubit.dart';
 import 'package:turni/presentation/feed/feed_page.dart';
 import 'package:turni/presentation/home_layout/widgets/custom_layout.dart';
 import 'package:turni/presentation/profile/profile_page.dart';
@@ -31,7 +31,7 @@ final router = GoRouter(
     ),
     GoRoute(
       path: '/login',
-      builder: (context, state) => AuthLogin(),
+      builder: (context, state) => LoginPage(),
     ),
 
     StatefulShellRoute.indexedStack(

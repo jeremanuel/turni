@@ -1,11 +1,8 @@
-import 'dart:math';
 
 import 'package:dotted_decoration/dotted_decoration.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import 'package:turni/core/presentation/styles/text_styles.dart';
-import 'package:turni/data/repositories/auth_repository.dart';
-import 'package:turni/domain/models/session.dart';
+import 'package:turni/presentation/core/styles/text_styles.dart';
+import 'package:turni/domain/entities/session.dart';
 
 class SessionCard extends StatelessWidget {
 
@@ -17,7 +14,7 @@ class SessionCard extends StatelessWidget {
     return Card(          
           child: InkWell(
             enableFeedback: true,
-            onTap: (){ AuthRepository.signInGoogle(); },
+            onTap: (){ },
             child:
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -54,7 +51,7 @@ class SessionCard extends StatelessWidget {
   Container buildGeneralInfo() {
     return Container(
                     width:165,
-                    padding: EdgeInsets.all(8.0),
+                    padding: const EdgeInsets.all(8.0),
                     child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisAlignment: MainAxisAlignment.start,
