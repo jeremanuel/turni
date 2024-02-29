@@ -5,7 +5,7 @@ import 'package:turni/domain/entities/user.dart';
 
 class AuthProvider {
    
-  Future login(GoogleUserRequest googleUserRequest) async {
+  Future<User> login(GoogleUserRequest googleUserRequest) async {
 
 
     final dioInstance = sl<Dio>();
@@ -15,7 +15,9 @@ class AuthProvider {
     };
 
     final response = await dioInstance.post("/user/signup", data: data);
-    return response.data;
+
+    
+    return User.fromJson(response.data);
 
   }
 }

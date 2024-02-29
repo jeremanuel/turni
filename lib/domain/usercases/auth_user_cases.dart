@@ -12,9 +12,13 @@ class AuthUserCases {
   * @author Jeremias Manuel
   */
   ///
-  Future login(User user)  {
+  Future login(User user)  async {
 
-    return authRepository.login(user);
+    final loggedUser = await authRepository.login(user);
+
+    await authRepository.saveToken(loggedUser.token!);
+
+    return loggedUser;
 
   }
 

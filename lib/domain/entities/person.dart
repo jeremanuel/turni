@@ -1,5 +1,6 @@
 
 import 'package:json_annotation/json_annotation.dart';
+import 'package:turni/core/utils/value_transformers.dart';
 
 part 'person.g.dart';
 
@@ -10,9 +11,11 @@ class Person {
   
 
   final String name;
+  @JsonKey(name: "last_name")
   final String lastName;
   final String email;
   final String? phone;
+  @JsonKey(name: "person_id", fromJson: ValueTransformers.fromJsonString)
   final String? personId;
 
 

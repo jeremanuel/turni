@@ -1,3 +1,5 @@
+// ignore_for_file: constant_identifier_names
+
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class LocalStorage {
@@ -8,8 +10,9 @@ class LocalStorage {
   static Future save(String key, String objectToSave) async {
 
     const storage = FlutterSecureStorage();
+    
     await storage.write(key: key, value: objectToSave);
-
+    
   }
 
    static Future<String?> read(String key) async {

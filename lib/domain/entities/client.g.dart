@@ -7,13 +7,13 @@ part of 'client.dart';
 // **************************************************************************
 
 Client _$ClientFromJson(Map<String, dynamic> json) => Client(
-      clientId: json['clientId'] as String?,
-      personId: json['personId'] as String?,
-      userId: json['userId'] as String?,
+      clientId: ValueTransformers.fromJsonString(json['client_id']),
+      personId: ValueTransformers.fromJsonString(json['person_id']),
+      userId: ValueTransformers.fromJsonString(json['user_id']),
     );
 
 Map<String, dynamic> _$ClientToJson(Client instance) => <String, dynamic>{
-      'clientId': instance.clientId,
-      'personId': instance.personId,
-      'userId': instance.userId,
+      'client_id': instance.clientId,
+      'person_id': instance.personId,
+      'user_id': instance.userId,
     };
