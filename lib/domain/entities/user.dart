@@ -1,4 +1,3 @@
-
 import 'package:google_sign_in_platform_interface/google_sign_in_platform_interface.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:turni/core/utils/value_transformers.dart';
@@ -19,6 +18,11 @@ class User {
   final String? picture;
   final Person? person;
   final String? token;
+
+
+  bool isAdmin(){
+    return true;
+  }
 
 
   factory User.fromGoogleSignInUserData(GoogleSignInUserData userData) => User(

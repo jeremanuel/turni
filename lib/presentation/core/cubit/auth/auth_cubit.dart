@@ -50,4 +50,8 @@ class AuthCubit extends Cubit<AuthState> with ChangeNotifier {
   bool getLoadingStatus() {
     return state.loadingAuthentication;
   }
+
+  bool isAdmin(){
+    return state.userCredential?.isAdmin() ?? true;
+  }
 }
