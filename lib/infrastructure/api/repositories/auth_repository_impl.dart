@@ -18,11 +18,23 @@ class AuthRepositoryImpl extends AuthRepository {
     return authProvider.login(reqData);
 
   }
+  
+  @override
+  Future<User?> validateToken(String token) async {
+    return await authProvider.validateToken(token);
+  }
 
     @override
   Future saveToken(String token) {
 
     return LocalStorage.save(LocalStorage.TOKEN_KEY, token);
+ 
+  }
+
+  @override
+  Future removeToken() {
+
+    return LocalStorage.remove(LocalStorage.TOKEN_KEY);
  
   }
 

@@ -8,7 +8,7 @@ class AuthCheck extends StatelessWidget {
    final authCubit = sl<AuthCubit>();
    
   AuthCheck({super.key}){
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp){
       authCubit.checkAuthStatus();
     },);
   }

@@ -7,6 +7,7 @@ import 'package:turni/domain/repositories/auth_repository.dart';
 import 'package:turni/domain/usercases/auth_user_cases.dart';
 import 'package:turni/infrastructure/api/providers/auth_provider.dart';
 import 'package:turni/infrastructure/api/repositories/auth_repository_impl.dart';
+import 'package:turni/infrastructure/localstorage/provider/local_storage.dart';
 import 'package:turni/presentation/core/cubit/auth/auth_cubit.dart';
 import 'package:turni/presentation/feed/cubit/feed/feed_cubit.dart';
 
@@ -17,7 +18,6 @@ class ServiceLocator {
     
     final dio = DioInit.init(); // Inicializamos instancia de DIO.
     sl.registerSingleton<Dio>(dio); // La registramos como singleton.
-
 
     sl.registerSingleton<AuthRepository>(
       AuthRepositoryImpl(

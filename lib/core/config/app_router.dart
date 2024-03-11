@@ -11,9 +11,9 @@ import 'package:turni/presentation/turno/turno_page.dart';
 
 // GoRouter configuration
 final router = GoRouter(
+  
   refreshListenable: sl<AuthCubit>(),
   redirect: (context, state) {
-    
     final authCubit = sl<AuthCubit>();
 
     if (authCubit.getLoadingStatus()) return '/';
