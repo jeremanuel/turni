@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:turni/core/config/service_locator.dart';
 import 'package:turni/domain/entities/session.dart';
 import 'package:turni/presentation/admin/desktop_layout.dart';
+import 'package:turni/presentation/admin/sessions_manager/sessions_manager.dart';
 import 'package:turni/presentation/auth/check_status_page.dart';
 import 'package:turni/presentation/auth/login_page.dart';
 import 'package:turni/presentation/core/cubit/auth/auth_cubit.dart';
@@ -20,6 +21,7 @@ enum RouterType {
 GoRouter buildGoRouter(RouterType routerType){
 
   return GoRouter(
+    initialLocation: '/',
   refreshListenable: sl<AuthCubit>(),
     redirect: (context, state) {
     
@@ -31,6 +33,7 @@ GoRouter buildGoRouter(RouterType routerType){
 
     if (state.matchedLocation == "/" || state.matchedLocation == "/login") return '/feed';
  */
+
     return state.matchedLocation;
   },  
   routes: [
@@ -92,7 +95,7 @@ List<StatefulShellBranch> buildBranches(RouterType routerType){
           routes: [
             GoRoute(
               path: '/dashboard',
-              builder: (context, state) => const Center(child: Text("dashboard"),),
+              builder: (context, state) =>  Center(child: FilledButton(onPressed: (){}, child: Text("data")),),
             )
           ]
         ),
@@ -100,7 +103,7 @@ List<StatefulShellBranch> buildBranches(RouterType routerType){
           routes: [
             GoRoute(
               path: '/turnos',
-              builder: (context, state) => const Center(child: Text("turnos"),),
+              builder: (context, state) =>  SessionsManager(),
             )
           ]
         ),
@@ -115,3 +118,4 @@ List<StatefulShellBranch> buildBranches(RouterType routerType){
         ])
   ];
 }
+

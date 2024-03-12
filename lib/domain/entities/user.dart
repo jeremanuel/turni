@@ -19,11 +19,9 @@ class User {
   final Person? person;
   final String? token;
 
-
   bool isAdmin(){
     return true;
   }
-
 
   factory User.fromGoogleSignInUserData(GoogleSignInUserData userData) => User(
    socialId: userData.id,

@@ -1,3 +1,4 @@
+import 'package:calendar_view/calendar_view.dart';
 import 'package:flutter/material.dart';
 import 'package:turni/core/config/app_router.dart';
 import 'package:turni/core/config/environment.dart';
@@ -26,7 +27,7 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Turni',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.brown, brightness: Brightness.light),
+        colorScheme: ColorScheme.fromSeed(seedColor: Color.fromARGB(255, 32, 0, 212), brightness: Brightness.light),
         useMaterial3: true,
       ),
     );

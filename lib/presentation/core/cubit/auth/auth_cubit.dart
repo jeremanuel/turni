@@ -52,6 +52,29 @@ class AuthCubit extends Cubit<AuthState> with ChangeNotifier {
   }
 
   bool isAdmin(){
-    return state.userCredential?.isAdmin() ?? true;
+    return /* state.userCredential?.isAdmin() ?? */ true;
   }
 }
+
+
+/* 
+Scrollbar(
+              thumbVisibility: true,
+              controller: horizontalController,
+              child: SingleChildScrollView(
+                controller: horizontalController,
+                physics: const AlwaysScrollableScrollPhysics(),
+              
+                scrollDirection: Axis.horizontal,
+                child: SizedBox(
+                  width: widget.columnWidth.toDouble() * widget.physicalPartitions.length,                   
+                   child: Stack(
+                    children: [
+                      linesList(),                      
+                      cardsLists(context),
+                    ],
+                  ), 
+                ),
+              ),
+            ),
+ */

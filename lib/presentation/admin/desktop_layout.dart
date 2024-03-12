@@ -14,24 +14,27 @@ class DesktopLayout extends StatelessWidget {
     
     return Scaffold(
       body:  Padding(
-        padding: EdgeInsets.symmetric(vertical: 16),
+        padding: const EdgeInsets.symmetric(vertical: 16),
         child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
           
           children: [
                        
-            SizedBox(width: 20,),
+            const SizedBox(width: 20,),
             SideBar(child: child),
-            SizedBox(width: 20,),
+            const SizedBox(width: 20,),
 
             Expanded(
               child: Material(
-                borderRadius: BorderRadius.circular(16),
                 elevation: 25,
-                child: child,
+                color: Theme.of(context).colorScheme.surface,
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: child,
+                ),
               ),
             ),
-            SizedBox(width: 20,),
+            const SizedBox(width: 20,),
+
 
           ],
         ),
@@ -55,10 +58,24 @@ class SideBar extends StatelessWidget {
 
 
     return NavigationRail(
+      extended: true,
+      minExtendedWidth: 200,
+      leading: const Padding(
+        padding: EdgeInsets.all(32),
+        child: Text("Turni", style: TextStyle(fontWeight: FontWeight.w600),),
+      ),
+      trailing:  Expanded(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children:[
+            IconButton(onPressed: (){}, icon: const Icon(Icons.logout)),
+            const SizedBox(height: 40,)
+          ] 
+        ),
+      ) ,
       onDestinationSelected: (index) => child.goBranch(index),
-      labelType: NavigationRailLabelType.all,
+
       elevation: 25,
-      groupAlignment: 0,
       destinations: buildRails(),
       selectedIndex: child.currentIndex
       );
@@ -86,17 +103,17 @@ class SideBar extends StatelessWidget {
 
     return const [
       NavigationRailDestination(
-        padding: EdgeInsets.all(25),
+        padding: EdgeInsets.all(16),
         icon: Icon(Icons.dashboard), 
         label: Text("Dashboard")
         ),
         NavigationRailDestination(
-        padding: EdgeInsets.all(25),
+        padding: EdgeInsets.all(16),
         icon: Icon(Icons.calendar_month), 
         label: Text("Turnos")
         ),
         NavigationRailDestination(
-        padding: EdgeInsets.all(25),
+        padding: EdgeInsets.all(16),
         icon: Icon(Icons.person), 
         label: Text("Perfil")
         )
