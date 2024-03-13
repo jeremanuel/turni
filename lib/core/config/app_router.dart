@@ -16,6 +16,8 @@ final router = GoRouter(
     
     final authCubit = sl<AuthCubit>();
 
+    return '/profile';
+
     if (authCubit.getLoadingStatus()) return '/';
 
     if (authCubit.state.userCredential == null) return '/login';
