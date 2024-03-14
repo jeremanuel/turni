@@ -28,7 +28,6 @@ class CustomLayout extends StatelessWidget {
 
   Scaffold buildMobileLayout() {
     return Scaffold(
-    appBar: AppBar(),
     body: child,
     bottomNavigationBar:  CustomBottomNavigationBar(
       selectedIndex: child.currentIndex,

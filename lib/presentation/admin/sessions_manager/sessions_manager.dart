@@ -35,7 +35,7 @@ class SessionsManager extends StatelessWidget {
             }
 
           if(ResponsiveBuilder.isMobile(context)) {
-              return buildAgenda(context);
+              return buildAgendaContainer(context);
             } 
 
             return buildDesktopManager(context);
@@ -49,20 +49,10 @@ class SessionsManager extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Expanded(
-          child: Container(
-              margin:
-                  const EdgeInsets.only(top: 46, left: 8, right: 8, bottom: 8),
-              decoration: BoxDecoration(
-                boxShadow: [
-                  BoxShadow(
-                      blurRadius: 5,
-                      spreadRadius: 5,
-                      color:
-                          Theme.of(context).colorScheme.shadow.withOpacity(0.1))
-                ],
-                color: Theme.of(context).colorScheme.surface,
-              ),
-              child: buildAgenda(context)),
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: buildAgendaContainer(context),
+          ),
         ),
         const VerticalDivider(),
         const SizedBox(
@@ -116,11 +106,68 @@ class SessionsManager extends StatelessWidget {
     );
   }
 
+  Column buildAgendaContainer(BuildContext context) {
+    return Column(
+          children: [
+            if(ResponsiveBuilder.isMobile(context))
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: buildDayHeader(),
+                ),
+            SizedBox(
+              height: 40,
+              child: ListView(
+                scrollDirection: Axis.horizontal,
+                children: [
+                  if(ResponsiveBuilder.isMobile(context)) SizedBox(width: 8,),
+                  FilterChip(label: Text("Tenis"), onSelected: (va){}),
+                  const SizedBox(width: 16,),
+                  FilterChip(label: Text("Futbol"), onSelected: (va){}),
+                  SizedBox(width: 16,),
+                  FilterChip(label: Text("Padel"), onSelected: (va){}, selected: true,),
+                  SizedBox(width: 16,),
+                  FilterChip(label: Text("Pelota Paleta"), onSelected: (va){}),
+                  SizedBox(width: 16,),
+                  FilterChip(label: Text("Tenis"), onSelected: (va){}),
+                  SizedBox(width: 16,),
+                  FilterChip(label: Text("Futbol"), onSelected: (va){}),
+                  SizedBox(width: 16,),
+                  FilterChip(label: Text("Padel"), onSelected: (va){}, selected: true,),
+                  SizedBox(width: 16,),
+                  FilterChip(label: Text("Pelota Paleta"), onSelected: (va){}),
+                  SizedBox(width: 16,),
+                  FilterChip(label: Text("Futbol"), onSelected: (va){}),
+                  SizedBox(width: 16,),
+                  FilterChip(label: Text("Padel"), onSelected: (va){}, selected: true,),
+                  SizedBox(width: 16,),
+                  FilterChip(label: Text("Pelota Paleta"), onSelected: (va){}),
+                  if(ResponsiveBuilder.isMobile(context)) SizedBox(width: 8,),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16,),
+            Expanded(
+              child: Container(
+                  decoration: BoxDecoration(
+                    boxShadow: [
+                      BoxShadow(
+                          blurRadius: 5,
+                          spreadRadius: 5,
+                          color: Theme.of(context).colorScheme.shadow.withOpacity(0.1))
+                    ],
+                    color: Theme.of(context).colorScheme.surface,
+                  ),
+                  child: buildAgenda(context)),
+            ),
+          ],
+        );
+  }
+
   Widget buildDayHeader() {
     return BlocBuilder<SessionManagerBloc, SessionManagerState>(
       builder: (context, state) {
         return SizedBox(
-          height: 24,
+          height: 40,
           child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
             Text(toBeginningOfSentenceCase(
                 DateFormat.EEEE().format(state.currentDate))),
@@ -129,12 +176,31 @@ class SessionsManager extends StatelessWidget {
             ),
             const Icon(
               Icons.circle,
-              size: 8,
+              size: 8,  
             ),
             const SizedBox(
               width: 8,
             ),
             Text(DateFormat.MMMMd().format(state.currentDate)),
+            Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              IconButton(onPressed: (){
+                BlocProvider.of<SessionManagerBloc>(context).add(
+                   SessionChangeDateEvent(
+                    state.currentDate.subtract(const Duration(days: 1))
+                   )
+                );
+              }, icon: Icon(Icons.arrow_back_ios, size: 12,)),
+              IconButton(onPressed: (){
+                  BlocProvider.of<SessionManagerBloc>(context).add(
+                   SessionChangeDateEvent(
+                    state.currentDate.add(const Duration(days: 1))
+                   )
+                );
+              }, icon: Icon(Icons.arrow_forward_ios, size: 12,))
+
+            ],)
           ]),
         );
       },
