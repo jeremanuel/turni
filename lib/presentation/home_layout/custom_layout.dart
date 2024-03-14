@@ -2,9 +2,10 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
-import 'package:turni/presentation/admin/desktop_layout.dart';
+import 'package:turni/presentation/home_layout/widgets/desktop_layout.dart';
 import 'package:turni/presentation/home_layout/widgets/custom_botton_navigation_bar.dart';
 import 'package:turni/presentation/home_layout/widgets/custom_drawer.dart';
+import 'package:turni/presentation/home_layout/widgets/mobile_layout.dart';
 
 class CustomLayout extends StatelessWidget {
 
@@ -15,6 +16,8 @@ class CustomLayout extends StatelessWidget {
       required this.child
   });
 
+
+
   @override
   Widget build(BuildContext context) {
     final isDesktop = MediaQuery.of(context).size.width > 700;
@@ -23,17 +26,7 @@ class CustomLayout extends StatelessWidget {
      return DesktopLayout(child: child);
     }
 
-    return buildMobileLayout(); 
+    return MobileLayout(child: child);
   }
 
-  Scaffold buildMobileLayout() {
-    return Scaffold(
-    appBar: AppBar(),
-    body: child,
-    bottomNavigationBar:  CustomBottomNavigationBar(
-      selectedIndex: child.currentIndex,
-      onTap: (index) => child.goBranch(index),
-    ),
-  );
-  }
 }

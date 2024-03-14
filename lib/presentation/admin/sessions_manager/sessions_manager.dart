@@ -3,10 +3,16 @@ import 'dart:math';
 import 'package:calendar_date_picker2/calendar_date_picker2.dart';
 import 'package:calendar_view/calendar_view.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+import '../../../core/utils/responsive_builder.dart';
 import '../../../domain/entities/physical_partition.dart';
 import '../../../domain/entities/session.dart';
+import '../../../domain/usercases/session_user_cases.dart';
 import '../../core/agenda/agenda.dart';
+import 'blocs/bloc/session_manager_bloc.dart';
+import 'blocs/bloc/session_manager_event.dart';
+import 'blocs/bloc/session_manager_state.dart';
 
 class SessionsManager extends StatelessWidget {
   const SessionsManager({
@@ -16,143 +22,57 @@ class SessionsManager extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    return BlocProvider<SessionManagerBloc>(
+        create: (context) => SessionManagerBloc(),
+        child: BlocBuilder<SessionManagerBloc, SessionManagerState>(
+          buildWhen: (previous, current) =>
+              previous.isFirstLoad != current.isFirstLoad,
+          builder: (context, state) {
+            if (state.isFirstLoad) {
+              return const Center(
+                child: CircularProgressIndicator(),
+              );
+            }
+
+          if(ResponsiveBuilder.isMobile(context)) {
+              return buildAgenda(context);
+            } 
+
+            return buildDesktopManager(context);
+          },
+        ));
+  }
+
+  Row buildDesktopManager(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Expanded(
           child: Container(
-            height: 800,
-            margin: const EdgeInsets.symmetric(vertical: 58, horizontal: 10),
-            decoration: BoxDecoration(
-              boxShadow: [BoxShadow(blurRadius: 5, spreadRadius: 5, color: Theme.of(context).colorScheme.shadow.withOpacity(0.1))],
-                color: Theme.of(context).colorScheme.surface,
-               ),
-            child: Agenda(
-              buildCard: (session) {
-
-                return Container(
-                  width: 280,
-                  decoration: BoxDecoration(
-                  color: session.clientId != null ? Theme.of(context).colorScheme.surfaceVariant : Theme.of(context).colorScheme.errorContainer,
-                  borderRadius: BorderRadius.circular(12)
-                  ),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        color: session.clientId != null ? Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.error,
-                        width: 16,
-                      ),
-                      const SizedBox(width: 4,),
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Column(
-                          children: [
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Icon(Icons.access_time),
-                                Text(
-                                  DateFormat.jm().format(session.startTime),
-                                ),
-                              ],
-                            ),
-                            const Spacer(),
-                            if(session.clientId != null)
-                              const Row(
-                              children: [
-                                Icon(Icons.person),
-                                Text("Lucas Medico"),
-                              ],
-                            ),
-                           if(session.clientId == null) FilledButton(onPressed: (){}, style: ButtonStyle(backgroundColor: MaterialStatePropertyAll(Theme.of(context).colorScheme.error)),  child: const Text("Reservar"), ),
-                          ],
-                        ),
-                      ),
-                      const Spacer(),
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 8, right: 8),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            IconButton(icon: const Icon(Icons.edit), onPressed: (){},),
-                            const Spacer(),
-                            Text(
-                              "\$ ${session.price.toString()}"
-                            ),
-                          ],
-                        ),
-                      )
-                    ],
-                  ),
-                );
-
-              },
-              sessions: [
-              
-                Session(1, DateTime.now(), DateTime(2024, 3, 8, 10 ), "01:30", null, 1500, 1, 1),
-                Session(1, DateTime.now(), DateTime(2024, 3, 8, 11, 30 ), "01:30", null, 1500, 1, 1),
-                Session(1, DateTime.now(), DateTime(2024, 3, 8, 13 ), "01:30", 1, 1500, 1, 1),
-
-                Session(1, DateTime.now(), DateTime(2024, 3, 8, 14, 30 ), "01:30", 1, 1500, 1, 1),
-                Session(1, DateTime.now(), DateTime(2024, 3, 8, 16 ), "01:30", 1, 1500, 1, 1),
-                Session(1, DateTime.now(), DateTime(2024, 3, 8, 17, 45 ), "01:30", null, 1500, 1, 1),
-                
-                Session(1, DateTime.now(), DateTime(2024, 3, 8, 19, 30 ), "01:30", 1, 1500, 1, 1),
-                Session(1, DateTime.now(), DateTime(2024, 3, 8, 9 ), "01:30", null, 1500, 1, 2),
-                Session(1, DateTime.now(), DateTime(2024, 3, 8, 10, 45 ), "01:30", null, 1500, 1, 2),
-
-                Session(1, DateTime.now(), DateTime(2024, 3, 8, 13 ), "01:30", 1, 1500, 1, 2),
-                Session(1, DateTime.now(), DateTime(2024, 3, 8, 14, 30 ), "01:30", 1, 1500, 1, 2),
-                Session(1, DateTime.now(), DateTime(2024, 3, 8, 16 ), "01:30", 1, 1500, 1, 2),
-
-                Session(1, DateTime.now(), DateTime(2024, 3, 8, 17, 45 ), "01:30", null, 1500, 1, 2),
-                Session(1, DateTime.now(), DateTime(2024, 3, 8, 19, 30 ), "01:30", 1, 1500, 1, 2),
-                Session(1, DateTime.now(), DateTime(2024, 3, 8, 15 ), "01:30", 2, 1500, 1, 2),
-
-                Session(1, DateTime.now(), DateTime(2024, 3, 8, 15), "01:30", 2, 1500, 1, 2),
-                Session(1, DateTime.now(), DateTime(2024, 3, 8, 15 ), "01:30", 2, 1500, 1, 3),
-                Session(1, DateTime.now(), DateTime(2024, 3, 8, 15 ), "01:30", 2, 1500, 1, 4),
-              
-              ],
-              physicalPartitions: [
-                PhysicalPartition(partitionPhysicalId: 1, clubPartitionId: 1, minPlayers: 5, maxPlayers: 2, physicalIdentifier: 25, isCover: "false", description: "description"),
-                PhysicalPartition(partitionPhysicalId: 2, clubPartitionId: 1, minPlayers: 5, maxPlayers: 2, physicalIdentifier: 14, isCover: "false", description: "description"),
-                PhysicalPartition(partitionPhysicalId: 3, clubPartitionId: 1, minPlayers: 5, maxPlayers: 2, physicalIdentifier: 12, isCover: "false", description: "description"),
-                PhysicalPartition(partitionPhysicalId: 4, clubPartitionId: 1, minPlayers: 5, maxPlayers: 2, physicalIdentifier: 13, isCover: "false", description: "description")
-
+              margin:
+                  const EdgeInsets.only(top: 46, left: 8, right: 8, bottom: 8),
+              decoration: BoxDecoration(
+                boxShadow: [
+                  BoxShadow(
+                      blurRadius: 5,
+                      spreadRadius: 5,
+                      color:
+                          Theme.of(context).colorScheme.shadow.withOpacity(0.1))
                 ],
-            )
-          ),
+                color: Theme.of(context).colorScheme.surface,
+              ),
+              child: buildAgenda(context)),
         ),
         const VerticalDivider(),
         const SizedBox(
           width: 16,
         ),
         SizedBox(
-          width: 400,
+          width: 300,
           child: Column(
             children: [
-              const SizedBox(
-                height: 24,
-                child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text("Domingo"),
-                      SizedBox(
-                        width: 8,
-                      ),
-                      Icon(
-                        Icons.circle,
-                        size: 8,
-                      ),
-                      SizedBox(
-                        width: 8,
-                      ),
-                      Text("5 de Junio"),
-                    ]),
-              ),
+              buildDayHeader(),
               const SizedBox(
                 height: 8,
               ),
@@ -161,90 +81,33 @@ class SessionsManager extends StatelessWidget {
                 height: 8,
               ),
               Container(
-                  padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(25),
-                      color: Theme.of(context).colorScheme.surfaceVariant,
-                      //boxShadow: [BoxShadow(blurRadius: 5, spreadRadius: 5, color: Theme.of(context).colorScheme.shadow.withOpacity(0.2))],
-
-                      ),
-                  width: 400,
+                    borderRadius: BorderRadius.circular(25),
+                    color: Theme.of(context).colorScheme.surface,
+                    //boxShadow: [BoxShadow(blurRadius: 5, spreadRadius: 5, color: Theme.of(context).colorScheme.shadow.withOpacity(0.2))],
+                  ),
+                  width: 300,
                   child: CalendarDatepicker2(context)),
+              const SizedBox(
+                height: 8,
+              ),
+              const Divider(),
               const Spacer(),
-              SizedBox(
-                height: 36,
-                child: FilledButton(
-                    onPressed: () {
-                      final horaInicio = (Random().nextDouble() * 16 + 8).floor();
-                      final horaInicio2 = (Random().nextDouble() * 16 + 8).floor();
-
-                      print(horaInicio);
-                      
-                      CalendarControllerProvider.of(context)
-                          .controller
-                          .addAll([
-                            CalendarEventData(
-                            title: "test 1",
-                            date: DateTime(2024, 3, 3),
-                            startTime: DateTime(2024, 3, 3, horaInicio),
-                            endTime: DateTime(2024, 3,3, horaInicio + 2),
-                            description: "DESCRIPCION XD",
-                            color: Theme.of(context).colorScheme.primary,
-                            ),
-                            CalendarEventData(
-                            title: "test 2",
-                            date: DateTime(2024, 3, 3),
-                            startTime: DateTime(2024, 3, 3, horaInicio),
-                            endTime: DateTime(2024, 3,3, horaInicio + 2),
-                            description: "asdasdasdasd",
-                            color: Theme.of(context).colorScheme.tertiary,
-                            ),
-                            CalendarEventData(
-                            title: "test 3",
-                            date: DateTime(2024, 3, 3),
-                            startTime: DateTime(2024, 3, 3, horaInicio),
-                            endTime: DateTime(2024, 3,3, horaInicio + 1, 25),
-                            description: "asdasdasdasd",
-                            color: Theme.of(context).colorScheme.secondary,
-                            ),
-                                CalendarEventData(
-                            title: "test 4",
-                            date: DateTime(2024, 3, 3),
-                            startTime: DateTime(2024, 3, 3, horaInicio2),
-                            endTime: DateTime(2024, 3,3, horaInicio2 + 2),
-                            description: "DESCRIPCION XD",
-                            color: Theme.of(context).colorScheme.primary,
-                            ),
-                            CalendarEventData(
-                            title: "test 5",
-                            date: DateTime(2024, 3, 3),
-                            startTime: DateTime(2024, 3, 3, horaInicio2),
-                            endTime: DateTime(2024, 3,3, horaInicio2 + 2),
-                            description: "asdasdasdasd",
-                            color: Theme.of(context).colorScheme.tertiary,
-                            ),
-                            CalendarEventData(
-                            title: "test 6",
-                            date: DateTime(2024, 3, 3),
-                            startTime: DateTime(2024, 3, 3, horaInicio2),
-                            endTime: DateTime(2024, 3,3, horaInicio2 + 1, 25),
-                            description: "asdasdasdasd",
-                            color: Theme.of(context).colorScheme.secondary,
-                            ),
-                            CalendarEventData(
-                            title: "test 7",
-                            date: DateTime(2024, 3, 3),
-                            startTime: DateTime(2024, 3, 3, 10),
-                            endTime: DateTime(2024, 3,3, 10 + 2, 25),
-                            description: "asdasdasdasd",
-                            color: Theme.of(context).colorScheme.secondary,
-                            ),
-
-                          ]);
-
-                          
-                    },
-                    child: const Text("Test Agregar Turnos")),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  SizedBox(
+                    height: 36,
+                    child: FilledButton(
+                        onPressed: () {}, child: const Text("Agregar Turnos")),
+                  ),
+                  SizedBox(
+                    height: 36,
+                    child: TextButton(
+                        onPressed: () {},
+                        child: const Text("Secondary option")),
+                  ),
+                ],
               ),
             ],
           ),
@@ -253,27 +116,180 @@ class SessionsManager extends StatelessWidget {
     );
   }
 
-  CalendarDatePicker2 CalendarDatepicker2(BuildContext context) {
-    return CalendarDatePicker2(
-      
-        config: CalendarDatePicker2Config(
-          
-          dayBuilder: (
-                  {required date,
-                  decoration,
-                  isDisabled,
-                  isSelected,
-                  isToday,
-                  textStyle}) =>
-              dayBuilder(context,
-                  date: date,
-                  decoration: decoration,
-                  isDisabled: isDisabled,
-                  isSelected: isSelected,
-                  isToday: isToday,
-                  textStyle: textStyle),
-        ),
-        value: [DateTime.now()]);
+  Widget buildDayHeader() {
+    return BlocBuilder<SessionManagerBloc, SessionManagerState>(
+      builder: (context, state) {
+        return SizedBox(
+          height: 24,
+          child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+            Text(toBeginningOfSentenceCase(
+                DateFormat.EEEE().format(state.currentDate))),
+            const SizedBox(
+              width: 8,
+            ),
+            const Icon(
+              Icons.circle,
+              size: 8,
+            ),
+            const SizedBox(
+              width: 8,
+            ),
+            Text(DateFormat.MMMMd().format(state.currentDate)),
+          ]),
+        );
+      },
+    );
+  }
+
+  Widget buildAgenda(BuildContext context) {
+    return BlocBuilder<SessionManagerBloc, SessionManagerState>(
+      builder: (context, state) {
+
+        if(state.isLoadingSessions){
+          return Center(
+            child: CircularProgressIndicator(),
+          );
+        }
+
+        return Agenda(
+          columnWidth: 200,
+          heightPerMinute: ResponsiveBuilder.isDesktop(context) ? 1.35 : 1,
+          fromDate: DateTime(2024, 3, 12, 8),
+          lastDate: DateTime(2024, 3, 12, 22),
+          buildCard: (session) {
+            return Container(
+              width: 190,
+              decoration: BoxDecoration(
+                  color: session.clientId != null
+                      ? Theme.of(context).colorScheme.surfaceVariant
+                      : Theme.of(context).colorScheme.tertiaryContainer,
+                  borderRadius: BorderRadius.circular(12)),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    color: session.clientId != null
+                        ? Theme.of(context).colorScheme.primary
+                        : Theme.of(context).colorScheme.tertiary,
+                    width: 16,
+                  ),
+                  const SizedBox(
+                    width: 4,
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            const Icon(Icons.access_time),
+                            Text(
+                              "${DateFormat.jm().format(session.startTime)} - ${DateFormat.jm().format(session.endTime)}",
+                            ),
+                          ],
+                        ),
+                        const Spacer(),
+                        if (session.clientId != null)
+                          const Row(
+                            children: [
+                              Icon(Icons.person),
+                              Text("Lucas Medico"),
+                            ],
+                          ),
+                        if (session.clientId == null)
+                          OutlinedButton(
+                            onPressed: () {},
+                            child: const Text("Reservar"),
+                          ),
+                      ],
+                    ),
+                  ),
+                  const Spacer(),
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8, right: 8),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.edit),
+                          onPressed: () {},
+                        ),
+                        const Spacer(),
+                      ],
+                    ),
+                  )
+                ],
+              ),
+            );
+          },
+          sessions: state.sessions,
+          physicalPartitions: [
+            PhysicalPartition(
+                partitionPhysicalId: 1,
+                clubPartitionId: 1,
+                minPlayers: 5,
+                maxPlayers: 2,
+                physicalIdentifier: 25,
+                isCover: "false",
+                description: "description"),
+            PhysicalPartition(
+                partitionPhysicalId: 2,
+                clubPartitionId: 1,
+                minPlayers: 5,
+                maxPlayers: 2,
+                physicalIdentifier: 14,
+                isCover: "false",
+                description: "description"),
+            PhysicalPartition(
+                partitionPhysicalId: 3,
+                clubPartitionId: 1,
+                minPlayers: 5,
+                maxPlayers: 2,
+                physicalIdentifier: 12,
+                isCover: "false",
+                description: "description"),
+            PhysicalPartition(
+                partitionPhysicalId: 4,
+                clubPartitionId: 1,
+                minPlayers: 5,
+                maxPlayers: 2,
+                physicalIdentifier: 13,
+                isCover: "false",
+                description: "description")
+          ],
+        );
+      },
+    );
+  }
+
+  Widget CalendarDatepicker2(BuildContext context) {
+    return BlocBuilder<SessionManagerBloc, SessionManagerState>(
+      builder: (context, state) {
+        return CalendarDatePicker2(
+            onValueChanged: (value) {
+              BlocProvider.of<SessionManagerBloc>(context)
+                  .add(SessionChangeDateEvent(value.first ?? DateTime.now()));
+            },
+            config: CalendarDatePicker2Config(
+              dayBuilder: (
+                      {required date,
+                      decoration,
+                      isDisabled,
+                      isSelected,
+                      isToday,
+                      textStyle}) =>
+                  dayBuilder(context,
+                      date: date,
+                      decoration: decoration,
+                      isDisabled: isDisabled,
+                      isSelected: isSelected,
+                      isToday: isToday,
+                      textStyle: textStyle),
+            ),
+            value: [state.currentDate]);
+      },
+    );
   }
 
   Widget? dayBuilder(context,

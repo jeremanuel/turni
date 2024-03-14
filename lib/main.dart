@@ -1,5 +1,8 @@
-import 'package:calendar_view/calendar_view.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/date_symbol_data_local.dart';
+import 'package:intl/intl.dart';
+
+
 import 'package:turni/core/config/app_router.dart';
 import 'package:turni/core/config/environment.dart';
 import 'package:turni/core/config/service_locator.dart';
@@ -9,6 +12,9 @@ void main() async {
 
   await Environment.initEnvironment();
   ServiceLocator.initializeDependencies();
+  await initializeDateFormatting('es');
+  Intl.defaultLocale = 'es';
+
   
   runApp( const MyApp() );
 }
@@ -27,7 +33,7 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Turni',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Color.fromARGB(255, 32, 0, 212), brightness: Brightness.light),
+        colorScheme: ColorScheme.fromSeed(seedColor: Color(0xff672bea), brightness: Brightness.dark),
         useMaterial3: true,
       ),
     );

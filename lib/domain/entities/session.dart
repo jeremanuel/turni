@@ -30,5 +30,7 @@ class Session {
    return (int.parse(hours) * 60) + int.parse(minutes);
 
   }
+
+  get endTime => startTime.add(Duration(minutes: getDurationInMinutes()));
   
 }

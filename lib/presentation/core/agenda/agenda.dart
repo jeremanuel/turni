@@ -1,21 +1,29 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../../domain/entities/physical_partition.dart';
 import '../../../domain/entities/session.dart';
 
 class Agenda extends StatefulWidget {
-  const Agenda(
-      {super.key, required this.sessions,
+  const Agenda({
+      super.key,
+      required this.sessions,
       required this.buildCard,
       this.heightPerMinute = 2,
-      required this.physicalPartitions});
+      required this.physicalPartitions,
+      required this.fromDate,
+      required this.lastDate,
+      this.columnWidth = 300
+      });
 
   final List<Session> sessions;
   final Widget Function(Session) buildCard;
   final List<PhysicalPartition> physicalPartitions;
   final double heightPerMinute;
-
-  final columnWidth = 300;
+  final DateTime fromDate;
+  final DateTime lastDate;
+  final columnWidth;
 
   @override
   State<Agenda> createState() => _AgendaState();
@@ -26,46 +34,48 @@ class _AgendaState extends State<Agenda> {
   final ScrollController horizontalController = ScrollController();
   final ScrollController horizontalController2 = ScrollController();
 
-  final horariosDisponibles = [
-    DateTime(
-      2024,
-      3,
-      8,
-      9,
-    ),
-    DateTime(2024, 3,  8,  8, 30),
-    DateTime(2024, 3,  8, 10),
-    DateTime(2024, 3,  8, 10, 30),
-    DateTime(2024, 3,  8, 11),
-    DateTime(2024, 3,  8, 11, 30),
-    DateTime(2024, 3,  8, 12),
-    DateTime(2024, 3,  8, 12, 30),
-    DateTime(2024, 3,  8, 13),
-    DateTime(2024, 3,  8, 13, 30),
-    DateTime(2024, 3,  8, 14),
-    DateTime(2024, 3,  8, 14, 30),
-    DateTime(2024, 3,  8, 15),
-    DateTime(2024, 3,  8, 15, 30),
-    DateTime(2024, 3,  8, 16),
-    DateTime(2024, 3,  8, 16, 30),
-    DateTime(2024, 3,  8, 17),
-    DateTime(2024, 3,  8, 17, 30),
-    DateTime(2024, 3,  8, 18),
-    DateTime(2024, 3,  8, 18, 30),
-    DateTime(2024, 3,  8, 19),
-    DateTime(2024, 3,  8, 19, 30),
-    DateTime(2024, 3,  8, 20),
-    DateTime(2024, 3,  8, 20, 30),
-    DateTime(2024, 3,  8, 21),
-  ];
+  late final List<DateTime> horariosDisponibles;
+
+
+  List<DateTime> generateDates(DateTime startDate, DateTime endDate) {
+  List<DateTime> dates = [];
+  // Initialize the current date with the start date
+  DateTime currentDate = startDate;
+
+  // Loop until the current date reaches the end date
+  while (currentDate.isBefore(endDate)) {
+    // Add the current date to the list
+    dates.add(currentDate);
+
+    // Increment the current date by 30 minutes
+    currentDate = currentDate.add(Duration(minutes: 30));
+  }
+
+  return dates;
+}
 
   @override
   void initState() {
+
+    horariosDisponibles = generateDates(widget.fromDate, widget.lastDate);
+
+    // Genero la lista de scrollcontrollers
+    // Contiene un scrollcontroller por cada particion fisica + 2 
+    // (esos dos son la lista de horarios y la lista de lineas verticales)
     scrollControllers = List.generate(
-        widget.physicalPartitions.length + 2, (index) => ScrollController());
+        widget.physicalPartitions.length + 2, (index) => ScrollController()
+    ); 
+      
+      
 
     for (var (index, currentScrollController) in scrollControllers.indexed) {
-      currentScrollController.addListener(() {
+
+
+       // A cada uno de los scrollControlles le agrego un listener para que si el offset de alguno de los otros controllers cambia
+       // Este salte al offset del otro
+       // Para sincronizar todas las listas verticales y que simule ser una unica lista
+
+       currentScrollController.addListener(() {
         var currentIndex = 0;
         for (var scrollController in scrollControllers) {
           if (currentIndex == index) {
@@ -77,17 +87,14 @@ class _AgendaState extends State<Agenda> {
             scrollController.jumpTo(currentScrollController.offset);
           }
         }
-      });
+      }); 
     }
 
-    horizontalController.addListener(() {
+     horizontalController.addListener(() {
       if (horizontalController.offset != horizontalController2.offset) {
         horizontalController2.jumpTo(horizontalController.offset);
       }
-    });
-
-
-
+    }); 
 
     super.initState();
   }
@@ -99,9 +106,7 @@ class _AgendaState extends State<Agenda> {
       child: Row(
         children: [
           hoursList(context),
-          const SizedBox(
-            width: 25,
-          ),
+    
           Expanded(
             child: Stack(
               children: [
@@ -115,11 +120,7 @@ class _AgendaState extends State<Agenda> {
                     scrollDirection: Axis.horizontal,
                     child: SizedBox(
                       width: widget.columnWidth.toDouble() * widget.physicalPartitions.length,
-                      child: Stack(
-                        children: [
-                          cardsLists(context),
-                        ],
-                      ),
+                      child: cardsLists(context),
                     ),
                   ),
                 ),
@@ -133,7 +134,10 @@ class _AgendaState extends State<Agenda> {
 
   ScrollConfiguration cardsLists(BuildContext context) {
     return ScrollConfiguration(
-        behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
+        behavior: ScrollConfiguration.of(context).copyWith(
+          scrollbars: false,
+          physics: ClampingScrollPhysics()),
+        
         child: Column(
           children: [
             Row(
@@ -152,6 +156,10 @@ class _AgendaState extends State<Agenda> {
         ));
   }
 
+
+  // Construye las listviews que dibujan las lineas verticales y horizontales
+  // Las lineas verticales representan la segmentacion de tiempo
+  // Las lineas horizontales representan a cada particion fisica.
   Padding linesList() {
     return Padding(
       padding: const EdgeInsets.only(top: 40),
@@ -170,7 +178,7 @@ class _AgendaState extends State<Agenda> {
               }
           
               return SizedBox(
-                height: 60,
+                height: widget.heightPerMinute * 30,
                 child: Divider(
                   color: isCurrentDivider ? Colors.black : null,
                 ),
@@ -191,7 +199,7 @@ class _AgendaState extends State<Agenda> {
                 isCurrentDivider = true;
               }
           
-              return Container(
+              return SizedBox(
                 width: widget.columnWidth.toDouble(),
                 child: const Row(
                   children: [
@@ -207,9 +215,13 @@ class _AgendaState extends State<Agenda> {
     );
   }
 
+
+
+  // Listview encargada de mostrar los distintos horarios
+  
   SizedBox hoursList(BuildContext context) {
     return SizedBox(
-      width: 100,
+      width: 64,
       child: ScrollConfiguration(
         behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
         child: Padding(
@@ -255,11 +267,10 @@ class _AgendaState extends State<Agenda> {
         width: widget.columnWidth - 16,
         height: 40 - 16,
         decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.primaryContainer,
+              color: Theme.of(context).colorScheme.primaryContainer.withOpacity(0.5),
               borderRadius: BorderRadius.circular(4),
         ),
-          
-      
+           
         child: Center(
           child: Text("Cancha ${physicalPartition.physicalIdentifier!.toString()}")
         )),
@@ -272,6 +283,25 @@ class _AgendaState extends State<Agenda> {
             element.partitionPhysicalId ==
             physicalPartition.partitionPhysicalId)
         .toList();
+
+    if(currentPhysicalPartitionSessions.isEmpty){
+      return SizedBox(
+        width: widget.columnWidth.toDouble(),
+        child: ListView.builder(
+          controller: scrollControllers[widget.physicalPartitions.indexOf(physicalPartition) + 2],
+          itemCount: 1,
+          itemBuilder: (context, index) {
+
+            final height = horariosDisponibles.first.difference(horariosDisponibles.last).inMinutes.abs() * widget.heightPerMinute;
+            
+            return SizedBox(
+              height: height + 40
+            );
+          },
+        ),
+        
+      );
+    }
     return SizedBox(
       width: widget.columnWidth.toDouble(),
       child: ListView.builder(
@@ -290,6 +320,7 @@ class _AgendaState extends State<Agenda> {
           } else {
             offsetPrevio = (currentSession.startTime.difference(currentPhysicalPartitionSessions[index - 1].startTime).inMinutes.abs() -duration) * widget.heightPerMinute;
           }
+          
 
           if (index == currentPhysicalPartitionSessions.length - 1) {
             offsetFinal = (currentSession.startTime
@@ -303,17 +334,25 @@ class _AgendaState extends State<Agenda> {
             offsetFinal += 40;
           }
 
+          if(offsetPrevio < 0){
+            print("wtf");
+          }
           return Padding(
-            padding: const EdgeInsets.symmetric(vertical: 4),
+            padding: EdgeInsets.symmetric(vertical: widget.heightPerMinute * 2),
             child: Column(
               children: [
                 if (index == 0)
-                  const SizedBox(
-                    height: 30,
+                  
+                  // Esta caja mueve toda la lista 15 unidades de altura hacia abajo. 
+                  // Ya que la unidad de tiempo ocupa 30 unidades de altura, 
+                  // Asi se centra el inicio de cada turno con respecto a la unidad de tiempo.
+
+                   SizedBox( 
+                    height: 15 * widget.heightPerMinute,
                   ),
                 SizedBox(height: offsetPrevio.toDouble()),
                 SizedBox(
-                    height: duration * widget.heightPerMinute.toDouble() - 8,
+                    height: duration * widget.heightPerMinute.toDouble() - widget.heightPerMinute * 4, // Le resto 4 unidades de tiempo por el padding que se aplica luego de 2 arriba y abajo.
                     child: widget.buildCard(currentSession)),
                 if (index == currentPhysicalPartitionSessions.length - 1)
                   SizedBox(
