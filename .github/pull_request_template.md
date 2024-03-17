@@ -15,6 +15,7 @@ Antes de enviar este PR, por favor, asegúrate de que has realizado las siguient
 - [ ] He probado este código en mi entorno local.
 - [ ] He agregado documentación si es necesario.
 - [ ] He agregado test unitarios.
+- [ ] Prueba
 
 ## Tema del PR
 
