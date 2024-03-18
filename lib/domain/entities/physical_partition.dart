@@ -17,8 +17,19 @@ class PhysicalPartition {
   final int? physicalIdentifier;
   final String? isCover;
   final String? description;
+  
 
-  PhysicalPartition({required this.partitionPhysicalId, required this.clubPartitionId, required this.minPlayers, required this.maxPlayers, required this.physicalIdentifier, required this.isCover, required this.description});
+  PhysicalPartition({
+    required this.partitionPhysicalId,
+    required this.clubPartitionId, 
+    required this.minPlayers, 
+    required this.maxPlayers, 
+    required this.physicalIdentifier, 
+    required this.isCover, 
+    required this.description,
+    
+    
+    });
 
 
 }

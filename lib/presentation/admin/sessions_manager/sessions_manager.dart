@@ -13,6 +13,7 @@ import '../../core/agenda/agenda.dart';
 import 'blocs/bloc/session_manager_bloc.dart';
 import 'blocs/bloc/session_manager_event.dart';
 import 'blocs/bloc/session_manager_state.dart';
+import 'package:turni/domain/entities/club_partition.dart';
 
 class SessionsManager extends StatelessWidget {
   const SessionsManager({
@@ -34,9 +35,9 @@ class SessionsManager extends StatelessWidget {
               );
             }
 
-          if(ResponsiveBuilder.isMobile(context)) {
+            if (ResponsiveBuilder.isMobile(context)) {
               return buildAgendaContainer(context);
-            } 
+            }
 
             return buildDesktopManager(context);
           },
@@ -108,61 +109,66 @@ class SessionsManager extends StatelessWidget {
 
   Column buildAgendaContainer(BuildContext context) {
     return Column(
-          children: [
-            if(ResponsiveBuilder.isMobile(context))
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: buildDayHeader(),
-                ),
-            SizedBox(
-              height: 40,
-              child: ListView(
+      children: [
+        if (ResponsiveBuilder.isMobile(context))
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: buildDayHeader(),
+          ),
+        SizedBox(
+          height: 40,
+          child: BlocBuilder<SessionManagerBloc, SessionManagerState>(
+            builder: (context, state) {
+              return ListView(
                 scrollDirection: Axis.horizontal,
                 children: [
-                  if(ResponsiveBuilder.isMobile(context)) SizedBox(width: 8,),
-                  FilterChip(label: Text("Tenis"), onSelected: (va){}),
-                  const SizedBox(width: 16,),
-                  FilterChip(label: Text("Futbol"), onSelected: (va){}),
-                  SizedBox(width: 16,),
-                  FilterChip(label: Text("Padel"), onSelected: (va){}, selected: true,),
-                  SizedBox(width: 16,),
-                  FilterChip(label: Text("Pelota Paleta"), onSelected: (va){}),
-                  SizedBox(width: 16,),
-                  FilterChip(label: Text("Tenis"), onSelected: (va){}),
-                  SizedBox(width: 16,),
-                  FilterChip(label: Text("Futbol"), onSelected: (va){}),
-                  SizedBox(width: 16,),
-                  FilterChip(label: Text("Padel"), onSelected: (va){}, selected: true,),
-                  SizedBox(width: 16,),
-                  FilterChip(label: Text("Pelota Paleta"), onSelected: (va){}),
-                  SizedBox(width: 16,),
-                  FilterChip(label: Text("Futbol"), onSelected: (va){}),
-                  SizedBox(width: 16,),
-                  FilterChip(label: Text("Padel"), onSelected: (va){}, selected: true,),
-                  SizedBox(width: 16,),
-                  FilterChip(label: Text("Pelota Paleta"), onSelected: (va){}),
-                  if(ResponsiveBuilder.isMobile(context)) SizedBox(width: 8,),
+                  if (ResponsiveBuilder.isMobile(context))
+                    const SizedBox(
+                      width: 8,
+                    ),
+                    ...state.clubPartitions.expand((e) => [
+                      buildChip(e, context, state),
+                      const SizedBox(
+                        width: 16,
+                      ),
+                    ]),
+                  if (ResponsiveBuilder.isMobile(context))
+                    const SizedBox(
+                      width: 8,
+                    ),
                 ],
+              );
+            },
+          ),
+        ),
+        const SizedBox(
+          height: 16,
+        ),
+        Expanded(
+          child: Container(
+              decoration: BoxDecoration(
+                boxShadow: [
+                  BoxShadow(
+                      blurRadius: 5,
+                      spreadRadius: 5,
+                      color:
+                          Theme.of(context).colorScheme.shadow.withOpacity(0.1))
+                ],
+                color: Theme.of(context).colorScheme.surface,
               ),
-            ),
-            const SizedBox(height: 16,),
-            Expanded(
-              child: Container(
-                  decoration: BoxDecoration(
-                    boxShadow: [
-                      BoxShadow(
-                          blurRadius: 5,
-                          spreadRadius: 5,
-                          color: Theme.of(context).colorScheme.shadow.withOpacity(0.1))
-                    ],
-                    color: Theme.of(context).colorScheme.surface,
-                  ),
-                  child: buildAgenda(context)),
-            ),
-          ],
-        );
+              child: buildAgenda(context)),
+        ),
+      ],
+    );
   }
 
+  FilterChip buildChip(ClubPartition e, BuildContext context, SessionManagerState state) => FilterChip(label: Text(e.clubType!.name), onSelected: onSelectChip(context,e), showCheckmark: false ,selected: e.club_partition_id == state.selectedClubPartition?.club_partition_id,);
+
+  onSelectChip(context,e) {
+    return (val){
+      BlocProvider.of<SessionManagerBloc>(context).add(ChangeClubPartitionEvent(e));
+    };
+  } 
   Widget buildDayHeader() {
     return BlocBuilder<SessionManagerBloc, SessionManagerState>(
       builder: (context, state) {
@@ -176,31 +182,37 @@ class SessionsManager extends StatelessWidget {
             ),
             const Icon(
               Icons.circle,
-              size: 8,  
+              size: 8,
             ),
             const SizedBox(
               width: 8,
             ),
             Text(DateFormat.MMMMd().format(state.currentDate)),
             Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              IconButton(onPressed: (){
-                BlocProvider.of<SessionManagerBloc>(context).add(
-                   SessionChangeDateEvent(
-                    state.currentDate.subtract(const Duration(days: 1))
-                   )
-                );
-              }, icon: Icon(Icons.arrow_back_ios, size: 12,)),
-              IconButton(onPressed: (){
-                  BlocProvider.of<SessionManagerBloc>(context).add(
-                   SessionChangeDateEvent(
-                    state.currentDate.add(const Duration(days: 1))
-                   )
-                );
-              }, icon: Icon(Icons.arrow_forward_ios, size: 12,))
-
-            ],)
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                IconButton(
+                    onPressed: () {
+                      BlocProvider.of<SessionManagerBloc>(context).add(
+                          SessionChangeDateEvent(state.currentDate
+                              .subtract(const Duration(days: 1))));
+                    },
+                    icon: Icon(
+                      Icons.arrow_back_ios,
+                      size: 12,
+                    )),
+                IconButton(
+                    onPressed: () {
+                      BlocProvider.of<SessionManagerBloc>(context).add(
+                          SessionChangeDateEvent(
+                              state.currentDate.add(const Duration(days: 1))));
+                    },
+                    icon: Icon(
+                      Icons.arrow_forward_ios,
+                      size: 12,
+                    ))
+              ],
+            )
           ]),
         );
       },
@@ -209,9 +221,9 @@ class SessionsManager extends StatelessWidget {
 
   Widget buildAgenda(BuildContext context) {
     return BlocBuilder<SessionManagerBloc, SessionManagerState>(
+      buildWhen: (previous, current) => previous.sessions != current.sessions || previous.selectedClubPartition != current.selectedClubPartition || previous.isLoadingSessions != current.isLoadingSessions,
       builder: (context, state) {
-
-        if(state.isLoadingSessions){
+        if (state.isLoadingSessions) {
           return Center(
             child: CircularProgressIndicator(),
           );
@@ -290,40 +302,8 @@ class SessionsManager extends StatelessWidget {
             );
           },
           sessions: state.sessions,
-          physicalPartitions: [
-            PhysicalPartition(
-                partitionPhysicalId: 1,
-                clubPartitionId: 1,
-                minPlayers: 5,
-                maxPlayers: 2,
-                physicalIdentifier: 25,
-                isCover: "false",
-                description: "description"),
-            PhysicalPartition(
-                partitionPhysicalId: 2,
-                clubPartitionId: 1,
-                minPlayers: 5,
-                maxPlayers: 2,
-                physicalIdentifier: 14,
-                isCover: "false",
-                description: "description"),
-            PhysicalPartition(
-                partitionPhysicalId: 3,
-                clubPartitionId: 1,
-                minPlayers: 5,
-                maxPlayers: 2,
-                physicalIdentifier: 12,
-                isCover: "false",
-                description: "description"),
-            PhysicalPartition(
-                partitionPhysicalId: 4,
-                clubPartitionId: 1,
-                minPlayers: 5,
-                maxPlayers: 2,
-                physicalIdentifier: 13,
-                isCover: "false",
-                description: "description")
-          ],
+          physicalPartitions: state.selectedClubPartition?.physicalPartitions ?? []
+          ,
         );
       },
     );
@@ -331,6 +311,7 @@ class SessionsManager extends StatelessWidget {
 
   Widget CalendarDatepicker2(BuildContext context) {
     return BlocBuilder<SessionManagerBloc, SessionManagerState>(
+      buildWhen: (previous, current) => previous.currentDate != current.currentDate,
       builder: (context, state) {
         return CalendarDatePicker2(
             onValueChanged: (value) {
@@ -384,7 +365,7 @@ class SessionsManager extends StatelessWidget {
       ),
       child: Badge(
         backgroundColor: Theme.of(context).colorScheme.secondary,
-        isLabelVisible: date.day.isOdd,
+        isLabelVisible: date.day.isOdd && Random().nextBool(),
         label: Text(
           "3",
           style: TextStyle(color: Theme.of(context).colorScheme.onSecondary),

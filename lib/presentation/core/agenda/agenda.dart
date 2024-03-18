@@ -5,8 +5,8 @@ import 'package:intl/intl.dart';
 import '../../../domain/entities/physical_partition.dart';
 import '../../../domain/entities/session.dart';
 
-class Agenda extends StatefulWidget {
-  const Agenda({
+class Agenda extends StatelessWidget {
+   Agenda({
       super.key,
       required this.sessions,
       required this.buildCard,
@@ -15,7 +15,11 @@ class Agenda extends StatefulWidget {
       required this.fromDate,
       required this.lastDate,
       this.columnWidth = 300
-      });
+      }){
+          horariosDisponibles = generateDates(fromDate, lastDate);
+          scrollControllers = generateScrollControllers();
+          initializeScrollControllerListeners();
+      }
 
   final List<Session> sessions;
   final Widget Function(Session) buildCard;
@@ -24,51 +28,40 @@ class Agenda extends StatefulWidget {
   final DateTime fromDate;
   final DateTime lastDate;
   final columnWidth;
-
-  @override
-  State<Agenda> createState() => _AgendaState();
-}
-
-class _AgendaState extends State<Agenda> {
-  List<ScrollController> scrollControllers = [];
+  
+  late final List<ScrollController> scrollControllers;
   final ScrollController horizontalController = ScrollController();
   final ScrollController horizontalController2 = ScrollController();
 
   late final List<DateTime> horariosDisponibles;
 
 
+
   List<DateTime> generateDates(DateTime startDate, DateTime endDate) {
-  List<DateTime> dates = [];
-  // Initialize the current date with the start date
-  DateTime currentDate = startDate;
+    List<DateTime> dates = [];
+    // Initialize the current date with the start date
+    DateTime currentDate = startDate;
 
-  // Loop until the current date reaches the end date
-  while (currentDate.isBefore(endDate)) {
-    // Add the current date to the list
-    dates.add(currentDate);
+    // Loop until the current date reaches the end date
+    while (currentDate.isBefore(endDate)) {
+      // Add the current date to the list
+      dates.add(currentDate);
 
-    // Increment the current date by 30 minutes
-    currentDate = currentDate.add(Duration(minutes: 30));
+      // Increment the current date by 30 minutes
+      currentDate = currentDate.add(const Duration(minutes: 30));
+    }
+
+    return dates;
   }
 
-  return dates;
-}
-
-  @override
-  void initState() {
-
-    horariosDisponibles = generateDates(widget.fromDate, widget.lastDate);
-
-    // Genero la lista de scrollcontrollers
-    // Contiene un scrollcontroller por cada particion fisica + 2 
-    // (esos dos son la lista de horarios y la lista de lineas verticales)
-    scrollControllers = List.generate(
-        widget.physicalPartitions.length + 2, (index) => ScrollController()
+  List<ScrollController> generateScrollControllers(){
+        return List.generate(
+        physicalPartitions.length + 2, (index) => ScrollController()
     ); 
-      
-      
+  }
 
-    for (var (index, currentScrollController) in scrollControllers.indexed) {
+  initializeScrollControllerListeners(){
+        for (var (index, currentScrollController) in scrollControllers.indexed) {
 
 
        // A cada uno de los scrollControlles le agrego un listener para que si el offset de alguno de los otros controllers cambia
@@ -96,70 +89,70 @@ class _AgendaState extends State<Agenda> {
       }
     }); 
 
-    super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 16),
-      child: Row(
-        children: [
-          hoursList(context),
-    
-          Expanded(
-            child: Stack(
-              children: [
-                linesList(),
-                Scrollbar(
-                  thumbVisibility: true,
-                  controller: horizontalController,
-                  child: SingleChildScrollView(
-                    controller: horizontalController,
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    scrollDirection: Axis.horizontal,
-                    child: SizedBox(
-                      width: widget.columnWidth.toDouble() * widget.physicalPartitions.length,
-                      child: cardsLists(context),
+      child: Scrollbar(
+        controller: scrollControllers.first,
+        thumbVisibility: true,
+        child: ScrollConfiguration(
+          behavior: ScrollConfiguration.of(context).copyWith(
+            scrollbars: false,
+            physics: ClampingScrollPhysics()),
+            child: Row(
+            children: [
+              hoursList(context),
+              
+              Expanded(
+                child: Stack(
+                  children: [
+                    linesList(),
+                    Scrollbar(
+                      thumbVisibility: true,
+                      controller: horizontalController,
+                      child: SingleChildScrollView(
+                        controller: horizontalController,
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        scrollDirection: Axis.horizontal,
+                        child: SizedBox(
+                          width: columnWidth.toDouble() * physicalPartitions.length,
+                          child: cardsLists(context),
+                        ),
+                      ),
                     ),
-                  ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
 
-  ScrollConfiguration cardsLists(BuildContext context) {
-    return ScrollConfiguration(
-        behavior: ScrollConfiguration.of(context).copyWith(
-          scrollbars: false,
-          physics: ClampingScrollPhysics()),
-        
-        child: Column(
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-                children: widget.physicalPartitions
-                    .map(buildPartitionHeader)
-                    .toList()),
-            Expanded(
-              child: Row(
-                children: widget.physicalPartitions
-                    .map(buildPartitionColumn)
-                    .toList(),
-              ),
-            ),
-          ],
-        ));
+  Column cardsLists(BuildContext context) {
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+            children: physicalPartitions
+                .map((el) => buildPartitionHeader(el, context))
+                .toList()),
+        Expanded(
+          child: Row(
+            children: physicalPartitions
+                .map((el) => buildPartitionColumn(el, context))
+                .toList(),
+          ),
+        ),
+      ],
+    );
   }
 
-
   // Construye las listviews que dibujan las lineas verticales y horizontales
-  // Las lineas verticales representan la segmentacion de tiempo
-  // Las lineas horizontales representan a cada particion fisica.
   Padding linesList() {
     return Padding(
       padding: const EdgeInsets.only(top: 40),
@@ -178,7 +171,7 @@ class _AgendaState extends State<Agenda> {
               }
           
               return SizedBox(
-                height: widget.heightPerMinute * 30,
+                height: heightPerMinute * 30,
                 child: Divider(
                   color: isCurrentDivider ? Colors.black : null,
                 ),
@@ -200,7 +193,7 @@ class _AgendaState extends State<Agenda> {
               }
           
               return SizedBox(
-                width: widget.columnWidth.toDouble(),
+                width: columnWidth.toDouble(),
                 child: const Row(
                   children: [
                     VerticalDivider(width: 1,),
@@ -208,17 +201,14 @@ class _AgendaState extends State<Agenda> {
                 )
               );
             },
-            itemCount: widget.physicalPartitions.length,
+            itemCount: physicalPartitions.length,
           ),
         ],
       ),
     );
   }
 
-
-
   // Listview encargada de mostrar los distintos horarios
-  
   SizedBox hoursList(BuildContext context) {
     return SizedBox(
       width: 64,
@@ -239,7 +229,7 @@ class _AgendaState extends State<Agenda> {
               }
 
               return SizedBox(
-                height: 30 * widget.heightPerMinute,
+                height: 30 * heightPerMinute,
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -260,11 +250,11 @@ class _AgendaState extends State<Agenda> {
     );
   }
 
-  Widget buildPartitionHeader(PhysicalPartition physicalPartition) {
+  Widget buildPartitionHeader(PhysicalPartition physicalPartition, context) {
     return Container(
       padding: const EdgeInsets.all(8),
       child:Container(
-        width: widget.columnWidth - 16,
+        width: columnWidth - 16,
         height: 40 - 16,
         decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.primaryContainer.withOpacity(0.5),
@@ -277,8 +267,8 @@ class _AgendaState extends State<Agenda> {
     );
   }
 
-  Widget buildPartitionColumn(PhysicalPartition physicalPartition) {
-    final currentPhysicalPartitionSessions = widget.sessions
+  Widget buildPartitionColumn(PhysicalPartition physicalPartition, context) {
+    final currentPhysicalPartitionSessions = sessions
         .where((element) =>
             element.partitionPhysicalId ==
             physicalPartition.partitionPhysicalId)
@@ -286,13 +276,13 @@ class _AgendaState extends State<Agenda> {
 
     if(currentPhysicalPartitionSessions.isEmpty){
       return SizedBox(
-        width: widget.columnWidth.toDouble(),
+        width: columnWidth.toDouble(),
         child: ListView.builder(
-          controller: scrollControllers[widget.physicalPartitions.indexOf(physicalPartition) + 2],
+          controller: scrollControllers[physicalPartitions.indexOf(physicalPartition) + 2],
           itemCount: 1,
           itemBuilder: (context, index) {
 
-            final height = horariosDisponibles.first.difference(horariosDisponibles.last).inMinutes.abs() * widget.heightPerMinute;
+            final height = horariosDisponibles.first.difference(horariosDisponibles.last).inMinutes.abs() * heightPerMinute;
             
             return SizedBox(
               height: height + 40
@@ -303,9 +293,9 @@ class _AgendaState extends State<Agenda> {
       );
     }
     return SizedBox(
-      width: widget.columnWidth.toDouble(),
+      width: columnWidth.toDouble(),
       child: ListView.builder(
-        controller: scrollControllers[widget.physicalPartitions.indexOf(physicalPartition) + 2],
+        controller: scrollControllers[physicalPartitions.indexOf(physicalPartition) + 2],
         itemBuilder: (context, index) {
           double offsetPrevio = 0;
           double offsetFinal = 0;
@@ -316,9 +306,9 @@ class _AgendaState extends State<Agenda> {
                     .difference(horariosDisponibles[0])
                     .inMinutes
                     .abs() *
-                widget.heightPerMinute;
+                heightPerMinute;
           } else {
-            offsetPrevio = (currentSession.startTime.difference(currentPhysicalPartitionSessions[index - 1].startTime).inMinutes.abs() -duration) * widget.heightPerMinute;
+            offsetPrevio = (currentSession.startTime.difference(currentPhysicalPartitionSessions[index - 1].startTime).inMinutes.abs() -duration) * heightPerMinute;
           }
           
 
@@ -329,7 +319,7 @@ class _AgendaState extends State<Agenda> {
                         .inMinutes
                         .abs() -
                     duration) *
-                widget.heightPerMinute;
+                heightPerMinute;
             
             offsetFinal += 40;
           }
@@ -338,7 +328,7 @@ class _AgendaState extends State<Agenda> {
             print("wtf");
           }
           return Padding(
-            padding: EdgeInsets.symmetric(vertical: widget.heightPerMinute * 2),
+            padding: EdgeInsets.symmetric(vertical: heightPerMinute * 2),
             child: Column(
               children: [
                 if (index == 0)
@@ -348,12 +338,12 @@ class _AgendaState extends State<Agenda> {
                   // Asi se centra el inicio de cada turno con respecto a la unidad de tiempo.
 
                    SizedBox( 
-                    height: 15 * widget.heightPerMinute,
+                    height: 15 * heightPerMinute,
                   ),
                 SizedBox(height: offsetPrevio.toDouble()),
                 SizedBox(
-                    height: duration * widget.heightPerMinute.toDouble() - widget.heightPerMinute * 4, // Le resto 4 unidades de tiempo por el padding que se aplica luego de 2 arriba y abajo.
-                    child: widget.buildCard(currentSession)),
+                    height: duration * heightPerMinute.toDouble() - heightPerMinute * 4, // Le resto 4 unidades de tiempo por el padding que se aplica luego de 2 arriba y abajo.
+                    child: buildCard(currentSession)),
                 if (index == currentPhysicalPartitionSessions.length - 1)
                   SizedBox(
                     height: offsetFinal.toDouble(),

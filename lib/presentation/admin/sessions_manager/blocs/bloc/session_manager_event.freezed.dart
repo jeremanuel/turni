@@ -20,18 +20,22 @@ mixin _$SessionManagerEvent {
   TResult when<TResult extends Object?>({
     required TResult Function(DateTime newDate) changeDateEvent,
     required TResult Function() loadSessions,
+    required TResult Function(ClubPartition newClubPartition)
+        changeClubPartition,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function(DateTime newDate)? changeDateEvent,
     TResult? Function()? loadSessions,
+    TResult? Function(ClubPartition newClubPartition)? changeClubPartition,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function(DateTime newDate)? changeDateEvent,
     TResult Function()? loadSessions,
+    TResult Function(ClubPartition newClubPartition)? changeClubPartition,
     required TResult orElse(),
   }) =>
       throw _privateConstructorUsedError;
@@ -39,18 +43,22 @@ mixin _$SessionManagerEvent {
   TResult map<TResult extends Object?>({
     required TResult Function(SessionChangeDateEvent value) changeDateEvent,
     required TResult Function(SessionLoadEvent value) loadSessions,
+    required TResult Function(ChangeClubPartitionEvent value)
+        changeClubPartition,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(SessionChangeDateEvent value)? changeDateEvent,
     TResult? Function(SessionLoadEvent value)? loadSessions,
+    TResult? Function(ChangeClubPartitionEvent value)? changeClubPartition,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
     TResult Function(SessionChangeDateEvent value)? changeDateEvent,
     TResult Function(SessionLoadEvent value)? loadSessions,
+    TResult Function(ChangeClubPartitionEvent value)? changeClubPartition,
     required TResult orElse(),
   }) =>
       throw _privateConstructorUsedError;
@@ -144,6 +152,8 @@ class _$SessionChangeDateEventImpl implements SessionChangeDateEvent {
   TResult when<TResult extends Object?>({
     required TResult Function(DateTime newDate) changeDateEvent,
     required TResult Function() loadSessions,
+    required TResult Function(ClubPartition newClubPartition)
+        changeClubPartition,
   }) {
     return changeDateEvent(newDate);
   }
@@ -153,6 +163,7 @@ class _$SessionChangeDateEventImpl implements SessionChangeDateEvent {
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function(DateTime newDate)? changeDateEvent,
     TResult? Function()? loadSessions,
+    TResult? Function(ClubPartition newClubPartition)? changeClubPartition,
   }) {
     return changeDateEvent?.call(newDate);
   }
@@ -162,6 +173,7 @@ class _$SessionChangeDateEventImpl implements SessionChangeDateEvent {
   TResult maybeWhen<TResult extends Object?>({
     TResult Function(DateTime newDate)? changeDateEvent,
     TResult Function()? loadSessions,
+    TResult Function(ClubPartition newClubPartition)? changeClubPartition,
     required TResult orElse(),
   }) {
     if (changeDateEvent != null) {
@@ -175,6 +187,8 @@ class _$SessionChangeDateEventImpl implements SessionChangeDateEvent {
   TResult map<TResult extends Object?>({
     required TResult Function(SessionChangeDateEvent value) changeDateEvent,
     required TResult Function(SessionLoadEvent value) loadSessions,
+    required TResult Function(ChangeClubPartitionEvent value)
+        changeClubPartition,
   }) {
     return changeDateEvent(this);
   }
@@ -184,6 +198,7 @@ class _$SessionChangeDateEventImpl implements SessionChangeDateEvent {
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(SessionChangeDateEvent value)? changeDateEvent,
     TResult? Function(SessionLoadEvent value)? loadSessions,
+    TResult? Function(ChangeClubPartitionEvent value)? changeClubPartition,
   }) {
     return changeDateEvent?.call(this);
   }
@@ -193,6 +208,7 @@ class _$SessionChangeDateEventImpl implements SessionChangeDateEvent {
   TResult maybeMap<TResult extends Object?>({
     TResult Function(SessionChangeDateEvent value)? changeDateEvent,
     TResult Function(SessionLoadEvent value)? loadSessions,
+    TResult Function(ChangeClubPartitionEvent value)? changeClubPartition,
     required TResult orElse(),
   }) {
     if (changeDateEvent != null) {
@@ -252,6 +268,8 @@ class _$SessionLoadEventImpl implements SessionLoadEvent {
   TResult when<TResult extends Object?>({
     required TResult Function(DateTime newDate) changeDateEvent,
     required TResult Function() loadSessions,
+    required TResult Function(ClubPartition newClubPartition)
+        changeClubPartition,
   }) {
     return loadSessions();
   }
@@ -261,6 +279,7 @@ class _$SessionLoadEventImpl implements SessionLoadEvent {
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function(DateTime newDate)? changeDateEvent,
     TResult? Function()? loadSessions,
+    TResult? Function(ClubPartition newClubPartition)? changeClubPartition,
   }) {
     return loadSessions?.call();
   }
@@ -270,6 +289,7 @@ class _$SessionLoadEventImpl implements SessionLoadEvent {
   TResult maybeWhen<TResult extends Object?>({
     TResult Function(DateTime newDate)? changeDateEvent,
     TResult Function()? loadSessions,
+    TResult Function(ClubPartition newClubPartition)? changeClubPartition,
     required TResult orElse(),
   }) {
     if (loadSessions != null) {
@@ -283,6 +303,8 @@ class _$SessionLoadEventImpl implements SessionLoadEvent {
   TResult map<TResult extends Object?>({
     required TResult Function(SessionChangeDateEvent value) changeDateEvent,
     required TResult Function(SessionLoadEvent value) loadSessions,
+    required TResult Function(ChangeClubPartitionEvent value)
+        changeClubPartition,
   }) {
     return loadSessions(this);
   }
@@ -292,6 +314,7 @@ class _$SessionLoadEventImpl implements SessionLoadEvent {
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(SessionChangeDateEvent value)? changeDateEvent,
     TResult? Function(SessionLoadEvent value)? loadSessions,
+    TResult? Function(ChangeClubPartitionEvent value)? changeClubPartition,
   }) {
     return loadSessions?.call(this);
   }
@@ -301,6 +324,7 @@ class _$SessionLoadEventImpl implements SessionLoadEvent {
   TResult maybeMap<TResult extends Object?>({
     TResult Function(SessionChangeDateEvent value)? changeDateEvent,
     TResult Function(SessionLoadEvent value)? loadSessions,
+    TResult Function(ChangeClubPartitionEvent value)? changeClubPartition,
     required TResult orElse(),
   }) {
     if (loadSessions != null) {
@@ -312,4 +336,161 @@ class _$SessionLoadEventImpl implements SessionLoadEvent {
 
 abstract class SessionLoadEvent implements SessionManagerEvent {
   factory SessionLoadEvent() = _$SessionLoadEventImpl;
+}
+
+/// @nodoc
+abstract class _$$ChangeClubPartitionEventImplCopyWith<$Res> {
+  factory _$$ChangeClubPartitionEventImplCopyWith(
+          _$ChangeClubPartitionEventImpl value,
+          $Res Function(_$ChangeClubPartitionEventImpl) then) =
+      __$$ChangeClubPartitionEventImplCopyWithImpl<$Res>;
+  @useResult
+  $Res call({ClubPartition newClubPartition});
+
+  $ClubPartitionCopyWith<$Res> get newClubPartition;
+}
+
+/// @nodoc
+class __$$ChangeClubPartitionEventImplCopyWithImpl<$Res>
+    extends _$SessionManagerEventCopyWithImpl<$Res,
+        _$ChangeClubPartitionEventImpl>
+    implements _$$ChangeClubPartitionEventImplCopyWith<$Res> {
+  __$$ChangeClubPartitionEventImplCopyWithImpl(
+      _$ChangeClubPartitionEventImpl _value,
+      $Res Function(_$ChangeClubPartitionEventImpl) _then)
+      : super(_value, _then);
+
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? newClubPartition = null,
+  }) {
+    return _then(_$ChangeClubPartitionEventImpl(
+      null == newClubPartition
+          ? _value.newClubPartition
+          : newClubPartition // ignore: cast_nullable_to_non_nullable
+              as ClubPartition,
+    ));
+  }
+
+  @override
+  @pragma('vm:prefer-inline')
+  $ClubPartitionCopyWith<$Res> get newClubPartition {
+    return $ClubPartitionCopyWith<$Res>(_value.newClubPartition, (value) {
+      return _then(_value.copyWith(newClubPartition: value));
+    });
+  }
+}
+
+/// @nodoc
+
+class _$ChangeClubPartitionEventImpl implements ChangeClubPartitionEvent {
+  _$ChangeClubPartitionEventImpl(this.newClubPartition);
+
+  @override
+  final ClubPartition newClubPartition;
+
+  @override
+  String toString() {
+    return 'SessionManagerEvent.changeClubPartition(newClubPartition: $newClubPartition)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$ChangeClubPartitionEventImpl &&
+            (identical(other.newClubPartition, newClubPartition) ||
+                other.newClubPartition == newClubPartition));
+  }
+
+  @override
+  int get hashCode => Object.hash(runtimeType, newClubPartition);
+
+  @JsonKey(ignore: true)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$ChangeClubPartitionEventImplCopyWith<_$ChangeClubPartitionEventImpl>
+      get copyWith => __$$ChangeClubPartitionEventImplCopyWithImpl<
+          _$ChangeClubPartitionEventImpl>(this, _$identity);
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function(DateTime newDate) changeDateEvent,
+    required TResult Function() loadSessions,
+    required TResult Function(ClubPartition newClubPartition)
+        changeClubPartition,
+  }) {
+    return changeClubPartition(newClubPartition);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function(DateTime newDate)? changeDateEvent,
+    TResult? Function()? loadSessions,
+    TResult? Function(ClubPartition newClubPartition)? changeClubPartition,
+  }) {
+    return changeClubPartition?.call(newClubPartition);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function(DateTime newDate)? changeDateEvent,
+    TResult Function()? loadSessions,
+    TResult Function(ClubPartition newClubPartition)? changeClubPartition,
+    required TResult orElse(),
+  }) {
+    if (changeClubPartition != null) {
+      return changeClubPartition(newClubPartition);
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(SessionChangeDateEvent value) changeDateEvent,
+    required TResult Function(SessionLoadEvent value) loadSessions,
+    required TResult Function(ChangeClubPartitionEvent value)
+        changeClubPartition,
+  }) {
+    return changeClubPartition(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(SessionChangeDateEvent value)? changeDateEvent,
+    TResult? Function(SessionLoadEvent value)? loadSessions,
+    TResult? Function(ChangeClubPartitionEvent value)? changeClubPartition,
+  }) {
+    return changeClubPartition?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(SessionChangeDateEvent value)? changeDateEvent,
+    TResult Function(SessionLoadEvent value)? loadSessions,
+    TResult Function(ChangeClubPartitionEvent value)? changeClubPartition,
+    required TResult orElse(),
+  }) {
+    if (changeClubPartition != null) {
+      return changeClubPartition(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class ChangeClubPartitionEvent implements SessionManagerEvent {
+  factory ChangeClubPartitionEvent(final ClubPartition newClubPartition) =
+      _$ChangeClubPartitionEventImpl;
+
+  ClubPartition get newClubPartition;
+  @JsonKey(ignore: true)
+  _$$ChangeClubPartitionEventImplCopyWith<_$ChangeClubPartitionEventImpl>
+      get copyWith => throw _privateConstructorUsedError;
 }
