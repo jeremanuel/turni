@@ -23,3 +23,12 @@ Escribe aquí el tema del PR, por ejemplo: "Arreglar el error de ortografía en 
 ## Notas adicionales
 
 Escribe aquí cualquier información adicional relevante para revisar este PR.
+
+## Merge Strategy
+
+| From | To | Strategy |
+|--------|--------|--------|
+| Feature | Develop | Squash&Merge |
+| Release | Master | Merge Commit |
+| Hotfix | Master | Squash&Merge | 
+
