@@ -6,6 +6,7 @@ import '../../../domain/entities/physical_partition.dart';
 import '../../../domain/entities/session.dart';
 
 class Agenda extends StatelessWidget {
+   
    Agenda({
       super.key,
       required this.sessions,
@@ -27,11 +28,11 @@ class Agenda extends StatelessWidget {
   final double heightPerMinute;
   final DateTime fromDate;
   final DateTime lastDate;
-  final columnWidth;
+  final double columnWidth;
   
   late final List<ScrollController> scrollControllers;
-  final ScrollController horizontalController = ScrollController();
-  final ScrollController horizontalController2 = ScrollController();
+  final ScrollController horizontalColumnesScrollController = ScrollController();
+  final ScrollController horizontalLinesScrollController = ScrollController();
 
   late final List<DateTime> horariosDisponibles;
 
@@ -83,9 +84,9 @@ class Agenda extends StatelessWidget {
       }); 
     }
 
-     horizontalController.addListener(() {
-      if (horizontalController.offset != horizontalController2.offset) {
-        horizontalController2.jumpTo(horizontalController.offset);
+     horizontalColumnesScrollController.addListener(() {
+      if (horizontalColumnesScrollController.offset != horizontalLinesScrollController.offset) {
+        horizontalLinesScrollController.jumpTo(horizontalColumnesScrollController.offset);
       }
     }); 
 
@@ -95,26 +96,28 @@ class Agenda extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 16),
-      child: Scrollbar(
-        controller: scrollControllers.first,
+      child: Scrollbar( 
+      
+        thickness: 12,
         thumbVisibility: true,
+        controller: scrollControllers.first,
         child: ScrollConfiguration(
           behavior: ScrollConfiguration.of(context).copyWith(
             scrollbars: false,
-            physics: ClampingScrollPhysics()),
+            dragDevices:PointerDeviceKind.values.toSet(),
+            physics: const ClampingScrollPhysics()),
             child: Row(
             children: [
-              hoursList(context),
-              
+              hoursList(context),                
               Expanded(
                 child: Stack(
                   children: [
                     linesList(),
                     Scrollbar(
                       thumbVisibility: true,
-                      controller: horizontalController,
+                      controller: horizontalColumnesScrollController,
                       child: SingleChildScrollView(
-                        controller: horizontalController,
+                        controller: horizontalColumnesScrollController,
                         physics: const AlwaysScrollableScrollPhysics(),
                         scrollDirection: Axis.horizontal,
                         child: SizedBox(
@@ -159,6 +162,7 @@ class Agenda extends StatelessWidget {
       child: Stack(
         children: [
           ListView.builder(
+            
             controller: scrollControllers[1],
             itemBuilder: (context, index) {
               final now = DateTime.now();
@@ -181,15 +185,13 @@ class Agenda extends StatelessWidget {
           ),
           ListView.builder(
             scrollDirection: Axis.horizontal,
-            controller: horizontalController2,
+            controller: horizontalLinesScrollController,
             itemBuilder: (context, index) {
               final now = DateTime.now();
-              bool isCurrentDivider = false;
           
               if (index < horariosDisponibles.length - 1 &&
                   horariosDisponibles[index].isBefore(now) &&
                   horariosDisponibles[index + 1].isAfter(now)) {
-                isCurrentDivider = true;
               }
           
               return SizedBox(
@@ -212,39 +214,36 @@ class Agenda extends StatelessWidget {
   SizedBox hoursList(BuildContext context) {
     return SizedBox(
       width: 64,
-      child: ScrollConfiguration(
-        behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
-        child: Padding(
-          padding: const EdgeInsets.only(top: 40),
-          child: ListView.builder(
-            controller: scrollControllers[0],
-            itemBuilder: (context, index) {
-              final now = DateTime.now();
-              bool isCurrentDivider = false;
-
-              if (index < horariosDisponibles.length - 1 &&
-                  horariosDisponibles[index].isBefore(now) &&
-                  horariosDisponibles[index + 1].isAfter(now)) {
-                isCurrentDivider = true;
-              }
-
-              return SizedBox(
-                height: 30 * heightPerMinute,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      DateFormat.jm().format(horariosDisponibles[index]),
-                      style: TextStyle(
-                          fontWeight:
-                              isCurrentDivider ? FontWeight.bold : null),
-                    )
-                  ],
-                ),
-              );
-            },
-            itemCount: horariosDisponibles.length,
-          ),
+      child: Padding(
+        padding: const EdgeInsets.only(top: 40),
+        child: ListView.builder(
+          controller: scrollControllers.first,
+          itemBuilder: (context, index) {
+            final now = DateTime.now();
+            bool isCurrentDivider = false;
+      
+            if (index < horariosDisponibles.length - 1 &&
+                horariosDisponibles[index].isBefore(now) &&
+                horariosDisponibles[index + 1].isAfter(now)) {
+              isCurrentDivider = true;
+            }
+      
+            return SizedBox(
+              height: 30 * heightPerMinute,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    DateFormat.jm().format(horariosDisponibles[index]),
+                    style: TextStyle(
+                        fontWeight:
+                            isCurrentDivider ? FontWeight.bold : null),
+                  )
+                ],
+              ),
+            );
+          },
+          itemCount: horariosDisponibles.length,
         ),
       ),
     );
@@ -278,7 +277,7 @@ class Agenda extends StatelessWidget {
       return SizedBox(
         width: columnWidth.toDouble(),
         child: ListView.builder(
-          controller: scrollControllers[physicalPartitions.indexOf(physicalPartition) + 2],
+          controller: scrollControllers[physicalPartitions.indexOf(physicalPartition) + 3],
           itemCount: 1,
           itemBuilder: (context, index) {
 
@@ -292,6 +291,7 @@ class Agenda extends StatelessWidget {
         
       );
     }
+
     return SizedBox(
       width: columnWidth.toDouble(),
       child: ListView.builder(
@@ -302,11 +302,13 @@ class Agenda extends StatelessWidget {
           final currentSession = currentPhysicalPartitionSessions[index];
           final int duration = currentSession.getDurationInMinutes();
           if (index == 0) {
+
             offsetPrevio = currentSession.startTime
                     .difference(horariosDisponibles[0])
                     .inMinutes
                     .abs() *
                 heightPerMinute;
+
           } else {
             offsetPrevio = (currentSession.startTime.difference(currentPhysicalPartitionSessions[index - 1].startTime).inMinutes.abs() -duration) * heightPerMinute;
           }

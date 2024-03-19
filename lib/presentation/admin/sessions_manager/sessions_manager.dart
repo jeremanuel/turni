@@ -1,19 +1,15 @@
 import 'dart:math';
 
 import 'package:calendar_date_picker2/calendar_date_picker2.dart';
-import 'package:calendar_view/calendar_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import '../../../core/utils/responsive_builder.dart';
-import '../../../domain/entities/physical_partition.dart';
-import '../../../domain/entities/session.dart';
-import '../../../domain/usercases/session_user_cases.dart';
 import '../../core/agenda/agenda.dart';
 import 'blocs/bloc/session_manager_bloc.dart';
 import 'blocs/bloc/session_manager_event.dart';
 import 'blocs/bloc/session_manager_state.dart';
-import 'package:turni/domain/entities/club_partition.dart';
+import '../../../domain/entities/club_partition.dart';
 
 class SessionsManager extends StatelessWidget {
   const SessionsManager({
@@ -78,7 +74,7 @@ class SessionsManager extends StatelessWidget {
                     //boxShadow: [BoxShadow(blurRadius: 5, spreadRadius: 5, color: Theme.of(context).colorScheme.shadow.withOpacity(0.2))],
                   ),
                   width: 300,
-                  child: CalendarDatepicker2(context)),
+                  child: calendarDatepicker2(context)),
               const SizedBox(
                 height: 8,
               ),
@@ -197,7 +193,7 @@ class SessionsManager extends StatelessWidget {
                           SessionChangeDateEvent(state.currentDate
                               .subtract(const Duration(days: 1))));
                     },
-                    icon: Icon(
+                    icon: const Icon(
                       Icons.arrow_back_ios,
                       size: 12,
                     )),
@@ -207,7 +203,7 @@ class SessionsManager extends StatelessWidget {
                           SessionChangeDateEvent(
                               state.currentDate.add(const Duration(days: 1))));
                     },
-                    icon: Icon(
+                    icon: const Icon(
                       Icons.arrow_forward_ios,
                       size: 12,
                     ))
@@ -224,7 +220,7 @@ class SessionsManager extends StatelessWidget {
       buildWhen: (previous, current) => previous.sessions != current.sessions || previous.selectedClubPartition != current.selectedClubPartition || previous.isLoadingSessions != current.isLoadingSessions,
       builder: (context, state) {
         if (state.isLoadingSessions) {
-          return Center(
+          return const Center(
             child: CircularProgressIndicator(),
           );
         }
@@ -309,7 +305,7 @@ class SessionsManager extends StatelessWidget {
     );
   }
 
-  Widget CalendarDatepicker2(BuildContext context) {
+  Widget calendarDatepicker2(BuildContext context) {
     return BlocBuilder<SessionManagerBloc, SessionManagerState>(
       buildWhen: (previous, current) => previous.currentDate != current.currentDate,
       builder: (context, state) {
