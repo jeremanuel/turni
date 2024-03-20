@@ -25,14 +25,14 @@ GoRouter buildGoRouter(RouterType routerType){
   refreshListenable: sl<AuthCubit>(),
     redirect: (context, state) {
     
-/*     final authCubit = sl<AuthCubit>();
+     final authCubit = sl<AuthCubit>();
 
     if (authCubit.getLoadingStatus()) return '/';
 
     if (authCubit.state.userCredential == null) return '/login';
 
     if (state.matchedLocation == "/" || state.matchedLocation == "/login") return '/feed';
- */
+
 
     return state.matchedLocation;
   },  
