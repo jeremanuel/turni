@@ -22,4 +22,15 @@ class Session {
     this.adminCreatorId, 
     this.partitionPhysicalId
   );
+
+  getDurationInMinutes(){
+    
+   final [hours, minutes] = duration.split(':');
+
+   return (int.parse(hours) * 60) + int.parse(minutes);
+
+  }
+
+  get endTime => startTime.add(Duration(minutes: getDurationInMinutes()));
+  
 }
