@@ -22,5 +22,20 @@ class AuthUserCases {
 
   }
 
+  Future logout()  async {
+
+    await authRepository.removeToken();
+
+  }
+
+  Future<User?> validateToken(String token) async {
+  
+    final loggedUser = await authRepository.validateToken(token);
+
+    return loggedUser;
+
+  }
+  
+
 
 }

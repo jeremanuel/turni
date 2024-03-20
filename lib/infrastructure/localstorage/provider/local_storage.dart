@@ -15,11 +15,19 @@ class LocalStorage {
     
   }
 
-   static Future<String?> read(String key) async {
+  static Future<String?> read(String key) async {
     
     const storage = FlutterSecureStorage();
 
     return await storage.read(key: key);
+
+  }
+
+  static Future remove(String key) async {
+    
+    const storage = FlutterSecureStorage();
+
+    return await storage.delete(key: key);
 
   }
 
