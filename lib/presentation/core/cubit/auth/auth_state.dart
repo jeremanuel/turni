@@ -25,6 +25,14 @@ final class AuthInitial extends AuthState {
   
 }
 
+final class AuthIsLoading extends AuthState {
+  
+  const AuthIsLoading({
+    super.loadingAuthentication = true,
+  });
+
+}
+
 final class AuthLogged extends AuthState {
   
   const AuthLogged({
