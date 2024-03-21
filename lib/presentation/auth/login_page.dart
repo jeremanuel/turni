@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:turni/core/config/service_locator.dart';
-import 'package:turni/presentation/core/cubit/auth/auth_cubit.dart';
-import 'package:turni/presentation/core/input/custom_outlined_button.dart';
-import 'package:turni/presentation/auth/widgets/web/google_button_web.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
+import '../../core/config/service_locator.dart';
+import '../core/cubit/auth/auth_cubit.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 class LoginPage extends StatelessWidget {
@@ -11,57 +8,109 @@ class LoginPage extends StatelessWidget {
 
   final authCubit = sl<AuthCubit>();
 
-  final String logotype = 'assets/img/isotipo.png';
-  final String backgroundIsotype = 'assets/img/test.svg';
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        body: Container(
-            color: const Color.fromRGBO(33, 150, 243, 0.1),
-            child: Center(
-                child: Column(children: [
-              SvgPicture.asset(
-                logotype,
-                semanticsLabel: '',
-                width: 500,
-                height: 500,
+      body: Container(
+        padding: const EdgeInsets.all(50),
+        decoration: backgroundColor,
+        child: Center(
+          child: Column(
+            children: [
+              buildHeader(),
+              const SizedBox(height: 20),
+              buildBackgroundImage(),
+              const Spacer(),
+              buildGoogleButton(context)
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  final BoxDecoration backgroundColor = const BoxDecoration(
+    gradient: LinearGradient(
+      colors: [
+        Color.fromRGBO(189, 163, 246, 1),
+        Color.fromRGBO(103, 43, 234, 1)
+      ],
+      begin: Alignment.topCenter,
+      end: Alignment.bottomCenter,
+    ),
+  );
+
+  Widget buildHeader() {
+    const String logotype = 'assets/img/logotype_white.svg';
+
+    return SvgPicture.asset(
+      logotype,
+      semanticsLabel: 'Logo de la app de Turni',
+      width: 138,
+      height: 46,
+    );
+  }
+
+  Widget buildBackgroundImage() {
+    const String backgroundIsotype = 'assets/img/isotype_login.svg';
+
+    return SizedBox(
+        height: 100,
+        width: 100,
+        child: OverflowBox(
+          maxWidth: 600,
+          maxHeight: 600,
+          alignment: Alignment.topCenter,
+          child: ColorFiltered(
+              colorFilter: const ColorFilter.mode(
+                Color.fromRGBO(
+                    205, 185, 248, 0.18), // Establece la opacidad aquí
+                BlendMode.srcIn,
               ),
-              SvgPicture.asset(
+              child: SvgPicture.asset(
                 backgroundIsotype,
                 semanticsLabel: '',
-                width: 50,
-                height: 50,
-              ),
-              buildGoogleButton(context)
-            ]))));
+                height: 1200,
+                width: 1200,
+              )),
+        ));
   }
 
   Widget buildGoogleButton(context) {
-    if (kIsWeb) {
+    /* if (kIsWeb) {
       return const GoogleButtonWeb();
-    }
+    } */
 
-    return CustomOutlinedButton(
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          SizedBox(
-            height: 30,
-            width: 30,
-            child: Image.network(
-                'http://pngimg.com/uploads/google/google_PNG19635.png',
-                fit: BoxFit.cover),
+    const whiteColor = Color.fromRGBO(249, 247, 254, 1);
+
+    return Container(
+        margin: const EdgeInsets.only(bottom: 70),
+        child: MaterialButton(
+          elevation: 0,
+          color: whiteColor,
+          height: 70,
+          shape: RoundedRectangleBorder(
+            side: const BorderSide(
+              color: whiteColor,
+            ),
+            borderRadius: BorderRadius.circular(40),
           ),
-          const SizedBox(width: 15),
-          const Text("Entra con Google",
-              style: TextStyle(color: Colors.black87)),
-        ],
-      ),
-      onPressed: () async {
-        await authCubit.signInGoogle();
-      },
-    );
+          child: const Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                "Iniciar sesión",
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w400,
+                  color: Color.fromRGBO(159, 121, 242, 1),
+                ),
+              ),
+            ],
+          ),
+          onPressed: () async {
+            await authCubit.signInGoogle();
+          },
+        ));
   }
 }
