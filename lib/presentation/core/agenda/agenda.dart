@@ -277,7 +277,7 @@ class Agenda extends StatelessWidget {
       return SizedBox(
         width: columnWidth.toDouble(),
         child: ListView.builder(
-          controller: scrollControllers[physicalPartitions.indexOf(physicalPartition) + 3],
+          controller: scrollControllers[physicalPartitions.indexOf(physicalPartition) + 2],
           itemCount: 1,
           itemBuilder: (context, index) {
 
