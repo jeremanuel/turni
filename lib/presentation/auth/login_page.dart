@@ -54,7 +54,7 @@ class LoginPage extends StatelessWidget {
   }
 
   Widget buildBackgroundImage() {
-    const String backgroundIsotype = 'assets/img/isotype_login.svg';
+    const String backgroundIsotype = 'assets/img/isotype_white.svg';
 
     return SizedBox(
         height: 100,

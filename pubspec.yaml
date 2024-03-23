@@ -75,8 +75,8 @@ dev_dependencies:
 flutter:
   assets:
   - assets/img/logo1.png
-  - assets/img/isotype_login.svg
   - assets/img/logotype_white.svg
+  - assets/img/isotype_white.svg
   - .env.development
   - .env.production
   # The following line ensures that the Material Icons font is
