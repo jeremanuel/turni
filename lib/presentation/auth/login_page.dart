@@ -1,4 +1,6 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'widgets/web/google_button_web.dart';
 import '../../core/config/service_locator.dart';
 import '../core/cubit/auth/auth_cubit.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -21,7 +23,7 @@ class LoginPage extends StatelessWidget {
               const SizedBox(height: 20),
               buildBackgroundImage(),
               const Spacer(),
-              buildGoogleButton(context)
+              buildGoogleButton()
             ],
           ),
         ),
@@ -69,48 +71,52 @@ class LoginPage extends StatelessWidget {
               ),
               child: SvgPicture.asset(
                 backgroundIsotype,
-                semanticsLabel: '',
+                excludeFromSemantics: true,
                 height: 1200,
                 width: 1200,
               )),
         ));
   }
 
-  Widget buildGoogleButton(context) {
-    /* if (kIsWeb) {
-      return const GoogleButtonWeb();
-    } */
-
+  Widget buildGoogleButtonMobile() {
     const whiteColor = Color.fromRGBO(249, 247, 254, 1);
 
+    return MaterialButton(
+      elevation: 0,
+      color: whiteColor,
+      height: 50,
+      shape: RoundedRectangleBorder(
+        side: const BorderSide(
+          color: whiteColor,
+        ),
+        borderRadius: BorderRadius.circular(40),
+      ),
+      child: const Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            "Iniciar sesión",
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w400,
+              color: Color.fromRGBO(159, 121, 242, 1),
+            ),
+          ),
+        ],
+      ),
+      onPressed: () async {
+        await authCubit.signInGoogle();
+      },
+    );
+  }
+
+  Widget buildGoogleButtonWeb() {
+    return const GoogleButtonWeb();
+  }
+
+  Widget buildGoogleButton() {
     return Container(
         margin: const EdgeInsets.only(bottom: 70),
-        child: MaterialButton(
-          elevation: 0,
-          color: whiteColor,
-          height: 70,
-          shape: RoundedRectangleBorder(
-            side: const BorderSide(
-              color: whiteColor,
-            ),
-            borderRadius: BorderRadius.circular(40),
-          ),
-          child: const Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                "Iniciar sesión",
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w400,
-                  color: Color.fromRGBO(159, 121, 242, 1),
-                ),
-              ),
-            ],
-          ),
-          onPressed: () async {
-            await authCubit.signInGoogle();
-          },
-        ));
+        child: kIsWeb ? buildGoogleButtonWeb() : buildGoogleButtonMobile());
   }
 }
