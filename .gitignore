@@ -41,3 +41,8 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+lib/domain/entities/club_partition.freezed.dart
+lib/domain/entities/club_type.freezed.dart
+lib/domain/entities/club_type.g.dart
+lib/presentation/admin/sessions_manager/blocs/bloc/session_manager_event.freezed.dart
+lib/presentation/admin/sessions_manager/blocs/bloc/session_manager_state.freezed.dart
