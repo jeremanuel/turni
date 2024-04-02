@@ -55,6 +55,7 @@ class AuthCubit extends Cubit<AuthState> with ChangeNotifier {
   }
 
   Future signInGoogle() async {
+    emit(const AuthLogged());
     notifyListeners();
   }
 
