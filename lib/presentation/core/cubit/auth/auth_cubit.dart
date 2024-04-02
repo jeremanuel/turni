@@ -70,7 +70,7 @@ class AuthCubit extends Cubit<AuthState> with ChangeNotifier {
 
     final user = User.fromGoogleSignInUserData(userData);
 
-    authUserCases.login(user);
+    // await authUserCases.login(user);
 
     emit(AuthLogged(userCredential: user));
 
@@ -83,7 +83,7 @@ class AuthCubit extends Cubit<AuthState> with ChangeNotifier {
   }
 
   bool isAdmin(){
-    return /* state.userCredential?.isAdmin() ?? */ true;
+    return /* state.userCredential?.isAdmin() ?? */ false;
   }
 }
 
