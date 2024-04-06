@@ -12,7 +12,7 @@ class AuthUserCases {
   * @author Jeremias Manuel
   */
   ///
-  Future login(User user)  async {
+  Future<User> login(User user)  async {
 
     final loggedUser = await authRepository.login(user);
 
