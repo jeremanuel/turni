@@ -31,7 +31,7 @@ GoRouter buildGoRouter(RouterType routerType){
 
     if (authCubit.state.userCredential == null) return '/login';
 
-    if (state.matchedLocation == "/" || state.matchedLocation == "/login") return '/feed';
+    if (state.matchedLocation == "/" || state.matchedLocation == "/login") return routerType == RouterType.adminRoute ? '/dashboard' : '/feed';
 
 
     return state.matchedLocation;

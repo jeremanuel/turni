@@ -68,7 +68,9 @@ class SideBar extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.end,
           children:[
-            IconButton(onPressed: (){}, icon: const Icon(Icons.logout)),
+            IconButton(onPressed: (){
+              sl<AuthCubit>().signOutGoogle();
+            }, icon: const Icon(Icons.logout)),
             const SizedBox(height: 40,)
           ] 
         ),
