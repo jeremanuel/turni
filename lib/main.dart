@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
 
@@ -26,16 +27,24 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
 
-    final isAdmin = sl<AuthCubit>().isAdmin();
-
-    return MaterialApp.router(
-      routerConfig: buildGoRouter(isAdmin ? RouterType.adminRoute : RouterType.clientRoute),
-      debugShowCheckedModeBanner: false,
-      title: 'Turni',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Color(0xff672bea), brightness: Brightness.dark),
-        useMaterial3: true,
-      ),
+    
+    return BlocBuilder<AuthCubit, AuthState>(
+      bloc: sl<AuthCubit>(),
+      buildWhen: (previous, current) => previous.userCredential?.isAdmin != current.userCredential?.isAdmin,
+      builder: (context, state) {
+        
+        final isAdmin = sl<AuthCubit>().isAdmin();
+        return MaterialApp.router(
+        routerConfig: buildGoRouter(isAdmin ? RouterType.adminRoute : RouterType.clientRoute),
+        debugShowCheckedModeBanner: false,
+        title: 'Turni',
+        theme: ThemeData(
+          colorScheme: ColorScheme.fromSeed(seedColor: Color(0xff672bea), brightness: Brightness.dark),
+          useMaterial3: true,
+        ),
+      );
+      },
+      
     );
   }
 }
