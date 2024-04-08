@@ -10,6 +10,10 @@
 .svn/
 migrate_working_dir/
 
+# Freezed files
+*.g.dart 
+*.freezed.dart
+
 # IntelliJ related
 *.iml
 *.ipr
@@ -38,11 +42,3 @@ app.*.symbols
 app.*.map.json
 
 # Android Studio will place build artifacts here
-/android/app/debug
-/android/app/profile
-/android/app/release
-lib/domain/entities/club_partition.freezed.dart
-lib/domain/entities/club_type.freezed.dart
-lib/domain/entities/club_type.g.dart
-lib/presentation/admin/sessions_manager/blocs/bloc/session_manager_event.freezed.dart
-lib/presentation/admin/sessions_manager/blocs/bloc/session_manager_state.freezed.dart
