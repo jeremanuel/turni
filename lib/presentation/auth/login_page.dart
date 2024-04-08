@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
+import '../../core/config/service_locator.dart';
+import '../core/cubit/auth/auth_cubit.dart';
 import 'widgets/google_button.dart';
 
 class LoginPage extends StatelessWidget {
@@ -9,18 +12,29 @@ class LoginPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        padding: const EdgeInsets.all(50),
-        decoration: backgroundColor,
-        child: Center(
-          child: Column(
-            children: [
-              buildHeader(),
-              const SizedBox(height: 20),
-              buildBackgroundImage(),
-              const Spacer(),
-              buildGoogleButton()
-            ],
+      body: BlocListener<AuthCubit, AuthState>(
+        bloc: sl<AuthCubit>(),
+        listener: (context, state) {
+          print(state.error);
+          if (state is AuthError)
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              content: Text(state.error ?? "Test"),
+              duration: Duration(days: 1),
+            ));
+        },
+        child: Container(
+          padding: const EdgeInsets.all(50),
+          decoration: backgroundColor,
+          child: Center(
+            child: Column(
+              children: [
+                buildHeader(),
+                const SizedBox(height: 20),
+                buildBackgroundImage(),
+                const Spacer(),
+                buildGoogleButton()
+              ],
+            ),
           ),
         ),
       ),
