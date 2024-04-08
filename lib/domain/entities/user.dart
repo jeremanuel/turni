@@ -1,14 +1,17 @@
 import 'package:google_sign_in_platform_interface/google_sign_in_platform_interface.dart';
 import 'package:json_annotation/json_annotation.dart';
-import 'package:turni/core/utils/value_transformers.dart';
-import 'package:turni/domain/entities/person.dart';
+import '../../core/utils/value_transformers.dart';
+import 'admin.dart';
+import 'person.dart';
+
+import 'client.dart';
 
 part 'user.g.dart';
 
 @JsonSerializable()
 class User {
 
-  User({this.userId, this.socialId, this.person, this.picture, this.token});
+  User({this.userId, this.socialId, this.picture, this.token, this.client, this.admin});
   
   @JsonKey(name: "user_id", fromJson: ValueTransformers.fromJsonString)
   final String? userId;
@@ -16,21 +19,32 @@ class User {
   @JsonKey(name: "social_id")
   final String? socialId;
   final String? picture;
-  final Person? person;
   final String? token;
 
-  bool isAdmin(){
-    return true;
+  final Client? client;
+  final Admin? admin;
+
+  bool get isAdmin{
+    return admin != null;
   }
 
   factory User.fromGoogleSignInUserData(GoogleSignInUserData userData) => User(
    socialId: userData.id,
-       person: Person(name: userData.displayName!.split(' ')[0], lastName: userData.displayName!.split(' ')[1], email: userData.email)
-    
-  );
+   client: Client(
+    person: Person(name: userData.displayName!.split(' ')[0], lastName: userData.displayName!.split(' ')[1], email: userData.email)
+   ));
 
   Map<String, dynamic> toJson() => _$UserToJson(this);
   factory User.fromJson(Map<String,dynamic> json) => _$UserFromJson(json);
+
+
+  Person get person {
+    if(admin != null){
+       return admin!.person; 
+    }
+
+    return client!.person!;
+  }
         
       
         

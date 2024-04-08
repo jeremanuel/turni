@@ -29,7 +29,7 @@ class AuthCubit extends Cubit<AuthState> with ChangeNotifier {
       final user = await authUserCases.validateToken(token);
 
       if (user != null) {
-        authUserCases.login(user);
+        //authUserCases.login(user);
         emit(AuthLogged(userCredential: user));
       } else {
         authUserCases.logout();
@@ -50,6 +50,7 @@ class AuthCubit extends Cubit<AuthState> with ChangeNotifier {
 
   void signOutGoogle() async {
     emit(const AuthNotLogged());
+    await authUserCases.logout();
     notifyListeners();
   }
 
@@ -57,9 +58,9 @@ class AuthCubit extends Cubit<AuthState> with ChangeNotifier {
   void googleCallback(GoogleSignInUserData userData) async {
     final user = User.fromGoogleSignInUserData(userData);
 
-    await authUserCases.login(user);
+    final completeUser = await authUserCases.login(user);
 
-    emit(AuthLogged(userCredential: user));
+    emit(AuthLogged(userCredential: completeUser));
 
     notifyListeners();
   }
@@ -74,6 +75,6 @@ class AuthCubit extends Cubit<AuthState> with ChangeNotifier {
   }
 
   bool isAdmin() {
-    return /* state.userCredential?.isAdmin() ?? */ false;
+    return state.userCredential?.isAdmin ?? false;
   }
 }
