@@ -14,13 +14,12 @@ class LoginPage extends StatelessWidget {
     return Scaffold(
       body: BlocListener<AuthCubit, AuthState>(
         bloc: sl<AuthCubit>(),
-        listener: (context, state) {
-          print(state.error);
+        listener: (context, state) => {
           if (state is AuthError)
             ScaffoldMessenger.of(context).showSnackBar(SnackBar(
               content: Text(state.error ?? "Test"),
-              duration: Duration(days: 1),
-            ));
+              duration: const Duration(days: 1),
+            ))
         },
         child: Container(
           padding: const EdgeInsets.all(50),
