@@ -3,7 +3,10 @@
         android:label="turni"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
-        android:enableOnBackInvokedCallback="true">
+        android:enableOnBackInvokedCallback="true"
+        android:allowBackup="false"
+        android:fullBackupContent="false"
+        android:dataExtractionRules="@xml/backup_rules">
         <activity
             android:name=".MainActivity"
             android:exported="true"
