@@ -73,6 +73,7 @@ dev_dependencies:
 # The following section is specific to Flutter packages.
 flutter:
   assets:
+  - assets/img/google_logo.svg
   - assets/img/logo1.png
   - assets/img/logotype_white.svg
   - assets/img/isotype_white.svg
