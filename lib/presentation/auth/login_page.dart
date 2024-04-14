@@ -27,6 +27,7 @@ class LoginPage extends StatelessWidget {
           child: Center(
             child: Column(
               children: [
+                const SizedBox(height: 20),
                 buildHeader(),
                 const SizedBox(height: 20),
                 buildBackgroundImage(),
@@ -69,8 +70,8 @@ class LoginPage extends StatelessWidget {
         height: 100,
         width: 100,
         child: OverflowBox(
-          maxWidth: 600,
-          maxHeight: 600,
+          maxWidth: 650,
+          maxHeight: 650,
           alignment: Alignment.topCenter,
           child: ColorFiltered(
               colorFilter: const ColorFilter.mode(
@@ -89,7 +90,7 @@ class LoginPage extends StatelessWidget {
 
   Widget buildGoogleButton() {
     return Container(
-      margin: const EdgeInsets.only(bottom: 70),
+      margin: const EdgeInsets.only(bottom: 35),
       child: const GoogleButton(),
     );
   }
