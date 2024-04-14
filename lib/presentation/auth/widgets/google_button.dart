@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:google_sign_in_platform_interface/google_sign_in_platform_interface.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import '../../../../core/config/service_locator.dart';
@@ -37,6 +39,7 @@ class _GoogleRenderButtonState extends State<GoogleButton> {
   @override
   Widget build(BuildContext context) {
     const whiteColor = Color.fromRGBO(249, 247, 254, 1);
+    const String googleLogo = 'assets/img/google_logo.svg';
 
     return MaterialButton(
         elevation: 0,
@@ -49,14 +52,21 @@ class _GoogleRenderButtonState extends State<GoogleButton> {
           borderRadius: BorderRadius.circular(40),
         ),
         onPressed: handleLogin,
-        child: const Row(
+        child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(
+            SvgPicture.asset(
+              googleLogo,
+              semanticsLabel: 'Logo de Google',
+              width: 24,
+              height: 24,
+            ),
+            const SizedBox(width: 10),
+            const Text(
               "Iniciar sesión",
               style: TextStyle(
                 fontSize: 20,
-                fontWeight: FontWeight.w400,
+                fontWeight: FontWeight.w500,
                 color: Color.fromRGBO(159, 121, 242, 1),
               ),
             ),
