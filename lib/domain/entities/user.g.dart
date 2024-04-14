@@ -9,21 +9,17 @@ part of 'user.dart';
 User _$UserFromJson(Map<String, dynamic> json) => User(
       userId: ValueTransformers.fromJsonString(json['user_id']),
       socialId: json['social_id'] as String?,
+      person: json['person'] == null
+          ? null
+          : Person.fromJson(json['person'] as Map<String, dynamic>),
       picture: json['picture'] as String?,
       token: json['token'] as String?,
-      client: json['client'] == null
-          ? null
-          : Client.fromJson(json['client'] as Map<String, dynamic>),
-      admin: json['admin'] == null
-          ? null
-          : Admin.fromJson(json['admin'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$UserToJson(User instance) => <String, dynamic>{
       'user_id': instance.userId,
       'social_id': instance.socialId,
       'picture': instance.picture,
+      'person': instance.person,
       'token': instance.token,
-      'client': instance.client,
-      'admin': instance.admin,
     };

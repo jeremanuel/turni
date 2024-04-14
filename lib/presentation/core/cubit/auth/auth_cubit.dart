@@ -14,41 +14,52 @@ import 'package:turni/infrastructure/localstorage/provider/local_storage.dart';
 part 'auth_state.dart';
 
 class AuthCubit extends Cubit<AuthState> with ChangeNotifier {
+
   final AuthUserCases authUserCases;
 
   AuthCubit(this.authUserCases) : super(const AuthInitial());
 
   void checkAuthStatus() async {
+
     final String? token = await LocalStorage.read(LocalStorage.TOKEN_KEY);
 
     if (token != null) {
+
       await DioInit.addTokenToInterceptor(sl<Dio>(), token);
-
+      
       emit(const AuthIsLoading());
-
+      
       final user = await authUserCases.validateToken(token);
 
-      if (user != null) {
+      if( user != null ){
+
         //authUserCases.login(user);
         emit(AuthLogged(userCredential: user));
+
       } else {
+
         authUserCases.logout();
         emit(const AuthNotLogged());
+
       }
+
     } else {
+      
       authUserCases.logout();
       emit(const AuthNotLogged());
+      
     }
 
     notifyListeners();
+
   }
 
   Future signInGoogle() async {
-    emit(const AuthLogged());
     notifyListeners();
   }
 
   void signOutGoogle() async {
+
     emit(const AuthNotLogged());
     await authUserCases.logout();
     notifyListeners();
@@ -56,25 +67,47 @@ class AuthCubit extends Cubit<AuthState> with ChangeNotifier {
 
   /// Funcion donde recibimos los datos de google de un usuario luego de logearse.
   void googleCallback(GoogleSignInUserData userData) async {
+
     final user = User.fromGoogleSignInUserData(userData);
 
     final completeUser = await authUserCases.login(user);
-
-    emit(AuthLogged(userCredential: completeUser));
+    
+    print(user.admin?.person.name);    emit(AuthLogged(userCredential: completeUser));
 
     notifyListeners();
-  }
 
-  void emitError(String error) async {
-    emit(AuthError(error: error));
-    notifyListeners();
   }
 
   bool getLoadingStatus() {
     return state.loadingAuthentication;
   }
 
-  bool isAdmin() {
-    return state.userCredential?.isAdmin ?? false;
+  bool isAdmin(){
+    return  state.userCredential?.isAdmin ?? false;
   }
+
+
 }
+
+
+/* 
+Scrollbar(
+              thumbVisibility: true,
+              controller: horizontalController,
+              child: SingleChildScrollView(
+                controller: horizontalController,
+                physics: const AlwaysScrollableScrollPhysics(),
+              
+                scrollDirection: Axis.horizontal,
+                child: SizedBox(
+                  width: widget.columnWidth.toDouble() * widget.physicalPartitions.length,                   
+                   child: Stack(
+                    children: [
+                      linesList(),                      
+                      cardsLists(context),
+                    ],
+                  ), 
+                ),
+              ),
+            ),
+ */

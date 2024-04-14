@@ -1,96 +1,65 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-
-import '../../core/config/service_locator.dart';
-import '../core/cubit/auth/auth_cubit.dart';
-import 'widgets/google_button.dart';
+import 'package:turni/core/config/service_locator.dart';
+import 'package:turni/presentation/core/cubit/auth/auth_cubit.dart';
+import 'package:turni/presentation/core/input/custom_outlined_button.dart';
+import 'package:turni/presentation/auth/widgets/web/google_button_web.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 class LoginPage extends StatelessWidget {
-  const LoginPage({super.key});
+
+  LoginPage({super.key});
+
+  final authCubit = sl<AuthCubit>();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: BlocListener<AuthCubit, AuthState>(
-        bloc: sl<AuthCubit>(),
-        listener: (context, state) => {
-          if (state is AuthError)
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-              content: Text(state.error ?? "Test"),
-              duration: const Duration(days: 1),
-            ))
-        },
-        child: Container(
-          padding: const EdgeInsets.all(50),
-          decoration: backgroundColor,
-          child: Center(
-            child: Column(
-              children: [
-                buildHeader(),
-                const SizedBox(height: 20),
-                buildBackgroundImage(),
-                const Spacer(),
-                buildGoogleButton()
-              ],
-            ),
+      body: Column(
+        children: [
+          Image.asset("assets/img/logo1.png"),
+          const SizedBox(
+            height: 50,
           ),
-        ),
+          const Center(
+            child: Text("Bienvenido", style: TextStyle(fontSize: 25))
+          ),
+          const SizedBox(
+            height: 50,
+          ),
+          buildGoogleButton(context)
+        ],
       ),
     );
   }
 
-  final BoxDecoration backgroundColor = const BoxDecoration(
-    gradient: LinearGradient(
-      colors: [
-        Color.fromRGBO(189, 163, 246, 1),
-        Color.fromRGBO(103, 43, 234, 1)
-      ],
-      begin: Alignment.topCenter,
-      end: Alignment.bottomCenter,
-    ),
-  );
+  Widget buildGoogleButton(context) {
 
-  Widget buildHeader() {
-    const String logotype = 'assets/img/logotype_white.svg';
 
-    return SvgPicture.asset(
-      logotype,
-      semanticsLabel: 'Logo de la app de Turni',
-      width: 138,
-      height: 46,
-    );
-  }
+    if(kIsWeb){
+      return const GoogleButtonWeb();
+    }
 
-  Widget buildBackgroundImage() {
-    const String backgroundIsotype = 'assets/img/isotype_white.svg';
-
-    return SizedBox(
-        height: 100,
-        width: 100,
-        child: OverflowBox(
-          maxWidth: 600,
-          maxHeight: 600,
-          alignment: Alignment.topCenter,
-          child: ColorFiltered(
-              colorFilter: const ColorFilter.mode(
-                Color.fromRGBO(
-                    205, 185, 248, 0.18), // Establece la opacidad aquí
-                BlendMode.srcIn,
+    return CustomOutlinedButton(
+      child: Row(
+            
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SizedBox(
+                height: 30,
+                width: 30,
+                child: Image.network('http://pngimg.com/uploads/google/google_PNG19635.png', fit: BoxFit.cover),
               ),
-              child: SvgPicture.asset(
-                backgroundIsotype,
-                excludeFromSemantics: true,
-                height: 1200,
-                width: 1200,
-              )),
-        ));
-  }
-
-  Widget buildGoogleButton() {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 70),
-      child: const GoogleButton(),
+              const SizedBox(width: 15),
+              const Text("Entra con Google", style: TextStyle(color: Colors.black87)),                          
+            ],
+          ),
+      onPressed:() async {
+            await authCubit.signInGoogle();
+          },
     );
+
   }
 }
+
+
