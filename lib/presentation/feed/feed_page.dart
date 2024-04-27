@@ -5,6 +5,8 @@ import 'package:turni/core/config/service_locator.dart';
 import 'package:turni/presentation/feed/cubit/feed/feed_cubit.dart';
 import 'package:turni/presentation/feed/widgets/turno_card.dart';
 
+import 'testin.dart';
+
 class FeedPage extends StatelessWidget {
   late final FeedCubit feedCubit;
 
@@ -14,7 +16,7 @@ class FeedPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
+    return Testin();
     return BlocBuilder<FeedCubit, FeedState>(
       bloc: feedCubit,
       builder: (context, state) {
