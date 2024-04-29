@@ -1,27 +1,26 @@
-import 'package:json_annotation/json_annotation.dart';
 
-@JsonSerializable()
-class Session {
-  
-  final int sessionId;
-  final DateTime createdAt;
-  final DateTime startTime;
-  final String duration;
-  final int? clientId;
-  final double price;
-  final int adminCreatorId;
-  final int partitionPhysicalId;
 
-  Session(
-    this.sessionId, 
-    this.createdAt, 
-    this.startTime, 
-    this.duration, 
-    this.clientId, 
-    this.price, 
-    this.adminCreatorId, 
-    this.partitionPhysicalId
-  );
+import 'package:flutter/material.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
+
+part 'session.freezed.dart';
+
+
+@freezed
+class Session with _$Session{
+   factory Session({
+    required int sessionId, 
+    required DateTime createdAt, 
+    required DateTime startTime, 
+    required String duration, 
+    int? clientId, 
+    required double price, 
+    required int adminCreatorId, 
+    required int partitionPhysicalId
+
+  }) = _Session;
+
+  Session._();
 
   getDurationInMinutes(){
     
@@ -31,6 +30,18 @@ class Session {
 
   }
 
+  static Session fromDates(DateTime startTime, TimeOfDay duration){
+    return Session(
+      sessionId: 1,
+      createdAt: DateTime.now(), 
+      startTime: startTime, 
+      duration: "${duration.hour}:${duration.minute}", 
+      price: 1500, 
+      adminCreatorId: 1,
+      partitionPhysicalId: 1
+    );
+  }
+
   get endTime => startTime.add(Duration(minutes: getDurationInMinutes()));
-  
+
 }

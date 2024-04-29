@@ -3,7 +3,9 @@ import 'dart:math';
 import 'package:calendar_date_picker2/calendar_date_picker2.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import '../../../core/config/service_locator.dart';
 import '../../../core/utils/responsive_builder.dart';
 import '../../core/agenda/agenda.dart';
 import 'blocs/bloc/session_manager_bloc.dart';
@@ -19,25 +21,24 @@ class SessionsManager extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider<SessionManagerBloc>(
-        create: (context) => SessionManagerBloc(),
-        child: BlocBuilder<SessionManagerBloc, SessionManagerState>(
-          buildWhen: (previous, current) =>
-              previous.isFirstLoad != current.isFirstLoad,
-          builder: (context, state) {
-            if (state.isFirstLoad) {
-              return const Center(
-                child: CircularProgressIndicator(),
-              );
-            }
-
-            if (ResponsiveBuilder.isMobile(context)) {
-              return buildAgendaContainer(context);
-            }
-
-            return buildDesktopManager(context);
-          },
-        ));
+    return BlocBuilder<SessionManagerBloc, SessionManagerState>(
+      bloc: sl<SessionManagerBloc>(),
+      buildWhen: (previous, current) =>
+          previous.isFirstLoad != current.isFirstLoad,
+      builder: (context, state) {
+        if (state.isFirstLoad) {
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        }
+    
+        if (ResponsiveBuilder.isMobile(context)) {
+          return buildAgendaContainer(context);
+        }
+    
+        return buildDesktopManager(context);
+      },
+    );
   }
 
   Row buildDesktopManager(BuildContext context) {
@@ -86,7 +87,10 @@ class SessionsManager extends StatelessWidget {
                   SizedBox(
                     height: 36,
                     child: FilledButton(
-                        onPressed: () {}, child: const Text("Agregar Turnos")),
+                        onPressed: () {
+                          context.go('/add');
+                        }, 
+                        child: const Text("Agregar Turnos")),
                   ),
                   SizedBox(
                     height: 36,
@@ -114,6 +118,7 @@ class SessionsManager extends StatelessWidget {
         SizedBox(
           height: 40,
           child: BlocBuilder<SessionManagerBloc, SessionManagerState>(
+            bloc: sl<SessionManagerBloc>(),
             builder: (context, state) {
               return ListView(
                 scrollDirection: Axis.horizontal,
@@ -162,11 +167,12 @@ class SessionsManager extends StatelessWidget {
 
   onSelectChip(context,e) {
     return (val){
-      BlocProvider.of<SessionManagerBloc>(context).add(ChangeClubPartitionEvent(e));
+      sl<SessionManagerBloc>().add(ChangeClubPartitionEvent(e));
     };
   } 
   Widget buildDayHeader() {
     return BlocBuilder<SessionManagerBloc, SessionManagerState>(
+      bloc: sl<SessionManagerBloc>(),
       builder: (context, state) {
         return SizedBox(
           height: 40,
@@ -189,7 +195,7 @@ class SessionsManager extends StatelessWidget {
               children: [
                 IconButton(
                     onPressed: () {
-                      BlocProvider.of<SessionManagerBloc>(context).add(
+                      sl<SessionManagerBloc>().add(
                           SessionChangeDateEvent(state.currentDate
                               .subtract(const Duration(days: 1))));
                     },
@@ -199,7 +205,7 @@ class SessionsManager extends StatelessWidget {
                     )),
                 IconButton(
                     onPressed: () {
-                      BlocProvider.of<SessionManagerBloc>(context).add(
+                      sl<SessionManagerBloc>().add(
                           SessionChangeDateEvent(
                               state.currentDate.add(const Duration(days: 1))));
                     },
@@ -217,6 +223,7 @@ class SessionsManager extends StatelessWidget {
 
   Widget buildAgenda(BuildContext context) {
     return BlocBuilder<SessionManagerBloc, SessionManagerState>(
+      bloc: sl<SessionManagerBloc>(),
       buildWhen: (previous, current) => previous.sessions != current.sessions || previous.selectedClubPartition != current.selectedClubPartition || previous.isLoadingSessions != current.isLoadingSessions,
       builder: (context, state) {
         if (state.isLoadingSessions) {
@@ -307,11 +314,12 @@ class SessionsManager extends StatelessWidget {
 
   Widget calendarDatepicker2(BuildContext context) {
     return BlocBuilder<SessionManagerBloc, SessionManagerState>(
+      bloc: sl<SessionManagerBloc>(),
       buildWhen: (previous, current) => previous.currentDate != current.currentDate,
       builder: (context, state) {
         return CalendarDatePicker2(
             onValueChanged: (value) {
-              BlocProvider.of<SessionManagerBloc>(context)
+              sl<SessionManagerBloc>()
                   .add(SessionChangeDateEvent(value.first ?? DateTime.now()));
             },
             config: CalendarDatePicker2Config(

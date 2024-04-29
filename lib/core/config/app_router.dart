@@ -12,6 +12,8 @@ import 'package:turni/presentation/home_layout/widgets/custom_layout.dart';
 import 'package:turni/presentation/profile/profile_page.dart';
 import 'package:turni/presentation/turno/turno_page.dart';
 
+import '../../presentation/admin/session_form/create_sessions_form.dart';
+
 
 enum RouterType {
   clientRoute,
@@ -76,6 +78,7 @@ List<StatefulShellBranch> buildBranches(RouterType routerType){
                 session: state.extra as Session,
               );
             },
+          
           ),
         ]),
         StatefulShellBranch(
@@ -99,11 +102,15 @@ List<StatefulShellBranch> buildBranches(RouterType routerType){
             )
           ]
         ),
-            StatefulShellBranch(
+        StatefulShellBranch(
           routes: [
             GoRoute(
               path: '/turnos',
               builder: (context, state) =>  SessionsManager(),
+            ),
+            GoRoute(
+              path: '/add',
+              builder: (context, state) =>  CreateSessionsForm(),
             )
           ]
         ),

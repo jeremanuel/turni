@@ -11,6 +11,9 @@ import 'package:turni/infrastructure/localstorage/provider/local_storage.dart';
 import 'package:turni/presentation/core/cubit/auth/auth_cubit.dart';
 import 'package:turni/presentation/feed/cubit/feed/feed_cubit.dart';
 
+import '../../presentation/admin/session_form/bloc/create_sesssions_form_bloc.dart';
+import '../../presentation/admin/sessions_manager/blocs/bloc/session_manager_bloc.dart';
+
 final sl = GetIt.instance;
 
 class ServiceLocator {
@@ -32,6 +35,10 @@ class ServiceLocator {
     )); // Cubit singleton para manejo de la sesion.
 
     sl.registerLazySingleton<FeedCubit>(() => FeedCubit()); 
+
+    sl.registerLazySingleton<SessionManagerBloc>(() => SessionManagerBloc()); 
+    sl.registerLazySingleton<CreateSesssionsFormBloc>(() => CreateSesssionsFormBloc()); 
+
 
   
   }

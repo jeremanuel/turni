@@ -104,6 +104,33 @@ class SessionRepositoryTest extends SessionRepository {
             ],
             clubType: ClubType(club_type_id: 2, name: "Futbol")
 
+        ),
+                ClubPartition(
+        club_partition_id: 3,
+        club_id: 1,
+        club_type_id: 2,
+        phone: "2284690141",
+        physicalPartitions: [
+          PhysicalPartition(
+              partitionPhysicalId: 1,
+              clubPartitionId: 1,
+              minPlayers: 5,
+              maxPlayers: 2,
+              physicalIdentifier: 3,
+              isCover: "false",
+              description: "description"),
+          PhysicalPartition(
+              partitionPhysicalId: 2,
+              clubPartitionId: 1,
+              minPlayers: 5,
+              maxPlayers: 2,
+              physicalIdentifier: 4,
+              isCover: "false",
+              description: "description"),
+
+            ],
+            clubType: ClubType(club_type_id: 2, name: "Futbol")
+
         )
     ];
   }
@@ -113,7 +140,7 @@ class SessionRepositoryTest extends SessionRepository {
 
     await Future.delayed(Duration(seconds: 1));
     return [
-      if (Random().nextBool())
+     /*  if (Random().nextBool())
         Session(1, DateTime.now(), DateTime(2024, 3, 12, 10), "01:30", null,
             1500, 1, 1),
       if (Random().nextBool())
@@ -160,7 +187,7 @@ class SessionRepositoryTest extends SessionRepository {
             1, 3),
       if (Random().nextBool())
         Session(1, DateTime.now(), DateTime(2024, 3, 12, 15), "01:30", 2, 1500,
-            1, 4)
+            1, 4) */
     ];
   }
 }
