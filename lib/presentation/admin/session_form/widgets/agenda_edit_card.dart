@@ -7,30 +7,35 @@ import '../../../../core/presentation/components/inputs/dropdown_widget.dart';
 import '../../../../core/utils/types/time_interval.dart';
 import '../../../../domain/entities/session.dart';
 import '../bloc/create_sesssions_form_bloc.dart';
-import '../create_sessions_form.dart';
 import 'session_form_dropdown.dart';
 
-class AgendaEditCard extends StatelessWidget {
+class AgendaEditCard extends StatefulWidget {
   
-  AgendaEditCard({super.key, required this.session});
+  const AgendaEditCard({super.key, required this.session});
 
   final Session session;
+
+  @override
+  State<AgendaEditCard> createState() => _AgendaEditCardState();
+}
+
+class _AgendaEditCardState extends State<AgendaEditCard> {
   final dropdownController = DropdownController(); 
 
   @override
   Widget build(BuildContext context) {
     return DropdownWidget(
-      aligned: const Aligned(follower: Alignment.topLeft, target: Alignment.topRight, offset: Offset(8,0)),
+      aligned: const Aligned(follower: Alignment.topLeft, target: Alignment.topRight, offset: Offset(8,0), shiftToWithinBound:  AxisFlag(x: true,y: true )),
       dropdownController: dropdownController,
       menuWidget: SessionFormDropdown(
         onSave: (initialTime, duration){
           dropdownController.hide!();
           sl<CreateSesssionsFormBloc>().add(
-            EditSession(session, session.copyWith(startTime: DateTime.now().applied(initialTime), duration: "${duration.hour}:${duration.minute}"))
+            EditSession(widget.session, widget.session.copyWith(startTime: DateTime.now().applied(initialTime), duration: "${duration.hour}:${duration.minute}"))
           );
         },
         onCancel: () => dropdownController.hide!(),
-        session: session
+        session: widget.session
       ),
       child: buildCard(context),
     );
@@ -62,16 +67,10 @@ class AgendaEditCard extends StatelessWidget {
                         children: [
                           const Icon(Icons.access_time),
                           Text(
-                            "${DateFormat.jm().format(session.startTime)} - ${DateFormat.jm().format(session.endTime)}",
+                            "${DateFormat.jm().format(widget.session.startTime)} - ${DateFormat.jm().format(widget.session.endTime)}",
                           ),
                         ],
-                      ),
-                      const Spacer(),
-                      if (session.clientId == null)
-                        OutlinedButton(
-                          onPressed: () {},
-                          child: const Text("Reservar"),
-                        ),
+                      ),                     
                     ],
                   ),
                 ),
@@ -89,7 +88,9 @@ class AgendaEditCard extends StatelessWidget {
                       ),
                       IconButton(
                         icon: const Icon(Icons.close),
-                        onPressed: () {},
+                        onPressed: () {
+                          sl<CreateSesssionsFormBloc>().add(DeleteSession(widget.session));
+                        },
                       ),
                       const Spacer(),
                     ],

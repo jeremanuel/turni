@@ -72,5 +72,12 @@ class CreateSesssionsFormBloc extends Bloc<CreateSesssionsFormEvent, CreateSesss
         state.copyWith(sessions: sessions)
       );
     });
+
+    on<DeleteSession>((event, emit){
+
+      final sessions = state.sessions.where((element) => element != event.session).toList();
+
+      emit(state.copyWith(sessions: sessions));
+    });
   }
 }

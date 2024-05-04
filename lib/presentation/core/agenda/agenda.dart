@@ -31,8 +31,12 @@ class Agenda extends StatelessWidget {
   final double columnWidth;
   
   late final List<ScrollController> scrollControllers;
+  
   final ScrollController horizontalColumnesScrollController = ScrollController();
   final ScrollController horizontalLinesScrollController = ScrollController();
+  final ScrollController verticalColumnsScrollController = ScrollController();
+  final ScrollController verticalLinesScrollController = ScrollController();
+
 
   late final List<DateTime> horariosDisponibles;
 
@@ -57,12 +61,13 @@ class Agenda extends StatelessWidget {
 
   List<ScrollController> generateScrollControllers(){
         return List.generate(
-        physicalPartitions.length + 2, (index) => ScrollController()
+        physicalPartitions.length, (index) => ScrollController()
     ); 
   }
 
   initializeScrollControllerListeners(){
-        for (var (index, currentScrollController) in scrollControllers.indexed) {
+
+      for (var (index, currentScrollController) in [verticalLinesScrollController, verticalColumnsScrollController ,...scrollControllers].indexed) {
 
 
        // A cada uno de los scrollControlles le agrego un listener para que si el offset de alguno de los otros controllers cambia
@@ -71,6 +76,7 @@ class Agenda extends StatelessWidget {
 
        currentScrollController.addListener(() {
         var currentIndex = 0;
+
         for (var scrollController in scrollControllers) {
           if (currentIndex == index) {
             currentIndex++;
@@ -80,27 +86,32 @@ class Agenda extends StatelessWidget {
           if (currentScrollController.offset != scrollController.offset) {
             scrollController.jumpTo(currentScrollController.offset);
           }
+          
         }
+
+        if(currentScrollController.offset != verticalLinesScrollController.offset){
+          verticalLinesScrollController.jumpTo(currentScrollController.offset);
+        }
+
+        if(currentScrollController.offset != verticalColumnsScrollController.offset){
+          verticalColumnsScrollController.jumpTo(currentScrollController.offset);
+        }
+
+
       }); 
     }
 
-     horizontalColumnesScrollController.addListener(() {
-      if (horizontalColumnesScrollController.offset != horizontalLinesScrollController.offset) {
-        horizontalLinesScrollController.jumpTo(horizontalColumnesScrollController.offset);
-      }
-    }); 
 
   }
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 16),
-      child: Scrollbar( 
-      
+      padding: const EdgeInsets.only(top: 16),
+      child: Scrollbar(      
         thickness: 12,
         thumbVisibility: true,
-        controller: scrollControllers.first,
+        controller: verticalColumnsScrollController,
         child: ScrollConfiguration(
           behavior: ScrollConfiguration.of(context).copyWith(
             scrollbars: false,
@@ -163,7 +174,7 @@ class Agenda extends StatelessWidget {
         children: [
           ListView.builder(
             
-            controller: scrollControllers[1],
+            controller: verticalColumnsScrollController,
             itemBuilder: (context, index) {
               final now = DateTime.now();
               bool isCurrentDivider = false;
@@ -217,7 +228,7 @@ class Agenda extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.only(top: 40),
         child: ListView.builder(
-          controller: scrollControllers.first,
+          controller: verticalLinesScrollController,
           itemBuilder: (context, index) {
             final now = DateTime.now();
             bool isCurrentDivider = false;
@@ -277,7 +288,7 @@ class Agenda extends StatelessWidget {
       return SizedBox(
         width: columnWidth.toDouble(),
         child: ListView.builder(
-          controller: scrollControllers[physicalPartitions.indexOf(physicalPartition) + 2],
+          controller: scrollControllers[physicalPartitions.indexOf(physicalPartition)],
           itemCount: 1,
           itemBuilder: (context, index) {
 
@@ -295,12 +306,24 @@ class Agenda extends StatelessWidget {
     return SizedBox(
       width: columnWidth.toDouble(),
       child: ListView.builder(
-        controller: scrollControllers[physicalPartitions.indexOf(physicalPartition) + 2],
+        controller: scrollControllers[physicalPartitions.indexOf(physicalPartition)],
         itemBuilder: (context, index) {
           double offsetPrevio = 0;
           double offsetFinal = 0;
+
           final currentSession = currentPhysicalPartitionSessions[index];
+          late final Session previousSession;
+
           final int duration = currentSession.getDurationInMinutes();
+          late final int previousDuration;
+
+
+          if(index != 0){
+            previousSession = currentPhysicalPartitionSessions[index - 1];
+            previousDuration = previousSession.getDurationInMinutes();
+          }
+          
+
           if (index == 0) {
 
             offsetPrevio = currentSession.startTime
@@ -310,7 +333,7 @@ class Agenda extends StatelessWidget {
                 heightPerMinute;
 
           } else {
-            offsetPrevio = (currentSession.startTime.difference(currentPhysicalPartitionSessions[index - 1].startTime).inMinutes.abs() -duration) * heightPerMinute;
+            offsetPrevio = (currentSession.startTime.difference(currentPhysicalPartitionSessions[index - 1].startTime).inMinutes.abs() - previousDuration) * heightPerMinute;
           }
           
 
@@ -327,7 +350,7 @@ class Agenda extends StatelessWidget {
           }
 
           if(offsetPrevio < 0){
-            print("wtf");
+            
           }
           return Padding(
             padding: EdgeInsets.symmetric(vertical: heightPerMinute * 2),

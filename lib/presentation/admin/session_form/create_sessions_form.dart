@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_portal/flutter_portal.dart';
-import 'package:intl/intl.dart';
 
 import '../../../core/config/service_locator.dart';
 import '../../../core/presentation/components/inputs/chips/filter_chip_interval_date.dart';
@@ -12,7 +11,7 @@ import '../../../domain/entities/physical_partition.dart';
 import '../../core/agenda/agenda.dart';
 import '../sessions_manager/blocs/bloc/session_manager_bloc.dart';
 import 'bloc/create_sesssions_form_bloc.dart';
-import 'package:turni/domain/entities/session.dart';
+import '../../../domain/entities/session.dart';
 
 import 'widgets/agenda_edit_card.dart';
 import 'widgets/session_form_dropdown.dart';
@@ -229,10 +228,9 @@ class AddSessionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
     return DropdownWidget(
       dropdownController: dropdownController,
-      child: IconButton(
-          onPressed: () => dropdownController.show!(), icon: Icon(Icons.add)),
       menuWidget: SessionFormDropdown(
         onCancel: () {
           dropdownController.hide!();
@@ -243,6 +241,7 @@ class AddSessionButton extends StatelessWidget {
               Session.fromDates(DateTime.now().applied(startTime), duration)));
         },
       ),
+      child: IconButton(onPressed: () => dropdownController.show!(), icon: Icon(Icons.add)),
     );
   }
 }
