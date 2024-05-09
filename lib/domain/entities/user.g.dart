@@ -17,6 +17,10 @@ User _$UserFromJson(Map<String, dynamic> json) => User(
       admin: json['admin'] == null
           ? null
           : Admin.fromJson(json['admin'] as Map<String, dynamic>),
+      userInterest: (json['user_interest'] as List<dynamic>?)
+          ?.map((e) => UserInterest.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      templateMessage: json['template_message'] as String?,
     );
 
 Map<String, dynamic> _$UserToJson(User instance) => <String, dynamic>{
@@ -26,4 +30,6 @@ Map<String, dynamic> _$UserToJson(User instance) => <String, dynamic>{
       'token': instance.token,
       'client': instance.client,
       'admin': instance.admin,
+      'user_interest': instance.userInterest,
+      'template_message': instance.templateMessage,
     };
