@@ -48,12 +48,12 @@ class _DropdownWidgetState extends State<DropdownWidget> {
     return PortalTarget(
       visible: isVisible,
       portalFollower: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: () {
+        behavior: HitTestBehavior.translucent,
+        onTapUp: (details) {
           setState(() {
             isVisible = false;
           });
-        },
+        },        
       ),
       child: PortalTarget(
         visible: isVisible,

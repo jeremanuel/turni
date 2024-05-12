@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:turni/core/config/service_locator.dart';
 import 'package:turni/domain/entities/session.dart';
-import 'package:turni/presentation/admin/desktop_layout.dart';
-import 'package:turni/presentation/admin/sessions_manager/sessions_manager.dart';
+import 'package:turni/presentation/admin/session_manager_screen/sessions_manager.dart';
 import 'package:turni/presentation/auth/check_status_page.dart';
 import 'package:turni/presentation/auth/login_page.dart';
 import 'package:turni/presentation/core/cubit/auth/auth_cubit.dart';
@@ -12,7 +11,8 @@ import 'package:turni/presentation/home_layout/widgets/custom_layout.dart';
 import 'package:turni/presentation/profile/profile_page.dart';
 import 'package:turni/presentation/turno/turno_page.dart';
 
-import '../../presentation/admin/session_form/create_sessions_form.dart';
+import '../../presentation/admin/create_session_screen/create_sessions_screen.dart';
+
 
 
 enum RouterType {
@@ -105,12 +105,12 @@ List<StatefulShellBranch> buildBranches(RouterType routerType){
         StatefulShellBranch(
           routes: [
             GoRoute(
-              path: '/turnos',
+              path: '/session_manager',
               builder: (context, state) =>  SessionsManager(),
             ),
             GoRoute(
-              path: '/add',
-              builder: (context, state) =>  CreateSessionsForm(),
+              path: '/add_sessions',
+              builder: (context, state) =>  CreateSessionScreen(),
             )
           ]
         ),
