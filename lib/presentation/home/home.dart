@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../core/config/app_router.dart';
 import '../../core/config/service_locator.dart';
 import '../../core/utils/entities/coordinate.dart';
 import '../../domain/entities/club_type.dart';
@@ -12,8 +11,8 @@ import '../core/cubit/auth/auth_cubit.dart';
 import '../core/widgets/button/button_navigation.dart';
 import '../core/widgets/carrousel/carrousel_horizontal.dart';
 
-class ProfilePage extends StatelessWidget {
-  const ProfilePage({super.key});
+class HomePage extends StatelessWidget {
+  const HomePage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -27,31 +26,29 @@ class ProfilePage extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            MaterialButton(
-              elevation: 0,
-              color: whiteColor,
-              height: 50,
-              shape: RoundedRectangleBorder(
-                side: const BorderSide(
-                  color: whiteColor,
-                ),
-                borderRadius: BorderRadius.circular(40),
-              ),
-              onPressed: handleLogout,
-              child: const Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    "Cerrar sesión",
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w400,
-                      color: Color.fromRGBO(159, 121, 242, 1),
-                    ),
-                  ),
-                ],
-              ),
-            )
+            CarrouselHorizontal(children: [
+              ButtonNavigation(
+                  text: "Tenis",
+                  svg: "assets/img/tennis.svg",
+                  onPressed: () async {
+                    context.push(
+                      "/session_feed",
+                      extra: ClubType(club_type_id: 1, name: "Tenis"),
+                    );
+                  }),
+              ButtonNavigation(text: "Fútbol", svg: "assets/img/football.svg"),
+              ButtonNavigation(text: "Yoga", svg: "assets/img/yoga.svg"),
+              ButtonNavigation(text: "Voley", svg: "assets/img/voleyball.svg"),
+              ButtonNavigation(text: "Padel", svg: "assets/img/padel.svg"),
+              ButtonNavigation(
+                  text: "Basquet", svg: "assets/img/basketball.svg"),
+              ButtonNavigation(text: "Tenis", svg: "assets/img/tennis.svg"),
+              ButtonNavigation(text: "Tenis", svg: "assets/img/tennis.svg"),
+              ButtonNavigation(text: "Tenis", svg: "assets/img/tennis.svg"),
+              ButtonNavigation(text: "Tenis", svg: "assets/img/tennis.svg"),
+              ButtonNavigation(text: "Tenis", svg: "assets/img/tennis.svg"),
+              ButtonNavigation(text: "Tenis", svg: "assets/img/tennis.svg"),
+            ])
           ],
         ),
       ),
