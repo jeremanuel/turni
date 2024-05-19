@@ -79,7 +79,7 @@ class HomePage extends StatelessWidget {
     const backgroundColor = Color.fromRGBO(203, 178, 255, 1);
     const textColor = Color.fromRGBO(240, 239, 242, 1);
     const textStyle =
-        TextStyle(color: textColor, fontWeight: FontWeight.bold, fontSize: 11);
+        TextStyle(color: textColor, fontWeight: FontWeight.bold, fontSize: 13);
 
     return CupertinoSearchTextField(
       backgroundColor: backgroundColor,
