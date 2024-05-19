@@ -83,6 +83,7 @@ flutter:
   - assets/img/yoga.svg
   - assets/img/padel.svg
   - assets/img/voleyball.svg
+  - assets/img/test.png
   - .env.development
   - .env.production
   # The following line ensures that the Material Icons font is

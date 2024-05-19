@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 
 class CarrouselHorizontal extends StatefulWidget {
   const CarrouselHorizontal(
@@ -6,14 +7,12 @@ class CarrouselHorizontal extends StatefulWidget {
       required this.children,
       this.crossAxisCount = 2,
       this.mainAxisCount = 3,
-      this.width = 300,
-      this.spacing = 20,
-      this.runSpacing = 20});
+      this.height = 200,
+      this.width = 400});
 
   final int crossAxisCount;
   final int mainAxisCount;
-  final double spacing;
-  final double runSpacing;
+  final double height;
   final double width;
   final List<Widget> children;
 
@@ -31,42 +30,47 @@ class _CarrouselHorizontal extends State<CarrouselHorizontal> {
     const color = Color.fromRGBO(159, 121, 249, 1);
     const colorDisabled = Color.fromRGBO(203, 178, 255, 1);
 
-    return SizedBox(
-      width: widget.width + 100,
+    return Container(
+      height: widget.height,
+      width: widget.width,
+      alignment: Alignment.center,
       child: Stack(
         alignment: Alignment.center,
         children: [
           Positioned(
-            left: 0,
+            left: -14,
             child: IconButton(
+              iconSize: 28,
               onPressed: handlePrevious,
               icon: Icon(
-                size: 28,
                 color: _currentPage == 1 ? colorDisabled : color,
                 Icons.arrow_back_ios_new_rounded,
               ),
             ),
           ),
-          SizedBox(
-            height: 200,
-            width: widget.width,
-            child: CustomScrollView(
-              controller: _scrollController,
-              scrollDirection: Axis.horizontal,
-              slivers: <Widget>[
-                SliverGrid.count(
-                  crossAxisCount: widget.crossAxisCount,
-                  children: widget.children,
-                )
-              ],
-            ),
+          CustomScrollView(
+            controller: _scrollController,
+            scrollDirection: Axis.horizontal,
+            slivers: <Widget>[
+              SliverPadding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                sliver: SliverGrid(
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: widget.crossAxisCount),
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) => widget.children[index],
+                    childCount: widget.children.length,
+                  ),
+                ),
+              )
+            ],
           ),
           Positioned(
-            right: -5,
+            right: -14,
             child: IconButton(
               onPressed: handleNext,
+              iconSize: 28,
               icon: Icon(
-                size: 28,
                 color: (_currentPage ==
                             (widget.children.length /
                                     (widget.mainAxisCount *
@@ -97,8 +101,6 @@ class _CarrouselHorizontal extends State<CarrouselHorizontal> {
   }
 
   void handleNext() {
-    print(widget.children.length);
-    print(widget.mainAxisCount * widget.crossAxisCount);
     if (_currentPage ==
             (widget.children.length /
                     (widget.mainAxisCount * widget.crossAxisCount))

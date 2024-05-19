@@ -18,11 +18,18 @@ class ButtonNavigation extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const color = Color.fromRGBO(159, 121, 242, 1);
+
     return TextButton(
       onPressed: onPressed,
+      style: ButtonStyle(
+        alignment: Alignment.center,
+        shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+          const RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(10)),
+          ),
+        ),
+      ),
       child: SizedBox(
-        height: 56,
-        width: 56,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -32,6 +39,9 @@ class ButtonNavigation extends StatelessWidget {
               semanticsLabel: accesibility ?? "",
               width: 32,
               height: 32,
+            ),
+            const SizedBox(
+              height: 5,
             ),
             Text(
               text ?? 'Default',

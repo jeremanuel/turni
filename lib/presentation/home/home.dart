@@ -1,4 +1,6 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
@@ -16,28 +18,88 @@ class HomePage extends StatelessWidget {
     homeCubit = sl<HomeCubit>();
   }
 
+  final backgroundColor = Color.fromRGBO(240, 239, 242, 1);
+  final TextEditingController _textController = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
-    const whiteColor = Color.fromRGBO(249, 247, 254, 1);
-    const backgroundColor = Color.fromRGBO(240, 239, 242, 1);
-
     return BlocBuilder<HomeCubit, HomeState>(
       bloc: homeCubit,
       builder: (context, state) {
-        List<Widget> buttonActivities = getButttonActivities(context);
-
         return Scaffold(
           backgroundColor: backgroundColor,
-          body: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              CarrouselHorizontal(
-                  children: state.isLoading ? [] : buttonActivities)
-            ],
+          body: Container(
+            alignment: Alignment.center,
+            padding: const EdgeInsets.symmetric(vertical: 42, horizontal: 32),
+            child: Column(children: [
+              buildHeader(),
+              const SizedBox(height: 42),
+              buildSearchBox(),
+              const SizedBox(height: 42),
+              buildBody(context, state),
+            ]),
           ),
         );
       },
     );
+  }
+
+  Widget buildHeader() {
+    const textColor = Color.fromRGBO(103, 43, 234, 1);
+
+    return const Row(
+      children: [
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              "¡Hola Chiri Rodríguez!",
+              style: TextStyle(
+                  color: textColor, fontWeight: FontWeight.bold, fontSize: 20),
+            ),
+            Text(
+              "¿Cómo estás hoy?",
+              style: TextStyle(
+                  color: textColor,
+                  fontWeight: FontWeight.normal,
+                  fontSize: 13),
+            ),
+          ],
+        ),
+        Spacer(),
+        CircleAvatar(
+          radius: 30,
+          backgroundImage: AssetImage('assets/img/test.png'),
+        )
+      ],
+    );
+  }
+
+  Widget buildSearchBox() {
+    const backgroundColor = Color.fromRGBO(203, 178, 255, 1);
+    const textColor = Color.fromRGBO(240, 239, 242, 1);
+    const textStyle =
+        TextStyle(color: textColor, fontWeight: FontWeight.bold, fontSize: 11);
+
+    return CupertinoSearchTextField(
+      backgroundColor: backgroundColor,
+      padding: const EdgeInsets.all(8),
+      itemColor: textColor,
+      itemSize: 14,
+      prefixInsets: const EdgeInsetsDirectional.fromSTEB(6, 4, 0, 3),
+      suffixInsets: const EdgeInsetsDirectional.fromSTEB(0, 4, 5, 2),
+      placeholder: "Buscar actividad...",
+      placeholderStyle: textStyle,
+      style: textStyle,
+      controller: _textController,
+    );
+  }
+
+  Widget buildBody(BuildContext context, HomeState state) {
+    List<Widget> buttonActivities = getButttonActivities(context);
+
+    return CarrouselHorizontal(
+        children: state.isLoading ? [] : buttonActivities);
   }
 
   List<Widget> getButttonActivities(BuildContext context) {
