@@ -5,7 +5,7 @@ part 'coordinate.g.dart';
 
 @freezed
 class Coordinate with _$Coordinate {
-  factory Coordinate({required String latitud, required String longitud}) =
+  factory Coordinate({required double latitud, required double longitud}) =
       _Coordinate;
 
   factory Coordinate.fromJson(Map<String, dynamic> json) =>

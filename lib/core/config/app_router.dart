@@ -2,17 +2,14 @@
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:turni/core/config/service_locator.dart';
-import 'package:turni/domain/entities/session.dart';
-import 'package:turni/presentation/admin/desktop_layout.dart';
-import 'package:turni/presentation/admin/sessions_manager/sessions_manager.dart';
-import 'package:turni/presentation/auth/check_status_page.dart';
-import 'package:turni/presentation/auth/login_page.dart';
-import 'package:turni/presentation/core/cubit/auth/auth_cubit.dart';
-import 'package:turni/presentation/feed/feed_page.dart';
-import 'package:turni/presentation/home_layout/widgets/custom_layout.dart';
-import 'package:turni/presentation/profile/profile_page.dart';
-import 'package:turni/presentation/turno/turno_page.dart';
+import 'service_locator.dart';
+import '../../presentation/admin/sessions_manager/sessions_manager.dart';
+import '../../presentation/auth/check_status_page.dart';
+import '../../presentation/auth/login_page.dart';
+import '../../presentation/core/cubit/auth/auth_cubit.dart';
+import '../../presentation/feed/feed_page.dart';
+import '../../presentation/home_layout/widgets/custom_layout.dart';
+import '../../presentation/profile/profile_page.dart';
 
 import '../../domain/entities/club_type.dart';
 import '../../presentation/home/home.dart';
@@ -76,7 +73,7 @@ List<StatefulShellBranch> buildBranches(RouterType routerType) {
         GoRoute(
           path: '/home',
           builder: (context, state) {
-            return const HomePage();
+            return HomePage();
           },
         ),
       ]),

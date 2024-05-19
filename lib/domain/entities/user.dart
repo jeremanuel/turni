@@ -5,7 +5,6 @@ import 'admin.dart';
 import 'person.dart';
 
 import 'client.dart';
-import 'template_message.dart';
 import 'user_interest.dart';
 
 part 'user.g.dart';

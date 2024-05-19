@@ -6,13 +6,13 @@ class ButtonNavigation extends StatelessWidget {
     super.key,
     this.onPressed,
     this.accesibility,
-    required this.text,
-    required this.svg,
+    this.text,
+    this.svg,
   });
 
   final String? accesibility;
-  final String svg;
-  final String text;
+  final String? svg;
+  final String? text;
   final Function()? onPressed;
 
   @override
@@ -28,13 +28,13 @@ class ButtonNavigation extends StatelessWidget {
           children: [
             SvgPicture.asset(
               color: color,
-              svg,
+              svg ?? 'assets/img/tennis.svg',
               semanticsLabel: accesibility ?? "",
               width: 32,
               height: 32,
             ),
             Text(
-              text,
+              text ?? 'Default',
               style: const TextStyle(
                   fontWeight: FontWeight.w600, fontSize: 10, color: color),
             )

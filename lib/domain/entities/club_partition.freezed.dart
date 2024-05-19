@@ -42,8 +42,6 @@ abstract class $ClubPartitionCopyWith<$Res> {
       String phone,
       List<PhysicalPartition>? physicalPartitions,
       ClubType? clubType});
-
-  $ClubTypeCopyWith<$Res>? get clubType;
 }
 
 /// @nodoc
@@ -93,18 +91,6 @@ class _$ClubPartitionCopyWithImpl<$Res, $Val extends ClubPartition>
               as ClubType?,
     ) as $Val);
   }
-
-  @override
-  @pragma('vm:prefer-inline')
-  $ClubTypeCopyWith<$Res>? get clubType {
-    if (_value.clubType == null) {
-      return null;
-    }
-
-    return $ClubTypeCopyWith<$Res>(_value.clubType!, (value) {
-      return _then(_value.copyWith(clubType: value) as $Val);
-    });
-  }
 }
 
 /// @nodoc
@@ -122,9 +108,6 @@ abstract class _$$ClubPartitionImplCopyWith<$Res>
       String phone,
       List<PhysicalPartition>? physicalPartitions,
       ClubType? clubType});
-
-  @override
-  $ClubTypeCopyWith<$Res>? get clubType;
 }
 
 /// @nodoc

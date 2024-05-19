@@ -33,8 +33,8 @@ class _CarrouselHorizontal extends State<CarrouselHorizontal> {
 
     return SizedBox(
       width: widget.width + 100,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
+      child: Stack(
+        alignment: Alignment.center,
         children: [
           Positioned(
             left: 0,
@@ -67,10 +67,13 @@ class _CarrouselHorizontal extends State<CarrouselHorizontal> {
               onPressed: handleNext,
               icon: Icon(
                 size: 28,
-                color: _currentPage ==
-                        (widget.children.length /
-                                (widget.mainAxisCount * widget.crossAxisCount))
-                            .round()
+                color: (_currentPage ==
+                            (widget.children.length /
+                                    (widget.mainAxisCount *
+                                        widget.crossAxisCount))
+                                .round()) ||
+                        (widget.children.length >
+                            widget.mainAxisCount * widget.crossAxisCount)
                     ? colorDisabled
                     : color,
                 Icons.arrow_forward_ios_rounded,
@@ -94,10 +97,15 @@ class _CarrouselHorizontal extends State<CarrouselHorizontal> {
   }
 
   void handleNext() {
+    print(widget.children.length);
+    print(widget.mainAxisCount * widget.crossAxisCount);
     if (_currentPage ==
-        (widget.children.length /
-                (widget.mainAxisCount * widget.crossAxisCount))
-            .round()) return;
+            (widget.children.length /
+                    (widget.mainAxisCount * widget.crossAxisCount))
+                .round() ||
+        widget.children.length > widget.mainAxisCount * widget.crossAxisCount) {
+      return;
+    }
 
     _scrollController.animateTo(_scrollController.offset + widget.width,
         duration: const Duration(milliseconds: 300), curve: Curves.easeIn);
