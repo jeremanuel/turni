@@ -1,13 +1,15 @@
 import 'package:dio/dio.dart';
 import 'package:get_it/get_it.dart';
-import 'package:turni/core/utils/dio_init.dart';
-import 'package:turni/domain/repositories/auth_repository.dart';
-import 'package:turni/domain/usercases/auth_user_cases.dart';
-import 'package:turni/infrastructure/api/providers/auth_provider.dart';
-import 'package:turni/infrastructure/api/repositories/auth_repository_impl.dart';
-import 'package:turni/infrastructure/localstorage/provider/local_storage.dart';
-import 'package:turni/presentation/core/cubit/auth/auth_cubit.dart';
-import 'package:turni/presentation/feed/cubit/feed/feed_cubit.dart';
+import '../../domain/entities/club_type.dart';
+import '../utils/dio_init.dart';
+import '../../domain/repositories/auth_repository.dart';
+import '../../domain/usercases/auth_user_cases.dart';
+import '../../infrastructure/api/providers/auth_provider.dart';
+import '../../infrastructure/api/repositories/auth_repository_impl.dart';
+import '../../presentation/core/cubit/auth/auth_cubit.dart';
+import '../../presentation/feed/cubit/feed/feed_cubit.dart';
+import '../../presentation/home/cubit/home_cubit.dart';
+import '../../presentation/session_feed/cubit/session_cubit.dart';
 
 final sl = GetIt.instance;
 
@@ -23,5 +25,9 @@ class ServiceLocator {
         sl<AuthRepository>()))); // Cubit singleton para manejo de la sesion.
 
     sl.registerLazySingleton<FeedCubit>(() => FeedCubit());
+
+    sl.registerLazySingleton<HomeCubit>(() => HomeCubit());
+
+    sl.registerLazySingleton<SessionCubit>(() => SessionCubit());
   }
 }

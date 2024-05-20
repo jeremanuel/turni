@@ -77,6 +77,13 @@ flutter:
   - assets/img/logo1.png
   - assets/img/logotype_white.svg
   - assets/img/isotype_white.svg
+  - assets/img/tennis.svg
+  - assets/img/basketball.svg
+  - assets/img/football.svg
+  - assets/img/yoga.svg
+  - assets/img/padel.svg
+  - assets/img/voleyball.svg
+  - assets/img/test.png
   - .env.development
   - .env.production
   # The following line ensures that the Material Icons font is

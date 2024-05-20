@@ -122,12 +122,12 @@ class SessionsManager extends StatelessWidget {
                     const SizedBox(
                       width: 8,
                     ),
-                    ...state.clubPartitions.expand((e) => [
-                      buildChip(e, context, state),
-                      const SizedBox(
-                        width: 16,
-                      ),
-                    ]),
+                  ...state.clubPartitions.expand((e) => [
+                        buildChip(e, context, state),
+                        const SizedBox(
+                          width: 16,
+                        ),
+                      ]),
                   if (ResponsiveBuilder.isMobile(context))
                     const SizedBox(
                       width: 8,
@@ -158,13 +158,23 @@ class SessionsManager extends StatelessWidget {
     );
   }
 
-  FilterChip buildChip(ClubPartition e, BuildContext context, SessionManagerState state) => FilterChip(label: Text(e.clubType!.name), onSelected: onSelectChip(context,e), showCheckmark: false ,selected: e.club_partition_id == state.selectedClubPartition?.club_partition_id,);
+  FilterChip buildChip(
+          ClubPartition e, BuildContext context, SessionManagerState state) =>
+      FilterChip(
+        label: Text(e.clubType!.name),
+        onSelected: onSelectChip(context, e),
+        showCheckmark: false,
+        selected: e.club_partition_id ==
+            state.selectedClubPartition?.club_partition_id,
+      );
 
-  onSelectChip(context,e) {
-    return (val){
-      BlocProvider.of<SessionManagerBloc>(context).add(ChangeClubPartitionEvent(e));
+  onSelectChip(context, e) {
+    return (val) {
+      BlocProvider.of<SessionManagerBloc>(context)
+          .add(ChangeClubPartitionEvent(e));
     };
-  } 
+  }
+
   Widget buildDayHeader() {
     return BlocBuilder<SessionManagerBloc, SessionManagerState>(
       builder: (context, state) {
@@ -217,7 +227,10 @@ class SessionsManager extends StatelessWidget {
 
   Widget buildAgenda(BuildContext context) {
     return BlocBuilder<SessionManagerBloc, SessionManagerState>(
-      buildWhen: (previous, current) => previous.sessions != current.sessions || previous.selectedClubPartition != current.selectedClubPartition || previous.isLoadingSessions != current.isLoadingSessions,
+      buildWhen: (previous, current) =>
+          previous.sessions != current.sessions ||
+          previous.selectedClubPartition != current.selectedClubPartition ||
+          previous.isLoadingSessions != current.isLoadingSessions,
       builder: (context, state) {
         if (state.isLoadingSessions) {
           return const Center(
@@ -259,7 +272,7 @@ class SessionsManager extends StatelessWidget {
                           children: [
                             const Icon(Icons.access_time),
                             Text(
-                              "${DateFormat.jm().format(session.startTime)} - ${DateFormat.jm().format(session.endTime)}",
+                              "${DateFormat.jm().format(session.startTime!)} - ${DateFormat.jm().format(session.endTime)}",
                             ),
                           ],
                         ),
@@ -298,8 +311,8 @@ class SessionsManager extends StatelessWidget {
             );
           },
           sessions: state.sessions,
-          physicalPartitions: state.selectedClubPartition?.physicalPartitions ?? []
-          ,
+          physicalPartitions:
+              state.selectedClubPartition?.physicalPartitions ?? [],
         );
       },
     );
@@ -307,7 +320,8 @@ class SessionsManager extends StatelessWidget {
 
   Widget calendarDatepicker2(BuildContext context) {
     return BlocBuilder<SessionManagerBloc, SessionManagerState>(
-      buildWhen: (previous, current) => previous.currentDate != current.currentDate,
+      buildWhen: (previous, current) =>
+          previous.currentDate != current.currentDate,
       builder: (context, state) {
         return CalendarDatePicker2(
             onValueChanged: (value) {

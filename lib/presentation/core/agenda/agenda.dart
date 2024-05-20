@@ -6,21 +6,19 @@ import '../../../domain/entities/physical_partition.dart';
 import '../../../domain/entities/session.dart';
 
 class Agenda extends StatelessWidget {
-   
-   Agenda({
-      super.key,
+  Agenda(
+      {super.key,
       required this.sessions,
       required this.buildCard,
       this.heightPerMinute = 2,
       required this.physicalPartitions,
       required this.fromDate,
       required this.lastDate,
-      this.columnWidth = 300
-      }){
-          horariosDisponibles = generateDates(fromDate, lastDate);
-          scrollControllers = generateScrollControllers();
-          initializeScrollControllerListeners();
-      }
+      this.columnWidth = 300}) {
+    horariosDisponibles = generateDates(fromDate, lastDate);
+    scrollControllers = generateScrollControllers();
+    initializeScrollControllerListeners();
+  }
 
   final List<Session> sessions;
   final Widget Function(Session) buildCard;
@@ -29,14 +27,13 @@ class Agenda extends StatelessWidget {
   final DateTime fromDate;
   final DateTime lastDate;
   final double columnWidth;
-  
+
   late final List<ScrollController> scrollControllers;
-  final ScrollController horizontalColumnesScrollController = ScrollController();
+  final ScrollController horizontalColumnesScrollController =
+      ScrollController();
   final ScrollController horizontalLinesScrollController = ScrollController();
 
   late final List<DateTime> horariosDisponibles;
-
-
 
   List<DateTime> generateDates(DateTime startDate, DateTime endDate) {
     List<DateTime> dates = [];
@@ -55,21 +52,18 @@ class Agenda extends StatelessWidget {
     return dates;
   }
 
-  List<ScrollController> generateScrollControllers(){
-        return List.generate(
-        physicalPartitions.length + 2, (index) => ScrollController()
-    ); 
+  List<ScrollController> generateScrollControllers() {
+    return List.generate(
+        physicalPartitions.length + 2, (index) => ScrollController());
   }
 
-  initializeScrollControllerListeners(){
-        for (var (index, currentScrollController) in scrollControllers.indexed) {
+  initializeScrollControllerListeners() {
+    for (var (index, currentScrollController) in scrollControllers.indexed) {
+      // A cada uno de los scrollControlles le agrego un listener para que si el offset de alguno de los otros controllers cambia
+      // Este salte al offset del otro
+      // Para sincronizar todas las listas verticales y que simule ser una unica lista
 
-
-       // A cada uno de los scrollControlles le agrego un listener para que si el offset de alguno de los otros controllers cambia
-       // Este salte al offset del otro
-       // Para sincronizar todas las listas verticales y que simule ser una unica lista
-
-       currentScrollController.addListener(() {
+      currentScrollController.addListener(() {
         var currentIndex = 0;
         for (var scrollController in scrollControllers) {
           if (currentIndex == index) {
@@ -81,34 +75,34 @@ class Agenda extends StatelessWidget {
             scrollController.jumpTo(currentScrollController.offset);
           }
         }
-      }); 
+      });
     }
 
-     horizontalColumnesScrollController.addListener(() {
-      if (horizontalColumnesScrollController.offset != horizontalLinesScrollController.offset) {
-        horizontalLinesScrollController.jumpTo(horizontalColumnesScrollController.offset);
+    horizontalColumnesScrollController.addListener(() {
+      if (horizontalColumnesScrollController.offset !=
+          horizontalLinesScrollController.offset) {
+        horizontalLinesScrollController
+            .jumpTo(horizontalColumnesScrollController.offset);
       }
-    }); 
-
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 16),
-      child: Scrollbar( 
-      
+      child: Scrollbar(
         thickness: 12,
         thumbVisibility: true,
         controller: scrollControllers.first,
         child: ScrollConfiguration(
           behavior: ScrollConfiguration.of(context).copyWith(
-            scrollbars: false,
-            dragDevices:PointerDeviceKind.values.toSet(),
-            physics: const ClampingScrollPhysics()),
-            child: Row(
+              scrollbars: false,
+              dragDevices: PointerDeviceKind.values.toSet(),
+              physics: const ClampingScrollPhysics()),
+          child: Row(
             children: [
-              hoursList(context),                
+              hoursList(context),
               Expanded(
                 child: Stack(
                   children: [
@@ -121,7 +115,8 @@ class Agenda extends StatelessWidget {
                         physics: const AlwaysScrollableScrollPhysics(),
                         scrollDirection: Axis.horizontal,
                         child: SizedBox(
-                          width: columnWidth.toDouble() * physicalPartitions.length,
+                          width: columnWidth.toDouble() *
+                              physicalPartitions.length,
                           child: cardsLists(context),
                         ),
                       ),
@@ -140,7 +135,7 @@ class Agenda extends StatelessWidget {
     return Column(
       children: [
         Row(
-          mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: physicalPartitions
                 .map((el) => buildPartitionHeader(el, context))
                 .toList()),
@@ -162,18 +157,17 @@ class Agenda extends StatelessWidget {
       child: Stack(
         children: [
           ListView.builder(
-            
             controller: scrollControllers[1],
             itemBuilder: (context, index) {
               final now = DateTime.now();
               bool isCurrentDivider = false;
-          
+
               if (index < horariosDisponibles.length - 1 &&
                   horariosDisponibles[index].isBefore(now) &&
                   horariosDisponibles[index + 1].isAfter(now)) {
                 isCurrentDivider = true;
               }
-          
+
               return SizedBox(
                 height: heightPerMinute * 30,
                 child: Divider(
@@ -188,20 +182,20 @@ class Agenda extends StatelessWidget {
             controller: horizontalLinesScrollController,
             itemBuilder: (context, index) {
               final now = DateTime.now();
-          
+
               if (index < horariosDisponibles.length - 1 &&
                   horariosDisponibles[index].isBefore(now) &&
-                  horariosDisponibles[index + 1].isAfter(now)) {
-              }
-          
+                  horariosDisponibles[index + 1].isAfter(now)) {}
+
               return SizedBox(
-                width: columnWidth.toDouble(),
-                child: const Row(
-                  children: [
-                    VerticalDivider(width: 1,),
-                  ],
-                )
-              );
+                  width: columnWidth.toDouble(),
+                  child: const Row(
+                    children: [
+                      VerticalDivider(
+                        width: 1,
+                      ),
+                    ],
+                  ));
             },
             itemCount: physicalPartitions.length,
           ),
@@ -221,13 +215,13 @@ class Agenda extends StatelessWidget {
           itemBuilder: (context, index) {
             final now = DateTime.now();
             bool isCurrentDivider = false;
-      
+
             if (index < horariosDisponibles.length - 1 &&
                 horariosDisponibles[index].isBefore(now) &&
                 horariosDisponibles[index + 1].isAfter(now)) {
               isCurrentDivider = true;
             }
-      
+
             return SizedBox(
               height: 30 * heightPerMinute,
               child: Column(
@@ -236,8 +230,7 @@ class Agenda extends StatelessWidget {
                   Text(
                     DateFormat.jm().format(horariosDisponibles[index]),
                     style: TextStyle(
-                        fontWeight:
-                            isCurrentDivider ? FontWeight.bold : null),
+                        fontWeight: isCurrentDivider ? FontWeight.bold : null),
                   )
                 ],
               ),
@@ -252,17 +245,17 @@ class Agenda extends StatelessWidget {
   Widget buildPartitionHeader(PhysicalPartition physicalPartition, context) {
     return Container(
       padding: const EdgeInsets.all(8),
-      child:Container(
-        width: columnWidth - 16,
-        height: 40 - 16,
-        decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.primaryContainer.withOpacity(0.5),
-              borderRadius: BorderRadius.circular(4),
-        ),
-           
-        child: Center(
-          child: Text("Cancha ${physicalPartition.physicalIdentifier!.toString()}")
-        )),
+      child: Container(
+          width: columnWidth - 16,
+          height: 40 - 16,
+          decoration: BoxDecoration(
+            color:
+                Theme.of(context).colorScheme.primaryContainer.withOpacity(0.5),
+            borderRadius: BorderRadius.circular(4),
+          ),
+          child: Center(
+              child: Text(
+                  "Cancha ${physicalPartition.physicalIdentifier!.toString()}"))),
     );
   }
 
@@ -273,60 +266,65 @@ class Agenda extends StatelessWidget {
             physicalPartition.partitionPhysicalId)
         .toList();
 
-    if(currentPhysicalPartitionSessions.isEmpty){
+    if (currentPhysicalPartitionSessions.isEmpty) {
       return SizedBox(
         width: columnWidth.toDouble(),
         child: ListView.builder(
-          controller: scrollControllers[physicalPartitions.indexOf(physicalPartition) + 2],
+          controller: scrollControllers[
+              physicalPartitions.indexOf(physicalPartition) + 2],
           itemCount: 1,
           itemBuilder: (context, index) {
+            final height = horariosDisponibles.first
+                    .difference(horariosDisponibles.last)
+                    .inMinutes
+                    .abs() *
+                heightPerMinute;
 
-            final height = horariosDisponibles.first.difference(horariosDisponibles.last).inMinutes.abs() * heightPerMinute;
-            
-            return SizedBox(
-              height: height + 40
-            );
+            return SizedBox(height: height + 40);
           },
         ),
-        
       );
     }
 
     return SizedBox(
       width: columnWidth.toDouble(),
       child: ListView.builder(
-        controller: scrollControllers[physicalPartitions.indexOf(physicalPartition) + 2],
+        controller: scrollControllers[
+            physicalPartitions.indexOf(physicalPartition) + 2],
         itemBuilder: (context, index) {
           double offsetPrevio = 0;
           double offsetFinal = 0;
           final currentSession = currentPhysicalPartitionSessions[index];
           final int duration = currentSession.getDurationInMinutes();
           if (index == 0) {
-
-            offsetPrevio = currentSession.startTime
+            offsetPrevio = currentSession.startTime!
                     .difference(horariosDisponibles[0])
                     .inMinutes
                     .abs() *
                 heightPerMinute;
-
           } else {
-            offsetPrevio = (currentSession.startTime.difference(currentPhysicalPartitionSessions[index - 1].startTime).inMinutes.abs() -duration) * heightPerMinute;
+            offsetPrevio = (currentSession.startTime!
+                        .difference(currentPhysicalPartitionSessions[index - 1]
+                            .startTime!)
+                        .inMinutes
+                        .abs() -
+                    duration) *
+                heightPerMinute;
           }
-          
 
           if (index == currentPhysicalPartitionSessions.length - 1) {
-            offsetFinal = (currentSession.startTime
+            offsetFinal = (currentSession.startTime!
                         .difference(
                             horariosDisponibles[horariosDisponibles.length - 1])
                         .inMinutes
                         .abs() -
                     duration) *
                 heightPerMinute;
-            
+
             offsetFinal += 40;
           }
 
-          if(offsetPrevio < 0){
+          if (offsetPrevio < 0) {
             print("wtf");
           }
           return Padding(
@@ -334,17 +332,19 @@ class Agenda extends StatelessWidget {
             child: Column(
               children: [
                 if (index == 0)
-                  
-                  // Esta caja mueve toda la lista 15 unidades de altura hacia abajo. 
-                  // Ya que la unidad de tiempo ocupa 30 unidades de altura, 
+
+                  // Esta caja mueve toda la lista 15 unidades de altura hacia abajo.
+                  // Ya que la unidad de tiempo ocupa 30 unidades de altura,
                   // Asi se centra el inicio de cada turno con respecto a la unidad de tiempo.
 
-                   SizedBox( 
+                  SizedBox(
                     height: 15 * heightPerMinute,
                   ),
                 SizedBox(height: offsetPrevio.toDouble()),
                 SizedBox(
-                    height: duration * heightPerMinute.toDouble() - heightPerMinute * 4, // Le resto 4 unidades de tiempo por el padding que se aplica luego de 2 arriba y abajo.
+                    height: duration * heightPerMinute.toDouble() -
+                        heightPerMinute *
+                            4, // Le resto 4 unidades de tiempo por el padding que se aplica luego de 2 arriba y abajo.
                     child: buildCard(currentSession)),
                 if (index == currentPhysicalPartitionSessions.length - 1)
                   SizedBox(

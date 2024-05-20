@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
-import 'package:turni/core/config/service_locator.dart';
-import 'package:turni/domain/entities/request/google_user_request.dart';
-import 'package:turni/domain/entities/user.dart';
+import '../../../core/config/service_locator.dart';
+import '../../../domain/entities/request/google_user_request.dart';
+import '../../../domain/entities/user.dart';
 
 class AuthProvider {
   final dioInstance = sl<Dio>();
