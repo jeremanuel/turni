@@ -7,7 +7,7 @@ part of 'club_type.dart';
 // **************************************************************************
 
 ClubType _$ClubTypeFromJson(Map<String, dynamic> json) => ClubType(
-      clubTypeId: json['club_type_id'] as String,
+      clubTypeId: json['club_type_id'] as int,
       name: json['name'] as String,
       logo: json['logo'] as String?,
     );

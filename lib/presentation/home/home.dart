@@ -18,7 +18,7 @@ class HomePage extends StatelessWidget {
     homeCubit = sl<HomeCubit>();
   }
 
-  final backgroundColor = Color.fromRGBO(240, 239, 242, 1);
+  final backgroundColor = const Color.fromRGBO(240, 239, 242, 1);
   final TextEditingController _textController = TextEditingController();
 
   @override
@@ -108,11 +108,7 @@ class HomePage extends StatelessWidget {
               text: clubType.name,
               svg: "assets/img/${clubType.logo}.svg",
               onPressed: () async {
-                context.push(
-                  "/session_feed",
-                  extra: ClubType(
-                      clubTypeId: clubType.clubTypeId, name: clubType.name),
-                );
+                context.push("/session_feed", extra: clubType);
               },
             ))
         .toList();

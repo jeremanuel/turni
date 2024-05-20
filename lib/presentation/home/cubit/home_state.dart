@@ -1,6 +1,5 @@
 part of 'home_cubit.dart';
 
-@immutable
 sealed class HomeState {
   final bool isLoading;
   final List<ClubType> clubTypes;

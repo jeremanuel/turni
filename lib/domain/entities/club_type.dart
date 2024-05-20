@@ -7,7 +7,7 @@ class ClubType {
   ClubType({required this.clubTypeId, required this.name, this.logo});
 
   @JsonKey(name: "club_type_id")
-  final String clubTypeId;
+  final int clubTypeId;
   final String name;
   final String? logo;
 

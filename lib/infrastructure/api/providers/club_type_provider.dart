@@ -19,7 +19,7 @@ class ClubTypeProvider {
           .toList();
     } catch (error) {
       print('error: $error');
-      return List.filled(1, ClubType(clubTypeId: "1", name: "Error"));
+      return List.filled(1, ClubType(clubTypeId: 1, name: "Error"));
     }
   }
 }

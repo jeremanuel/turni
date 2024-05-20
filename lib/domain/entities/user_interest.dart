@@ -13,7 +13,7 @@ class UserInterest {
   @JsonKey(name: "name")
   final String activity;
   @JsonKey(name: "club_type_id")
-  final String clubTypeId;
+  final int clubTypeId;
   @JsonKey(name: "tier_interest")
   final String tierInterest;
 

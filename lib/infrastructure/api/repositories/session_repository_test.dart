@@ -1,5 +1,7 @@
 import 'dart:math';
 
+import '../../../core/utils/entities/coordinate.dart';
+import '../../../core/utils/entities/range_date.dart';
 import '../../../domain/entities/club_partition.dart';
 import '../../../domain/entities/club_type.dart';
 import '../../../domain/entities/physical_partition.dart';
@@ -50,7 +52,7 @@ class SessionRepositoryTest extends SessionRepository {
                 isCover: "false",
                 description: "description"),
           ],
-          clubType: ClubType(clubTypeId: "1", name: "Padel")),
+          clubType: ClubType(clubTypeId: 1, name: "Padel")),
       ClubPartition(
           club_partition_id: 2,
           club_id: 1,
@@ -74,7 +76,7 @@ class SessionRepositoryTest extends SessionRepository {
                 isCover: "false",
                 description: "description"),
           ],
-          clubType: ClubType(clubTypeId: "2", name: "Tenis")),
+          clubType: ClubType(clubTypeId: 2, name: "Tenis")),
       ClubPartition(
           club_partition_id: 3,
           club_id: 1,
@@ -98,7 +100,7 @@ class SessionRepositoryTest extends SessionRepository {
                 isCover: "false",
                 description: "description"),
           ],
-          clubType: ClubType(clubTypeId: "2", name: "Futbol"))
+          clubType: ClubType(clubTypeId: 2, name: "Futbol"))
     ];
   }
 
@@ -106,6 +108,8 @@ class SessionRepositoryTest extends SessionRepository {
   Future<List<Session>> getSessions(DateTime date) async {
     await Future.delayed(Duration(seconds: 1));
     return [
+      Session()
+    ] /* [
       if (Random().nextBool())
         Session(1, DateTime.now(), DateTime(2024, 3, 12, 10), "01:30", null,
             1500, 1, 1),
@@ -154,6 +158,16 @@ class SessionRepositoryTest extends SessionRepository {
       if (Random().nextBool())
         Session(1, DateTime.now(), DateTime(2024, 3, 12, 15), "01:30", 2, 1500,
             1, 4)
-    ];
+    ] */
+        ;
+  }
+
+  @override
+  Future<List<Session>> getClientSessions(
+    int clubTypeId,
+    Coordinate coordinate,
+    RangeDate rangeDate,
+  ) {
+    throw UnimplementedError();
   }
 }

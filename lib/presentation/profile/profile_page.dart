@@ -12,9 +12,10 @@ class ProfilePage extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: backgroundColor,
-      body: Center(
+      body: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 42, horizontal: 32),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          mainAxisAlignment: MainAxisAlignment.end,
           children: [
             MaterialButton(
               elevation: 0,
@@ -40,7 +41,7 @@ class ProfilePage extends StatelessWidget {
                   ),
                 ],
               ),
-            )
+            ),
           ],
         ),
       ),
