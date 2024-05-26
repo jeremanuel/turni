@@ -12,7 +12,7 @@ import 'package:turni/presentation/core/cubit/auth/auth_cubit.dart';
 import 'package:turni/presentation/feed/cubit/feed/feed_cubit.dart';
 
 import '../../presentation/admin/create_session_screen/bloc/create_sesssions_form_bloc.dart';
-import '../../presentation/admin/session_manager_screen/blocs/bloc/session_manager_bloc.dart';
+import '../../presentation/admin/bloc/session_manager_bloc.dart';
 
 final sl = GetIt.instance;
 

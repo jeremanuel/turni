@@ -3,7 +3,7 @@
 
 import 'package:freezed_annotation/freezed_annotation.dart';
 
-import '../../../../../domain/entities/club_partition.dart';
+import '../../../domain/entities/club_partition.dart';
 
 part 'session_manager_event.freezed.dart';
 

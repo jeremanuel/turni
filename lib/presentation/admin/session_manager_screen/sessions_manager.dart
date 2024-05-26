@@ -8,9 +8,9 @@ import 'package:intl/intl.dart';
 import '../../../core/config/service_locator.dart';
 import '../../../core/utils/responsive_builder.dart';
 import '../../core/agenda/agenda.dart';
-import 'blocs/bloc/session_manager_bloc.dart';
-import 'blocs/bloc/session_manager_event.dart';
-import 'blocs/bloc/session_manager_state.dart';
+import '../bloc/session_manager_bloc.dart';
+import '../bloc/session_manager_event.dart';
+import '../bloc/session_manager_state.dart';
 import '../../../domain/entities/club_partition.dart';
 
 class SessionsManager extends StatelessWidget {

@@ -6,7 +6,7 @@ import '../../../../core/utils/types/time_interval.dart';
 import '../../../../domain/entities/club_partition.dart';
 import '../../../../domain/entities/physical_partition.dart';
 import '../../../../domain/entities/session.dart';
-import '../../session_manager_screen/blocs/bloc/session_manager_bloc.dart';
+import '../../bloc/session_manager_bloc.dart';
 
 part 'create_sesssions_form_event.dart';
 part 'create_sesssions_form_state.dart';
