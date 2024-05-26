@@ -8,21 +8,19 @@ import '../../../domain/entities/physical_partition.dart';
 import '../../../domain/entities/session.dart';
 
 class Agenda extends StatelessWidget {
-   
-   Agenda({
-      super.key,
+  Agenda(
+      {super.key,
       required this.sessions,
       required this.buildCard,
       this.heightPerMinute = 2,
       required this.physicalPartitions,
       required this.fromDate,
       required this.lastDate,
-      this.columnWidth = 300
-      }){
-          horariosDisponibles = generateDates(fromDate, lastDate);
-          scrollControllers = generateScrollControllers();
-          initializeScrollControllerListeners();
-      }
+      this.columnWidth = 300}) {
+    horariosDisponibles = generateDates(fromDate, lastDate);
+    scrollControllers = generateScrollControllers();
+    initializeScrollControllerListeners();
+  }
 
   final List<Session> sessions;
   final Widget Function(Session) buildCard;
@@ -42,8 +40,6 @@ class Agenda extends StatelessWidget {
   final ScrollController verticalLinesAuxScrollController = ScrollController();
 
   late final List<DateTime> horariosDisponibles;
-
-
 
   List<DateTime> generateDates(DateTime startDate, DateTime endDate) {
     List<DateTime> dates = [];
@@ -193,7 +189,7 @@ class Agenda extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
-          mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: physicalPartitions
                 .map((el) => buildPartitionHeader(el, context))
                 .toList()),
@@ -220,13 +216,13 @@ class Agenda extends StatelessWidget {
             itemBuilder: (context, index) {
               final now = DateTime.now();
               bool isCurrentDivider = false;
-          
+
               if (index < horariosDisponibles.length - 1 &&
                   horariosDisponibles[index].isBefore(now) &&
                   horariosDisponibles[index + 1].isAfter(now)) {
                 isCurrentDivider = true;
               }
-          
+
               return SizedBox(
                 height: heightPerMinute * 30,
                 child: Divider(
@@ -241,20 +237,20 @@ class Agenda extends StatelessWidget {
             controller: horizontalLinesScrollController,
             itemBuilder: (context, index) {
               final now = DateTime.now();
-          
+
               if (index < horariosDisponibles.length - 1 &&
                   horariosDisponibles[index].isBefore(now) &&
-                  horariosDisponibles[index + 1].isAfter(now)) {
-              }
-          
+                  horariosDisponibles[index + 1].isAfter(now)) {}
+
               return SizedBox(
-                width: columnWidth.toDouble(),
-                child: const Row(
-                  children: [
-                    VerticalDivider(width: 1,),
-                  ],
-                )
-              );
+                  width: columnWidth.toDouble(),
+                  child: const Row(
+                    children: [
+                      VerticalDivider(
+                        width: 1,
+                      ),
+                    ],
+                  ));
             },
             itemCount: physicalPartitions.length,
           ),
@@ -274,13 +270,13 @@ class Agenda extends StatelessWidget {
           itemBuilder: (context, index) {
             final now = DateTime.now();
             bool isCurrentDivider = false;
-      
+
             if (index < horariosDisponibles.length - 1 &&
                 horariosDisponibles[index].isBefore(now) &&
                 horariosDisponibles[index + 1].isAfter(now)) {
               isCurrentDivider = true;
             }
-      
+
             return SizedBox(
               height: 30 * heightPerMinute,
               child: Column(
@@ -289,8 +285,7 @@ class Agenda extends StatelessWidget {
                   Text(
                     DateFormat.jm().format(horariosDisponibles[index]),
                     style: TextStyle(
-                        fontWeight:
-                            isCurrentDivider ? FontWeight.bold : null),
+                        fontWeight: isCurrentDivider ? FontWeight.bold : null),
                   )
                 ],
               ),
@@ -326,7 +321,7 @@ class Agenda extends StatelessWidget {
             physicalPartition.partitionPhysicalId)
         .toList();
 
-    if(currentPhysicalPartitionSessions.isEmpty){
+    if (currentPhysicalPartitionSessions.isEmpty) {
       return SizedBox(
         width: columnWidth.toDouble(),
         child: buildEmptyList(scrollControllers[physicalPartitions.indexOf(physicalPartition)]) ,
@@ -356,17 +351,14 @@ class Agenda extends StatelessWidget {
           
 
           if (index == 0) {
-
             offsetPrevio = currentSession.startTime
                     .difference(horariosDisponibles[0])
                     .inMinutes
                     .abs() *
                 heightPerMinute;
-
           } else {
             offsetPrevio = (currentSession.startTime.difference(currentPhysicalPartitionSessions[index - 1].startTime).inMinutes.abs() - previousDuration) * heightPerMinute;
           }
-          
 
           if (index == currentPhysicalPartitionSessions.length - 1) {
             offsetFinal = (currentSession.startTime
@@ -376,7 +368,7 @@ class Agenda extends StatelessWidget {
                         .abs() -
                     duration) *
                 heightPerMinute;
-            
+
             offsetFinal += 40;
           }
 
@@ -388,9 +380,9 @@ class Agenda extends StatelessWidget {
             child: Column(
               children: [
                 if (index == 0)
-                  
-                  // Esta caja mueve toda la lista 15 unidades de altura hacia abajo. 
-                  // Ya que la unidad de tiempo ocupa 30 unidades de altura, 
+
+                  // Esta caja mueve toda la lista 15 unidades de altura hacia abajo.
+                  // Ya que la unidad de tiempo ocupa 30 unidades de altura,
                   // Asi se centra el inicio de cada turno con respecto a la unidad de tiempo.
 
                 SizedBox( 
@@ -398,7 +390,9 @@ class Agenda extends StatelessWidget {
                 ),
                 SizedBox(height: offsetPrevio.toDouble()),
                 SizedBox(
-                    height: duration * heightPerMinute.toDouble() - heightPerMinute * 4, // Le resto 4 unidades de tiempo por el padding que se aplica luego de 2 arriba y abajo.
+                    height: duration * heightPerMinute.toDouble() -
+                        heightPerMinute *
+                            4, // Le resto 4 unidades de tiempo por el padding que se aplica luego de 2 arriba y abajo.
                     child: buildCard(currentSession)),
                 if (index == currentPhysicalPartitionSessions.length - 1)
                   SizedBox(

@@ -1,4 +1,3 @@
-
 import 'package:bloc/bloc.dart';
 import 'package:meta/meta.dart';
 import 'package:turni/domain/entities/session.dart';
@@ -6,12 +5,8 @@ import 'package:turni/domain/entities/session.dart';
 part 'feed_state.dart';
 
 class FeedCubit extends Cubit<FeedState> {
-
-  
-  FeedCubit() : super(FeedInitial()){
+  FeedCubit() : super(FeedInitial()) {
     getTurnos();
-    
-
   }
 
   void getTurnos() async {

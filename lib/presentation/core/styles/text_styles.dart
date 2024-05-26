@@ -10,6 +10,5 @@ class TextStyles {
     fontWeight: FontWeight.w500,
     letterSpacing: 2,
     fontSize: 25,
-    
   );
 }

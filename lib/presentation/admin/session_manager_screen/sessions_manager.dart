@@ -127,12 +127,12 @@ class SessionsManager extends StatelessWidget {
                     const SizedBox(
                       width: 8,
                     ),
-                    ...state.clubPartitions.expand((e) => [
-                      buildChip(e, context, state),
-                      const SizedBox(
-                        width: 16,
-                      ),
-                    ]),
+                  ...state.clubPartitions.expand((e) => [
+                        buildChip(e, context, state),
+                        const SizedBox(
+                          width: 16,
+                        ),
+                      ]),
                   if (ResponsiveBuilder.isMobile(context))
                     const SizedBox(
                       width: 8,
@@ -163,13 +163,22 @@ class SessionsManager extends StatelessWidget {
     );
   }
 
-  FilterChip buildChip(ClubPartition e, BuildContext context, SessionManagerState state) => FilterChip(label: Text(e.clubType!.name), onSelected: onSelectChip(context,e), showCheckmark: false ,selected: e.club_partition_id == state.selectedClubPartition?.club_partition_id,);
+  FilterChip buildChip(
+          ClubPartition e, BuildContext context, SessionManagerState state) =>
+      FilterChip(
+        label: Text(e.clubType!.name),
+        onSelected: onSelectChip(context, e),
+        showCheckmark: false,
+        selected: e.club_partition_id ==
+            state.selectedClubPartition?.club_partition_id,
+      );
 
   onSelectChip(context,e) {
     return (val){
       sl<SessionManagerBloc>().add(ChangeClubPartitionEvent(e));
     };
-  } 
+  }
+
   Widget buildDayHeader() {
     return BlocBuilder<SessionManagerBloc, SessionManagerState>(
       bloc: sl<SessionManagerBloc>(),
@@ -266,7 +275,7 @@ class SessionsManager extends StatelessWidget {
                           children: [
                             const Icon(Icons.access_time),
                             Text(
-                              "${DateFormat.jm().format(session.startTime)} - ${DateFormat.jm().format(session.endTime)}",
+                              "${DateFormat.jm().format(session.startTime!)} - ${DateFormat.jm().format(session.endTime)}",
                             ),
                           ],
                         ),
@@ -305,8 +314,8 @@ class SessionsManager extends StatelessWidget {
             );
           },
           sessions: state.sessions,
-          physicalPartitions: state.selectedClubPartition?.physicalPartitions ?? []
-          ,
+          physicalPartitions:
+              state.selectedClubPartition?.physicalPartitions ?? [],
         );
       },
     );
