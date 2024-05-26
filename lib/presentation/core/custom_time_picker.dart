@@ -1,18 +1,26 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_form_builder/flutter_form_builder.dart';
 
-import '../../core/utils/form_builder/form_builder_field.dart';
 
 class CustomTimePicker extends StatefulWidget {
 
   final String? initialHours;
   final String? initialMinutes;
   final String name;
+  final bool autoFocus;
+  final FocusNode? focusNode;
+  final Function(String)? onSubmit;
 
-  CustomTimePicker({
-    super.key, this.initialHours, this.initialMinutes, required this.onChange, required this.name,
+  /// Usado para saber si tiene que hacer focus al siguiente input al rellenar los minutos.
+  final bool isLastInput;
+
+  const CustomTimePicker({
+    super.key, this.initialHours, this.initialMinutes, this.onChange, required this.name, this.autoFocus = false, 
+    this.focusNode, this.onSubmit,
+    this.isLastInput = false
   });
 
-  final Function(TimeOfDay) onChange;
+  final Function(TimeOfDay)? onChange;
 
   @override
   State<CustomTimePicker> createState() => _CustomTimePickerState();
@@ -24,28 +32,40 @@ class _CustomTimePickerState extends State<CustomTimePicker> {
   final minutesController = TextEditingController();
   final GlobalKey<FormBuilderFieldState> fieldKey =
       GlobalKey<FormBuilderFieldState>();
+  final FocusNode _fieldFocusNode = FocusNode();
+  final FocusNode focusNodeMinutes = FocusNode();
+  final minuteFieldKey = GlobalKey<FormFieldState>();
+  final hourFieldKey = GlobalKey<FormFieldState>();
 
   @override
   void initState() {
     // TODO: implement initState
     hoursController.text = widget.initialHours ?? '';
     minutesController.text = widget.initialMinutes ?? '';
-
+ 
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
     return FormBuilderField<TimeOfDay>(
-      autovalidateMode: AutovalidateMode.always,
+
+      focusNode: _fieldFocusNode,
+      autovalidateMode: AutovalidateMode.onUserInteraction,
       initialValue: widget.initialHours != null && widget.initialMinutes != null ? TimeOfDay(hour: int.parse(widget.initialHours!), minute:int.parse(widget.initialMinutes!)) : null,
       key: fieldKey,
       validator: (value) {
-        if(value == null) return "";
-      },
+
+        final isValidMinute = minuteFieldKey.currentState?.isValid ?? true;
+        
+        final isValidHour = hourFieldKey.currentState?.isValid ?? true;
+
+        if(!isValidMinute || !isValidHour) return "";
+
+        return null;
+      }, 
       name: widget.name,
       builder: (field) {
-        
         return Row(
           mainAxisAlignment: MainAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
@@ -53,20 +73,25 @@ class _CustomTimePickerState extends State<CustomTimePicker> {
             SizedBox(
               height: 100,
               width: 100,
-              child: TextFormField(              
+              child: TextFormField(
+                focusNode: _fieldFocusNode,
+                onFieldSubmitted: widget.onSubmit,
+                key: minuteFieldKey,
+                autofocus: widget.autoFocus,              
                 onChanged: (value) {
                   final hours = value;
                   final minutes = minutesController.text;
-
-                  if(validateHour(value) != null){
-                    return field.didChange(null);
-                  }
+    
+                  final newValue = TimeOfDay(hour: int.tryParse(hours) ?? 0, minute: int.tryParse(minutes) ?? 0);
                   field.didChange(
-                    TimeOfDay(hour: int.tryParse(hours) ?? 0, minute: int.tryParse(minutes) ?? 0)
+                      newValue
                   );
+
+                  if(value.length == 2){
+                    focusNodeMinutes.requestFocus();
+                  }
                 },
                 controller: hoursController,
-                validator: validateHour,
                 maxLength: 2,
                 expands: true,
                 maxLines: null,
@@ -74,6 +99,7 @@ class _CustomTimePickerState extends State<CustomTimePicker> {
                 textAlignVertical: TextAlignVertical.center,
                 textAlign: TextAlign.center,
                 style: const TextStyle(fontSize: 42),
+                validator: validateHour,
                 decoration: InputDecoration(    
                   counterText: "",     
                   contentPadding: EdgeInsets.zero,                                            
@@ -84,7 +110,6 @@ class _CustomTimePickerState extends State<CustomTimePicker> {
                     borderSide: BorderSide(color: Theme.of(context).colorScheme.primary )
                   ),
                   helperText: "Hora",
-                  errorText: field.errorText
                 ),
               
               ),
@@ -98,17 +123,22 @@ class _CustomTimePickerState extends State<CustomTimePicker> {
               height: 100,
               width: 100,
               child: TextFormField(
+                onFieldSubmitted:  widget.onSubmit,
+                key: hourFieldKey,
+                focusNode: focusNodeMinutes,
+                autovalidateMode: AutovalidateMode.onUserInteraction,
                 onChanged: (value) {
                   final hours = hoursController.text;
-                  final minutes = value;
-
-                  if(validatorMinute(value) != null){
-                    return field.didChange(null);
-                  }
-        
+                  final minutes = value;        
+          
+                  final newValue = TimeOfDay(hour: int.tryParse(hours) ?? 0, minute: int.tryParse(minutes) ?? 0);
                   field.didChange(
-                    TimeOfDay(hour: int.tryParse(hours) ?? 0, minute: int.tryParse(minutes) ?? 0)
+                      newValue
                   );
+
+                  if(!widget.isLastInput && value.length == 2 ){
+                    Focus.of(context).nextFocus();
+                  }
                 },
                 controller: minutesController,
                  validator: validatorMinute,
@@ -129,7 +159,6 @@ class _CustomTimePickerState extends State<CustomTimePicker> {
                     borderSide: BorderSide(color: Theme.of(context).colorScheme.primary )
                   ),
                   helperText: "Minutos",
-                  errorText: field.errorText
 
                  ),
               
@@ -144,7 +173,7 @@ class _CustomTimePickerState extends State<CustomTimePicker> {
 
   String? validatorMinute(value) {
             
-            if(value == null || value == "") return "Inserte Los minutos";
+            if(value == null || value == "") return "Inserte minutos";
   
             final intValue = int.tryParse(value);
   

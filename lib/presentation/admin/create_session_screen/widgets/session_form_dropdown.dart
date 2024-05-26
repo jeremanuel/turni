@@ -1,8 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_form_builder/flutter_form_builder.dart';
 
-import '../../../../core/utils/form_builder/form_builder.dart';
-import '../../../../core/utils/form_builder/form_builder_field.dart';
 import '../../../../domain/entities/session.dart';
 import '../../../core/custom_time_picker.dart';
 
@@ -23,14 +23,15 @@ class _SessionFormDropdownState extends State<SessionFormDropdown> {
 
   final GlobalKey<FormBuilderState> _formKey = GlobalKey<FormBuilderState>();
 
-
   @override
   Widget build(BuildContext context) {
     return FormBuilder(
       key: _formKey,
       onChanged: () {
-          setState(() {});
+        _formKey.currentState?.validate(focusOnInvalid: false);
+        setState(() {});
       },
+      
       child: Container(
         padding: const EdgeInsets.all(8),
         height: 500,
@@ -54,10 +55,11 @@ class _SessionFormDropdownState extends State<SessionFormDropdown> {
                    const Text("Horario del turno"),
                    const SizedBox(height: 16,),
                    CustomTimePicker(
+                    autoFocus: true,
                     name: "startTime",
                     initialHours: widget.session?.startTime.hour.toString(),
                     initialMinutes: widget.session?.startTime.minute.toString(),
-                    onChange: (sessionStartTime) {},
+                    onSubmit: onSubmit,
                    ),
                    
                 ],
@@ -77,8 +79,8 @@ class _SessionFormDropdownState extends State<SessionFormDropdown> {
                         name: "duration",
                         initialHours: widget.session?.duration != null ? widget.session?.duration.split(":")[0] : null,
                         initialMinutes: widget.session?.duration != null ? widget.session?.duration.split(":")[1] : null,
-                        onChange: (duration) {},
-      
+                        onSubmit: onSubmit,      
+                        isLastInput: true,
                       )
                     ],
                   ),
@@ -98,16 +100,32 @@ class _SessionFormDropdownState extends State<SessionFormDropdown> {
     );
   }
 
-  onPressedSave(){
+   onSubmit(value) {
+    
+    final isValid = _formKey.currentState!.validate();
+    
+    if(!isValid) return;
 
-    if(_formKey.currentState?.instantValue == null) return null;
+    final values = _formKey.currentState!.fields;
 
-    final values = _formKey.currentState!.instantValue;
+    if(!values['startTime']!.isValid || !values['duration']!.isValid) return KeyEventResult.ignored;
 
-    if(values['startTime'] == null || values['duration'] == null) return null;
+    widget.onSave(values['startTime']!.value, values['duration']!.value);
+
+    return KeyEventResult.handled;
+            
+  }
+
+   onPressedSave(){
+
+    if(!(_formKey.currentState?.isValid ?? false)) return null;
+
+    final values = _formKey.currentState!.fields;
+    
+    if(!values['startTime']!.isValid || !values['duration']!.isValid) return null;
     
     return (){
-      widget.onSave(values['startTime'], values['duration']);
+      widget.onSave(values['startTime']!.value, values['duration']!.value);
     };
 
   }
