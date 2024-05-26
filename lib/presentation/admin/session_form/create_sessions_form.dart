@@ -9,12 +9,12 @@ import '../../../core/utils/responsive_builder.dart';
 import '../../../core/utils/types/time_interval.dart';
 import '../../../domain/entities/physical_partition.dart';
 import '../../core/agenda/agenda.dart';
+import '../create_session_screen/widgets/session_form_dropdown.dart';
 import '../sessions_manager/blocs/bloc/session_manager_bloc.dart';
 import 'bloc/create_sesssions_form_bloc.dart';
 import '../../../domain/entities/session.dart';
 
 import 'widgets/agenda_edit_card.dart';
-import 'widgets/session_form_dropdown.dart';
 
 class CreateSessionsForm extends StatelessWidget {
   const CreateSessionsForm({super.key});

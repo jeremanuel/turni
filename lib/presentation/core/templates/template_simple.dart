@@ -1,9 +1,9 @@
 import 'dart:js';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_form_builder/flutter_form_builder.dart';
 
 import '../../../core/presentation/components/inputs/text_fields/custom_text_field.dart';
-import '../../../core/utils/form_builder/form_builder.dart';
 
 class TemplateSimple extends StatelessWidget {
 

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_form_builder/flutter_form_builder.dart';
 
-import '../../../../utils/form_builder/form_builder.dart';
-import '../../../../utils/form_builder/form_builder_field.dart';
 import '../../../../utils/responsive_builder.dart';
 import '../inputs_decorations.dart';
 

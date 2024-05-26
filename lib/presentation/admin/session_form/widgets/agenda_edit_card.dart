@@ -6,8 +6,8 @@ import '../../../../core/config/service_locator.dart';
 import '../../../../core/presentation/components/inputs/dropdown_widget.dart';
 import '../../../../core/utils/types/time_interval.dart';
 import '../../../../domain/entities/session.dart';
+import '../../create_session_screen/widgets/session_form_dropdown.dart';
 import '../bloc/create_sesssions_form_bloc.dart';
-import 'session_form_dropdown.dart';
 
 class AgendaEditCard extends StatefulWidget {
   
