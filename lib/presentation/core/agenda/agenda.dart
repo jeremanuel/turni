@@ -36,7 +36,7 @@ class Agenda extends StatelessWidget {
   final ScrollController horizontalLinesScrollController = ScrollController();
   final ScrollController verticalColumnsScrollController = ScrollController();
   final ScrollController verticalLinesScrollController = ScrollController();
-
+  final ScrollController verticalLinesAuxScrollController = ScrollController();
 
   late final List<DateTime> horariosDisponibles;
 
@@ -67,8 +67,7 @@ class Agenda extends StatelessWidget {
 
   initializeScrollControllerListeners(){
 
-      for (var (index, currentScrollController) in [verticalLinesScrollController, verticalColumnsScrollController ,...scrollControllers].indexed) {
-
+      for (var (index, currentScrollController) in [verticalLinesScrollController, verticalColumnsScrollController, verticalLinesAuxScrollController,...scrollControllers].indexed) {
 
        // A cada uno de los scrollControlles le agrego un listener para que si el offset de alguno de los otros controllers cambia
        // Este salte al offset del otro
@@ -108,47 +107,67 @@ class Agenda extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(top: 16),
-      child: Scrollbar(      
-        thickness: 12,
-        thumbVisibility: true,
-        controller: verticalColumnsScrollController,
-        child: ScrollConfiguration(
-          behavior: ScrollConfiguration.of(context).copyWith(
-            scrollbars: false,
-            dragDevices:PointerDeviceKind.values.toSet(),
-            physics: const ClampingScrollPhysics()),
-            child: Row(
-            children: [
-              hoursList(context),                
-              Expanded(
-                child: Stack(
-                  children: [
-                    linesList(),
-                    Scrollbar(
-                      thumbVisibility: true,
+      child: ScrollConfiguration(
+        behavior: ScrollConfiguration.of(context).copyWith(
+          scrollbars: false,
+          dragDevices:PointerDeviceKind.values.toSet(),
+          physics: const ClampingScrollPhysics()),
+          child: Row(
+          children: [
+            hoursList(context),                
+            Expanded(
+              child: Stack(
+                children: [                                       
+                  linesList(),
+                  Scrollbar(
+                    thumbVisibility: true,
+                    controller: horizontalColumnesScrollController,
+                    child: SingleChildScrollView(
                       controller: horizontalColumnesScrollController,
-                      child: SingleChildScrollView(
-                        controller: horizontalColumnesScrollController,
-                        physics: const AlwaysScrollableScrollPhysics(),
-                        scrollDirection: Axis.horizontal,
-                        child: SizedBox(
-                          width: columnWidth.toDouble() * physicalPartitions.length,
-                          child: cardsLists(context),
-                        ),
-                      ),
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      scrollDirection: Axis.horizontal,
+                      child: cardsLists(context),
                     ),
-                  ],
-                ),
+                  ),
+                  buildMainScroll(), 
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
   }
+  
+
+  // Esto es lo que esta por encima en la Agenda.
+  // Es una lista vertical que ocupa todo el alto, y todo el ancho de la Agenda, la cual al scrollear, 
+  // scrollea el resto de las listas verticales (columnas, lista vertical de horarios) 
+  IgnorePointer buildMainScroll() {
+    return IgnorePointer(
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child:ListView.builder(
+                                controller: verticalLinesAuxScrollController,
+                                itemCount: 1,
+                                itemBuilder: (context, index) {
+                  
+                                  final height = horariosDisponibles.first.difference(horariosDisponibles.last).inMinutes.abs() * heightPerMinute;
+                                  
+                                  return SizedBox(
+                                    height: height + 80
+                                  );
+                                },                                    
+                      ))
+                    ],
+                  ),
+                );
+  }
 
   Column cardsLists(BuildContext context) {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -162,6 +181,15 @@ class Agenda extends StatelessWidget {
                 .toList(),
           ),
         ),
+       /*  Row(
+          children: [
+            Expanded(
+              child: ListView(
+                controller: verticalLinesAuxScrollController,
+              ),
+            )
+          ],
+        ) */
       ],
     );
   }
