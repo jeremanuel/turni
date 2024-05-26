@@ -1,7 +1,9 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:intl/intl.dart';
+import '../../../core/utils/responsive_builder.dart';
 import '../../../domain/entities/physical_partition.dart';
 import '../../../domain/entities/session.dart';
 
@@ -29,6 +31,7 @@ class Agenda extends StatelessWidget {
   final DateTime fromDate;
   final DateTime lastDate;
   final double columnWidth;
+  final double hoursWidth = 64;
   
   late final List<ScrollController> scrollControllers;
   
@@ -100,69 +103,89 @@ class Agenda extends StatelessWidget {
       }); 
     }
 
+    horizontalColumnesScrollController.addListener(() {
+      if (horizontalColumnesScrollController.offset != horizontalLinesScrollController.offset) {
+        horizontalLinesScrollController.jumpTo(horizontalColumnesScrollController.offset);
+      }
+    }); 
+
 
   }
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 16),
-      child: ScrollConfiguration(
-        behavior: ScrollConfiguration.of(context).copyWith(
-          scrollbars: false,
-          dragDevices:PointerDeviceKind.values.toSet(),
-          physics: const ClampingScrollPhysics()),
-          child: Row(
-          children: [
-            hoursList(context),                
-            Expanded(
-              child: Stack(
-                children: [                                       
-                  linesList(),
-                  Scrollbar(
-                    thumbVisibility: true,
-                    controller: horizontalColumnesScrollController,
-                    child: SingleChildScrollView(
-                      controller: horizontalColumnesScrollController,
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      scrollDirection: Axis.horizontal,
-                      child: cardsLists(context),
-                    ),
-                  ),
-                  buildMainScroll(), 
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-  
+    return LayoutBuilder(
+      builder: (context, constraints) {
 
-  // Esto es lo que esta por encima en la Agenda.
-  // Es una lista vertical que ocupa todo el alto, y todo el ancho de la Agenda, la cual al scrollear, 
-  // scrollea el resto de las listas verticales (columnas, lista vertical de horarios) 
-  IgnorePointer buildMainScroll() {
-    return IgnorePointer(
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child:ListView.builder(
-                                controller: verticalLinesAuxScrollController,
-                                itemCount: 1,
-                                itemBuilder: (context, index) {
-                  
-                                  final height = horariosDisponibles.first.difference(horariosDisponibles.last).inMinutes.abs() * heightPerMinute;
-                                  
-                                  return SizedBox(
-                                    height: height + 80
-                                  );
-                                },                                    
-                      ))
+        final remainingSpace = calculateRemainingSpace(constraints);
+
+        return Padding(
+          padding: const EdgeInsets.only(top: 16),
+          child: ScrollConfiguration(
+            behavior: ScrollConfiguration.of(context).copyWith(
+              scrollbars: false,
+              dragDevices:PointerDeviceKind.values.toSet(),
+              physics: const ClampingScrollPhysics()),
+              child: Row(
+              children: [
+                hoursList(context),                
+                Expanded(
+                  child: Stack(
+                    children: [                                       
+                      linesList(),
+                      Scrollbar(
+                        thumbVisibility: true,
+                        controller: horizontalColumnesScrollController,
+                        child: SingleChildScrollView(
+                          controller: horizontalColumnesScrollController,
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          scrollDirection: Axis.horizontal,
+                          child: Row(
+                            children: [
+                              cardsLists(context),
+                              if(remainingSpace > 0) // Si hay espacio restante, ponemos una caja, para que ese espacio restante se scrolleable.
+                                SizedBox(
+                                  width: remainingSpace,
+                                  child: buildEmptyList(verticalLinesAuxScrollController),
+                                )
+                            ],
+                          ),
+                        ),
+                      ),
+                      
                     ],
                   ),
-                );
+                ),
+              ],
+            ),
+          ),
+        );
+      }
+    );
+  }
+
+  /// Calculo del ancho restante para llenar la Agenda
+  /// Es el ancho total - el ocupado por las columnas (ancho utilizado realmente)  - el ancho de la columna de horarios (tambien utilizado)
+  /// El ancho de las columnas, se calcula como el ancho de columna * la cantidad de columnas
+  double calculateRemainingSpace(BoxConstraints constraints) => constraints.maxWidth - (columnWidth * physicalPartitions.length) - hoursWidth;
+  
+
+  // Es una lista vertical que ocupa todo el alto. 
+  // Para cuando es necesario tener una lista vacia, para que ese espacio siga pudiendose scrollear.
+ 
+  Widget buildEmptyList(ScrollController controller) {
+    return ListView.builder(
+            controller: controller,
+            itemCount: 1,
+            itemBuilder: (context, index) {
+                
+              final height = horariosDisponibles.first.difference(horariosDisponibles.last).inMinutes.abs() * heightPerMinute;
+              
+              return SizedBox(
+                height: height + 80
+              );
+            },                                    
+        );
   }
 
   Column cardsLists(BuildContext context) {
@@ -181,15 +204,6 @@ class Agenda extends StatelessWidget {
                 .toList(),
           ),
         ),
-       /*  Row(
-          children: [
-            Expanded(
-              child: ListView(
-                controller: verticalLinesAuxScrollController,
-              ),
-            )
-          ],
-        ) */
       ],
     );
   }
@@ -252,7 +266,7 @@ class Agenda extends StatelessWidget {
   // Listview encargada de mostrar los distintos horarios
   SizedBox hoursList(BuildContext context) {
     return SizedBox(
-      width: 64,
+      width: hoursWidth,
       child: Padding(
         padding: const EdgeInsets.only(top: 40),
         child: ListView.builder(
@@ -289,10 +303,10 @@ class Agenda extends StatelessWidget {
   }
 
   Widget buildPartitionHeader(PhysicalPartition physicalPartition, context) {
-    return Container(
+    return Padding(
       padding: const EdgeInsets.all(8),
       child:Container(
-        width: columnWidth - 16,
+        width: columnWidth- 16,
         height: 40 - 16,
         decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.primaryContainer.withOpacity(0.5),
@@ -315,18 +329,7 @@ class Agenda extends StatelessWidget {
     if(currentPhysicalPartitionSessions.isEmpty){
       return SizedBox(
         width: columnWidth.toDouble(),
-        child: ListView.builder(
-          controller: scrollControllers[physicalPartitions.indexOf(physicalPartition)],
-          itemCount: 1,
-          itemBuilder: (context, index) {
-
-            final height = horariosDisponibles.first.difference(horariosDisponibles.last).inMinutes.abs() * heightPerMinute;
-            
-            return SizedBox(
-              height: height + 40
-            );
-          },
-        ),
+        child: buildEmptyList(scrollControllers[physicalPartitions.indexOf(physicalPartition)]) ,
         
       );
     }
@@ -390,9 +393,9 @@ class Agenda extends StatelessWidget {
                   // Ya que la unidad de tiempo ocupa 30 unidades de altura, 
                   // Asi se centra el inicio de cada turno con respecto a la unidad de tiempo.
 
-                   SizedBox( 
-                    height: 15 * heightPerMinute,
-                  ),
+                SizedBox( 
+                  height: 15 * heightPerMinute,
+                ),
                 SizedBox(height: offsetPrevio.toDouble()),
                 SizedBox(
                     height: duration * heightPerMinute.toDouble() - heightPerMinute * 4, // Le resto 4 unidades de tiempo por el padding que se aplica luego de 2 arriba y abajo.
