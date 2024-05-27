@@ -25,7 +25,7 @@ class SessionProvider {
           .toList();
     } catch (error) {
       print('error: $error');
-      return List.filled(1, Session());
+      return [];
     }
   }
 }

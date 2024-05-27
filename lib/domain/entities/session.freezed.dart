@@ -14,17 +14,28 @@ T _$identity<T>(T value) => value;
 final _privateConstructorUsedError = UnsupportedError(
     'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
 
+Session _$SessionFromJson(Map<String, dynamic> json) {
+  return _Session.fromJson(json);
+}
+
 /// @nodoc
 mixin _$Session {
+  @JsonKey(name: "session_id")
   int get sessionId => throw _privateConstructorUsedError;
+  @JsonKey(name: "created_at")
   DateTime get createdAt => throw _privateConstructorUsedError;
+  @JsonKey(name: "start_time")
   DateTime get startTime => throw _privateConstructorUsedError;
   String get duration => throw _privateConstructorUsedError;
+  @JsonKey(name: "client_id")
   int? get clientId => throw _privateConstructorUsedError;
   double get price => throw _privateConstructorUsedError;
-  int get adminCreatorId => throw _privateConstructorUsedError;
+  @JsonKey(name: "admin_creator_id")
+  int? get adminCreatorId => throw _privateConstructorUsedError;
+  @JsonKey(name: "partition_physical_id")
   int get partitionPhysicalId => throw _privateConstructorUsedError;
 
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
   @JsonKey(ignore: true)
   $SessionCopyWith<Session> get copyWith => throw _privateConstructorUsedError;
 }
@@ -35,14 +46,14 @@ abstract class $SessionCopyWith<$Res> {
       _$SessionCopyWithImpl<$Res, Session>;
   @useResult
   $Res call(
-      {int sessionId,
-      DateTime createdAt,
-      DateTime startTime,
+      {@JsonKey(name: "session_id") int sessionId,
+      @JsonKey(name: "created_at") DateTime createdAt,
+      @JsonKey(name: "start_time") DateTime startTime,
       String duration,
-      int? clientId,
+      @JsonKey(name: "client_id") int? clientId,
       double price,
-      int adminCreatorId,
-      int partitionPhysicalId});
+      @JsonKey(name: "admin_creator_id") int? adminCreatorId,
+      @JsonKey(name: "partition_physical_id") int partitionPhysicalId});
 }
 
 /// @nodoc
@@ -64,7 +75,7 @@ class _$SessionCopyWithImpl<$Res, $Val extends Session>
     Object? duration = null,
     Object? clientId = freezed,
     Object? price = null,
-    Object? adminCreatorId = null,
+    Object? adminCreatorId = freezed,
     Object? partitionPhysicalId = null,
   }) {
     return _then(_value.copyWith(
@@ -92,10 +103,10 @@ class _$SessionCopyWithImpl<$Res, $Val extends Session>
           ? _value.price
           : price // ignore: cast_nullable_to_non_nullable
               as double,
-      adminCreatorId: null == adminCreatorId
+      adminCreatorId: freezed == adminCreatorId
           ? _value.adminCreatorId
           : adminCreatorId // ignore: cast_nullable_to_non_nullable
-              as int,
+              as int?,
       partitionPhysicalId: null == partitionPhysicalId
           ? _value.partitionPhysicalId
           : partitionPhysicalId // ignore: cast_nullable_to_non_nullable
@@ -112,14 +123,14 @@ abstract class _$$SessionImplCopyWith<$Res> implements $SessionCopyWith<$Res> {
   @override
   @useResult
   $Res call(
-      {int sessionId,
-      DateTime createdAt,
-      DateTime startTime,
+      {@JsonKey(name: "session_id") int sessionId,
+      @JsonKey(name: "created_at") DateTime createdAt,
+      @JsonKey(name: "start_time") DateTime startTime,
       String duration,
-      int? clientId,
+      @JsonKey(name: "client_id") int? clientId,
       double price,
-      int adminCreatorId,
-      int partitionPhysicalId});
+      @JsonKey(name: "admin_creator_id") int? adminCreatorId,
+      @JsonKey(name: "partition_physical_id") int partitionPhysicalId});
 }
 
 /// @nodoc
@@ -139,7 +150,7 @@ class __$$SessionImplCopyWithImpl<$Res>
     Object? duration = null,
     Object? clientId = freezed,
     Object? price = null,
-    Object? adminCreatorId = null,
+    Object? adminCreatorId = freezed,
     Object? partitionPhysicalId = null,
   }) {
     return _then(_$SessionImpl(
@@ -167,10 +178,10 @@ class __$$SessionImplCopyWithImpl<$Res>
           ? _value.price
           : price // ignore: cast_nullable_to_non_nullable
               as double,
-      adminCreatorId: null == adminCreatorId
+      adminCreatorId: freezed == adminCreatorId
           ? _value.adminCreatorId
           : adminCreatorId // ignore: cast_nullable_to_non_nullable
-              as int,
+              as int?,
       partitionPhysicalId: null == partitionPhysicalId
           ? _value.partitionPhysicalId
           : partitionPhysicalId // ignore: cast_nullable_to_non_nullable
@@ -180,34 +191,44 @@ class __$$SessionImplCopyWithImpl<$Res>
 }
 
 /// @nodoc
-
+@JsonSerializable()
 class _$SessionImpl extends _Session {
   _$SessionImpl(
-      {required this.sessionId,
-      required this.createdAt,
-      required this.startTime,
+      {@JsonKey(name: "session_id") required this.sessionId,
+      @JsonKey(name: "created_at") required this.createdAt,
+      @JsonKey(name: "start_time") required this.startTime,
       required this.duration,
-      this.clientId,
+      @JsonKey(name: "client_id") this.clientId,
       required this.price,
-      required this.adminCreatorId,
+      @JsonKey(name: "admin_creator_id") this.adminCreatorId,
+      @JsonKey(name: "partition_physical_id")
       required this.partitionPhysicalId})
       : super._();
 
+  factory _$SessionImpl.fromJson(Map<String, dynamic> json) =>
+      _$$SessionImplFromJson(json);
+
   @override
+  @JsonKey(name: "session_id")
   final int sessionId;
   @override
+  @JsonKey(name: "created_at")
   final DateTime createdAt;
   @override
+  @JsonKey(name: "start_time")
   final DateTime startTime;
   @override
   final String duration;
   @override
+  @JsonKey(name: "client_id")
   final int? clientId;
   @override
   final double price;
   @override
-  final int adminCreatorId;
+  @JsonKey(name: "admin_creator_id")
+  final int? adminCreatorId;
   @override
+  @JsonKey(name: "partition_physical_id")
   final int partitionPhysicalId;
 
   @override
@@ -237,6 +258,7 @@ class _$SessionImpl extends _Session {
                 other.partitionPhysicalId == partitionPhysicalId));
   }
 
+  @JsonKey(ignore: true)
   @override
   int get hashCode => Object.hash(runtimeType, sessionId, createdAt, startTime,
       duration, clientId, price, adminCreatorId, partitionPhysicalId);
@@ -246,35 +268,51 @@ class _$SessionImpl extends _Session {
   @pragma('vm:prefer-inline')
   _$$SessionImplCopyWith<_$SessionImpl> get copyWith =>
       __$$SessionImplCopyWithImpl<_$SessionImpl>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$SessionImplToJson(
+      this,
+    );
+  }
 }
 
 abstract class _Session extends Session {
   factory _Session(
-      {required final int sessionId,
-      required final DateTime createdAt,
-      required final DateTime startTime,
+      {@JsonKey(name: "session_id") required final int sessionId,
+      @JsonKey(name: "created_at") required final DateTime createdAt,
+      @JsonKey(name: "start_time") required final DateTime startTime,
       required final String duration,
-      final int? clientId,
+      @JsonKey(name: "client_id") final int? clientId,
       required final double price,
-      required final int adminCreatorId,
+      @JsonKey(name: "admin_creator_id") final int? adminCreatorId,
+      @JsonKey(name: "partition_physical_id")
       required final int partitionPhysicalId}) = _$SessionImpl;
   _Session._() : super._();
 
+  factory _Session.fromJson(Map<String, dynamic> json) = _$SessionImpl.fromJson;
+
   @override
+  @JsonKey(name: "session_id")
   int get sessionId;
   @override
+  @JsonKey(name: "created_at")
   DateTime get createdAt;
   @override
+  @JsonKey(name: "start_time")
   DateTime get startTime;
   @override
   String get duration;
   @override
+  @JsonKey(name: "client_id")
   int? get clientId;
   @override
   double get price;
   @override
-  int get adminCreatorId;
+  @JsonKey(name: "admin_creator_id")
+  int? get adminCreatorId;
   @override
+  @JsonKey(name: "partition_physical_id")
   int get partitionPhysicalId;
   @override
   @JsonKey(ignore: true)
