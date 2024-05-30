@@ -5,6 +5,8 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import '../../../domain/entities/club_partition.dart';
 import '../../../domain/entities/session.dart';
 import '../../../domain/usercases/session_user_cases.dart';
+import '../../../infrastructure/api/providers/session_provider.dart';
+import '../../../infrastructure/api/repositories/session_repository_impl.dart';
 import '../../../infrastructure/api/repositories/session_repository_test.dart';
 import 'session_manager_event.dart';
 import 'session_manager_state.dart';
@@ -12,7 +14,7 @@ import 'session_manager_state.dart';
 
 class SessionManagerBloc extends Bloc<SessionManagerEvent, SessionManagerState> {
 
-  final SessionUserCases _sessionUserCases = SessionUserCases(SessionRepositoryTest());
+  final SessionUserCases _sessionUserCases = SessionUserCases(SessionRepositoryImplementation(sessionProvider: SessionProvider()));
 
   SessionManagerBloc() : super(SessionManagerState(currentDate: DateTime.now(), sessions: [], clubPartitions: [], isFirstLoad: true,)) {
 
