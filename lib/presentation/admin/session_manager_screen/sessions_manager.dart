@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../../core/config/service_locator.dart';
 import '../../../core/utils/responsive_builder.dart';
+import '../../../core/utils/types/time_interval.dart';
 import '../../core/agenda/agenda.dart';
 import '../bloc/session_manager_bloc.dart';
 import '../bloc/session_manager_event.dart';
@@ -244,14 +245,14 @@ class SessionsManager extends StatelessWidget {
         return Agenda(
           columnWidth: 200,
           heightPerMinute: ResponsiveBuilder.isDesktop(context) ? 1.35 : 1,
-          fromDate: DateTime(2024, 3, 12, 8),
-          lastDate: DateTime(2024, 3, 12, 22),
+          fromDate: state.currentDate.applied(const TimeOfDay(hour: 8, minute: 0)),
+          lastDate: state.currentDate.applied(const TimeOfDay(hour: 22, minute: 0)),
           buildCard: (session) {
             return Container(
               width: 190,
               decoration: BoxDecoration(
                   color: session.clientId != null
-                      ? Theme.of(context).colorScheme.surfaceVariant
+                      ? Theme.of(context).colorScheme.surfaceContainerHigh
                       : Theme.of(context).colorScheme.tertiaryContainer,
                   borderRadius: BorderRadius.circular(12)),
               child: Row(
