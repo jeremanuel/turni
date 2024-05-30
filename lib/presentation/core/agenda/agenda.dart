@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:intl/intl.dart';
 import '../../../core/utils/responsive_builder.dart';
 import '../../../domain/entities/physical_partition.dart';
@@ -188,11 +189,7 @@ class Agenda extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: physicalPartitions
-                .map((el) => buildPartitionHeader(el, context))
-                .toList()),
+        buildHeaders(context),
         Expanded(
           child: Row(
             children: physicalPartitions
@@ -202,6 +199,21 @@ class Agenda extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  Widget buildHeaders(BuildContext context) {
+
+    if(physicalPartitions.isEmpty){
+      return const Padding(
+        padding: EdgeInsets.all(8),
+        child: Text("No hay espacios cargados"),
+      );
+    } 
+    return Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: physicalPartitions
+              .map((el) => buildPartitionHeader(el, context))
+              .toList());
   }
 
   // Construye las listviews que dibujan las lineas verticales y horizontales
@@ -373,7 +385,10 @@ class Agenda extends StatelessWidget {
           }
 
           if(offsetPrevio < 0){
-            
+
+            showErrorMessage(previousSession, currentSession, context);
+                      
+            return const SizedBox();
           }
           return Padding(
             padding: EdgeInsets.symmetric(vertical: heightPerMinute * 2),
@@ -405,5 +420,15 @@ class Agenda extends StatelessWidget {
         itemCount: currentPhysicalPartitionSessions.length,
       ),
     );
+  }
+
+  void showErrorMessage(Session previousSession, Session currentSession, BuildContext context) {
+    final text = "Hubo una superposicion entre ${DateFormat.jm().format(previousSession.startTime)} - ${DateFormat.jm().format(previousSession.startTime.add(Duration(minutes: previousSession.getDurationInMinutes()))) } y ${DateFormat.jm().format(currentSession.startTime)} - ${DateFormat.jm().format(currentSession.startTime.add(Duration(minutes: previousSession.getDurationInMinutes())))}";
+              
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(text))
+      );
+    });
   }
 }
