@@ -12,5 +12,5 @@ abstract class SessionRepository {
 
   Future<List<Session>> getSessions(DateTime date);
 
-  List<ClubPartition> getPhysicalPartitions();
+  Future<List<ClubPartition>> getPhysicalPartitions();
 }

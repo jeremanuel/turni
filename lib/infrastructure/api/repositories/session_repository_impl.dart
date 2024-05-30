@@ -20,12 +20,12 @@ class SessionRepositoryImplementation extends SessionRepository {
   }
 
   @override
-  List<ClubPartition> getPhysicalPartitions() {
-    throw UnimplementedError();
+  Future<List<ClubPartition>> getPhysicalPartitions() async {
+    return sessionProvider.getClubPartitionsByAdmin();
   }
 
   @override
   Future<List<Session>> getSessions(DateTime date) {
-    throw UnimplementedError();
+    return sessionProvider.getSessionsByAdmin(date);
   }
 }
