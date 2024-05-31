@@ -9,6 +9,7 @@ import '../../../core/config/service_locator.dart';
 import '../../../core/utils/responsive_builder.dart';
 import '../../../core/utils/types/time_interval.dart';
 import '../../core/agenda/agenda.dart';
+import '../../core/dates_carrousel/dates_carrousel.dart';
 import '../bloc/session_manager_bloc.dart';
 import '../bloc/session_manager_event.dart';
 import '../bloc/session_manager_state.dart';
@@ -18,7 +19,6 @@ class SessionsManager extends StatelessWidget {
   const SessionsManager({
     super.key,
   });
-  DateTime get _now => DateTime.now();
 
   @override
   Widget build(BuildContext context) {
@@ -61,7 +61,7 @@ class SessionsManager extends StatelessWidget {
           width: 300,
           child: Column(
             children: [
-              buildDayHeader(),
+              SizedBox(height: 80, child: buildDayHeader()),
               const SizedBox(
                 height: 8,
               ),
@@ -114,7 +114,7 @@ class SessionsManager extends StatelessWidget {
         if (ResponsiveBuilder.isMobile(context))
           Padding(
             padding: const EdgeInsets.all(8.0),
-            child: buildDayHeader(),
+            child: SizedBox(height: 50, child: buildDayHeader()),
           ),
         SizedBox(
           height: 40,
@@ -184,51 +184,17 @@ class SessionsManager extends StatelessWidget {
     return BlocBuilder<SessionManagerBloc, SessionManagerState>(
       bloc: sl<SessionManagerBloc>(),
       builder: (context, state) {
-        return SizedBox(
-          height: 40,
-          child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-            Text(toBeginningOfSentenceCase(
-                DateFormat.EEEE().format(state.currentDate))),
-            const SizedBox(
-              width: 8,
-            ),
-            const Icon(
-              Icons.circle,
-              size: 8,
-            ),
-            const SizedBox(
-              width: 8,
-            ),
-            Text(DateFormat.MMMMd().format(state.currentDate)),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                IconButton(
-                    onPressed: () {
-                      sl<SessionManagerBloc>().add(
-                          SessionChangeDateEvent(state.currentDate
-                              .subtract(const Duration(days: 1))));
-                    },
-                    icon: const Icon(
-                      Icons.arrow_back_ios,
-                      size: 12,
-                    )),
-                IconButton(
-                    onPressed: () {
-                      sl<SessionManagerBloc>().add(
-                          SessionChangeDateEvent(
-                              state.currentDate.add(const Duration(days: 1))));
-                    },
-                    icon: const Icon(
-                      Icons.arrow_forward_ios,
-                      size: 12,
-                    ))
-              ],
-            )
-          ]),
+        return DatesCarrousel(
+          datesCarrouselController: sl<SessionManagerBloc>().datesCarrouselController ,
+          initialDate: state.currentDate,
+          onSelect: (date) {
+            sl<SessionManagerBloc>()
+                .add(SessionChangeDateEvent(date));
+          },
         );
       },
     );
+
   }
 
   Widget buildAgenda(BuildContext context) {

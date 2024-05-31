@@ -8,6 +8,7 @@ import '../../../domain/usercases/session_user_cases.dart';
 import '../../../infrastructure/api/providers/session_provider.dart';
 import '../../../infrastructure/api/repositories/session_repository_impl.dart';
 import '../../../infrastructure/api/repositories/session_repository_test.dart';
+import '../../core/dates_carrousel/dates_carrousel.dart';
 import 'session_manager_event.dart';
 import 'session_manager_state.dart';
 
@@ -16,6 +17,8 @@ class SessionManagerBloc extends Bloc<SessionManagerEvent, SessionManagerState> 
 
   final SessionUserCases _sessionUserCases = SessionUserCases(SessionRepositoryImplementation(sessionProvider: SessionProvider()));
 
+  final DatesCarrouselController datesCarrouselController = DatesCarrouselController();
+
   SessionManagerBloc() : super(SessionManagerState(currentDate: DateTime.now(), sessions: [], clubPartitions: [], isFirstLoad: true,)) {
 
 
@@ -23,9 +26,11 @@ class SessionManagerBloc extends Bloc<SessionManagerEvent, SessionManagerState> 
       emit(
         state.copyWith(currentDate: event.newDate, isLoadingSessions: true),
       );
+      
+      datesCarrouselController.setDate!(event.newDate);
 
       final sessions = await _sessionUserCases.getSessions(state.currentDate); 
-
+      
       emit(
         state.copyWith(
           sessions: sessions,
