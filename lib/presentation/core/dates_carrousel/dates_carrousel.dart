@@ -5,12 +5,19 @@ import 'package:intl/intl.dart';
 
 class DatesCarrousel extends StatefulWidget {
   
-  DatesCarrousel({super.key, initialDate, required this.onSelect}) : initialDate = initialDate ?? DateTime.now(); 
+  DatesCarrousel({super.key, initialDate, required this.onSelect, this.containerWidth = 300, this.datesCarrouselController}) : initialDate = initialDate ?? DateTime.now(); 
   
   
   final double width = 200;
   final DateTime initialDate;
   final Function(DateTime) onSelect;
+  final double containerWidth;
+  final DatesCarrouselController? datesCarrouselController;
+
+  final daysAfter = 20;
+  final daysBefore = 5;
+  final itemWidth = 66;
+
   @override
   State<DatesCarrousel> createState() => _DatesCarrouselState();
 }
@@ -19,63 +26,66 @@ class _DatesCarrouselState extends State<DatesCarrousel> {
   
   late DateTime selectedDate;
 
-  final scrollController = ScrollController(initialScrollOffset: (61 * 4) / 2);
+  late final ScrollController scrollController;
   late List<DateTime> dates; 
 
   @override
   void initState() {
 
-    selectedDate = widget.initialDate;
+    selectedDate = DateTime(widget.initialDate.year, widget.initialDate.month, widget.initialDate.day);// widget.initialDate;
 
-    dates = [
+    dates = generateDateArray(selectedDate, widget.daysBefore, widget.daysAfter); 
 
-    widget.initialDate.subtract(const Duration(days: 4)),
-    widget.initialDate.subtract(const Duration(days: 3)),
-    widget.initialDate.subtract(const Duration(days: 2)),
-    widget.initialDate.subtract(const Duration(days: 1)),
-    widget.initialDate,
-    widget.initialDate.add(const Duration(days: 1)),
-    widget.initialDate.add(const Duration(days: 2)),
-    widget.initialDate.add(const Duration(days: 3)),
-    widget.initialDate.add(const Duration(days: 4)),
-  ];
-    
-    scrollController.addListener(() {
-      
-       if(scrollController.offset == 0){
 
-        setState(() {
-          dates = [...generateDates(dates.first.subtract(const Duration(days: 4)), dates.first), ...dates];
-        });
-        
-        //scrollController.jumpTo(scrollController.position.minScrollExtent + (61 * 4));
-      } 
-      if(scrollController.offset == scrollController.position.maxScrollExtent){
+    scrollController = ScrollController(
+      initialScrollOffset: (widget.itemWidth * widget.daysBefore).toDouble() - (widget.containerWidth - (widget.itemWidth / 2)) / 2
+    );
 
-        setState(() {
-          dates = [ ...dates, ...generateDates(dates.last.add( const Duration(days: 1)), dates.last.add(const Duration(days: 4)) ),];
-          scrollController.jumpTo(scrollController.position.maxScrollExtent);          
-        });
-      }
-    });
+    widget.datesCarrouselController?.setDate = (date){
+      setState(() {
+        selectedDate = DateTime(date.year, date.month, date.day);
+      });
+    };
   
     super.initState();
   }
 
+  List<DateTime> generateDateArray(DateTime initialDate, int daysBefore, int daysAfter) {
+  List<DateTime> dates = [];
+
+  // Agregar las fechas antes de initialDate
+  for (int i = daysBefore; i > 0; i--) {
+    dates.add(initialDate.subtract(Duration(days: i)));
+  }
+
+  // Agregar initialDate
+  dates.add(initialDate);
+
+  // Agregar las fechas después de initialDate
+  for (int i = 1; i <= daysAfter; i++) {
+    dates.add(initialDate.add(Duration(days: i)));
+  }
+
+  return dates;
+}
   generateDates(DateTime start, DateTime end) {
     List<DateTime> dates = [];
     DateTime currentDate = start;
+    
     while (currentDate.isBefore(end)) {
       dates.add(currentDate);
       currentDate = currentDate.add(const Duration(days: 1));
     }
-    print(dates);
+    
     return dates;
   }
 
   @override
   Widget build(BuildContext context) {
-    return buildList(context);
+    return SizedBox(
+      width: widget.containerWidth,
+      child: buildList(context)
+    );
   }
 
   ScrollConfiguration buildList(BuildContext context) {
@@ -97,42 +107,52 @@ class _DatesCarrouselState extends State<DatesCarrousel> {
       );
   }
 
-  Widget buildItem(int index) {
+  /// Los items en una Listview utilizan todo el espacio en su dimension cruzada (En este caso, utilizan todo el alto)
+  /// Por eso lo encierro en un center, y su child determina dimensiones. Asi se centran con respecto a todo el ancho del item (dado por el ancho de la lista)
+  Widget buildItem(int index) { 
     
     final selectedIndex = dates.indexOf(selectedDate);
 
-    return Padding(
-      padding:  EdgeInsets.symmetric(vertical: selectedIndex == index ? 0 : 3),
-      child: Material(
-        child: InkWell(
-          customBorder: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(14),
-          ),
-          onTap: () {
-            setState(() {
-              selectedDate = dates[index];
-            });
-      
-            widget.onSelect(selectedDate);
-          },
-          child: Ink(
-              
-              decoration: BoxDecoration(
+  
+    return Center(
+      child: SizedBox(
+        height: selectedIndex == index ? 55 : 50,
+        width: selectedIndex == index ? 55 : 50,
+        child: Material(
+          child: InkWell(
+            customBorder: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(14),
-                color: selectedIndex == index ? Colors.white : const Color.fromRGBO(103, 43, 234, 1)
-              ),
-              width: index == selectedIndex ? 51 : 45,
-              height: index == selectedIndex ? 51 : 45,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,              
-                children: [
-                    Text(DateFormat.E().format(dates[index]), style: TextStyle(color: index == selectedIndex ? const Color.fromRGBO(103, 43, 234, 1) : Colors.white),),
-                    Text(dates[index].day.toString(), style: TextStyle(color: index == selectedIndex ? const Color.fromRGBO(103, 43, 234, 1) : Colors.white),),                  
-                ],
-              ),
             ),
+            onTap: () {
+              setState(() {
+                selectedDate = dates[index];
+              });
+        
+              widget.onSelect(selectedDate);
+            },
+            child: Ink(
+                
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(14),
+                  color: selectedIndex == index ? Colors.white : const Color.fromRGBO(103, 43, 234, 1)
+                ),
+                width: index == selectedIndex ? 51 : 45,
+                height: index == selectedIndex ? 51 : 45,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,              
+                  children: [
+                      Text(DateFormat.E().format(dates[index]), style: TextStyle(color: index == selectedIndex ? const Color.fromRGBO(103, 43, 234, 1) : Colors.white),),
+                      Text(dates[index].day.toString(), style: TextStyle(color: index == selectedIndex ? const Color.fromRGBO(103, 43, 234, 1) : Colors.white),),                  
+                  ],
+                ),
+              ),
+          ),
         ),
       ),
     );
   }
+}
+
+class DatesCarrouselController {
+  void Function(DateTime)? setDate;
 }

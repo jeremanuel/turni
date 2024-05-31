@@ -59,7 +59,7 @@ class SessionsManager extends StatelessWidget {
           width: 300,
           child: Column(
             children: [
-              SizedBox(height: 51, child: buildDayHeader()),
+              SizedBox(height: 80, child: buildDayHeader()),
               const SizedBox(
                 height: 8,
               ),
@@ -179,6 +179,7 @@ class SessionsManager extends StatelessWidget {
     return BlocBuilder<SessionManagerBloc, SessionManagerState>(
       builder: (context, state) {
         return DatesCarrousel(
+          datesCarrouselController: BlocProvider.of<SessionManagerBloc>(context).datesCarrouselController ,
           initialDate: state.currentDate,
           onSelect: (date) {
             BlocProvider.of<SessionManagerBloc>(context)
