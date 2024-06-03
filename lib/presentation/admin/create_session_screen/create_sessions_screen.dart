@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_portal/flutter_portal.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/config/service_locator.dart';
 import '../../../core/presentation/components/inputs/chips/filter_chip_interval_date.dart';
@@ -9,25 +10,48 @@ import '../../../core/utils/types/time_interval.dart';
 import '../../../domain/entities/physical_partition.dart';
 import '../../core/agenda/agenda.dart';
 import '../bloc/session_manager_bloc.dart';
+import '../bloc/session_manager_event.dart';
 import 'bloc/create_sesssions_form_bloc.dart';
 
 import 'widgets/add_session_button.dart';
 import 'widgets/agenda_edit_card.dart';
 
-class CreateSessionScreen extends StatelessWidget {
+class CreateSessionScreen extends StatefulWidget {
   const CreateSessionScreen({super.key});
 
   @override
+  State<CreateSessionScreen> createState() => _CreateSessionScreenState();
+}
+
+class _CreateSessionScreenState extends State<CreateSessionScreen> {
+
+  @override
+  void dispose() {
+
+    sl.resetLazySingleton<CreateSesssionsFormBloc>();
+    // TODO: implement dispose
+    super.dispose();
+  }
+  @override
   Widget build(BuildContext context) {
-    return Portal(
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.end,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          buildMainContainer(context),
-          const VerticalDivider(),
-          buildSideContainer(context)
-        ],
+    return BlocListener<CreateSesssionsFormBloc, CreateSesssionsFormState>(
+      bloc: sl<CreateSesssionsFormBloc>(),
+      listener: (context, state) {
+        if(state.savedSessions){
+          sl<SessionManagerBloc>().add(SessionManagerEvent.reloadSessionsEvent());
+          context.go('/session_manager');
+        }
+      },
+      child: Portal(
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            buildMainContainer(context),
+            const VerticalDivider(),
+            buildSideContainer(context)
+          ],
+        ),
       ),
     );
   }
@@ -56,7 +80,12 @@ class CreateSessionScreen extends StatelessWidget {
           const SizedBox(height: 20),
           buildClubPartitionsHorizontalList(context),
           const SizedBox(height: 20),
-          buildPhysicalPartitionsHorizontalList(context)
+          buildPhysicalPartitionsHorizontalList(context),
+          const Spacer(),
+          FilledButton(
+              onPressed: () =>
+                  sl<CreateSesssionsFormBloc>().add(const CreateSessions()),
+              child: const Text("Crear Turnos"))
         ],
       ),
     );
@@ -171,13 +200,16 @@ class CreateSessionScreen extends StatelessWidget {
                     ],
                     color: Theme.of(context).colorScheme.surface,
                   ),
-                  child: BlocBuilder<CreateSesssionsFormBloc, CreateSesssionsFormState>(
+                  child: BlocBuilder<CreateSesssionsFormBloc,
+                      CreateSesssionsFormState>(
                     bloc: sl<CreateSesssionsFormBloc>(),
-                    buildWhen: (previous, current) => previous.sessions != current.sessions,
+                    buildWhen: (previous, current) =>
+                        previous.sessions != current.sessions,
                     builder: (context, state) {
                       return Agenda(
                         sessions: state.sessions,
-                        buildCard: (session) => AgendaEditCard(session: session),
+                        buildCard: (session) =>
+                            AgendaEditCard(session: session),
                         physicalPartitions: [
                           PhysicalPartition(
                               partitionPhysicalId: 1,
@@ -186,11 +218,12 @@ class CreateSessionScreen extends StatelessWidget {
                               maxPlayers: 1,
                               physicalIdentifier: 1,
                               isCover: 'true',
-                              description: ''
-                          )
+                              description: '')
                         ],
-                        fromDate: DateTime.now().applied(const TimeOfDay(hour: 8, minute: 30)),
-                        lastDate: DateTime.now().applied(const TimeOfDay(hour: 22, minute: 30)),
+                        fromDate: DateTime.now()
+                            .applied(const TimeOfDay(hour: 8, minute: 30)),
+                        lastDate: DateTime.now()
+                            .applied(const TimeOfDay(hour: 22, minute: 30)),
                       );
                     },
                   )),
@@ -203,15 +236,14 @@ class CreateSessionScreen extends StatelessWidget {
 
   Row buildMainContainerHeader() {
     return Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              const AddSessionButton(),
-              const SizedBox(
-                width: 8,
-              ),
-              IconButton(onPressed: () {}, icon: const Icon(Icons.build))
-            ],
-          );
+      mainAxisAlignment: MainAxisAlignment.end,
+      children: [
+        const AddSessionButton(),
+        const SizedBox(
+          width: 8,
+        ),
+        IconButton(onPressed: () {}, icon: const Icon(Icons.build))
+      ],
+    );
   }
 }
-
