@@ -6,8 +6,15 @@ class CreateSesssionsFormState with _$CreateSesssionsFormState {
     @Default([]) List<ClubPartition> selectedClubPartitions,
     @Default([]) List<PhysicalPartition> selectedPhysicalPartitions,
     TimeInterval? interval,
-    @Default([]) List<Session> sessions
+    @Default([]) List<Session> sessions,
+
+    @Default(false) bool savedSessions
 
 
   }) = _CreateSessionManagerState;
+
+
+
 }
+
+

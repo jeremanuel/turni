@@ -1,3 +1,4 @@
+import '../../core/utils/types/time_interval.dart';
 import '../entities/club_partition.dart';
 import '../entities/session.dart';
 import '../repositories/session_repository.dart';
@@ -14,4 +15,9 @@ class SessionUserCases {
   Future<List<ClubPartition>> getClubPartitions() async {
     return _sessionRepository.getPhysicalPartitions();
   }
+  createSessions(List<Session> sessions, List<int> physicalPartitions, TimeInterval interval) async {
+   return _sessionRepository.createSessions(sessions, physicalPartitions, interval.generateDateRange());
+  }
+
+
 }
