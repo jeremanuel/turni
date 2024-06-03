@@ -238,7 +238,7 @@ class Agenda extends StatelessWidget {
               return SizedBox(
                 height: heightPerMinute * 30,
                 child: Divider(
-                  color: isCurrentDivider ? Colors.black : null,
+                  color: isCurrentDivider ? Theme.of(context).colorScheme.primary : null,
                 ),
               );
             },
