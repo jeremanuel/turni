@@ -16,4 +16,7 @@ class SessionManagerEvent with _$SessionManagerEvent {
 
   factory SessionManagerEvent.changeClubPartition(ClubPartition newClubPartition) = ChangeClubPartitionEvent;
 
+  factory SessionManagerEvent.reloadSessionsEvent() = ReloadSessionsEvent;
+
+
 }
