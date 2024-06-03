@@ -43,12 +43,15 @@ class User {
   }
 
   factory User.fromGoogleSignInUserData(GoogleSignInUserData userData) => User(
-      socialId: userData.id,
-      client: Client(
+        socialId: userData.id,
+        client: Client(
           person: Person(
-              name: userData.displayName!.split(' ')[0],
-              lastName: userData.displayName!.split(' ')[1],
-              email: userData.email)));
+            name: userData.displayName!.split(' ')[0],
+            lastName: userData.displayName!.split(' ')[1],
+            email: userData.email,
+          ),
+        ),
+      );
 
   Map<String, dynamic> toJson() => _$UserToJson(this);
   factory User.fromJson(Map<String, dynamic> json) => _$UserFromJson(json);

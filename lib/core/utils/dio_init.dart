@@ -1,8 +1,6 @@
-import 'dart:io';
-
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
-import 'package:turni/core/config/environment.dart';
+import '../config/environment.dart';
 
 class DioInit {
   static Dio init() {
