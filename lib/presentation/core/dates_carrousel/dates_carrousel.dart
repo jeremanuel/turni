@@ -122,7 +122,6 @@ class _DatesCarrouselState extends State<DatesCarrousel> {
     final selectedIndex = dates.indexOf(selectedDate);
     
     return Center(
-      key: GlobalObjectKey(index.toString()),
       child: SizedBox(
         height: selectedIndex == index ? 55 : 50,
         width: selectedIndex == index ? 55 : 50,
