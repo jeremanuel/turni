@@ -178,8 +178,10 @@ class Agenda extends StatelessWidget {
                 
               final height = horariosDisponibles.first.difference(horariosDisponibles.last).inMinutes.abs() * heightPerMinute;
               
-              return SizedBox(
-                height: height + 80
+              return BlankSpace(
+                canHover: false,
+                height: height + 80,
+                minHeightToHover: 0,
               );
             },                                    
         );
@@ -403,15 +405,20 @@ class Agenda extends StatelessWidget {
                 SizedBox( 
                   height: 15 * heightPerMinute,
                 ),
-                SizedBox(height: offsetPrevio.toDouble()),
+                if(offsetPrevio > 0)
+                  BlankSpace(height: offsetPrevio, minHeightToHover: 90 * heightPerMinute,),
+
                 SizedBox(
                     height: duration * heightPerMinute.toDouble() -
                         heightPerMinute *
                             4, // Le resto 4 unidades de tiempo por el padding que se aplica luego de 2 arriba y abajo.
-                    child: buildCard(currentSession)),
+                    child: buildCard(currentSession)
+                ),
+
                 if (index == currentPhysicalPartitionSessions.length - 1)
-                  SizedBox(
+                  BlankSpace(
                     height: offsetFinal.toDouble(),
+                    minHeightToHover: 90 * heightPerMinute,
                   ),
               ],
             ),
@@ -430,5 +437,74 @@ class Agenda extends StatelessWidget {
         SnackBar(content: Text(text))
       );
     });
+  }
+}
+
+class BlankSpace extends StatefulWidget {
+  const BlankSpace({
+    super.key,
+    required this.height,
+    this.canHover = true,
+    required this.minHeightToHover,
+
+  });
+
+  final bool canHover;
+  final double height;
+  final double minHeightToHover;
+
+
+  @override
+  State<BlankSpace> createState() => _BlankSpaceState();
+}
+
+class _BlankSpaceState extends State<BlankSpace> {
+
+  bool isHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+
+    if(!widget.canHover || widget.height < widget.minHeightToHover){
+      return SizedBox(height: widget.height);
+    }
+
+    const childHovered = Center(
+            child: Icon(Icons.add)
+          );
+
+    Widget childNotHovered = const Center(child: SizedBox());
+
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      onEnter: (event) {
+        setState(() {
+          isHovered = true;
+        });
+      },
+      onExit: (event) {
+        setState(() {
+          isHovered = false;
+        });
+      },      
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            
+          },
+          child: SizedBox(
+            height: widget.height.toDouble(),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 2),
+              child: Center(
+                child: isHovered ? childHovered : childNotHovered,
+              ),
+            )
+            
+             
+          ),
+        ),
+      ));
   }
 }

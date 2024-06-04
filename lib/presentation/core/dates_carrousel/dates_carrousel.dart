@@ -32,6 +32,7 @@ class _DatesCarrouselState extends State<DatesCarrousel> {
   @override
   void initState() {
 
+
     selectedDate = DateTime(widget.initialDate.year, widget.initialDate.month, widget.initialDate.day);// widget.initialDate;
 
     dates = generateDateArray(selectedDate, widget.daysBefore, widget.daysAfter); 
@@ -42,6 +43,13 @@ class _DatesCarrouselState extends State<DatesCarrousel> {
     );
 
     widget.datesCarrouselController?.setDate = (date){
+
+      if(!dates.contains(date)) return;
+
+      scrollController.jumpTo(
+        (dates.indexOf(date) - 2).toDouble() * widget.itemWidth 
+      );
+      
       setState(() {
         selectedDate = DateTime(date.year, date.month, date.day);
       });
@@ -112,13 +120,14 @@ class _DatesCarrouselState extends State<DatesCarrousel> {
   Widget buildItem(int index) { 
     
     final selectedIndex = dates.indexOf(selectedDate);
-
-  
+    
     return Center(
+      key: GlobalObjectKey(index.toString()),
       child: SizedBox(
         height: selectedIndex == index ? 55 : 50,
         width: selectedIndex == index ? 55 : 50,
         child: Material(
+          color: Colors.transparent,
           child: InkWell(
             customBorder: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(14),
