@@ -26,6 +26,7 @@ enum RouterType { clientRoute, adminRoute }
 enum ClientRoutes { session_feed }
 
 GoRouter buildGoRouter(RouterType routerType) {
+
   return GoRouter(
     initialLocation: '/',
     refreshListenable: sl<AuthCubit>(),
@@ -93,9 +94,10 @@ List<StatefulShellBranch> buildBranches(RouterType routerType) {
       ])
     ];
   }
-
+  
   return [
-    StatefulShellBranch(routes: [
+    StatefulShellBranch(
+      routes: [
       GoRoute(
         path: '/dashboard',
         builder: (context, state) => Center(
@@ -103,12 +105,27 @@ List<StatefulShellBranch> buildBranches(RouterType routerType) {
         ),
       )
     ]),
-          StatefulShellBranch(
+    StatefulShellBranch(
+      
           routes: [
-            GoRoute(
-              path: '/session_manager',
-              builder: (context, state) =>  SessionsManager(),
-            ),
+            ShellRoute(
+                builder: (context, state, child) => SessionsManager(sideChild: child),
+                routes: [
+                  GoRoute(
+                    path: '/session_manager',
+                    pageBuilder: (context, state) {
+                      return const NoTransitionPage(child: CalendarSideColumn());
+                    },
+                  ),
+                  GoRoute(
+                    path: '/reserve_session',
+                    pageBuilder: (context, state) {
+                      return const  NoTransitionPage(child: SizedBox(width: 300, child: Text("a"),));
+                    },
+                  ),
+                ], 
+                ),
+
             GoRoute(
               path: '/add_sessions',
               builder: (context, state) =>  CreateSessionScreen(),
