@@ -16,8 +16,12 @@ import '../bloc/session_manager_state.dart';
 import '../../../domain/entities/club_partition.dart';
 
 class SessionsManager extends StatelessWidget {
+
+  final Widget sideChild;
+  
   const SessionsManager({
-    super.key,
+    super.key, 
+    required this.sideChild,
   });
 
   @override
@@ -57,53 +61,7 @@ class SessionsManager extends StatelessWidget {
         const SizedBox(
           width: 16,
         ),
-        SizedBox(
-          width: 300,
-          child: Column(
-            children: [
-              SizedBox(height: 80, child: buildDayHeader()),
-              const SizedBox(
-                height: 8,
-              ),
-              const Divider(),
-              const SizedBox(
-                height: 8,
-              ),
-              Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(25),
-                    color: Theme.of(context).colorScheme.surface,
-                    //boxShadow: [BoxShadow(blurRadius: 5, spreadRadius: 5, color: Theme.of(context).colorScheme.shadow.withOpacity(0.2))],
-                  ),
-                  width: 300,
-                  child: calendarDatepicker2(context)),
-              const SizedBox(
-                height: 8,
-              ),
-              const Divider(),
-              const Spacer(),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  SizedBox(
-                    height: 36,
-                    child: FilledButton(
-                        onPressed: () {
-                          context.go('/add_sessions');
-                        }, 
-                        child: const Text("Agregar Turnos")),
-                  ),
-                  SizedBox(
-                    height: 36,
-                    child: TextButton(
-                        onPressed: () {},
-                        child: const Text("Secondary option")),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        )
+        sideChild
       ],
     );
   }
@@ -180,22 +138,7 @@ class SessionsManager extends StatelessWidget {
     };
   }
 
-  Widget buildDayHeader() {
-    return BlocBuilder<SessionManagerBloc, SessionManagerState>(
-      bloc: sl<SessionManagerBloc>(),
-      builder: (context, state) {
-        return DatesCarrousel(
-          datesCarrouselController: sl<SessionManagerBloc>().datesCarrouselController ,
-          initialDate: state.currentDate,
-          onSelect: (date) {
-            sl<SessionManagerBloc>()
-                .add(SessionChangeDateEvent(date));
-          },
-        );
-      },
-    );
-
-  }
+ 
 
   Widget buildAgenda(BuildContext context) {
     return BlocBuilder<SessionManagerBloc, SessionManagerState>(
@@ -256,7 +199,7 @@ class SessionsManager extends StatelessWidget {
                           ),
                         if (session.clientId == null)
                           OutlinedButton(
-                            onPressed: () {},
+                            onPressed: () {context.go("/reserve_session");},
                             child: const Text("Reservar"),
                           ),
                       ],
@@ -287,6 +230,69 @@ class SessionsManager extends StatelessWidget {
       },
     );
   }
+
+
+
+
+}
+
+
+
+
+
+class CalendarSideColumn extends StatelessWidget {
+  const CalendarSideColumn({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+          width: 300,
+          child: Column(
+            children: [
+              SizedBox(height: 80, child: buildDayHeader()),
+              const SizedBox(
+                height: 8,
+              ),
+              const Divider(),
+              const SizedBox(
+                height: 8,
+              ),
+              Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(25),
+                    //boxShadow: [BoxShadow(blurRadius: 5, spreadRadius: 5, color: Theme.of(context).colorScheme.shadow.withOpacity(0.2))],
+                  ),
+                  width: 300,
+                  child: calendarDatepicker2(context)),
+              const SizedBox(
+                height: 8,
+              ),
+              const Divider(),
+              const Spacer(),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  SizedBox(
+                    height: 36,
+                    child: FilledButton(
+                        onPressed: () {
+                          context.go('/add_sessions');
+                        }, 
+                        child: const Text("Agregar Turnos")),
+                  ),
+                  SizedBox(
+                    height: 36,
+                    child: TextButton(
+                        onPressed: () {},
+                        child: const Text("Secondary option")),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+  }
+}
 
   Widget calendarDatepicker2(BuildContext context) {
     return BlocBuilder<SessionManagerBloc, SessionManagerState>(
@@ -319,7 +325,24 @@ class SessionsManager extends StatelessWidget {
     );
   }
 
-  Widget? dayBuilder(context,
+ Widget buildDayHeader() {
+    return BlocBuilder<SessionManagerBloc, SessionManagerState>(
+      bloc: sl<SessionManagerBloc>(),
+      builder: (context, state) {
+        return DatesCarrousel(
+          datesCarrouselController: sl<SessionManagerBloc>().datesCarrouselController ,
+          initialDate: state.currentDate,
+          onSelect: (date) {
+            sl<SessionManagerBloc>()
+                .add(SessionChangeDateEvent(date));
+          },
+        );
+      },
+    );
+
+  }
+
+    Widget? dayBuilder(context,
       {required DateTime date,
       decoration,
       isDisabled,
@@ -359,24 +382,3 @@ class SessionsManager extends StatelessWidget {
       ),
     );
   }
-}
-
-class LinePainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = Colors.black // Color de la línea
-      ..strokeWidth = 2; // Grosor de la línea
-
-    final startPoint = Offset(0, size.height / 2); // Punto inicial de la línea
-    final endPoint =
-        Offset(size.width, size.height / 2); // Punto final de la línea
-
-    canvas.drawLine(startPoint, endPoint, paint); // Dibujar la línea
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) {
-    return false; // Devuelve true si la línea debe ser repintada
-  }
-}
