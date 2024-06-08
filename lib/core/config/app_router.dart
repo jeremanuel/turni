@@ -18,6 +18,7 @@ import '../../presentation/admin/create_session_screen/create_sessions_screen.da
 
 
 import '../../domain/entities/club_type.dart';
+import '../../presentation/admin/session_manager_screen/widgets/calendar_side_column.dart';
 import '../../presentation/home/home.dart';
 import '../../presentation/session_feed/session_feed.dart';
 
@@ -109,6 +110,7 @@ List<StatefulShellBranch> buildBranches(RouterType routerType) {
       
           routes: [
             ShellRoute(
+                
                 builder: (context, state, child) => SessionsManager(sideChild: child),
                 routes: [
                   GoRoute(
@@ -118,9 +120,21 @@ List<StatefulShellBranch> buildBranches(RouterType routerType) {
                     },
                   ),
                   GoRoute(
-                    path: '/reserve_session',
+                    path: '/session_manager/reserve',
                     pageBuilder: (context, state) {
-                      return const  NoTransitionPage(child: SizedBox(width: 300, child: Text("a"),));
+                      return const  NoTransitionPage(child: SizedBox(width: 300, child: Text("reservar turno"),));
+                    },
+                  ),    
+                  GoRoute(
+                    path: '/session_manager/edit',
+                    pageBuilder: (context, state) {
+                      return const  NoTransitionPage(child: SizedBox(width: 300, child: Text("Editar turno"),));
+                    },
+                  ),
+                  GoRoute(
+                    path: '/session_manager/add',
+                    pageBuilder: (context, state) {
+                      return const  NoTransitionPage(child: SizedBox(width: 300, child: Text("Agregar turno"),));
                     },
                   ),
                 ], 

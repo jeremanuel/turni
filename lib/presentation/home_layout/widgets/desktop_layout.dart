@@ -56,6 +56,7 @@ class SideBar extends StatelessWidget {
       onDestinationSelected: (index) => child.goBranch(index),
       labelType: NavigationRailLabelType.none,
       elevation: 25,
+      groupAlignment: 0,
       destinations: buildRails(),
       selectedIndex: child.currentIndex
       );
