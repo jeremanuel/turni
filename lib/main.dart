@@ -46,7 +46,7 @@ class MyApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         title: 'Turni',
         theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: Color(0xff672bea), brightness: Brightness.dark),
+          colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xff672bea), brightness: Brightness.light),
           useMaterial3: true,
         ),
       );

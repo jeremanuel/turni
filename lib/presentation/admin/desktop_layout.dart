@@ -68,6 +68,7 @@ class SideBar extends StatelessWidget {
                 "assets/img/logotype_white.svg",
                 semanticsLabel: 'Logo de la app de Turni',
                 height: 25,
+                colorFilter:  ColorFilter.mode(Theme.of(context).colorScheme.onSurface, BlendMode.srcIn)
               ),
       ),
       trailing:  Expanded(
