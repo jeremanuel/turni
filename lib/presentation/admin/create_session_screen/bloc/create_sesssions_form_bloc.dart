@@ -6,6 +6,9 @@ import '../../../../core/utils/types/time_interval.dart';
 import '../../../../domain/entities/club_partition.dart';
 import '../../../../domain/entities/physical_partition.dart';
 import '../../../../domain/entities/session.dart';
+import '../../../../domain/usercases/session_user_cases.dart';
+import '../../../../infrastructure/api/providers/session_provider.dart';
+import '../../../../infrastructure/api/repositories/session_repository_impl.dart';
 import '../../bloc/session_manager_bloc.dart';
 
 part 'create_sesssions_form_event.dart';
@@ -13,10 +16,12 @@ part 'create_sesssions_form_state.dart';
 part 'create_sesssions_form_bloc.freezed.dart';
 
 class CreateSesssionsFormBloc extends Bloc<CreateSesssionsFormEvent, CreateSesssionsFormState> {
+
+  final SessionUserCases _sessionUserCases = SessionUserCases(SessionRepositoryImplementation(sessionProvider: SessionProvider()));
+
+
   CreateSesssionsFormBloc() : super(_CreateSessionManagerState()) {
-    on<CreateSesssionsFormEvent>((event, emit) {
-      // TODO: implement event handler
-    });
+
 
     on<ChangeSelectionClubPartition>((ChangeSelectionClubPartition event, emit){
 
@@ -78,6 +83,16 @@ class CreateSesssionsFormBloc extends Bloc<CreateSesssionsFormEvent, CreateSesss
       final sessions = state.sessions.where((element) => element != event.session).toList();
 
       emit(state.copyWith(sessions: sessions));
+    });
+
+    on<CreateSessions>((event, emit) async {
+
+      await _sessionUserCases.createSessions(state.sessions, state.selectedPhysicalPartitions.map((el) => el.partitionPhysicalId).toList(), state.interval!);
+
+      emit(state.copyWith(
+        savedSessions: true
+      ));
+
     });
   }
 }

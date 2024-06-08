@@ -55,7 +55,7 @@ class SessionManagerBloc extends Bloc<SessionManagerEvent, SessionManagerState> 
           sessions: sessions,
           isFirstLoad: false,
           clubPartitions: clubPartitions,
-          selectedClubPartition: clubPartitions.last
+          selectedClubPartition: clubPartitions.first
         )
       );
     });
@@ -69,6 +69,25 @@ class SessionManagerBloc extends Bloc<SessionManagerEvent, SessionManagerState> 
       );
 
     });
+
+    on<ReloadSessionsEvent>((event, emit) async {
+
+        emit(
+        state.copyWith(
+          isLoadingSessions: true,
+        )
+      );
+
+      final sessions = await _sessionUserCases.getSessions(state.currentDate); 
+
+      emit(
+        state.copyWith(
+          sessions: sessions,
+          isLoadingSessions: false
+        )
+      );
+
+    },);
 
     add(SessionLoadEvent());
 

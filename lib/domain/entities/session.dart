@@ -60,6 +60,8 @@ class Session with _$Session{
 
    factory Session.fromJson(Map<String, dynamic> json) =>
       _$SessionFromJson(json);
+
+  bool get isReserved => clientId != null;
  
 
 }

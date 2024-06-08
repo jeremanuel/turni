@@ -14,15 +14,13 @@ class DesktopLayout extends StatelessWidget {
     
     return Scaffold(
       body:  Padding(
-        padding: EdgeInsets.symmetric(vertical: 16),
+        padding:const EdgeInsets.symmetric(vertical: 16),
         child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          
           children: [
                        
-            SizedBox(width: 20,),
+            const SizedBox(width: 20,),
             SideBar(child: child),
-            SizedBox(width: 20,),
+            const SizedBox(width: 20,),
 
             Expanded(
               child: Material(
@@ -31,7 +29,7 @@ class DesktopLayout extends StatelessWidget {
                 child: child,
               ),
             ),
-            SizedBox(width: 20,),
+            const SizedBox(width: 20,),
 
           ],
         ),
@@ -56,7 +54,7 @@ class SideBar extends StatelessWidget {
 
     return NavigationRail(
       onDestinationSelected: (index) => child.goBranch(index),
-      labelType: NavigationRailLabelType.all,
+      labelType: NavigationRailLabelType.none,
       elevation: 25,
       groupAlignment: 0,
       destinations: buildRails(),

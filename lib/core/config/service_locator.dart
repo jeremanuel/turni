@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter_localization/flutter_localization.dart';
 import 'package:get_it/get_it.dart';
 import '../../domain/entities/club_type.dart';
 import '../utils/dio_init.dart';
@@ -37,5 +38,19 @@ class ServiceLocator {
     sl.registerLazySingleton<HomeCubit>(() => HomeCubit());
 
     sl.registerLazySingleton<SessionCubit>(() => SessionCubit());
+    
+    _initializeLocalization();
+  }
+
+
+
+  static _initializeLocalization(){
+      final FlutterLocalization localization = FlutterLocalization.instance;
+      localization.init(mapLocales: [const MapLocale('es', {'title':'Localizacion'})], initLanguageCode: 'es');
+
+      sl.registerSingleton(localization);
+
   }
 }
+
+

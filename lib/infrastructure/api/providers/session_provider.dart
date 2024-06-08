@@ -52,4 +52,23 @@ class SessionProvider {
           .map((session) => ClubPartition.fromJson(session))
           .toList();
   }
+
+  createSessions(List<Session> sessions, List<int> physicalPartitions, List<DateTime> dates) async {
+
+    try {
+       final body = {
+      "sessions":sessions,
+      "physical_partitions":physicalPartitions,
+      "dates":dates.map((el) => el.toString()).toList()
+    };
+
+    final response = await dioInstance.post("/admin/sessions", data: body);
+
+    return response.data;
+
+    } catch (e) {
+      
+      return false;      
+    }
+  }
 }
