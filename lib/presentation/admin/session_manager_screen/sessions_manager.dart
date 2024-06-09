@@ -58,7 +58,10 @@ class SessionsManager extends StatelessWidget {
         const SizedBox(
           width: 16,
         ),
-        sideChild
+        SizedBox(
+          width: 300,
+          child: sideChild
+        )
       ],
     );
   }
