@@ -1,12 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/config/service_locator.dart';
-import '../../domain/entities/club_type.dart';
-import '../core/cubit/auth/auth_cubit.dart';
 import '../core/widgets/button/button_navigation.dart';
 import '../core/widgets/carrousel/carrousel_horizontal.dart';
 import 'cubit/home_cubit.dart';
@@ -112,13 +109,5 @@ class HomePage extends StatelessWidget {
               },
             ))
         .toList();
-  }
-
-  void handleLogout() async {
-    try {
-      sl<AuthCubit>().signOutGoogle();
-    } catch (error) {
-      sl<AuthCubit>().emitError(error.toString());
-    }
   }
 }

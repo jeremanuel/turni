@@ -1,12 +1,9 @@
-import 'dart:js';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 
 import '../../../core/presentation/components/inputs/text_fields/custom_text_field.dart';
 
 class TemplateSimple extends StatelessWidget {
-
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -18,9 +15,7 @@ class TemplateSimple extends StatelessWidget {
               _turnCreator(context),
             ],
           ),
-          Container(
-
-          )
+          Container()
         ],
       ),
     );
@@ -39,61 +34,47 @@ class TemplateSimple extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-        
             Container(
               child: CustomTextField(
                 context,
-                labelText: 'Inicio - Fin',                 
+                labelText: 'Inicio - Fin',
               ),
             ),
-
-            SizedBox(height: 10,),
-
+            SizedBox(
+              height: 10,
+            ),
             ElevatedButton(
               child: Icon(Icons.add),
-              onPressed: (){},
+              onPressed: () {},
             ),
-
             Spacer(),
-
             Container(
               width: 100,
-              child: CustomTextField(
-                context,
-                labelText: 'Precio'
-              ),
+              child: CustomTextField(context, labelText: 'Precio'),
             ),
-
-            SizedBox(height: 10,),
-
+            SizedBox(
+              height: 10,
+            ),
             Row(
               children: [
-
                 Container(
                   width: 100,
-                  child: CustomTextField(
-                    context,
-                    labelText: 'Duración'
-                  ),
+                  child: CustomTextField(context, labelText: 'Duración'),
                 ),
-
                 Spacer(),
-
                 ElevatedButton(
                   child: Text('Generar'),
-                  onPressed: (){}, 
+                  onPressed: () {},
                 ),
-
               ],
             ),
-        
           ],
         ),
       ),
-    );    
-  } 
+    );
+  }
 
-  _turnCreator(BuildContext context){
+  _turnCreator(BuildContext context) {
     return Container(
       padding: EdgeInsets.all(10),
       height: 300,
@@ -105,37 +86,25 @@ class TemplateSimple extends StatelessWidget {
       child: FormBuilder(
         child: Column(
           children: [
-
             Row(
               children: [
                 Container(
                   width: 100,
-                  child: CustomTextField(
-                    context,
-                    labelText: 'Inicio'
-                  ),
+                  child: CustomTextField(context, labelText: 'Inicio'),
                 ),
                 Spacer(),
                 Container(
                   width: 100,
-                  child: CustomTextField(
-                    context,
-                    labelText: 'Fin'
-                  ),
+                  child: CustomTextField(context, labelText: 'Fin'),
                 ),
               ],
             ),
-
             Row(
-              children: [
-                
-              ],
+              children: [],
             )
-
           ],
         ),
       ),
     );
   }
-
 }
