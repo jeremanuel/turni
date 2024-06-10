@@ -24,7 +24,8 @@ class SessionFeedPage extends StatelessWidget {
     final user = authCubit.state.userCredential;
     final message = user!.templateMessage!;
     final templateMessage = TemplateMessage(link: message);
-    templateMessage.populateLinkFromSession(session, user.client!.person!);
+
+    templateMessage.populateLinkFromSession([session, user.client!.person!]);
 
     launchUrl(templateMessage.getPopulatedLink());
   }
@@ -40,13 +41,6 @@ class SessionFeedPage extends StatelessWidget {
         bloc: sessionCubit,
         builder: (context, state) {
           return Scaffold(
-              /* appBar: AppBar(
-                title: Text(state.isLoading
-                    ? 'Loading'
-                    : (state.sessions.isNotEmpty)
-                        ? 'Turnos de ${clubType.name}'
-                        : 'No hay turnos de ${clubType.name}'),
-              ), */
               backgroundColor: backgroundColor,
               body: Stack(
                 alignment: Alignment.center,

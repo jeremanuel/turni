@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
 
 import '../../core/config/environment.dart';
+import '../../core/utils/transformers/symbols.dart';
 import 'person.dart';
 import 'session.dart';
 
@@ -15,26 +16,28 @@ class TemplateMessage {
     return Uri.parse(populatedLink);
   }
 
-  void populateLinkFromSession(Session session, Person person) {
+  void populateLinkFromSession(List<dynamic> models) {
     try {
       List<String> linkSplitted = link.split('--');
-      Map<String, dynamic> sessionJson = session.toJson();
-      Map<String, dynamic> personJson = person.toJson();
+      Map<String, dynamic> jsonModels = {};
 
-      sessionJson['baseurl'] =
+      for (var model in models) {
+        jsonModels.addAll(model.toJson());
+      }
+
+      //Constants values
+      jsonModels['baseurl'] =
           kIsWeb ? Environment.apiUrl : Environment.apiNativeUrl;
-
-      print(sessionJson);
 
       for (int i = 1; i < linkSplitted.length; i += 2) {
         String key = linkSplitted[i];
         String? format;
 
-        if (key.contains('%21')) {
-          [key, format] = key.split('%21');
+        if (key.contains(SymbolString.trasnform(Symbol.admiration))) {
+          [key, format] = key.split(SymbolString.trasnform(Symbol.admiration));
         }
 
-        dynamic value = sessionJson[key] ?? personJson[key];
+        dynamic value = jsonModels[key];
 
         if (format != null) {
           value = DateFormat(format).format(DateTime.parse(value));
