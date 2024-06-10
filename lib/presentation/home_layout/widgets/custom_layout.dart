@@ -6,6 +6,8 @@ import 'package:turni/presentation/admin/desktop_layout.dart';
 import 'package:turni/presentation/home_layout/widgets/custom_botton_navigation_bar.dart';
 import 'package:turni/presentation/home_layout/widgets/custom_drawer.dart';
 
+import 'mobile_layout.dart';
+
 class CustomLayout extends StatelessWidget {
 
   final StatefulNavigationShell child;
@@ -23,7 +25,7 @@ class CustomLayout extends StatelessWidget {
      return DesktopLayout(child: child);
     }
 
-    return buildMobileLayout(); 
+    return MobileLayout(child: child,); 
   }
 
   Scaffold buildMobileLayout() {

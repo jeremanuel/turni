@@ -24,11 +24,14 @@ mixin _$Session {
   int get sessionId => throw _privateConstructorUsedError;
   @JsonKey(name: "created_at")
   DateTime get createdAt => throw _privateConstructorUsedError;
-  @JsonKey(name: "start_time")
+  @JsonKey(
+      name: "start_time", fromJson: ValueTransformers.fromJsonDateTimeLocale)
   DateTime get startTime => throw _privateConstructorUsedError;
+  @JsonKey(defaultValue: "1:30")
   String get duration => throw _privateConstructorUsedError;
   @JsonKey(name: "client_id")
   int? get clientId => throw _privateConstructorUsedError;
+  @JsonKey(fromJson: ValueTransformers.fromJsonDouble)
   double get price => throw _privateConstructorUsedError;
   @JsonKey(name: "admin_creator_id")
   int? get adminCreatorId => throw _privateConstructorUsedError;
@@ -52,10 +55,13 @@ abstract class $SessionCopyWith<$Res> {
   $Res call(
       {@JsonKey(name: "session_id") int sessionId,
       @JsonKey(name: "created_at") DateTime createdAt,
-      @JsonKey(name: "start_time") DateTime startTime,
-      String duration,
+      @JsonKey(
+          name: "start_time",
+          fromJson: ValueTransformers.fromJsonDateTimeLocale)
+      DateTime startTime,
+      @JsonKey(defaultValue: "1:30") String duration,
       @JsonKey(name: "client_id") int? clientId,
-      double price,
+      @JsonKey(fromJson: ValueTransformers.fromJsonDouble) double price,
       @JsonKey(name: "admin_creator_id") int? adminCreatorId,
       @JsonKey(name: "partition_physical_id") int partitionPhysicalId,
       @JsonKey(name: "club_name") String? clubName,
@@ -141,10 +147,13 @@ abstract class _$$SessionImplCopyWith<$Res> implements $SessionCopyWith<$Res> {
   $Res call(
       {@JsonKey(name: "session_id") int sessionId,
       @JsonKey(name: "created_at") DateTime createdAt,
-      @JsonKey(name: "start_time") DateTime startTime,
-      String duration,
+      @JsonKey(
+          name: "start_time",
+          fromJson: ValueTransformers.fromJsonDateTimeLocale)
+      DateTime startTime,
+      @JsonKey(defaultValue: "1:30") String duration,
       @JsonKey(name: "client_id") int? clientId,
-      double price,
+      @JsonKey(fromJson: ValueTransformers.fromJsonDouble) double price,
       @JsonKey(name: "admin_creator_id") int? adminCreatorId,
       @JsonKey(name: "partition_physical_id") int partitionPhysicalId,
       @JsonKey(name: "club_name") String? clubName,
@@ -224,10 +233,13 @@ class _$SessionImpl extends _Session {
   _$SessionImpl(
       {@JsonKey(name: "session_id") required this.sessionId,
       @JsonKey(name: "created_at") required this.createdAt,
-      @JsonKey(name: "start_time") required this.startTime,
-      required this.duration,
+      @JsonKey(
+          name: "start_time",
+          fromJson: ValueTransformers.fromJsonDateTimeLocale)
+      required this.startTime,
+      @JsonKey(defaultValue: "1:30") required this.duration,
       @JsonKey(name: "client_id") this.clientId,
-      required this.price,
+      @JsonKey(fromJson: ValueTransformers.fromJsonDouble) required this.price,
       @JsonKey(name: "admin_creator_id") this.adminCreatorId,
       @JsonKey(name: "partition_physical_id") required this.partitionPhysicalId,
       @JsonKey(name: "club_name") this.clubName,
@@ -244,14 +256,17 @@ class _$SessionImpl extends _Session {
   @JsonKey(name: "created_at")
   final DateTime createdAt;
   @override
-  @JsonKey(name: "start_time")
+  @JsonKey(
+      name: "start_time", fromJson: ValueTransformers.fromJsonDateTimeLocale)
   final DateTime startTime;
   @override
+  @JsonKey(defaultValue: "1:30")
   final String duration;
   @override
   @JsonKey(name: "client_id")
   final int? clientId;
   @override
+  @JsonKey(fromJson: ValueTransformers.fromJsonDouble)
   final double price;
   @override
   @JsonKey(name: "admin_creator_id")
@@ -330,9 +345,13 @@ abstract class _Session extends Session {
   factory _Session(
           {@JsonKey(name: "session_id") required final int sessionId,
           @JsonKey(name: "created_at") required final DateTime createdAt,
-          @JsonKey(name: "start_time") required final DateTime startTime,
-          required final String duration,
+          @JsonKey(
+              name: "start_time",
+              fromJson: ValueTransformers.fromJsonDateTimeLocale)
+          required final DateTime startTime,
+          @JsonKey(defaultValue: "1:30") required final String duration,
           @JsonKey(name: "client_id") final int? clientId,
+          @JsonKey(fromJson: ValueTransformers.fromJsonDouble)
           required final double price,
           @JsonKey(name: "admin_creator_id") final int? adminCreatorId,
           @JsonKey(name: "partition_physical_id")
@@ -351,14 +370,17 @@ abstract class _Session extends Session {
   @JsonKey(name: "created_at")
   DateTime get createdAt;
   @override
-  @JsonKey(name: "start_time")
+  @JsonKey(
+      name: "start_time", fromJson: ValueTransformers.fromJsonDateTimeLocale)
   DateTime get startTime;
   @override
+  @JsonKey(defaultValue: "1:30")
   String get duration;
   @override
   @JsonKey(name: "client_id")
   int? get clientId;
   @override
+  @JsonKey(fromJson: ValueTransformers.fromJsonDouble)
   double get price;
   @override
   @JsonKey(name: "admin_creator_id")

@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:intl/intl.dart';
 import '../../../core/utils/responsive_builder.dart';
 import '../../../domain/entities/physical_partition.dart';
@@ -177,8 +178,10 @@ class Agenda extends StatelessWidget {
                 
               final height = horariosDisponibles.first.difference(horariosDisponibles.last).inMinutes.abs() * heightPerMinute;
               
-              return SizedBox(
-                height: height + 80
+              return BlankSpace(
+                canHover: false,
+                height: height + 80,
+                minHeightToHover: 0,
               );
             },                                    
         );
@@ -188,11 +191,7 @@ class Agenda extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: physicalPartitions
-                .map((el) => buildPartitionHeader(el, context))
-                .toList()),
+        buildHeaders(context),
         Expanded(
           child: Row(
             children: physicalPartitions
@@ -202,6 +201,21 @@ class Agenda extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  Widget buildHeaders(BuildContext context) {
+
+    if(physicalPartitions.isEmpty){
+      return const Padding(
+        padding: EdgeInsets.all(8),
+        child: Text("No hay espacios cargados"),
+      );
+    } 
+    return Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: physicalPartitions
+              .map((el) => buildPartitionHeader(el, context))
+              .toList());
   }
 
   // Construye las listviews que dibujan las lineas verticales y horizontales
@@ -226,7 +240,7 @@ class Agenda extends StatelessWidget {
               return SizedBox(
                 height: heightPerMinute * 30,
                 child: Divider(
-                  color: isCurrentDivider ? Colors.black : null,
+                  color: isCurrentDivider ? Theme.of(context).colorScheme.primary : null,
                 ),
               );
             },
@@ -373,7 +387,10 @@ class Agenda extends StatelessWidget {
           }
 
           if(offsetPrevio < 0){
-            
+
+            showErrorMessage(previousSession, currentSession, context);
+                      
+            return const SizedBox();
           }
           return Padding(
             padding: EdgeInsets.symmetric(vertical: heightPerMinute * 2),
@@ -388,15 +405,20 @@ class Agenda extends StatelessWidget {
                 SizedBox( 
                   height: 15 * heightPerMinute,
                 ),
-                SizedBox(height: offsetPrevio.toDouble()),
+                if(offsetPrevio > 0)
+                  BlankSpace(height: offsetPrevio, minHeightToHover: 90 * heightPerMinute,),
+
                 SizedBox(
                     height: duration * heightPerMinute.toDouble() -
                         heightPerMinute *
                             4, // Le resto 4 unidades de tiempo por el padding que se aplica luego de 2 arriba y abajo.
-                    child: buildCard(currentSession)),
+                    child: buildCard(currentSession)
+                ),
+
                 if (index == currentPhysicalPartitionSessions.length - 1)
-                  SizedBox(
+                  BlankSpace(
                     height: offsetFinal.toDouble(),
+                    minHeightToHover: 90 * heightPerMinute,
                   ),
               ],
             ),
@@ -405,5 +427,84 @@ class Agenda extends StatelessWidget {
         itemCount: currentPhysicalPartitionSessions.length,
       ),
     );
+  }
+
+  void showErrorMessage(Session previousSession, Session currentSession, BuildContext context) {
+    final text = "Hubo una superposicion entre ${DateFormat.jm().format(previousSession.startTime)} - ${DateFormat.jm().format(previousSession.startTime.add(Duration(minutes: previousSession.getDurationInMinutes()))) } y ${DateFormat.jm().format(currentSession.startTime)} - ${DateFormat.jm().format(currentSession.startTime.add(Duration(minutes: previousSession.getDurationInMinutes())))}";
+              
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(text))
+      );
+    });
+  }
+}
+
+class BlankSpace extends StatefulWidget {
+  const BlankSpace({
+    super.key,
+    required this.height,
+    this.canHover = true,
+    required this.minHeightToHover,
+
+  });
+
+  final bool canHover;
+  final double height;
+  final double minHeightToHover;
+
+
+  @override
+  State<BlankSpace> createState() => _BlankSpaceState();
+}
+
+class _BlankSpaceState extends State<BlankSpace> {
+
+  bool isHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+
+    if(!widget.canHover || widget.height < widget.minHeightToHover){
+      return SizedBox(height: widget.height);
+    }
+
+    const childHovered = Center(
+            child: Icon(Icons.add)
+          );
+
+    Widget childNotHovered = const Center(child: SizedBox());
+
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      onEnter: (event) {
+        setState(() {
+          isHovered = true;
+        });
+      },
+      onExit: (event) {
+        setState(() {
+          isHovered = false;
+        });
+      },      
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            
+          },
+          child: SizedBox(
+            height: widget.height.toDouble(),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 2),
+              child: Center(
+                child: isHovered ? childHovered : childNotHovered,
+              ),
+            )
+            
+             
+          ),
+        ),
+      ));
   }
 }

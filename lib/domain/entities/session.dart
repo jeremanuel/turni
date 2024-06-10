@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
+
+import '../../core/utils/value_transformers.dart';
 
 part 'session.freezed.dart';
 part 'session.g.dart';
@@ -9,9 +12,13 @@ class Session with _$Session {
   factory Session(
       {@JsonKey(name: "session_id") required int sessionId,
       @JsonKey(name: "created_at") required DateTime createdAt,
-      @JsonKey(name: "start_time") required DateTime startTime,
-      required String duration,
+      @JsonKey(
+          name: "start_time",
+          fromJson: ValueTransformers.fromJsonDateTimeLocale)
+      required DateTime startTime,
+      @JsonKey(defaultValue: "1:30") required String duration,
       @JsonKey(name: "client_id") int? clientId,
+      @JsonKey(fromJson: ValueTransformers.fromJsonDouble)
       required double price,
       @JsonKey(name: "admin_creator_id") int? adminCreatorId,
       @JsonKey(name: "partition_physical_id") required int partitionPhysicalId,
@@ -43,4 +50,6 @@ class Session with _$Session {
 
   factory Session.fromJson(Map<String, dynamic> json) =>
       _$SessionFromJson(json);
+
+  bool get isReserved => clientId != null;
 }

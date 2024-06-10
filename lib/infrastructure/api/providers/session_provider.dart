@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import '../../../core/config/service_locator.dart';
 import '../../../core/utils/entities/coordinate.dart';
 import '../../../core/utils/entities/range_date.dart';
+import '../../../domain/entities/club_partition.dart';
 import '../../../domain/entities/session.dart';
 
 class SessionProvider {
@@ -26,6 +27,48 @@ class SessionProvider {
     } catch (error) {
       print('error: $error');
       return [];
+    }
+  }
+
+  Future<List<Session>> getSessionsByAdmin(DateTime date) async {
+    try{
+    final response = await dioInstance.get("/admin/sessions", queryParameters: {"date":date});
+
+    return (response.data as List)
+          .map((session) => Session.fromJson(session))
+          .toList();
+          
+    }catch(error){
+      print(error);
+      return [];
+    }
+  }
+
+    Future<List<ClubPartition>> getClubPartitionsByAdmin() async {
+
+    final response = await dioInstance.get("/admin/club_partitions");
+
+    return (response.data as List)
+          .map((session) => ClubPartition.fromJson(session))
+          .toList();
+  }
+
+  createSessions(List<Session> sessions, List<int> physicalPartitions, List<DateTime> dates) async {
+
+    try {
+       final body = {
+      "sessions":sessions,
+      "physical_partitions":physicalPartitions,
+      "dates":dates.map((el) => el.toString()).toList()
+    };
+
+    final response = await dioInstance.post("/admin/sessions", data: body);
+
+    return response.data;
+
+    } catch (e) {
+      
+      return false;      
     }
   }
 }

@@ -8,9 +8,9 @@ import '../../../domain/entities/physical_partition.dart';
 import '../../../domain/entities/session.dart';
 import '../../../domain/repositories/session_repository.dart';
 
-class SessionRepositoryTest extends SessionRepository {
+class SessionRepositoryTest  {
   @override
-  List<ClubPartition> getPhysicalPartitions() {
+  Future<List<ClubPartition>> getPhysicalPartitions() async {
     // TODO: implement getPhysicalPartitions
     return [
       ClubPartition(

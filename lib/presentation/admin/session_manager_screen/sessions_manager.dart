@@ -1,26 +1,28 @@
-import 'dart:math';
-
-import 'package:calendar_date_picker2/calendar_date_picker2.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
 import '../../../core/config/service_locator.dart';
 import '../../../core/utils/responsive_builder.dart';
+import '../../../core/utils/types/time_interval.dart';
 import '../../core/agenda/agenda.dart';
 import '../bloc/session_manager_bloc.dart';
 import '../bloc/session_manager_event.dart';
 import '../bloc/session_manager_state.dart';
 import '../../../domain/entities/club_partition.dart';
+import 'widgets/session_manager_day_carrousel.dart';
+import 'widgets/session_manager_card.dart';
 
 class SessionsManager extends StatelessWidget {
+
+  final Widget sideChild;
+  
   const SessionsManager({
-    super.key,
+    super.key, 
+    required this.sideChild,
   });
-  DateTime get _now => DateTime.now();
 
   @override
   Widget build(BuildContext context) {
+
     return BlocBuilder<SessionManagerBloc, SessionManagerState>(
       bloc: sl<SessionManagerBloc>(),
       buildWhen: (previous, current) =>
@@ -56,53 +58,7 @@ class SessionsManager extends StatelessWidget {
         const SizedBox(
           width: 16,
         ),
-        SizedBox(
-          width: 300,
-          child: Column(
-            children: [
-              buildDayHeader(),
-              const SizedBox(
-                height: 8,
-              ),
-              const Divider(),
-              const SizedBox(
-                height: 8,
-              ),
-              Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(25),
-                    color: Theme.of(context).colorScheme.surface,
-                    //boxShadow: [BoxShadow(blurRadius: 5, spreadRadius: 5, color: Theme.of(context).colorScheme.shadow.withOpacity(0.2))],
-                  ),
-                  width: 300,
-                  child: calendarDatepicker2(context)),
-              const SizedBox(
-                height: 8,
-              ),
-              const Divider(),
-              const Spacer(),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  SizedBox(
-                    height: 36,
-                    child: FilledButton(
-                        onPressed: () {
-                          context.go('/add_sessions');
-                        }, 
-                        child: const Text("Agregar Turnos")),
-                  ),
-                  SizedBox(
-                    height: 36,
-                    child: TextButton(
-                        onPressed: () {},
-                        child: const Text("Secondary option")),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        )
+        sideChild
       ],
     );
   }
@@ -111,9 +67,9 @@ class SessionsManager extends StatelessWidget {
     return Column(
       children: [
         if (ResponsiveBuilder.isMobile(context))
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: buildDayHeader(),
+          const Padding(
+            padding:  EdgeInsets.all(8.0),
+            child: SizedBox(height: 50, child: SessionManagerDayCarrousel()),
           ),
         SizedBox(
           height: 40,
@@ -178,64 +134,13 @@ class SessionsManager extends StatelessWidget {
       sl<SessionManagerBloc>().add(ChangeClubPartitionEvent(e));
     };
   }
-
-  Widget buildDayHeader() {
-    return BlocBuilder<SessionManagerBloc, SessionManagerState>(
-      bloc: sl<SessionManagerBloc>(),
-      builder: (context, state) {
-        return SizedBox(
-          height: 40,
-          child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-            Text(toBeginningOfSentenceCase(
-                DateFormat.EEEE().format(state.currentDate))),
-            const SizedBox(
-              width: 8,
-            ),
-            const Icon(
-              Icons.circle,
-              size: 8,
-            ),
-            const SizedBox(
-              width: 8,
-            ),
-            Text(DateFormat.MMMMd().format(state.currentDate)),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                IconButton(
-                    onPressed: () {
-                      sl<SessionManagerBloc>().add(
-                          SessionChangeDateEvent(state.currentDate
-                              .subtract(const Duration(days: 1))));
-                    },
-                    icon: const Icon(
-                      Icons.arrow_back_ios,
-                      size: 12,
-                    )),
-                IconButton(
-                    onPressed: () {
-                      sl<SessionManagerBloc>().add(
-                          SessionChangeDateEvent(
-                              state.currentDate.add(const Duration(days: 1))));
-                    },
-                    icon: const Icon(
-                      Icons.arrow_forward_ios,
-                      size: 12,
-                    ))
-              ],
-            )
-          ]),
-        );
-      },
-    );
-  }
-
   Widget buildAgenda(BuildContext context) {
     return BlocBuilder<SessionManagerBloc, SessionManagerState>(
       bloc: sl<SessionManagerBloc>(),
       buildWhen: (previous, current) => previous.sessions != current.sessions || previous.selectedClubPartition != current.selectedClubPartition || previous.isLoadingSessions != current.isLoadingSessions,
       builder: (context, state) {
-        if (state.isLoadingSessions) {
+        
+        if(state.isLoadingSessions) {
           return const Center(
             child: CircularProgressIndicator(),
           );
@@ -244,74 +149,10 @@ class SessionsManager extends StatelessWidget {
         return Agenda(
           columnWidth: 200,
           heightPerMinute: ResponsiveBuilder.isDesktop(context) ? 1.35 : 1,
-          fromDate: DateTime(2024, 3, 12, 8),
-          lastDate: DateTime(2024, 3, 12, 22),
+          fromDate: state.currentDate.applied(const TimeOfDay(hour: 8, minute: 0)),
+          lastDate: state.currentDate.applied(const TimeOfDay(hour: 22, minute: 0)),
           buildCard: (session) {
-            return Container(
-              width: 190,
-              decoration: BoxDecoration(
-                  color: session.clientId != null
-                      ? Theme.of(context).colorScheme.surfaceVariant
-                      : Theme.of(context).colorScheme.tertiaryContainer,
-                  borderRadius: BorderRadius.circular(12)),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    color: session.clientId != null
-                        ? Theme.of(context).colorScheme.primary
-                        : Theme.of(context).colorScheme.tertiary,
-                    width: 16,
-                  ),
-                  const SizedBox(
-                    width: 4,
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            const Icon(Icons.access_time),
-                            Text(
-                              "${DateFormat.jm().format(session.startTime!)} - ${DateFormat.jm().format(session.endTime)}",
-                            ),
-                          ],
-                        ),
-                        const Spacer(),
-                        if (session.clientId != null)
-                          const Row(
-                            children: [
-                              Icon(Icons.person),
-                              Text("Lucas Medico"),
-                            ],
-                          ),
-                        if (session.clientId == null)
-                          OutlinedButton(
-                            onPressed: () {},
-                            child: const Text("Reservar"),
-                          ),
-                      ],
-                    ),
-                  ),
-                  const Spacer(),
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 8, right: 8),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        IconButton(
-                          icon: const Icon(Icons.edit),
-                          onPressed: () {},
-                        ),
-                        const Spacer(),
-                      ],
-                    ),
-                  )
-                ],
-              ),
-            );
+            return SessionManagerCard(session: session);
           },
           sessions: state.sessions,
           physicalPartitions:
@@ -320,96 +161,6 @@ class SessionsManager extends StatelessWidget {
       },
     );
   }
-
-  Widget calendarDatepicker2(BuildContext context) {
-    return BlocBuilder<SessionManagerBloc, SessionManagerState>(
-      bloc: sl<SessionManagerBloc>(),
-      buildWhen: (previous, current) => previous.currentDate != current.currentDate,
-      builder: (context, state) {
-        return CalendarDatePicker2(
-            onValueChanged: (value) {
-              sl<SessionManagerBloc>()
-                  .add(SessionChangeDateEvent(value.first ?? DateTime.now()));
-            },
-            config: CalendarDatePicker2Config(
-              dayBuilder: (
-                      {required date,
-                      decoration,
-                      isDisabled,
-                      isSelected,
-                      isToday,
-                      textStyle}) =>
-                  dayBuilder(context,
-                      date: date,
-                      decoration: decoration,
-                      isDisabled: isDisabled,
-                      isSelected: isSelected,
-                      isToday: isToday,
-                      textStyle: textStyle),
-            ),
-            value: [state.currentDate]);
-      },
-    );
-  }
-
-  Widget? dayBuilder(context,
-      {required DateTime date,
-      decoration,
-      isDisabled,
-      isSelected,
-      isToday,
-      textStyle}) {
-    Color? dayColor;
-    Color? textColor = Theme.of(context).colorScheme.onSurfaceVariant;
-    if (isSelected) {
-      dayColor = Theme.of(context).colorScheme.primary;
-      textColor = Theme.of(context).colorScheme.onPrimary;
-    }
-
-    return Container(
-      width: 40,
-      height: 40,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(25),
-        color: dayColor,
-        border: isToday
-            ? Border.all(color: Theme.of(context).colorScheme.onSurfaceVariant)
-            : null,
-      ),
-      child: Badge(
-        backgroundColor: Theme.of(context).colorScheme.secondary,
-        isLabelVisible: date.day.isOdd && Random().nextBool(),
-        label: Text(
-          "3",
-          style: TextStyle(color: Theme.of(context).colorScheme.onSecondary),
-        ),
-        child: Center(
-          child: Text(
-            date.day.toString(),
-            style: TextStyle(fontSize: 12, color: textColor),
-          ),
-        ),
-      ),
-    );
-  }
 }
 
-class LinePainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = Colors.black // Color de la línea
-      ..strokeWidth = 2; // Grosor de la línea
 
-    final startPoint = Offset(0, size.height / 2); // Punto inicial de la línea
-    final endPoint =
-        Offset(size.width, size.height / 2); // Punto final de la línea
-
-    canvas.drawLine(startPoint, endPoint, paint); // Dibujar la línea
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) {
-    return false; // Devuelve true si la línea debe ser repintada
-  }
-}

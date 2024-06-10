@@ -45,6 +45,24 @@ class TimeInterval {
     return 'TimeInterval(initialDate: $initialDate, endDate: $endDate)';
   }
 
+  List<DateTime> generateDateRange() {
+    
+  List<DateTime> dateRange = [];
+  DateTime currentDate = initialDate!;
+
+  if(endDate == null){
+    return [initialDate!];
+  }
+
+  while (currentDate.isBefore(endDate!) || currentDate.isAtSameMomentAs(endDate!)) {
+    dateRange.add(currentDate);
+    currentDate = currentDate.add(const Duration(days: 1));
+  }
+
+  return dateRange;
+}
+
+
 }
 
 extension DateTimeExtension on DateTime {
