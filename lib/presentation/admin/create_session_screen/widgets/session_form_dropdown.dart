@@ -77,8 +77,8 @@ class _SessionFormDropdownState extends State<SessionFormDropdown> {
                       const SizedBox(height: 16,),
                       CustomTimePicker(
                         name: "duration",
-                        initialHours: widget.session?.duration != null ? widget.session?.duration.split(":")[0] : null,
-                        initialMinutes: widget.session?.duration != null ? widget.session?.duration.split(":")[1] : null,
+                        initialHours: ((widget.session?.duration ?? 0) ~/ 60).toString(),
+                        initialMinutes: widget.session?.duration != null ? (widget.session!.duration % 60).toString() : null,
                         onSubmit: onSubmit,      
                         isLastInput: true,
                       )

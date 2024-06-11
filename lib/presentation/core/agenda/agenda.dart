@@ -19,7 +19,9 @@ class Agenda extends StatelessWidget {
       required this.physicalPartitions,
       required this.fromDate,
       required this.lastDate,
-      this.columnWidth = 300}) {
+      this.columnWidth = 300
+      
+      })  {
     horariosDisponibles = generateDates(fromDate, lastDate);
     scrollControllers = generateScrollControllers();
     initializeScrollControllerListeners();
@@ -172,7 +174,7 @@ class Agenda extends StatelessWidget {
   // Es una lista vertical que ocupa todo el alto. 
   // Para cuando es necesario tener una lista vacia, para que ese espacio siga pudiendose scrollear.
  
-  Widget buildEmptyList(ScrollController controller) {
+  Widget buildEmptyList(ScrollController controller, [PhysicalPartition? physicalPartition]) {
     return ListView.builder(
             controller: controller,
             itemCount: 1,
@@ -181,13 +183,15 @@ class Agenda extends StatelessWidget {
               final height = horariosDisponibles.first.difference(horariosDisponibles.last).inMinutes.abs() * heightPerMinute;
               
               return BlankSpace(
-                canHover: false,
+                canHover: physicalPartition?.durationInMinutes != null,
                 height: height + 80,
                 minHeightToHover: 0,
+                physicalPartition: physicalPartition,
+                blankSpaceTimeInterval: TimeInterval(initialDate: horariosDisponibles.first, endDate: horariosDisponibles.last),
               );
             },                                    
         );
-  }
+  } 
 
   Column cardsLists(BuildContext context) {
     return Column(
@@ -340,7 +344,7 @@ class Agenda extends StatelessWidget {
     if (currentPhysicalPartitionSessions.isEmpty) {
       return SizedBox(
         width: columnWidth.toDouble(),
-        child: buildEmptyList(scrollControllers[physicalPartitions.indexOf(physicalPartition)]) ,
+        child: buildEmptyList(scrollControllers[physicalPartitions.indexOf(physicalPartition)], physicalPartition) ,
         
       );
     }
@@ -423,9 +427,9 @@ class Agenda extends StatelessWidget {
                 ),
                 if(offsetPrevio > 0)
                   BlankSpace(
-                    canHover: true,
+                    canHover: physicalPartition.durationInMinutes != null,
                     height: offsetPrevio, 
-                    minHeightToHover: 90 * heightPerMinute, 
+                    minHeightToHover: (physicalPartition.durationInMinutes ?? 0) * heightPerMinute, 
                     physicalPartition: physicalPartition,
                     blankSpaceTimeInterval: TimeInterval(
                       initialDate: previousBlankSpaceStartTime,
@@ -442,9 +446,9 @@ class Agenda extends StatelessWidget {
 
                 if (index == currentPhysicalPartitionSessions.length - 1)
                   BlankSpace(
-                    canHover: true,
+                    canHover: physicalPartition.durationInMinutes != null,
                     height: offsetFinal.toDouble(),
-                    minHeightToHover: 90 * heightPerMinute,
+                    minHeightToHover: (physicalPartition.durationInMinutes ?? 0) * heightPerMinute, 
                     physicalPartition: physicalPartition,
                     blankSpaceTimeInterval: TimeInterval(
                       initialDate: currentSession.endTime,

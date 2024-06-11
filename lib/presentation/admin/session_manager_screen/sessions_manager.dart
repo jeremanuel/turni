@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import '../../../core/config/service_locator.dart';
 import '../../../core/utils/responsive_builder.dart';
 import '../../../core/utils/types/time_interval.dart';
@@ -28,11 +30,22 @@ class SessionsManager extends StatelessWidget {
       buildWhen: (previous, current) =>
           previous.isFirstLoad != current.isFirstLoad,
       builder: (context, state) {
+
         if (state.isFirstLoad) {
           return const Center(
             child: CircularProgressIndicator(),
           );
         }
+        print(GoRouter.of(context).routeInformationProvider.value.uri.toString() == '/session_manager');
+       if(ResponsiveBuilder.isMobile(context) && GoRouter.of(context).routeInformationProvider.value.uri.toString() != '/session_manager'){
+          return Padding(
+            padding: const EdgeInsets.all(16),
+            child: sideChild,
+          );
+        } 
+
+       
+    
     
         if (ResponsiveBuilder.isMobile(context)) {
           return buildAgendaContainer(context);
@@ -43,26 +56,26 @@ class SessionsManager extends StatelessWidget {
     );
   }
 
-  Row buildDesktopManager(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.end,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded(
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
+  Padding buildDesktopManager(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
             child: buildAgendaContainer(context),
           ),
-        ),
-        const VerticalDivider(),
-        const SizedBox(
-          width: 16,
-        ),
-        SizedBox(
-          width: 300,
-          child: sideChild
-        )
-      ],
+          const VerticalDivider(),
+          const SizedBox(
+            width: 16,
+          ),
+          SizedBox(
+            width: 300,
+            child: sideChild
+          )
+        ],
+      ),
     );
   }
 
@@ -70,9 +83,9 @@ class SessionsManager extends StatelessWidget {
     return Column(
       children: [
         if (ResponsiveBuilder.isMobile(context))
-          const Padding(
-            padding:  EdgeInsets.all(8.0),
-            child: SizedBox(height: 50, child: SessionManagerDayCarrousel()),
+          Padding(
+            padding: const  EdgeInsets.all(8.0),
+            child: SizedBox(height: 50, child: SessionManagerDayCarrousel(width: MediaQuery.of(context).size.width * 0.9,)),
           ),
         SizedBox(
           height: 40,
@@ -151,7 +164,7 @@ class SessionsManager extends StatelessWidget {
 
         return Agenda(
           columnWidth: 200,
-          heightPerMinute: ResponsiveBuilder.isDesktop(context) ? 1.35 : 1,
+          heightPerMinute: ResponsiveBuilder.isDesktop(context) ? 1.35 : 1.1,
           fromDate: state.currentDate.applied(const TimeOfDay(hour: 8, minute: 0)),
           lastDate: state.currentDate.applied(const TimeOfDay(hour: 22, minute: 0)),
           buildCard: (session) {

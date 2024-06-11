@@ -9,7 +9,9 @@ import '../../bloc/session_manager_event.dart';
 import '../../bloc/session_manager_state.dart';
 
 class SessionManagerDayCarrousel extends StatelessWidget {
-  const SessionManagerDayCarrousel({super.key});
+  const SessionManagerDayCarrousel({super.key, this.width = 300});
+
+  final double width;
 
   @override
   Widget build(BuildContext context) {
@@ -19,6 +21,7 @@ class SessionManagerDayCarrousel extends StatelessWidget {
         return DatesCarrousel(
           datesCarrouselController: sl<SessionManagerBloc>().datesCarrouselController ,
           initialDate: state.currentDate,
+          containerWidth: width,
           onSelect: (date) {
             sl<SessionManagerBloc>().add(SessionChangeDateEvent(date));
           },
