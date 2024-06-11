@@ -11,7 +11,7 @@ class SessionPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(),
       body: Center(
-        child: Text(session.duration!),
+        child: Text(session.duration.toString()),
       ),
     );
   }

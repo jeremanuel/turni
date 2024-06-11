@@ -1,5 +1,6 @@
 
 
+import 'package:calendar_view/calendar_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
@@ -19,8 +20,8 @@ class Session with _$Session{
     required DateTime createdAt, 
     @JsonKey(name: "start_time", fromJson: ValueTransformers.fromJsonDateTimeLocale)
     required DateTime startTime, 
-    @JsonKey(defaultValue: "1:30")
-    required String duration, 
+    @JsonKey(defaultValue: 90)
+    required int duration, 
     @JsonKey(name: "client_id")
     int? clientId, 
 
@@ -38,9 +39,9 @@ class Session with _$Session{
 
 
   getDurationInMinutes() {
-    final [hours, minutes] = duration.split(':');
 
-    return (int.parse(hours) * 60) + int.parse(minutes);
+    return duration;
+    
   }
 
   static Session fromDates(DateTime startTime, TimeOfDay duration){
@@ -48,7 +49,7 @@ class Session with _$Session{
       sessionId: 1,
       createdAt: DateTime.now(), 
       startTime: startTime, 
-      duration: "${duration.hour}:${duration.minute}", 
+      duration: duration.getTotalMinutes, //"${duration.hour}:${duration.minute}", 
       price: 1500, 
       adminCreatorId: 1,
       partitionPhysicalId: 1
