@@ -14,6 +14,7 @@ import '../../presentation/session_feed/cubit/session_cubit.dart';
 
 import '../../presentation/admin/create_session_screen/bloc/create_sesssions_form_bloc.dart';
 import '../../presentation/admin/bloc/session_manager_bloc.dart';
+import '../utils/entities/coordinate.dart';
 
 final sl = GetIt.instance;
 
@@ -30,27 +31,23 @@ class ServiceLocator {
 
     sl.registerLazySingleton<FeedCubit>(() => FeedCubit());
 
-    sl.registerLazySingleton<SessionManagerBloc>(() => SessionManagerBloc()); 
-    sl.registerLazySingleton<CreateSesssionsFormBloc>(() => CreateSesssionsFormBloc()); 
+    sl.registerLazySingleton<SessionManagerBloc>(() => SessionManagerBloc());
+    sl.registerLazySingleton<CreateSesssionsFormBloc>(
+        () => CreateSesssionsFormBloc());
 
-
-  
     sl.registerLazySingleton<HomeCubit>(() => HomeCubit());
 
     sl.registerLazySingleton<SessionCubit>(() => SessionCubit());
-    
+
     _initializeLocalization();
   }
 
+  static _initializeLocalization() {
+    final FlutterLocalization localization = FlutterLocalization.instance;
+    localization.init(mapLocales: [
+      const MapLocale('es', {'title': 'Localizacion'})
+    ], initLanguageCode: 'es');
 
-
-  static _initializeLocalization(){
-      final FlutterLocalization localization = FlutterLocalization.instance;
-      localization.init(mapLocales: [const MapLocale('es', {'title':'Localizacion'})], initLanguageCode: 'es');
-
-      sl.registerSingleton(localization);
-
+    sl.registerSingleton(localization);
   }
 }
-
-

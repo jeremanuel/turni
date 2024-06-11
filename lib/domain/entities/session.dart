@@ -9,21 +9,20 @@ part 'session.g.dart';
 
 @freezed
 class Session with _$Session {
-  factory Session(
-      {@JsonKey(name: "session_id") required int sessionId,
-      @JsonKey(name: "created_at") required DateTime createdAt,
-      @JsonKey(
-          name: "start_time",
-          fromJson: ValueTransformers.fromJsonDateTimeLocale)
-      required DateTime startTime,
-      @JsonKey(defaultValue: "1:30") required String duration,
-      @JsonKey(name: "client_id") int? clientId,
-      @JsonKey(fromJson: ValueTransformers.fromJsonDouble)
-      required double price,
-      @JsonKey(name: "admin_creator_id") int? adminCreatorId,
-      @JsonKey(name: "partition_physical_id") required int partitionPhysicalId,
-      @JsonKey(name: "club_name") String? clubName,
-      @JsonKey(name: "club_type_name") String? clubTypeName}) = _Session;
+  factory Session({
+    @JsonKey(name: "session_id") required int sessionId,
+    @JsonKey(name: "created_at") required DateTime createdAt,
+    @JsonKey(
+        name: "start_time", fromJson: ValueTransformers.fromJsonDateTimeLocale)
+    required DateTime startTime,
+    @JsonKey(defaultValue: "1:30") required String duration,
+    @JsonKey(name: "client_id") int? clientId,
+    @JsonKey(fromJson: ValueTransformers.fromJsonDouble) required double price,
+    @JsonKey(name: "admin_creator_id") int? adminCreatorId,
+    @JsonKey(name: "partition_physical_id") required int partitionPhysicalId,
+    @JsonKey(name: "club_name") String? clubName,
+    @JsonKey(name: "club_type_name") String? clubTypeName,
+  }) = _Session;
 
   Session._();
 
