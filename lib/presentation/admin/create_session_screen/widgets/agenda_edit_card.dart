@@ -1,3 +1,4 @@
+import 'package:calendar_view/calendar_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_portal/flutter_portal.dart';
 import 'package:intl/intl.dart';
@@ -31,7 +32,7 @@ class _AgendaEditCardState extends State<AgendaEditCard> {
         onSave: (initialTime, duration){
           dropdownController.hide!();
           sl<CreateSesssionsFormBloc>().add(
-            EditSession(widget.session, widget.session.copyWith(startTime: DateTime.now().applied(initialTime), duration: "${duration.hour}:${duration.minute}"))
+            EditSession(widget.session, widget.session.copyWith(startTime: DateTime.now().applied(initialTime), duration: duration.getTotalMinutes))
           );
         },
         onCancel: () => dropdownController.hide!(),

@@ -21,5 +21,11 @@ class Person {
   final String? personId;
 
   factory Person.fromJson(Map<String, dynamic> json) => _$PersonFromJson(json);
+
+
+  String get fullName => "$name $lastName";
+
+  
+
   Map<String, dynamic> toJson() => _$PersonToJson(this);
 }

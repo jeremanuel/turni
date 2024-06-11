@@ -19,5 +19,9 @@ class SessionUserCases {
    return _sessionRepository.createSessions(sessions, physicalPartitions, interval.generateDateRange());
   }
 
+  Future<Session> saveSession(Session session) async {
+   return _sessionRepository.saveSession(session);
+  }
+
 
 }

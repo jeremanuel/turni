@@ -15,52 +15,48 @@ class CalendarSideColumn extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-          width: 300,
-          child: Column(
-            children: [
-              const SizedBox(height: 80, child: SessionManagerDayCarrousel()),
-              const SizedBox(
-                height: 8,
-              ),
-              const Divider(),
-              const SizedBox(
-                height: 8,
-              ),
-              Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(25),
-                    //boxShadow: [BoxShadow(blurRadius: 5, spreadRadius: 5, color: Theme.of(context).colorScheme.shadow.withOpacity(0.2))],
-                  ),
-                  width: 300,
-                  child: calendarDatepicker2(context)),
-              const SizedBox(
-                height: 8,
-              ),
-              const Divider(),
-              const Spacer(),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  SizedBox(
-                    height: 36,
-                    child: FilledButton(
-                        onPressed: () {
-                          context.go('/add_sessions');
-                        }, 
-                        child: const Text("Agregar Turnos")),
-                  ),
-                  SizedBox(
-                    height: 36,
-                    child: TextButton(
-                        onPressed: () {},
-                        child: const Text("Secondary option")),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        );
+    return Column(
+      children: [
+        const SizedBox(height: 80, child: SessionManagerDayCarrousel()),
+        const SizedBox(
+          height: 8,
+        ),
+        const Divider(),
+        const SizedBox(
+          height: 8,
+        ),
+        Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(25),
+            ),
+            width: 300,
+            child: calendarDatepicker2(context)),
+        const SizedBox(
+          height: 8,
+        ),
+        const Divider(),
+        const Spacer(),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            SizedBox(
+              height: 36,
+              child: FilledButton(
+                  onPressed: () {
+                    context.go('/add_sessions');
+                  }, 
+                  child: const Text("Agregar Turnos")),
+            ),
+            SizedBox(
+              height: 36,
+              child: TextButton(
+                  onPressed: () {},
+                  child: const Text("Secondary option")),
+            ),
+          ],
+        ),
+      ],
+    );
   }
 }
 

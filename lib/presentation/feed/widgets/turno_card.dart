@@ -58,7 +58,7 @@ class SessionCard extends StatelessWidget {
                 Icons.timer_sharp,
                 size: 18,
               ),
-              Text(session.duration!)
+              Text(session.duration.toString())
             ]),
             const SizedBox(height: 5),
             const Row(children: [

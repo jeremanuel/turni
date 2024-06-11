@@ -3,8 +3,10 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../../core/utils/responsive_builder.dart';
+import '../../../core/utils/types/time_interval.dart';
 import '../../../domain/entities/physical_partition.dart';
 import '../../../domain/entities/session.dart';
 
@@ -17,7 +19,9 @@ class Agenda extends StatelessWidget {
       required this.physicalPartitions,
       required this.fromDate,
       required this.lastDate,
-      this.columnWidth = 300}) {
+      this.columnWidth = 300
+      
+      })  {
     horariosDisponibles = generateDates(fromDate, lastDate);
     scrollControllers = generateScrollControllers();
     initializeScrollControllerListeners();
@@ -170,7 +174,7 @@ class Agenda extends StatelessWidget {
   // Es una lista vertical que ocupa todo el alto. 
   // Para cuando es necesario tener una lista vacia, para que ese espacio siga pudiendose scrollear.
  
-  Widget buildEmptyList(ScrollController controller) {
+  Widget buildEmptyList(ScrollController controller, [PhysicalPartition? physicalPartition]) {
     return ListView.builder(
             controller: controller,
             itemCount: 1,
@@ -179,13 +183,15 @@ class Agenda extends StatelessWidget {
               final height = horariosDisponibles.first.difference(horariosDisponibles.last).inMinutes.abs() * heightPerMinute;
               
               return BlankSpace(
-                canHover: false,
+                canHover: physicalPartition?.durationInMinutes != null,
                 height: height + 80,
                 minHeightToHover: 0,
+                physicalPartition: physicalPartition,
+                blankSpaceTimeInterval: TimeInterval(initialDate: horariosDisponibles.first, endDate: horariosDisponibles.last),
               );
             },                                    
         );
-  }
+  } 
 
   Column cardsLists(BuildContext context) {
     return Column(
@@ -338,7 +344,7 @@ class Agenda extends StatelessWidget {
     if (currentPhysicalPartitionSessions.isEmpty) {
       return SizedBox(
         width: columnWidth.toDouble(),
-        child: buildEmptyList(scrollControllers[physicalPartitions.indexOf(physicalPartition)]) ,
+        child: buildEmptyList(scrollControllers[physicalPartitions.indexOf(physicalPartition)], physicalPartition) ,
         
       );
     }
@@ -352,16 +358,26 @@ class Agenda extends StatelessWidget {
           double offsetFinal = 0;
 
           final currentSession = currentPhysicalPartitionSessions[index];
-          late final Session previousSession;
 
           final int duration = currentSession.getDurationInMinutes();
-          late final int previousDuration;
+
+          int? previousDuration;
+          Session? previousSession;
+          
+          DateTime previousBlankSpaceStartTime;
 
 
           if(index != 0){
             previousSession = currentPhysicalPartitionSessions[index - 1];
             previousDuration = previousSession.getDurationInMinutes();
+            previousBlankSpaceStartTime = previousSession.endTime;
+          } else {
+            previousBlankSpaceStartTime = horariosDisponibles[0];
           }
+
+     
+
+          
           
 
           if (index == 0) {
@@ -370,11 +386,15 @@ class Agenda extends StatelessWidget {
                     .inMinutes
                     .abs() *
                 heightPerMinute;
+
+            
           } else {
-            offsetPrevio = (currentSession.startTime.difference(currentPhysicalPartitionSessions[index - 1].startTime).inMinutes.abs() - previousDuration) * heightPerMinute;
+            offsetPrevio = (currentSession.startTime.difference(currentPhysicalPartitionSessions[index - 1].startTime).inMinutes.abs() - previousDuration!) * heightPerMinute;
           }
 
           if (index == currentPhysicalPartitionSessions.length - 1) {
+            
+
             offsetFinal = (currentSession.startTime
                         .difference(
                             horariosDisponibles[horariosDisponibles.length - 1])
@@ -388,7 +408,7 @@ class Agenda extends StatelessWidget {
 
           if(offsetPrevio < 0){
 
-            showErrorMessage(previousSession, currentSession, context);
+            showErrorMessage(previousSession!, currentSession, context);
                       
             return const SizedBox();
           }
@@ -406,7 +426,16 @@ class Agenda extends StatelessWidget {
                   height: 15 * heightPerMinute,
                 ),
                 if(offsetPrevio > 0)
-                  BlankSpace(height: offsetPrevio, minHeightToHover: 90 * heightPerMinute,),
+                  BlankSpace(
+                    canHover: physicalPartition.durationInMinutes != null,
+                    height: offsetPrevio, 
+                    minHeightToHover: (physicalPartition.durationInMinutes ?? 0) * heightPerMinute, 
+                    physicalPartition: physicalPartition,
+                    blankSpaceTimeInterval: TimeInterval(
+                      initialDate: previousBlankSpaceStartTime,
+                      endDate: currentSession.startTime
+                    ),
+                  ),
 
                 SizedBox(
                     height: duration * heightPerMinute.toDouble() -
@@ -417,8 +446,14 @@ class Agenda extends StatelessWidget {
 
                 if (index == currentPhysicalPartitionSessions.length - 1)
                   BlankSpace(
+                    canHover: physicalPartition.durationInMinutes != null,
                     height: offsetFinal.toDouble(),
-                    minHeightToHover: 90 * heightPerMinute,
+                    minHeightToHover: (physicalPartition.durationInMinutes ?? 0) * heightPerMinute, 
+                    physicalPartition: physicalPartition,
+                    blankSpaceTimeInterval: TimeInterval(
+                      initialDate: currentSession.endTime,
+                      endDate: horariosDisponibles.last
+                    ),
                   ),
               ],
             ),
@@ -441,17 +476,22 @@ class Agenda extends StatelessWidget {
 }
 
 class BlankSpace extends StatefulWidget {
-  const BlankSpace({
-    super.key,
+    
+    const BlankSpace({
+    super.key, 
+    required this.canHover,
     required this.height,
-    this.canHover = true,
     required this.minHeightToHover,
-
+    this.blankSpaceTimeInterval, 
+    this.physicalPartition
   });
+
 
   final bool canHover;
   final double height;
   final double minHeightToHover;
+  final TimeInterval? blankSpaceTimeInterval;
+  final PhysicalPartition? physicalPartition;
 
 
   @override
@@ -475,8 +515,11 @@ class _BlankSpaceState extends State<BlankSpace> {
 
     Widget childNotHovered = const Center(child: SizedBox());
 
+    DateFormat dateFormat = DateFormat("HH:mm");
+
     return MouseRegion(
       cursor: SystemMouseCursors.click,
+
       onEnter: (event) {
         setState(() {
           isHovered = true;
@@ -491,7 +534,16 @@ class _BlankSpaceState extends State<BlankSpace> {
         color: Colors.transparent,
         child: InkWell(
           onTap: () {
-            
+            context.goNamed(
+              "SESSION_MANAGER_ADD",
+              pathParameters:{
+                "idPhysicalPartition":widget.physicalPartition!.partitionPhysicalId.toString()
+              },
+              queryParameters: {
+                "start": dateFormat.format(widget.blankSpaceTimeInterval!.initialDate!),
+                'end':dateFormat.format(widget.blankSpaceTimeInterval!.endDate!)
+              },
+            );
           },
           child: SizedBox(
             height: widget.height.toDouble(),
@@ -500,9 +552,7 @@ class _BlankSpaceState extends State<BlankSpace> {
               child: Center(
                 child: isHovered ? childHovered : childNotHovered,
               ),
-            )
-            
-             
+            )                       
           ),
         ),
       ));

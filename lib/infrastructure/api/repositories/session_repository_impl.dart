@@ -34,4 +34,9 @@ class SessionRepositoryImplementation extends SessionRepository {
   createSessions(List<Session> sessions, List<int> physicalPartitions, List<DateTime> dates) {
     return sessionProvider.createSessions(sessions, physicalPartitions, dates);
   }
+  
+  @override
+  Future<Session> saveSession(Session session) {
+    return sessionProvider.saveSession(session);
+  }
 }

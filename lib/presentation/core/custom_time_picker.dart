@@ -15,8 +15,14 @@ class CustomTimePicker extends StatefulWidget {
   final bool isLastInput;
 
   const CustomTimePicker({
-    super.key, this.initialHours, this.initialMinutes, this.onChange, required this.name, this.autoFocus = false, 
-    this.focusNode, this.onSubmit,
+    super.key, 
+    this.initialHours, 
+    this.initialMinutes, 
+    this.onChange, 
+    required this.name, 
+    this.autoFocus = false, 
+    this.focusNode, 
+    this.onSubmit,
     this.isLastInput = false
   });
 
@@ -39,7 +45,7 @@ class _CustomTimePickerState extends State<CustomTimePicker> {
 
   @override
   void initState() {
-    // TODO: implement initState
+    
     hoursController.text = widget.initialHours ?? '';
     minutesController.text = widget.initialMinutes ?? '';
  
@@ -114,11 +120,10 @@ class _CustomTimePickerState extends State<CustomTimePicker> {
               
               ),
             ),
-            Container(
-              margin: const EdgeInsets.symmetric(horizontal: 8),
+            SizedBox(
               height: 80,
-              child:const Text(":", style: TextStyle(fontSize: 40),),
-            ),
+              width: 25,
+              child: const Text(":", style: TextStyle(fontSize: 40 ), textAlign: TextAlign.center,)),
             SizedBox(
               height: 100,
               width: 100,
