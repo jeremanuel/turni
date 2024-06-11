@@ -75,8 +75,7 @@ class LoginPage extends StatelessWidget {
           alignment: Alignment.topCenter,
           child: ColorFiltered(
               colorFilter: const ColorFilter.mode(
-                Color.fromRGBO(
-                    205, 185, 248, 0.18), // Establece la opacidad aquí
+                Color.fromRGBO(205, 185, 248, 0.18),
                 BlendMode.srcIn,
               ),
               child: SvgPicture.asset(
