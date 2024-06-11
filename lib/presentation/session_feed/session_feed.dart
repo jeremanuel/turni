@@ -17,7 +17,9 @@ class SessionFeedPage extends StatelessWidget {
 
   SessionFeedPage({super.key, required this.clubType}) {
     sessionCubit = sl<SessionCubit>();
-    sessionCubit.loadSessions(clubType);
+    print(authCubit.state.userCredential!.location);
+    sessionCubit.loadSessions(
+        clubType, authCubit.state.userCredential!.location!);
   }
 
   void launchWppMessage(Session session) {
@@ -25,7 +27,7 @@ class SessionFeedPage extends StatelessWidget {
     final message = user!.templateMessage!;
     final templateMessage = TemplateMessage(link: message);
 
-    templateMessage.populateLinkFromSession([session, user.client!.person!]);
+    templateMessage.populateLinkFromSession([session, user.client!.person]);
 
     launchUrl(templateMessage.getPopulatedLink());
   }
@@ -139,7 +141,7 @@ class SessionFeedPage extends StatelessWidget {
           child: Column(
             children: [
               Text(
-                '${DateFormat('hh:mm').format(session.startTime)} - ${DateFormat('hh:mm').format(session.endTime)}',
+                '${DateFormat('hh:mm').format(session.startTime)} - ${DateFormat('hh:mm').format(session.startTime.add(const Duration(minutes: 30)))}',
                 style: const TextStyle(
                   color: Colors.white,
                   fontSize: 24,
