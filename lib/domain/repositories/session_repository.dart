@@ -16,4 +16,6 @@ abstract class SessionRepository {
   Future<List<ClubPartition>> getPhysicalPartitions();
 
   createSessions(List<Session> sessions, List<int> physicalPartitions, List<DateTime> dates);
+
+  Future<Session> saveSession(Session session);
 }
