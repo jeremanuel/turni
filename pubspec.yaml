@@ -55,6 +55,7 @@ dependencies:
   freezed_annotation: ^2.4.1
   flutter_portal: ^1.1.4
   flutter_localization: ^0.2.0
+  collection: ^1.18.0
 
 dev_dependencies:
   flutter_test:
