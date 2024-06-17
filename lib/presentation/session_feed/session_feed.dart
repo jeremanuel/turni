@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -8,12 +9,15 @@ import '../../domain/entities/club_type.dart';
 import '../../domain/entities/session.dart';
 import '../../domain/entities/template_message.dart';
 import '../core/cubit/auth/auth_cubit.dart';
+import '../core/dates_carrousel/dates_carrousel.dart';
 import 'cubit/session_cubit.dart';
 
 class SessionFeedPage extends StatelessWidget {
   final ClubType clubType;
   late final SessionCubit sessionCubit;
   final AuthCubit authCubit = sl<AuthCubit>();
+  final DatesCarrouselController datesCarrouselController =
+      DatesCarrouselController();
 
   SessionFeedPage({super.key, required this.clubType}) {
     sessionCubit = sl<SessionCubit>();
@@ -110,6 +114,53 @@ class SessionFeedPage extends StatelessWidget {
                               children: getListItemView(state),
                             ),
                           ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    top: 0,
+                    left: 0,
+                    child: Container(
+                      height: maxHeight * .3,
+                      width: maxWidth,
+                      alignment: Alignment.topLeft,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.all(40),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                IconButton(
+                                    iconSize: 28,
+                                    onPressed: () => context.pop(),
+                                    icon: const Icon(
+                                      Icons.arrow_back,
+                                      color: Colors.white,
+                                    )),
+                                Text(
+                                  "Marzo 2024 - ${clubType.name}",
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Expanded(
+                            child: DatesCarrousel(
+                              containerWidth: maxWidth,
+                              datesCarrouselController:
+                                  datesCarrouselController,
+                              onSelect: (date) {
+                                print(date);
+                              },
+                            ),
+                          )
                         ],
                       ),
                     ),
