@@ -1,25 +1,46 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/config/service_locator.dart';
+import '../../core/utils/entities/range_date.dart';
 import '../../domain/entities/club_type.dart';
 import '../../domain/entities/session.dart';
 import '../../domain/entities/template_message.dart';
 import '../core/cubit/auth/auth_cubit.dart';
+import '../core/dates_carrousel/dates_carrousel.dart';
 import 'cubit/session_cubit.dart';
+
+extension StringExtension on String {
+  String capitalize() {
+    return "${this[0].toUpperCase()}${this.substring(1).toLowerCase()}";
+  }
+}
 
 class SessionFeedPage extends StatelessWidget {
   final ClubType clubType;
   late final SessionCubit sessionCubit;
   final AuthCubit authCubit = sl<AuthCubit>();
+  final DatesCarrouselController datesCarrouselController =
+      DatesCarrouselController();
+
+  final DateTime fromNow = DateTime.now().copyWith(hour: 0, minute: 0);
+  final int minDays = 7;
 
   SessionFeedPage({super.key, required this.clubType}) {
     sessionCubit = sl<SessionCubit>();
-    print(authCubit.state.userCredential!.location);
+
     sessionCubit.loadSessions(
-        clubType, authCubit.state.userCredential!.location!);
+        clubType,
+        authCubit.state.userCredential!.location!,
+        RangeDate(
+          from: fromNow,
+          to: fromNow
+              .add(Duration(days: minDays))
+              .copyWith(hour: 23, minute: 59),
+        ));
   }
 
   void launchWppMessage(Session session) {
@@ -107,9 +128,59 @@ class SessionFeedPage extends StatelessWidget {
                           gap,
                           Expanded(
                             child: ListView(
+                              addRepaintBoundaries: false,
                               children: getListItemView(state),
                             ),
                           ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    top: maxHeight * 0.05,
+                    left: 0,
+                    child: Container(
+                      height: maxHeight * .3,
+                      width: maxWidth,
+                      alignment: Alignment.topLeft,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 40),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                IconButton(
+                                    iconSize: 28,
+                                    onPressed: () => context.pop(),
+                                    icon: const Icon(
+                                      Icons.arrow_back,
+                                      color: Colors.white,
+                                    )),
+                                Text(
+                                  "${DateFormat('MMMM yyyy').format(fromNow).capitalize()} - ${clubType.name}",
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          SizedBox(
+                            height: maxHeight * .1,
+                            width: maxWidth,
+                            child: DatesCarrousel(
+                              containerWidth: maxWidth,
+                              datesCarrouselController:
+                                  datesCarrouselController,
+                              onSelect: (date) {
+                                print(date);
+                              },
+                            ),
+                          )
                         ],
                       ),
                     ),
@@ -141,7 +212,7 @@ class SessionFeedPage extends StatelessWidget {
           child: Column(
             children: [
               Text(
-                '${DateFormat('hh:mm').format(session.startTime)} - ${DateFormat('hh:mm').format(session.startTime.add(const Duration(minutes: 30)))}',
+                '${DateFormat('hh:mm').format(session.startTime)} - ${DateFormat('hh:mm').format(session.startTime.add(Duration(minutes: session.duration)))}',
                 style: const TextStyle(
                   color: Colors.white,
                   fontSize: 24,

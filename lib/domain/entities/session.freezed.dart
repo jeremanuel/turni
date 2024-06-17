@@ -27,8 +27,8 @@ mixin _$Session {
   @JsonKey(
       name: "start_time", fromJson: ValueTransformers.fromJsonDateTimeLocale)
   DateTime get startTime => throw _privateConstructorUsedError;
-  @JsonKey(defaultValue: "1:30")
-  String get duration => throw _privateConstructorUsedError;
+  @JsonKey(defaultValue: 90)
+  int get duration => throw _privateConstructorUsedError;
   @JsonKey(name: "client_id")
   int? get clientId => throw _privateConstructorUsedError;
   @JsonKey(fromJson: ValueTransformers.fromJsonDouble)
@@ -59,7 +59,7 @@ abstract class $SessionCopyWith<$Res> {
           name: "start_time",
           fromJson: ValueTransformers.fromJsonDateTimeLocale)
       DateTime startTime,
-      @JsonKey(defaultValue: "1:30") String duration,
+      @JsonKey(defaultValue: 90) int duration,
       @JsonKey(name: "client_id") int? clientId,
       @JsonKey(fromJson: ValueTransformers.fromJsonDouble) double price,
       @JsonKey(name: "admin_creator_id") int? adminCreatorId,
@@ -108,7 +108,7 @@ class _$SessionCopyWithImpl<$Res, $Val extends Session>
       duration: null == duration
           ? _value.duration
           : duration // ignore: cast_nullable_to_non_nullable
-              as String,
+              as int,
       clientId: freezed == clientId
           ? _value.clientId
           : clientId // ignore: cast_nullable_to_non_nullable
@@ -151,7 +151,7 @@ abstract class _$$SessionImplCopyWith<$Res> implements $SessionCopyWith<$Res> {
           name: "start_time",
           fromJson: ValueTransformers.fromJsonDateTimeLocale)
       DateTime startTime,
-      @JsonKey(defaultValue: "1:30") String duration,
+      @JsonKey(defaultValue: 90) int duration,
       @JsonKey(name: "client_id") int? clientId,
       @JsonKey(fromJson: ValueTransformers.fromJsonDouble) double price,
       @JsonKey(name: "admin_creator_id") int? adminCreatorId,
@@ -198,7 +198,7 @@ class __$$SessionImplCopyWithImpl<$Res>
       duration: null == duration
           ? _value.duration
           : duration // ignore: cast_nullable_to_non_nullable
-              as String,
+              as int,
       clientId: freezed == clientId
           ? _value.clientId
           : clientId // ignore: cast_nullable_to_non_nullable
@@ -237,7 +237,7 @@ class _$SessionImpl extends _Session {
           name: "start_time",
           fromJson: ValueTransformers.fromJsonDateTimeLocale)
       required this.startTime,
-      @JsonKey(defaultValue: "1:30") required this.duration,
+      @JsonKey(defaultValue: 90) required this.duration,
       @JsonKey(name: "client_id") this.clientId,
       @JsonKey(fromJson: ValueTransformers.fromJsonDouble) required this.price,
       @JsonKey(name: "admin_creator_id") this.adminCreatorId,
@@ -260,8 +260,8 @@ class _$SessionImpl extends _Session {
       name: "start_time", fromJson: ValueTransformers.fromJsonDateTimeLocale)
   final DateTime startTime;
   @override
-  @JsonKey(defaultValue: "1:30")
-  final String duration;
+  @JsonKey(defaultValue: 90)
+  final int duration;
   @override
   @JsonKey(name: "client_id")
   final int? clientId;
@@ -349,7 +349,7 @@ abstract class _Session extends Session {
               name: "start_time",
               fromJson: ValueTransformers.fromJsonDateTimeLocale)
           required final DateTime startTime,
-          @JsonKey(defaultValue: "1:30") required final String duration,
+          @JsonKey(defaultValue: 90) required final int duration,
           @JsonKey(name: "client_id") final int? clientId,
           @JsonKey(fromJson: ValueTransformers.fromJsonDouble)
           required final double price,
@@ -374,8 +374,8 @@ abstract class _Session extends Session {
       name: "start_time", fromJson: ValueTransformers.fromJsonDateTimeLocale)
   DateTime get startTime;
   @override
-  @JsonKey(defaultValue: "1:30")
-  String get duration;
+  @JsonKey(defaultValue: 90)
+  int get duration;
   @override
   @JsonKey(name: "client_id")
   int? get clientId;

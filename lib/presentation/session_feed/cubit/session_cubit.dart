@@ -13,16 +13,14 @@ part 'session_state.dart';
 class SessionCubit extends Cubit<SessionState> {
   SessionCubit() : super(SessionInitial());
 
-  loadSessions(ClubType clubType, Coordinate coordinate) async {
+  loadSessions(
+      ClubType clubType, Coordinate coordinate, RangeDate rangeDate) async {
     List<Session> sessions = await GetSesssions(
       SessionRepositoryImplementation(sessionProvider: SessionProvider()),
     ).excute(
       clubType.clubTypeId,
       coordinate,
-      RangeDate(
-        from: DateTime.tryParse("2024-05-05T00:00:00Z"),
-        to: DateTime.tryParse("2024-05-05T03:00:00.000Z"),
-      ),
+      rangeDate,
     );
 
     emit(SessionLoaded(sessions));

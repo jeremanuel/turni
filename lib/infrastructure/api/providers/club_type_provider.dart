@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:dio/dio.dart';
 import '../../../core/config/service_locator.dart';
 import '../../../core/utils/entities/coordinate.dart';
@@ -11,7 +9,6 @@ class ClubTypeProvider {
   Future<List<ClubType>> getClubTypes(Coordinate coordinate) async {
     try {
       final data = {"coordinate": coordinate.toJson()};
-
       final response = await dioInstance.post("/club_partition", data: data);
 
       return (response.data as List)

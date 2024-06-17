@@ -8,7 +8,6 @@ import 'package:turni/core/config/app_router.dart';
 import 'package:turni/core/config/environment.dart';
 import 'package:turni/core/config/service_locator.dart';
 import 'package:turni/presentation/core/cubit/auth/auth_cubit.dart';
-import 'package:flutter_web_plugins/url_strategy.dart';
 
 void main() async {
   await Environment.initEnvironment();
@@ -36,7 +35,6 @@ class MyApp extends StatelessWidget {
       builder: (context, state) {
         final isAdmin = sl<AuthCubit>().isAdmin();
         return MaterialApp.router(
-
           localizationsDelegates: localization.localizationsDelegates,
           supportedLocales: localization.supportedLocales,
           routerConfig: buildGoRouter(
@@ -50,7 +48,6 @@ class MyApp extends StatelessWidget {
             useMaterial3: true,
           ),
         );
-
       },
     );
   }
