@@ -36,6 +36,7 @@ class MyApp extends StatelessWidget {
       builder: (context, state) {
         final isAdmin = sl<AuthCubit>().isAdmin();
         return MaterialApp.router(
+
           localizationsDelegates: localization.localizationsDelegates,
           supportedLocales: localization.supportedLocales,
           routerConfig: buildGoRouter(
@@ -49,6 +50,7 @@ class MyApp extends StatelessWidget {
             useMaterial3: true,
           ),
         );
+
       },
     );
   }

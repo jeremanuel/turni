@@ -45,6 +45,24 @@ class TimeInterval {
     return 'TimeInterval(initialDate: $initialDate, endDate: $endDate)';
   }
 
+  String toStringTime(){
+
+    final initialTime = initialDate != null ? DateFormat.Hm().format(initialDate!) : '';
+    final endTime = initialDate != null ? DateFormat.Hm().format(endDate!) : '';
+
+    return '$initialTime - $endTime';
+
+  }
+
+  Duration? getDuration(){
+    
+    if(initialDate != null && endDate != null){
+      return endDate!.difference(initialDate!);
+    }
+
+    return null;
+  }
+
   List<DateTime> generateDateRange() {
     
   List<DateTime> dateRange = [];

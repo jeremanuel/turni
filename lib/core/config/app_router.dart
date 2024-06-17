@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 import 'package:turni/core/config/service_locator.dart';
 import 'package:turni/domain/entities/session.dart';
 import 'package:turni/presentation/admin/session_manager_screen/sessions_manager.dart';
@@ -18,9 +19,11 @@ import '../../presentation/admin/create_session_screen/create_sessions_screen.da
 
 
 import '../../domain/entities/club_type.dart';
+import '../../presentation/admin/session_manager_screen/widgets/add_new_session.dart';
 import '../../presentation/admin/session_manager_screen/widgets/calendar_side_column.dart';
 import '../../presentation/home/home.dart';
 import '../../presentation/session_feed/session_feed.dart';
+import '../utils/types/time_interval.dart';
 
 enum RouterType { clientRoute, adminRoute }
 
@@ -32,6 +35,7 @@ GoRouter buildGoRouter(RouterType routerType) {
     initialLocation: '/',
     refreshListenable: sl<AuthCubit>(),
     redirect: (context, state) {
+
       final authCubit = sl<AuthCubit>();
 
       if (authCubit.getLoadingStatus()) return '/';
@@ -42,7 +46,6 @@ GoRouter buildGoRouter(RouterType routerType) {
         return routerType == RouterType.adminRoute ? '/dashboard' : '/feed';
       }
 
-      return state.matchedLocation;
     },
     routes: [
       /// Estas dos rutas son comunes a ambos tipos de usuario.
@@ -122,19 +125,38 @@ List<StatefulShellBranch> buildBranches(RouterType routerType) {
                   GoRoute(
                     path: '/session_manager/reserve',
                     pageBuilder: (context, state) {
-                      return const  NoTransitionPage(child: SizedBox(width: 300, child: Text("reservar turno"),));
+                      return const  NoTransitionPage(child: Text("reservar turno"));
                     },
                   ),    
                   GoRoute(
                     path: '/session_manager/edit',
                     pageBuilder: (context, state) {
-                      return const  NoTransitionPage(child: SizedBox(width: 300, child: Text("Editar turno"),));
+                      return const  NoTransitionPage(child: Text("Editar turno"));
                     },
                   ),
                   GoRoute(
-                    path: '/session_manager/add',
+                    path: '/session_manager/add/:idPhysicalPartition',
+                    name: "SESSION_MANAGER_ADD",
                     pageBuilder: (context, state) {
-                      return const  NoTransitionPage(child: SizedBox(width: 300, child: Text("Agregar turno"),));
+                      
+                      final idPhysicalPartition = state.pathParameters['idPhysicalPartition'];
+
+                      final startTime = state.uri.queryParameters['start'];
+                      final endTime = state.uri.queryParameters['end'];
+
+                      DateFormat dateFormat = DateFormat("HH:mm");
+
+                      final timeInterval = TimeInterval(
+                        initialDate: startTime != null ? dateFormat.parse(startTime) : null,
+                        endDate: endTime != null ? dateFormat.parse(endTime) : null
+                      );
+
+                      return NoTransitionPage(
+                        child: AddNewSession(
+                          idPhysicalPartition: int.parse(idPhysicalPartition!), 
+                          selectedTimeInterval: timeInterval
+                        )
+                      );
                     },
                   ),
                 ], 

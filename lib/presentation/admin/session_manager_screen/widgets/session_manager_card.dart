@@ -118,11 +118,8 @@ class NotReservedSessionCard extends StatelessWidget {
               color: Theme.of(context).colorScheme.tertiary,
               width: 16,
             ),
-            const SizedBox(
-              width: 4,
-            ),
             Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8.0),
+              padding: const EdgeInsets.all( 8.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [

@@ -68,4 +68,20 @@ class SessionProvider {
       return false;
     }
   }
+
+  Future<Session> saveSession(Session session) async {
+
+  try {
+      final body = {
+        "session":session,
+      };
+
+      final response = await dioInstance.post("/admin/session", data: body);
+
+      return Session.fromJson(response.data);
+
+    } catch (e) {      
+      return Session.fromJson({});;      
+    }
+  }
 }

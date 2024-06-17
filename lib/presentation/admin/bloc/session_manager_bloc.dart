@@ -1,4 +1,5 @@
 import 'package:bloc/bloc.dart';
+import 'package:collection/collection.dart';
 import 'package:meta/meta.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
@@ -7,7 +8,6 @@ import '../../../domain/entities/session.dart';
 import '../../../domain/usercases/session_user_cases.dart';
 import '../../../infrastructure/api/providers/session_provider.dart';
 import '../../../infrastructure/api/repositories/session_repository_impl.dart';
-import '../../../infrastructure/api/repositories/session_repository_test.dart';
 import '../../core/dates_carrousel/dates_carrousel.dart';
 import 'session_manager_event.dart';
 import 'session_manager_state.dart';
@@ -89,9 +89,23 @@ class SessionManagerBloc extends Bloc<SessionManagerEvent, SessionManagerState> 
 
     },);
 
+    
+    on<SaveSessionEvent>((event, emit) async {
+
+      final session = await _sessionUserCases.saveSession(event.session);
+
+      emit(
+        state.copyWith(
+          sessions: [...state.sessions, session].sorted((a, b) => a.startTime.isAfter(b.startTime) ? 1 : 0,)
+        )
+      );
+      
+    });
+
     add(SessionLoadEvent());
 
 
   }
+
   
 }

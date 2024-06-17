@@ -21,7 +21,8 @@ class PhysicalPartition with _$PhysicalPartition {
     required int? physicalIdentifier,
     @JsonKey(name: "is_cover") 
     required String? isCover, 
-    required String? description
+    required String? description,
+    @JsonKey(defaultValue: 90) int? durationInMinutes
   }
   ) = _PhysicalPartition;
 
