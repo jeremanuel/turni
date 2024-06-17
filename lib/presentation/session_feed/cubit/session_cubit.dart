@@ -20,8 +20,8 @@ class SessionCubit extends Cubit<SessionState> {
       clubType.clubTypeId,
       coordinate,
       RangeDate(
-        from: DateTime.tryParse("2024-05-05T00:00:00Z"),
-        to: DateTime.tryParse("2024-05-05T03:00:00.000Z"),
+        from: DateTime.tryParse("2024-06-17T00:00:00Z"),
+        to: DateTime.tryParse("2024-06-17T20:00:00.000Z"),
       ),
     );
 
