@@ -5,12 +5,19 @@ import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/config/service_locator.dart';
+import '../../core/utils/entities/range_date.dart';
 import '../../domain/entities/club_type.dart';
 import '../../domain/entities/session.dart';
 import '../../domain/entities/template_message.dart';
 import '../core/cubit/auth/auth_cubit.dart';
 import '../core/dates_carrousel/dates_carrousel.dart';
 import 'cubit/session_cubit.dart';
+
+extension StringExtension on String {
+  String capitalize() {
+    return "${this[0].toUpperCase()}${this.substring(1).toLowerCase()}";
+  }
+}
 
 class SessionFeedPage extends StatelessWidget {
   final ClubType clubType;
@@ -19,11 +26,21 @@ class SessionFeedPage extends StatelessWidget {
   final DatesCarrouselController datesCarrouselController =
       DatesCarrouselController();
 
+  final DateTime fromNow = DateTime.now().copyWith(hour: 0, minute: 0);
+  final int minDays = 7;
+
   SessionFeedPage({super.key, required this.clubType}) {
     sessionCubit = sl<SessionCubit>();
 
     sessionCubit.loadSessions(
-        clubType, authCubit.state.userCredential!.location!);
+        clubType,
+        authCubit.state.userCredential!.location!,
+        RangeDate(
+          from: fromNow,
+          to: fromNow
+              .add(Duration(days: minDays))
+              .copyWith(hour: 23, minute: 59),
+        ));
   }
 
   void launchWppMessage(Session session) {
@@ -111,6 +128,7 @@ class SessionFeedPage extends StatelessWidget {
                           gap,
                           Expanded(
                             child: ListView(
+                              addRepaintBoundaries: false,
                               children: getListItemView(state),
                             ),
                           ),
@@ -119,7 +137,7 @@ class SessionFeedPage extends StatelessWidget {
                     ),
                   ),
                   Positioned(
-                    top: 0,
+                    top: maxHeight * 0.05,
                     left: 0,
                     child: Container(
                       height: maxHeight * .3,
@@ -129,7 +147,7 @@ class SessionFeedPage extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Padding(
-                            padding: const EdgeInsets.all(40),
+                            padding: const EdgeInsets.symmetric(horizontal: 40),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -141,7 +159,7 @@ class SessionFeedPage extends StatelessWidget {
                                       color: Colors.white,
                                     )),
                                 Text(
-                                  "Marzo 2024 - ${clubType.name}",
+                                  "${DateFormat('MMMM yyyy').format(fromNow).capitalize()} - ${clubType.name}",
                                   style: const TextStyle(
                                     color: Colors.white,
                                     fontSize: 24,
@@ -151,7 +169,9 @@ class SessionFeedPage extends StatelessWidget {
                               ],
                             ),
                           ),
-                          Expanded(
+                          SizedBox(
+                            height: maxHeight * .1,
+                            width: maxWidth,
                             child: DatesCarrousel(
                               containerWidth: maxWidth,
                               datesCarrouselController:
