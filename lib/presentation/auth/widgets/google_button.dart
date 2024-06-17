@@ -32,7 +32,7 @@ class _GoogleRenderButtonState extends State<GoogleButton> {
   void handleLogin() async {
     try {
       GoogleSignInAccount? signIn = await _googleSignIn.signIn();
-      print(signIn);
+
       sl<AuthCubit>().googleCallback(GoogleSignInUserData(
           id: signIn!.id,
           email: signIn.email,
