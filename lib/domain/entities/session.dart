@@ -6,6 +6,7 @@ import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 import '../../core/utils/value_transformers.dart';
+import 'client.dart';
 
 part 'session.freezed.dart';
 part 'session.g.dart';
@@ -27,6 +28,7 @@ class Session with _$Session {
     @JsonKey(name: "partition_physical_id") required int partitionPhysicalId,
     @JsonKey(name: "club_name") String? clubName,
     @JsonKey(name: "club_type_name") String? clubTypeName,
+    @JsonKey(includeIfNull: false,) Client? client,
   }) = _Session;
 
   Session._();

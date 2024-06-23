@@ -57,7 +57,8 @@ dependencies:
   flutter_localization: ^0.2.0
   collection: ^1.18.0
   geolocator: ^8.0.0
-
+  async: ^2.11.0
+  
 dev_dependencies:
   flutter_test:
     sdk: flutter

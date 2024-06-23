@@ -14,7 +14,7 @@ class AuthRepositoryImpl extends AuthRepository {
     final reqData = GoogleUserRequest(
         id: user.socialId!,
         displayName: user.person!.name,
-        email: user.person!.email,
+        email: user.person!.email!,
         photoUrl: user.picture);
 
     return authProvider.login(reqData);

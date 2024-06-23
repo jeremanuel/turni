@@ -66,10 +66,12 @@ class ReservedSessionCard extends StatelessWidget {
                     ],
                   ),
                   const Spacer(),                  
-                  const Row(
+                  Row(
                     children: [
-                      Icon(Icons.person),
-                      Text("Lucas Medico"),
+                      const Icon(Icons.person),
+                      SizedBox(
+                        width: 90,
+                        child: Text(session.client!.person!.fullName, style: TextStyle(overflow: TextOverflow.ellipsis, fontSize: 12),)),
                     ],
                   ),
 

@@ -2,6 +2,9 @@ import 'package:dio/dio.dart';
 import 'package:flutter_localization/flutter_localization.dart';
 import 'package:get_it/get_it.dart';
 import '../../domain/entities/club_type.dart';
+import '../../domain/repositories/admin_repository.dart';
+import '../../infrastructure/api/providers/admin_provider.dart';
+import '../../infrastructure/api/repositories/admin_repository_impl.dart';
 import '../utils/dio_init.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../../domain/usercases/auth_user_cases.dart';
@@ -25,6 +28,10 @@ class ServiceLocator {
 
     sl.registerSingleton<AuthRepository>(
         AuthRepositoryImpl(authProvider: AuthProvider()));
+
+        sl.registerSingleton<AdminRepository>(
+        AdminrepositroyImpl(adminProvider: AdminProvider())
+        );
 
     sl.registerSingleton<AuthCubit>(AuthCubit(AuthUserCases(
         sl<AuthRepository>()))); // Cubit singleton para manejo de la sesion.
