@@ -48,7 +48,7 @@ class _DropdownWidgetState extends State<DropdownWidget> {
     return PortalTarget(
       visible: isVisible,
       portalFollower: GestureDetector(
-        behavior: HitTestBehavior.translucent,
+        behavior: HitTestBehavior.opaque,
         onTapUp: (details) {
           setState(() {
             isVisible = false;
@@ -99,6 +99,7 @@ class _DropdownWidgetState extends State<DropdownWidget> {
     return const Aligned(
           follower: Alignment.topCenter,
           target: Alignment.bottomCenter,
+          offset: Offset(0, 8),
           shiftToWithinBound:  AxisFlag(x: true,y: true ));
   }
 
