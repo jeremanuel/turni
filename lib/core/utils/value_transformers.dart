@@ -39,4 +39,11 @@ class ValueTransformers {
 
     return newVal;
   }
+
+  static int? toJsonInt(value){
+    
+    if(value == null) return null;
+
+    return int.tryParse(value);
+  }
 }
