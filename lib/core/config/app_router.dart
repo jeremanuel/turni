@@ -1,5 +1,6 @@
 // ignore_for_file: constant_identifier_names
 
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -14,6 +15,8 @@ import 'package:turni/presentation/home_layout/widgets/custom_layout.dart';
 import 'package:turni/presentation/profile/profile_page.dart';
 import 'package:turni/presentation/turno/turno_page.dart';
 
+import '../../domain/entities/physical_partition.dart';
+import '../../presentation/admin/bloc/session_manager_bloc.dart';
 import '../../presentation/admin/create_session_screen/create_sessions_screen.dart';
 
 
@@ -21,6 +24,7 @@ import '../../presentation/admin/create_session_screen/create_sessions_screen.da
 import '../../domain/entities/club_type.dart';
 import '../../presentation/admin/session_manager_screen/widgets/add_new_session.dart';
 import '../../presentation/admin/session_manager_screen/widgets/calendar_side_column.dart';
+import '../../presentation/admin/session_manager_screen/widgets/reservate_session.dart';
 import '../../presentation/home/home.dart';
 import '../../presentation/session_feed/session_feed.dart';
 import '../utils/types/time_interval.dart';
@@ -105,7 +109,7 @@ List<StatefulShellBranch> buildBranches(RouterType routerType) {
       GoRoute(
         path: '/dashboard',
         builder: (context, state) => Center(
-          child: FilledButton(onPressed: () {}, child: Text("data")),
+          child: FilledButton(onPressed: () {}, child: const Text("data")),
         ),
       )
     ]),
@@ -123,9 +127,21 @@ List<StatefulShellBranch> buildBranches(RouterType routerType) {
                     },
                   ),
                   GoRoute(
-                    path: '/session_manager/reserve',
+                    path: '/session_manager/reserve/:idSession',
+                    name: "SESSION_MANAGER_RESERVE",
                     pageBuilder: (context, state) {
-                      return const  NoTransitionPage(child: Text("reservar turno"));
+
+                      final idSession = int.parse(state.pathParameters['idSession']!);
+                      
+                      final session = sl<SessionManagerBloc>().state.sessions.firstWhereOrNull((element) => element.sessionId == idSession);
+                      
+                      final sessionManagerbloc = sl<SessionManagerBloc>();
+
+                      final selectedClubPartition = sessionManagerbloc.state.selectedClubPartition;
+                      final physicalPartition = selectedClubPartition!.physicalPartitions!.firstWhere((element) => element.partitionPhysicalId == session!.partitionPhysicalId);
+
+
+                      return NoTransitionPage(child: ReservateSession(session: session!, clubPartition: selectedClubPartition, physicalPartition: physicalPartition,));
                     },
                   ),    
                   GoRoute(
@@ -145,10 +161,14 @@ List<StatefulShellBranch> buildBranches(RouterType routerType) {
                       final endTime = state.uri.queryParameters['end'];
 
                       DateFormat dateFormat = DateFormat("HH:mm");
+                      final startDate = startTime != null ? dateFormat.parse(startTime) : null;
+                      final endDate = endTime != null ? dateFormat.parse(endTime) : null;
+
+                      final selectedDay = sl<SessionManagerBloc>().state.currentDate;
 
                       final timeInterval = TimeInterval(
-                        initialDate: startTime != null ? dateFormat.parse(startTime) : null,
-                        endDate: endTime != null ? dateFormat.parse(endTime) : null
+                        initialDate: startDate != null ? selectedDay.copyWith(minute:startDate.minute, hour: startDate.hour ) : null,
+                        endDate: endDate != null ? selectedDay.copyWith(minute:endDate.minute, hour: endDate.hour ) : null
                       );
 
                       return NoTransitionPage(
