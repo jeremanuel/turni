@@ -20,7 +20,8 @@ class PickClient extends StatefulWidget {
   this.onBackToSelection, 
   this.onSelect,
   required this.name, 
-  this.validator
+  this.validator, 
+  this.isRequired = false
   });  
   
   /// Invocado cuando se preciona en "Nuevo" cliente.
@@ -31,6 +32,7 @@ class PickClient extends StatefulWidget {
   final Function()? onSelect;
   final String name;
   final String? Function(Client?)? validator;
+  final bool isRequired;
   @override
   State<PickClient> createState() => _PickClientState();
 }
@@ -48,8 +50,13 @@ class _PickClientState extends State<PickClient> {
  
     return FormBuilderField<Client?>(
       validator: (value) {
+
         if(newMode && value == null){
           return "invalid";
+        }
+
+        if(widget.isRequired && value == null) {
+          return "not client picked";
         }
 
         return null;

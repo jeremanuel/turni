@@ -28,7 +28,7 @@ class Agenda extends StatelessWidget {
   }
 
   final List<Session> sessions;
-  final Widget Function(Session) buildCard;
+  final Widget Function(Session, PhysicalPartition) buildCard;
   final List<PhysicalPartition> physicalPartitions;
   final double heightPerMinute;
   final DateTime fromDate;
@@ -441,7 +441,7 @@ class Agenda extends StatelessWidget {
                     height: duration * heightPerMinute.toDouble() -
                         heightPerMinute *
                             4, // Le resto 4 unidades de tiempo por el padding que se aplica luego de 2 arriba y abajo.
-                    child: buildCard(currentSession)
+                    child: buildCard(currentSession, physicalPartition)
                 ),
 
                 if (index == currentPhysicalPartitionSessions.length - 1)
