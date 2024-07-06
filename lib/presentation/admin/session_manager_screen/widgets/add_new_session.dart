@@ -11,6 +11,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/config/service_locator.dart';
 import '../../../../core/presentation/components/inputs/dropdown_widget.dart';
+import '../../../../core/utils/responsive_builder.dart';
 import '../../../../core/utils/types/time_interval.dart';
 import '../../../../domain/entities/client.dart';
 import '../../../../domain/entities/club_partition.dart';
@@ -28,14 +29,14 @@ class AddNewSession extends StatefulWidget {
       {super.key,
       required int idPhysicalPartition,
       required this.selectedTimeInterval})
-      : clubPartition = _findPhysicalPartition(idPhysicalPartition){
+      : clubPartition = _findPhysicalPartition(idPhysicalPartition) {
 
         physicalPartition = clubPartition.physicalPartitions!.firstWhere(
           (element) => element.partitionPhysicalId == idPhysicalPartition,
         );
 
         duration = physicalPartition.durationInMinutes != null ? Duration(minutes: physicalPartition.durationInMinutes!) : selectedTimeInterval.getDuration();
-  }
+  } 
 
   late final PhysicalPartition physicalPartition;
   final ClubPartition clubPartition;
@@ -198,28 +199,30 @@ class _AddNewSessionState extends State<AddNewSession> {
 
   Stack buildHeader(BuildContext context) {
     return Stack(
-                  children: [
-                    SizedBox(
-                      height: 64,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text("Nuevo Turno ${widget.selectedTimeInterval.toStringTime()}", style: const TextStyle(fontSize: 16),)
-                        ],
-                      ),
-                    ),
-                    SizedBox(
-                      height: 64,
-                      child: IconButton(
-                        onPressed: (){
-                          context.go("/session_manager");
-                        }, 
-                        icon: const Icon(Icons.arrow_back)
-                      ),
-                    ),
-                    
-                  ],
-                );
+      children: [
+        SizedBox(
+          height: 64,
+          width: ResponsiveBuilder.isDesktop(context) ? 300 : double.infinity,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text("Nuevo Turno", style: const TextStyle(fontSize: 16),),
+              Text("${widget.selectedTimeInterval.getInitialTextString()} | ${widget.selectedTimeInterval.toStringTime()}", style: const TextStyle(fontSize: 16),),
+            ],
+          ),
+        ),
+        SizedBox(
+          height: 64,
+          child: IconButton(
+            onPressed: (){
+              context.go("/session_manager");
+            }, 
+            icon: const Icon(Icons.arrow_back)
+          ),
+        ),
+        
+      ],
+    );
   }
 }
 

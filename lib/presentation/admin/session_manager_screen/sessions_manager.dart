@@ -87,8 +87,9 @@ class SessionsManager extends StatelessWidget {
             padding: const  EdgeInsets.all(8.0),
             child: SizedBox(height: 50, child: SessionManagerDayCarrousel(width: MediaQuery.of(context).size.width * 0.9,)),
           ),
-        SizedBox(
-          height: 40,
+        Container(
+          padding: const  EdgeInsets.symmetric(horizontal: 8),
+          height: 56,
           child: BlocBuilder<SessionManagerBloc, SessionManagerState>(
             bloc: sl<SessionManagerBloc>(),
             builder: (context, state) {
@@ -167,8 +168,8 @@ class SessionsManager extends StatelessWidget {
           heightPerMinute: ResponsiveBuilder.isDesktop(context) ? 1.35 : 1.1,
           fromDate: state.currentDate.applied(const TimeOfDay(hour: 8, minute: 0)),
           lastDate: state.currentDate.applied(const TimeOfDay(hour: 22, minute: 0)),
-          buildCard: (session) {
-            return SessionManagerCard(session: session);
+          buildCard: (session, physicalPartition) {
+            return SessionManagerCard(session: session, physicalPartition : physicalPartition);
           },
           sessions: state.sessions,
           physicalPartitions:
