@@ -9,6 +9,7 @@ import '../../../domain/usercases/session_user_cases.dart';
 import '../../../infrastructure/api/providers/session_provider.dart';
 import '../../../infrastructure/api/repositories/session_repository_impl.dart';
 import '../../core/dates_carrousel/dates_carrousel.dart';
+import '../session_manager_screen/widgets/reservate_session.dart';
 import 'session_manager_event.dart';
 import 'session_manager_state.dart';
 
@@ -102,10 +103,34 @@ class SessionManagerBloc extends Bloc<SessionManagerEvent, SessionManagerState> 
       
     });
 
+    on<ReserveEvent>((event, emit) async {
+      final reservatedClient = await _sessionUserCases.reservateSession(event.session, event.client);
+
+      if(reservatedClient == null) return;
+
+      final newSessions = state.sessions.map((element) {
+        if(element.sessionId == event.session.sessionId){
+          element = element.copyWith(client: reservatedClient, clientId: int.parse(reservatedClient.clientId!));
+        }
+
+        return element;
+      }).toList();
+
+      emit(
+        state.copyWith(
+          sessions: newSessions,
+        )
+      );
+    });
+    
+    
     add(SessionLoadEvent());
 
 
   }
+
+
+
 
   
 }

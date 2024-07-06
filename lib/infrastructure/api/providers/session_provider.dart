@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import '../../../core/config/service_locator.dart';
 import '../../../core/utils/entities/coordinate.dart';
 import '../../../core/utils/entities/range_date.dart';
+import '../../../domain/entities/client.dart';
 import '../../../domain/entities/club_partition.dart';
 import '../../../domain/entities/session.dart';
 
@@ -81,7 +82,22 @@ class SessionProvider {
       return Session.fromJson(response.data);
 
     } catch (e) {      
-      return Session.fromJson({});;      
+      return Session.fromJson({});      
     }
+  }
+
+  Future<Client?> reservateSession(int sessionId, Client client) async {
+
+  try { 
+
+
+      final response = await dioInstance.post("/admin/reserve/${sessionId}", data: {"client": client.toJson()});
+      print(response.data['client']);
+      return Client.fromJson(response.data['client']);
+
+    } catch (e) {      
+      print(e);
+    }
+
   }
 }
