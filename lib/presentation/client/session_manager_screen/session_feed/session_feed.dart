@@ -5,13 +5,14 @@ import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/config/service_locator.dart';
-import '../../../../core/utils/entities/range_date.dart';
 import '../../../../domain/entities/club_type.dart';
 import '../../../../domain/entities/session.dart';
 import '../../../../domain/entities/template_message.dart';
 import '../../../core/cubit/auth/auth_cubit.dart';
 import '../../../core/dates_carrousel/dates_carrousel.dart';
-import 'cubit/session_cubit.dart';
+import '../../bloc/client_session_manager_bloc.dart';
+import '../../bloc/client_session_manager_event.dart';
+import '../../bloc/client_session_manager_state.dart';
 
 extension StringExtension on String {
   String capitalize() {
@@ -21,26 +22,13 @@ extension StringExtension on String {
 
 class SessionFeedPage extends StatelessWidget {
   final ClubType clubType;
-  late final SessionCubit sessionCubit;
   final AuthCubit authCubit = sl<AuthCubit>();
-  final DatesCarrouselController datesCarrouselController =
-      DatesCarrouselController();
-
-  final DateTime fromNow = DateTime.now().copyWith(hour: 0, minute: 0);
-  final int minDays = 7;
+  final ClientSessionManagerBloc sessionManagerBloc =
+      sl<ClientSessionManagerBloc>();
 
   SessionFeedPage({super.key, required this.clubType}) {
-    sessionCubit = sl<SessionCubit>();
-
-    sessionCubit.loadSessions(
-        clubType,
-        authCubit.state.userCredential!.location!,
-        RangeDate(
-          from: fromNow,
-          to: fromNow
-              .add(Duration(days: minDays))
-              .copyWith(hour: 23, minute: 59),
-        ));
+    sessionManagerBloc.add(LoadClubTypeEvent(clubType));
+    sessionManagerBloc.add(ClientSessionLoadEvent());
   }
 
   void launchWppMessage(Session session) {
@@ -60,8 +48,8 @@ class SessionFeedPage extends StatelessWidget {
     final maxHeight = MediaQuery.of(context).size.height;
     final maxWidth = MediaQuery.of(context).size.width;
 
-    return BlocBuilder<SessionCubit, SessionState>(
-        bloc: sessionCubit,
+    return BlocBuilder<ClientSessionManagerBloc, ClientSessionManagerState>(
+        bloc: sessionManagerBloc,
         builder: (context, state) {
           return Scaffold(
               backgroundColor: backgroundColor,
@@ -158,7 +146,7 @@ class SessionFeedPage extends StatelessWidget {
                                       color: Colors.white,
                                     )),
                                 Text(
-                                  "${DateFormat('MMMM yyyy').format(fromNow).capitalize()} - ${clubType.name}",
+                                  "${DateFormat('MMMM yyyy').format(sessionManagerBloc.fromNow).capitalize()} - ${clubType.name}",
                                   style: const TextStyle(
                                     color: Colors.white,
                                     fontSize: 24,
@@ -174,7 +162,7 @@ class SessionFeedPage extends StatelessWidget {
                             child: DatesCarrousel(
                               containerWidth: maxWidth,
                               datesCarrouselController:
-                                  datesCarrouselController,
+                                  sessionManagerBloc.datesCarrouselController,
                               onSelect: (date) {
                                 print(date);
                               },
@@ -189,12 +177,12 @@ class SessionFeedPage extends StatelessWidget {
         });
   }
 
-  List<Widget> getListItemView(SessionState state) {
-    if (state.isLoading) return [const Text('Loading')];
+  List<Widget> getListItemView(ClientSessionManagerState state) {
+    if (state.isLoadingSessions) return [const Text('Loading')];
 
     getBackgroundColor(int index) => index % 2 == 0
-        ? Color.fromRGBO(159, 121, 242, 1)
-        : Color.fromRGBO(103, 43, 234, 1);
+        ? const Color.fromRGBO(159, 121, 242, 1)
+        : const Color.fromRGBO(103, 43, 234, 1);
 
     return state.sessions.asMap().entries.map((entry) {
       int index = entry.key;

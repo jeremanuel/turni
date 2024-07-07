@@ -8,7 +8,7 @@ import '../../../domain/entities/session.dart';
 class SessionProvider {
   final dioInstance = sl<Dio>();
 
-  Future<List<Session>> getSessions(
+  Future<List<Session>> getClientSessions(
     clubTypeId,
     Coordinate coordinate,
     RangeDate rangeDate,

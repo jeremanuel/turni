@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_localization/flutter_localization.dart';
 import 'package:get_it/get_it.dart';
 import '../../domain/entities/club_type.dart';
+import '../../presentation/client/bloc/client_session_manager_bloc.dart';
 import '../utils/dio_init.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../../domain/usercases/auth_user_cases.dart';
@@ -33,8 +34,8 @@ class ServiceLocator {
         () => CreateSesssionsFormBloc());
 
     sl.registerLazySingleton<HomeCubit>(() => HomeCubit());
-
-    sl.registerLazySingleton<SessionCubit>(() => SessionCubit());
+    sl.registerLazySingleton<ClientSessionManagerBloc>(
+        () => ClientSessionManagerBloc());
 
     _initializeLocalization();
   }
