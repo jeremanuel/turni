@@ -8,17 +8,16 @@ import 'package:turni/presentation/admin/session_manager_screen/sessions_manager
 import 'package:turni/presentation/auth/check_status_page.dart';
 import 'package:turni/presentation/auth/login_page.dart';
 import 'package:turni/presentation/core/cubit/auth/auth_cubit.dart';
-import 'package:turni/presentation/feed/feed_page.dart';
 import 'package:turni/presentation/home_layout/widgets/custom_layout.dart';
-import 'package:turni/presentation/profile/profile_page.dart';
+import 'package:turni/presentation/client/profile_manager_screen/profile/profile_page.dart';
 
 import '../../presentation/admin/create_session_screen/create_sessions_screen.dart';
 
 import '../../domain/entities/club_type.dart';
 import '../../presentation/admin/session_manager_screen/widgets/add_new_session.dart';
 import '../../presentation/admin/session_manager_screen/widgets/calendar_side_column.dart';
-import '../../presentation/home/home.dart';
-import '../../presentation/session_feed/session_feed.dart';
+import '../../presentation/client/home_manager_screen/home/home.dart';
+import '../../presentation/client/session_manager_screen/session_feed/session_feed.dart';
 import '../utils/types/time_interval.dart';
 
 enum RouterType { clientRoute, adminRoute }
@@ -37,7 +36,7 @@ GoRouter buildGoRouter(RouterType routerType) {
       if (authCubit.state.userCredential == null) return '/login';
 
       if (state.matchedLocation == "/" || state.matchedLocation == "/login") {
-        return routerType == RouterType.adminRoute ? '/dashboard' : '/feed';
+        return routerType == RouterType.adminRoute ? '/dashboard' : '/home';
       }
     },
     routes: [
@@ -65,14 +64,6 @@ GoRouter buildGoRouter(RouterType routerType) {
 List<StatefulShellBranch> buildBranches(RouterType routerType) {
   if (routerType == RouterType.clientRoute) {
     return [
-      StatefulShellBranch(routes: [
-        GoRoute(
-          path: '/feed',
-          builder: (context, state) {
-            return FeedPage();
-          },
-        ),
-      ]),
       StatefulShellBranch(routes: [
         GoRoute(
           path: '/home',

@@ -3,10 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../core/config/service_locator.dart';
-import '../core/cubit/auth/auth_cubit.dart';
-import '../core/widgets/button/button_navigation.dart';
-import '../core/widgets/carrousel/carrousel_horizontal.dart';
+import '../../../../core/config/service_locator.dart';
+import '../../../core/cubit/auth/auth_cubit.dart';
+import '../../../core/widgets/button/button_navigation.dart';
+import '../../../core/widgets/carrousel/carrousel_horizontal.dart';
 import 'cubit/home_cubit.dart';
 
 class HomePage extends StatelessWidget {

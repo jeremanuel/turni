@@ -4,13 +4,13 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../../core/config/service_locator.dart';
-import '../../core/utils/entities/range_date.dart';
-import '../../domain/entities/club_type.dart';
-import '../../domain/entities/session.dart';
-import '../../domain/entities/template_message.dart';
-import '../core/cubit/auth/auth_cubit.dart';
-import '../core/dates_carrousel/dates_carrousel.dart';
+import '../../../../core/config/service_locator.dart';
+import '../../../../core/utils/entities/range_date.dart';
+import '../../../../domain/entities/club_type.dart';
+import '../../../../domain/entities/session.dart';
+import '../../../../domain/entities/template_message.dart';
+import '../../../core/cubit/auth/auth_cubit.dart';
+import '../../../core/dates_carrousel/dates_carrousel.dart';
 import 'cubit/session_cubit.dart';
 
 extension StringExtension on String {
@@ -125,7 +125,6 @@ class SessionFeedPage extends StatelessWidget {
                                 fontSize: 24,
                                 fontWeight: FontWeight.w600),
                           ),
-                          gap,
                           Expanded(
                             child: ListView(
                               addRepaintBoundaries: false,
