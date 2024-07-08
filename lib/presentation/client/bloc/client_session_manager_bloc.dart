@@ -1,6 +1,7 @@
 import 'package:bloc/bloc.dart';
 import '../../../core/config/service_locator.dart';
 import '../../../core/utils/entities/range_date.dart';
+import '../../../core/utils/types/util_dates.dart';
 import '../../../domain/entities/session.dart';
 import '../../../domain/usecases/session/get_sessions.dart';
 import '../../../infrastructure/api/providers/client/client_session_provider.dart';
@@ -22,8 +23,9 @@ class ClientSessionManagerBloc
   final DatesCarrouselController datesCarrouselController =
       DatesCarrouselController();
 
-  final DateTime fromNow = DateTime.now().copyWith(hour: 0, minute: 0);
-  final int minDays = 7;
+  final DateTime fromNow =
+      DateTime.now().copyWith(second: 0, millisecond: 0, microsecond: 0);
+  final int batchIntervalDays = 7;
 
   ClientSessionManagerBloc()
       : super(
@@ -32,18 +34,24 @@ class ClientSessionManagerBloc
             sessions: [],
           ),
         ) {
+    final location = authCubit.state.userCredential!.location!;
+    final to = fromNow
+        .add(Duration(days: batchIntervalDays))
+        .copyWith(hour: 23, minute: 59);
     final rangeDate = RangeDate(
       from: fromNow,
-      to: fromNow.add(Duration(days: minDays)).copyWith(hour: 23, minute: 59),
+      to: to,
     );
-    final location = authCubit.state.userCredential!.location!;
 
     on<LoadClubTypeEvent>((event, emit) {
       emit(state.copyWith(clubType: event.clubType));
     });
 
     on<ClientSessionLoadEvent>((event, emit) async {
-      emit(state.copyWith(isFirstLoad: true, isLoadingSessions: true));
+      emit(state.copyWith(
+        isFirstLoad: true,
+        isLoadingSessions: true,
+      ));
 
       List<Session> sessions = await getSessionsUseCase.excute(
         state.clubType!.clubTypeId,
@@ -51,29 +59,71 @@ class ClientSessionManagerBloc
         rangeDate,
       );
 
+      List<Session> filter = sessions
+          .where((Session session) =>
+              UtilDates.isSameDate(session.startTime, state.currentDate))
+          .toList();
+
       emit(state.copyWith(
-        sessions: sessions,
         isFirstLoad: false,
         isLoadingSessions: false,
+        sessions: sessions,
+        filteredSessions: filter,
+        rangeDate: rangeDate,
       ));
     });
 
     on<ClientSessionChangeDateEvent>((event, emit) async {
-      emit(
-        state.copyWith(currentDate: event.newDate, isLoadingSessions: true),
-      );
+      datesCarrouselController
+          .setDate!(event.newDate.copyWith(hour: 0, minute: 0));
 
-      datesCarrouselController.setDate!(event.newDate);
+      if (state.rangeDate!.isBetween(event.newDate) ||
+          state.rangeDate!.isSameDate(event.newDate)) {
+        List<Session> filter = state.sessions
+            .where((Session session) =>
+                UtilDates.isSameDate(session.startTime, event.newDate))
+            .toList();
+
+        emit(state.copyWith(
+          filteredSessions: filter,
+        ));
+        return;
+      }
+
+      DateTime auxFrom =
+          state.rangeDate!.from!.add(Duration(days: batchIntervalDays + 1));
+      DateTime toAux =
+          state.rangeDate!.to!.add(Duration(days: batchIntervalDays + 1));
+      RangeDate auxRangeDate = RangeDate(from: auxFrom, to: toAux);
+
+      emit(
+        state.copyWith(
+          currentDate: event.newDate,
+          isLoadingSessions: true,
+          rangeDate: RangeDate(from: state.rangeDate!.from!, to: toAux),
+        ),
+      );
 
       List<Session> sessions = await getSessionsUseCase.excute(
         state.clubType!.clubTypeId,
         location,
-        rangeDate,
+        auxRangeDate,
       );
 
+      List<Session> filter = sessions
+          .where((Session session) =>
+              UtilDates.isSameDate(session.startTime, event.newDate))
+          .toList();
+
+      print(sessions.length);
+      print(filter.length);
+
+      final newSessions = [...state.sessions, ...sessions];
+
       emit(state.copyWith(
-        sessions: sessions,
         isLoadingSessions: false,
+        sessions: newSessions,
+        filteredSessions: filter,
       ));
     });
   }

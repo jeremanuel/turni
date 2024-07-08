@@ -164,7 +164,13 @@ class SessionFeedPage extends StatelessWidget {
                               datesCarrouselController:
                                   sessionManagerBloc.datesCarrouselController,
                               onSelect: (date) {
-                                print(date);
+                                DateTime dateNow = DateTime.now();
+                                sessionManagerBloc
+                                    .add(ClientSessionChangeDateEvent(
+                                  date.copyWith(
+                                      hour: dateNow.hour,
+                                      minute: dateNow.minute),
+                                ));
                               },
                             ),
                           )
@@ -184,7 +190,7 @@ class SessionFeedPage extends StatelessWidget {
         ? const Color.fromRGBO(159, 121, 242, 1)
         : const Color.fromRGBO(103, 43, 234, 1);
 
-    return state.sessions.asMap().entries.map((entry) {
+    return state.filteredSessions.asMap().entries.map((entry) {
       int index = entry.key;
       Session session = entry.value;
       return GestureDetector(

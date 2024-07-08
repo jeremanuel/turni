@@ -50,8 +50,12 @@ class _DatesCarrouselState extends State<DatesCarrousel> {
     widget.datesCarrouselController?.setDate = (date) {
       if (!dates.contains(date)) return;
 
-      scrollController
-          .jumpTo((dates.indexOf(date) - 2).toDouble() * widget.itemWidth);
+      scrollController.animateTo(
+        (dates.indexOf(date) - 2).toDouble() * widget.itemWidth -
+            (widget.gapItems * 2),
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.linear,
+      );
 
       setState(() {
         selectedDate = DateTime(date.year, date.month, date.day);
