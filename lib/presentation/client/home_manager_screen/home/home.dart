@@ -3,13 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../core/config/service_locator.dart';
-import '../core/widgets/button/button_navigation.dart';
-import '../core/widgets/carrousel/carrousel_horizontal.dart';
+import '../../../../core/config/service_locator.dart';
+import '../../../core/cubit/auth/auth_cubit.dart';
+import '../../../core/widgets/button/button_navigation.dart';
+import '../../../core/widgets/carrousel/carrousel_horizontal.dart';
 import 'cubit/home_cubit.dart';
 
 class HomePage extends StatelessWidget {
   late final HomeCubit homeCubit;
+  final AuthCubit authCubit = sl<AuthCubit>();
 
   HomePage({super.key}) {
     homeCubit = sl<HomeCubit>();
@@ -44,17 +46,17 @@ class HomePage extends StatelessWidget {
   Widget buildHeader() {
     const textColor = Color.fromRGBO(103, 43, 234, 1);
 
-    return const Row(
+    return Row(
       children: [
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              "¡Hola Chiri Rodríguez!",
-              style: TextStyle(
+              "¡Hola ${authCubit.state.userCredential?.person.fullName}!",
+              style: const TextStyle(
                   color: textColor, fontWeight: FontWeight.bold, fontSize: 20),
             ),
-            Text(
+            const Text(
               "¿Cómo estás hoy?",
               style: TextStyle(
                   color: textColor,
@@ -63,10 +65,11 @@ class HomePage extends StatelessWidget {
             ),
           ],
         ),
-        Spacer(),
+        const Spacer(),
         CircleAvatar(
           radius: 30,
-          backgroundImage: AssetImage('assets/img/test.png'),
+          backgroundImage:
+              NetworkImage(authCubit.state.userCredential!.picture!),
         )
       ],
     );

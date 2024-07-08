@@ -24,10 +24,6 @@ class CustomBottomNavigationBar extends StatelessWidget {
     if (!isAdmin) {
       return const [
         BottomNavigationBarItem(
-            label: "Turnos",
-            icon: Icon(Icons.calendar_month),
-            activeIcon: Icon(Icons.check)),
-        BottomNavigationBarItem(
             label: "Home",
             icon: Icon(Icons.home_outlined),
             activeIcon: Icon(Icons.home_rounded)),

@@ -47,6 +47,7 @@ class User {
 
   factory User.fromGoogleSignInUserData(GoogleSignInUserData userData) => User(
         socialId: userData.id,
+        picture: userData.photoUrl,
         client: Client(
           person: Person(
             name: userData.displayName!.split(' ')[0],

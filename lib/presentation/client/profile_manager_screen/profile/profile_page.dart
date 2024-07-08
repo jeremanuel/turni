@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../core/config/service_locator.dart';
-import '../core/cubit/auth/auth_cubit.dart';
+import '../../../../core/config/service_locator.dart';
+import '../../../core/cubit/auth/auth_cubit.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
