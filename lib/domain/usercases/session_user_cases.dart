@@ -13,6 +13,11 @@ class SessionUserCases {
     return _sessionRepository.getSessions(date);
   }
 
+  Future<List<Session>> getSessionsBySessionId(int sessionId) async {
+    return _sessionRepository.getSessionsBySessionId(sessionId);
+  }
+
+
   Future<List<ClubPartition>> getClubPartitions() async {
     return _sessionRepository.getPhysicalPartitions();
   }

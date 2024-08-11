@@ -1,11 +1,11 @@
 part of 'auth_cubit.dart';
 
-@immutable
+
 class AuthState {
   final User? userCredential;
   final bool loadingAuthentication;
   final String? error;
-
+  
   const AuthState(
       {required this.loadingAuthentication, this.userCredential, this.error});
 

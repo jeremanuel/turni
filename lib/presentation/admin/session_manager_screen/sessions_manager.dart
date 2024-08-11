@@ -17,41 +17,38 @@ class SessionsManager extends StatelessWidget {
 
   final Widget sideChild;
   
-  const SessionsManager({
+
+  SessionsManager({
     super.key, 
-    required this.sideChild,
-  });
+    required this.sideChild, 
+    sessionId, 
+  }) {ServiceLocator.initializeSessionManager(sessionId);}
 
   @override
   Widget build(BuildContext context) {
 
     return BlocBuilder<SessionManagerBloc, SessionManagerState>(
       bloc: sl<SessionManagerBloc>(),
-      buildWhen: (previous, current) =>
-          previous.isFirstLoad != current.isFirstLoad,
+      buildWhen: (previous, current) => previous.isFirstLoad != current.isFirstLoad,
       builder: (context, state) {
 
-        if (state.isFirstLoad) {
-          return const Center(
-            child: CircularProgressIndicator(),
-          );
-        }
-        print(GoRouter.of(context).routeInformationProvider.value.uri.toString() == '/session_manager');
-       if(ResponsiveBuilder.isMobile(context) && GoRouter.of(context).routeInformationProvider.value.uri.toString() != '/session_manager'){
-          return Padding(
-            padding: const EdgeInsets.all(16),
-            child: sideChild,
-          );
-        } 
+      if (state.isFirstLoad) {
+        return const Center(
+          child: CircularProgressIndicator(),
+        );
+      }
+      if(ResponsiveBuilder.isMobile(context) && GoRouter.of(context).routeInformationProvider.value.uri.toString() != '/session_manager'){
+        return Padding(
+          padding: const EdgeInsets.all(16),
+          child: sideChild,
+        );
+      } 
 
-       
-    
-    
-        if (ResponsiveBuilder.isMobile(context)) {
-          return buildAgendaContainer(context);
-        }
-    
-        return buildDesktopManager(context);
+      if (ResponsiveBuilder.isMobile(context)) {
+        return buildAgendaContainer(context);
+      }
+  
+      return buildDesktopManager(context);
       },
     );
   }

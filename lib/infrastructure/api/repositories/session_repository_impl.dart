@@ -48,4 +48,9 @@ class SessionRepositoryImplementation extends SessionRepository {
 
   }
   
+  @override
+  Future<List<Session>> getSessionsBySessionId(int sessionId) {
+    return sessionProvider.getSessionsByAdminAndSessionId(sessionId);
+  }
+  
 }
