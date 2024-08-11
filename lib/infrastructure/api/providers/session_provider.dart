@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import '../../../core/config/service_locator.dart';
 import '../../../core/utils/entities/coordinate.dart';
 import '../../../core/utils/entities/range_date.dart';
+import '../../../domain/entities/client.dart';
 import '../../../domain/entities/club_partition.dart';
 import '../../../domain/entities/session.dart';
 
@@ -35,6 +36,20 @@ class SessionProvider {
     try {
       final response = await dioInstance
           .get("/admin/sessions", queryParameters: {"date": date});
+
+      return (response.data as List)
+          .map((session) => Session.fromJson(session))
+          .toList();
+    } catch (error) {
+      print(error);
+      return [];
+    }
+  }
+
+   Future<List<Session>> getSessionsByAdminAndSessionId(int sessionId) async {
+    try {
+      final response = await dioInstance
+          .get("/admin/sessions/${sessionId}");
 
       return (response.data as List)
           .map((session) => Session.fromJson(session))
@@ -79,9 +94,26 @@ class SessionProvider {
       final response = await dioInstance.post("/admin/session", data: body);
 
       return Session.fromJson(response.data);
-    } catch (e) {
-      return Session.fromJson({});
-      ;
+
+    } catch (e) {      
+      return Session.fromJson({});      
     }
   }
+
+  Future<Client?> reservateSession(int sessionId, Client client) async {
+
+  try { 
+
+
+      final response = await dioInstance.post("/admin/reserve/${sessionId}", data: {"client": client.toJson()});
+      print(response.data['client']);
+      return Client.fromJson(response.data['client']);
+
+    } catch (e) {      
+      print(e);
+    }
+
+  }
+
+  
 }

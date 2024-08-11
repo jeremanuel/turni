@@ -1,4 +1,5 @@
 import '../../core/utils/types/time_interval.dart';
+import '../entities/client.dart';
 import '../entities/club_partition.dart';
 import '../entities/session.dart';
 import '../repositories/session_repository.dart';
@@ -12,6 +13,11 @@ class SessionUserCases {
     return _sessionRepository.getSessions(date);
   }
 
+  Future<List<Session>> getSessionsBySessionId(int sessionId) async {
+    return _sessionRepository.getSessionsBySessionId(sessionId);
+  }
+
+
   Future<List<ClubPartition>> getClubPartitions() async {
     return _sessionRepository.getPhysicalPartitions();
   }
@@ -21,6 +27,10 @@ class SessionUserCases {
 
   Future<Session> saveSession(Session session) async {
    return _sessionRepository.saveSession(session);
+  }
+
+  Future<Client?> reservateSession(Session session, Client client) async {
+   return _sessionRepository.reservateSession(session.sessionId, client);
   }
 
 

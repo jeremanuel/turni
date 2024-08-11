@@ -1,31 +1,29 @@
+import 'package:flutter_form_builder/flutter_form_builder.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 
-import 'package:json_annotation/json_annotation.dart';
-import 'package:turni/core/utils/value_transformers.dart';
-
+import '../../core/utils/value_transformers.dart';
 import 'person.dart';
 
+part 'client.freezed.dart';
 part 'client.g.dart';
 
-@JsonSerializable()
-class Client {
+@freezed
+class Client with _$Client {
 
-  Client({this.clientId, this.personId, this.userId, this.person});
+  factory Client({
+    @JsonKey(name: "client_id", fromJson: ValueTransformers.fromJsonString, toJson: ValueTransformers.toJsonInt)
+    String? clientId,
+    @JsonKey(name: "person_id", fromJson: ValueTransformers.fromJsonString)
+    String? personId,
+    @JsonKey(name: "user_id", fromJson: ValueTransformers.fromJsonString)
+    String? userId,
+    Person? person
 
+  }) = _Client;
+  
+  
+  factory Client.fromJson(Map<String, dynamic> json) => _$ClientFromJson(json);
 
-
-  @JsonKey(name: "client_id", fromJson: ValueTransformers.fromJsonString)
-  final String? clientId;
-  @JsonKey(name: "person_id", fromJson: ValueTransformers.fromJsonString)
-  final String? personId;
-  @JsonKey(name: "user_id", fromJson: ValueTransformers.fromJsonString)
-  final String? userId;
-
-  final Person? person;
-
-
-  Map<String, dynamic> toJson() => _$ClientToJson(this);
-  factory Client.fromJson(Map<String,dynamic> json) => _$ClientFromJson(json);
-
-       
-
+  
 }
+

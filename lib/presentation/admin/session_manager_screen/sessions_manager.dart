@@ -17,41 +17,38 @@ class SessionsManager extends StatelessWidget {
 
   final Widget sideChild;
   
-  const SessionsManager({
+
+  SessionsManager({
     super.key, 
-    required this.sideChild,
-  });
+    required this.sideChild, 
+    sessionId, 
+  }) {ServiceLocator.initializeSessionManager(sessionId);}
 
   @override
   Widget build(BuildContext context) {
 
     return BlocBuilder<SessionManagerBloc, SessionManagerState>(
       bloc: sl<SessionManagerBloc>(),
-      buildWhen: (previous, current) =>
-          previous.isFirstLoad != current.isFirstLoad,
+      buildWhen: (previous, current) => previous.isFirstLoad != current.isFirstLoad,
       builder: (context, state) {
 
-        if (state.isFirstLoad) {
-          return const Center(
-            child: CircularProgressIndicator(),
-          );
-        }
-        print(GoRouter.of(context).routeInformationProvider.value.uri.toString() == '/session_manager');
-       if(ResponsiveBuilder.isMobile(context) && GoRouter.of(context).routeInformationProvider.value.uri.toString() != '/session_manager'){
-          return Padding(
-            padding: const EdgeInsets.all(16),
-            child: sideChild,
-          );
-        } 
+      if (state.isFirstLoad) {
+        return const Center(
+          child: CircularProgressIndicator(),
+        );
+      }
+      if(ResponsiveBuilder.isMobile(context) && GoRouter.of(context).routeInformationProvider.value.uri.toString() != '/session_manager'){
+        return Padding(
+          padding: const EdgeInsets.all(16),
+          child: sideChild,
+        );
+      } 
 
-       
-    
-    
-        if (ResponsiveBuilder.isMobile(context)) {
-          return buildAgendaContainer(context);
-        }
-    
-        return buildDesktopManager(context);
+      if (ResponsiveBuilder.isMobile(context)) {
+        return buildAgendaContainer(context);
+      }
+  
+      return buildDesktopManager(context);
       },
     );
   }
@@ -87,8 +84,9 @@ class SessionsManager extends StatelessWidget {
             padding: const  EdgeInsets.all(8.0),
             child: SizedBox(height: 50, child: SessionManagerDayCarrousel(width: MediaQuery.of(context).size.width * 0.9,)),
           ),
-        SizedBox(
-          height: 40,
+        Container(
+          padding: const  EdgeInsets.symmetric(horizontal: 8),
+          height: 56,
           child: BlocBuilder<SessionManagerBloc, SessionManagerState>(
             bloc: sl<SessionManagerBloc>(),
             builder: (context, state) {
@@ -167,8 +165,8 @@ class SessionsManager extends StatelessWidget {
           heightPerMinute: ResponsiveBuilder.isDesktop(context) ? 1.35 : 1.1,
           fromDate: state.currentDate.applied(const TimeOfDay(hour: 8, minute: 0)),
           lastDate: state.currentDate.applied(const TimeOfDay(hour: 22, minute: 0)),
-          buildCard: (session) {
-            return SessionManagerCard(session: session);
+          buildCard: (session, physicalPartition) {
+            return SessionManagerCard(session: session, physicalPartition : physicalPartition);
           },
           sessions: state.sessions,
           physicalPartitions:

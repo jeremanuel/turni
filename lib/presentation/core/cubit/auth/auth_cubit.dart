@@ -16,6 +16,7 @@ part 'auth_state.dart';
 
 class AuthCubit extends Cubit<AuthState> with ChangeNotifier {
   final AuthUserCases authUserCases;
+  String? initialRoute;
 
   AuthCubit(this.authUserCases) : super(const AuthInitial());
 
@@ -99,4 +100,8 @@ class AuthCubit extends Cubit<AuthState> with ChangeNotifier {
   bool isAdmin() {
     return state.userCredential?.isAdmin ?? false;
   }
+
+/*   void setInitialRoute(String? route){
+    state.initialRoute = route;
+  } */
 }

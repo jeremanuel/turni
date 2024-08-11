@@ -9,6 +9,7 @@ import '../../../domain/usercases/session_user_cases.dart';
 import '../../../infrastructure/api/providers/session_provider.dart';
 import '../../../infrastructure/api/repositories/session_repository_impl.dart';
 import '../../core/dates_carrousel/dates_carrousel.dart';
+import '../session_manager_screen/widgets/reservate_session.dart';
 import 'session_manager_event.dart';
 import 'session_manager_state.dart';
 
@@ -19,7 +20,7 @@ class SessionManagerBloc extends Bloc<SessionManagerEvent, SessionManagerState> 
 
   final DatesCarrouselController datesCarrouselController = DatesCarrouselController();
 
-  SessionManagerBloc() : super(SessionManagerState(currentDate: DateTime.now(), sessions: [], clubPartitions: [], isFirstLoad: true,)) {
+  SessionManagerBloc(int? sessionId) : super(SessionManagerState(currentDate: DateTime.now(), sessions: [], clubPartitions: [], isFirstLoad: true,)) {
 
 
     on<SessionChangeDateEvent>((event, emit) async {
@@ -72,7 +73,7 @@ class SessionManagerBloc extends Bloc<SessionManagerEvent, SessionManagerState> 
 
     on<ReloadSessionsEvent>((event, emit) async {
 
-        emit(
+      emit(
         state.copyWith(
           isLoadingSessions: true,
         )
@@ -102,9 +103,71 @@ class SessionManagerBloc extends Bloc<SessionManagerEvent, SessionManagerState> 
       
     });
 
-    add(SessionLoadEvent());
+    on<ReserveEvent>((event, emit) async {
+      final reservatedClient = await _sessionUserCases.reservateSession(event.session, event.client);
+
+      if(reservatedClient == null) return;
+
+      final newSessions = state.sessions.map((element) {
+        if(element.sessionId == event.session.sessionId){
+          element = element.copyWith(client: reservatedClient, clientId: int.parse(reservatedClient.clientId!));
+        }
+
+        return element;
+      }).toList();
+
+      emit(
+        state.copyWith(
+          sessions: newSessions,
+        )
+      );
+    });
+
+    on<LoadFromSessionIdEvent>((event, emit) async {
+
+      if(event.isFirstLoad){
+        emit(
+          state.copyWith(isFirstLoad: true)
+        );
+      }
+      
+
+      final [sessions as List<Session>, clubPartitions as List<ClubPartition>] = await Future.wait([
+        _sessionUserCases.getSessionsBySessionId(event.sessionId),
+        _sessionUserCases.getClubPartitions()
+      ]);
+
+      final session = sessions.firstWhere((element) => element.sessionId == event.sessionId);
+
+      final selectedClubPartition = getNewSelectedClubPartition(session, clubPartitions);
+      
+      emit(
+        state.copyWith(
+          sessions: sessions,
+          isFirstLoad: false,
+          clubPartitions: clubPartitions,
+          selectedClubPartition: selectedClubPartition,
+          currentDate: session.startTime
+        )
+      );
+    });
+    
+    if(sessionId == null) add(SessionLoadEvent());
+
+    if(sessionId != null) add(LoadFromSessionIdEvent(sessionId, true));
 
 
+  }
+
+
+
+  ClubPartition getNewSelectedClubPartition(Session session, List<ClubPartition> clubPartitions){
+    return clubPartitions.firstWhere((element) {
+        final index = element.physicalPartitions!.indexWhere(
+          (element) => element.partitionPhysicalId == session.partitionPhysicalId,
+        );
+      return index != -1;
+    });
   }
 
   

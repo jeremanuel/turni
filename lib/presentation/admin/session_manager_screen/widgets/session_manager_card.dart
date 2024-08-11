@@ -3,12 +3,14 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../core/presentation/components/inputs/dropdown_widget.dart';
+import '../../../../domain/entities/physical_partition.dart';
 import '../../../../domain/entities/session.dart';
 
 class SessionManagerCard extends StatefulWidget {
-  const SessionManagerCard({super.key, required this.session});
+  const SessionManagerCard({super.key, required this.session, required this.physicalPartition});
 
   final Session session;
+  final PhysicalPartition physicalPartition;
 
   @override
   State<SessionManagerCard> createState() => _SessionManagerCardState();
@@ -66,10 +68,12 @@ class ReservedSessionCard extends StatelessWidget {
                     ],
                   ),
                   const Spacer(),                  
-                  const Row(
+                  Row(
                     children: [
-                      Icon(Icons.person),
-                      Text("Lucas Medico"),
+                      const Icon(Icons.person),
+                      SizedBox(
+                        width: 90,
+                        child: Text(session.client!.person!.fullName, style: TextStyle(overflow: TextOverflow.ellipsis, fontSize: 12),)),
                     ],
                   ),
 
@@ -135,7 +139,7 @@ class NotReservedSessionCard extends StatelessWidget {
                 
                   OutlinedButton(
                     onPressed: () {
-                      context.go("/session_manager/reserve");
+                      context.goNamed("SESSION_MANAGER_RESERVE", pathParameters: {"idSession":session.sessionId.toString()});
                     },
                     child: const Text("Reservar"),
                   ),

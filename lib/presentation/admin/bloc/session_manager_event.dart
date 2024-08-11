@@ -3,6 +3,7 @@
 
 import 'package:freezed_annotation/freezed_annotation.dart';
 
+import '../../../domain/entities/client.dart';
 import '../../../domain/entities/club_partition.dart';
 import '../../../domain/entities/session.dart';
 
@@ -21,5 +22,8 @@ class SessionManagerEvent with _$SessionManagerEvent {
 
   factory SessionManagerEvent.saveSession(Session session) = SaveSessionEvent;
 
+  factory SessionManagerEvent.reserve(Session session, Client client) = ReserveEvent;
+
+factory SessionManagerEvent.loadFromSessionId(int sessionId, bool isFirstLoad) = LoadFromSessionIdEvent;
 
 }

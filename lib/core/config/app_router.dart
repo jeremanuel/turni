@@ -1,5 +1,6 @@
 // ignore_for_file: constant_identifier_names
 
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -11,11 +12,19 @@ import 'package:turni/presentation/core/cubit/auth/auth_cubit.dart';
 import 'package:turni/presentation/home_layout/widgets/custom_layout.dart';
 import 'package:turni/presentation/client/profile_manager_screen/profile/profile_page.dart';
 
+import '../../domain/entities/physical_partition.dart';
+import '../../presentation/admin/bloc/session_manager_bloc.dart';
+import '../../presentation/admin/bloc/session_manager_event.dart';
 import '../../presentation/admin/create_session_screen/create_sessions_screen.dart';
 
 import '../../domain/entities/club_type.dart';
+import '../../presentation/admin/session_manager_screen/utils/session_manager_add_page_builder.dart';
+import '../../presentation/admin/session_manager_screen/utils/session_manager_reserve_page_builder.dart';
 import '../../presentation/admin/session_manager_screen/widgets/add_new_session.dart';
 import '../../presentation/admin/session_manager_screen/widgets/calendar_side_column.dart';
+import '../../presentation/admin/session_manager_screen/widgets/reservate_session.dart';
+import '../../presentation/home/home.dart';
+import '../../presentation/session_feed/session_feed.dart';
 import '../../presentation/client/home_manager_screen/home/home.dart';
 import '../../presentation/client/session_manager_screen/session_feed/session_feed.dart';
 import '../utils/types/time_interval.dart';
@@ -31,12 +40,23 @@ GoRouter buildGoRouter(RouterType routerType) {
     redirect: (context, state) {
       final authCubit = sl<AuthCubit>();
 
-      if (authCubit.getLoadingStatus()) return '/';
+      if (authCubit.getLoadingStatus()){
+        if(state.matchedLocation != "/"){
+          authCubit.initialRoute = state.matchedLocation;
+        }
+        
+        return '/';
+      } 
 
       if (authCubit.state.userCredential == null) return '/login';
 
       if (state.matchedLocation == "/" || state.matchedLocation == "/login") {
-        return routerType == RouterType.adminRoute ? '/dashboard' : '/home';
+
+        if(authCubit.initialRoute != null){
+          return authCubit.initialRoute;
+        }
+
+        return routerType == RouterType.adminRoute ? '/dashboard' : '/feed';
       }
     },
     routes: [
@@ -88,62 +108,57 @@ List<StatefulShellBranch> buildBranches(RouterType routerType) {
       GoRoute(
         path: '/dashboard',
         builder: (context, state) => Center(
-          child: FilledButton(onPressed: () {}, child: Text("data")),
+          child: FilledButton(onPressed: () {}, child: const Text("data")),
         ),
       )
     ]),
-    StatefulShellBranch(routes: [
-      ShellRoute(
-        builder: (context, state, child) => SessionsManager(sideChild: child),
-        routes: [
-          GoRoute(
-            path: '/session_manager',
-            pageBuilder: (context, state) {
-              return const NoTransitionPage(child: CalendarSideColumn());
-            },
-          ),
-          GoRoute(
-            path: '/session_manager/reserve',
-            pageBuilder: (context, state) {
-              return const NoTransitionPage(child: Text("reservar turno"));
-            },
-          ),
-          GoRoute(
-            path: '/session_manager/edit',
-            pageBuilder: (context, state) {
-              return const NoTransitionPage(child: Text("Editar turno"));
-            },
-          ),
-          GoRoute(
-            path: '/session_manager/add/:idPhysicalPartition',
-            name: "SESSION_MANAGER_ADD",
-            pageBuilder: (context, state) {
-              final idPhysicalPartition =
-                  state.pathParameters['idPhysicalPartition'];
+    StatefulShellBranch(
+      
+          routes: [
+            ShellRoute(
+                
+                builder: (context, state, child) {
+                  
+                  var idSession = state.pathParameters['idSession'];
+                  
+                  return SessionsManager(
+                    sideChild: child,
+                    sessionId: idSession != null ? int.tryParse(idSession) : null,
+                  );
+                  
+                },
+                routes: [
+                  GoRoute(
+                    path: '/session_manager',
+                    pageBuilder: (context, state) {
+                      return const NoTransitionPage(child: CalendarSideColumn());
+                    },
+                  ),
+                  GoRoute(
+                    path: '/session_manager/reserve/:idSession',
+                    name: "SESSION_MANAGER_RESERVE",
+                    pageBuilder: sessionManagerReservePageBuilder,
+                  ),    
+                  GoRoute(
+                    path: '/session_manager/edit',
+                    pageBuilder: (context, state) {
+                      return const NoTransitionPage(child: Text("Editar turno"));
+                    },
+                  ),
+                  GoRoute(
+                    path: '/session_manager/add/:idPhysicalPartition',
+                    name: "SESSION_MANAGER_ADD",
+                    pageBuilder: sessionManagerAddPageBuilder,
+                  ),
+                ], 
+                ),
 
-              final startTime = state.uri.queryParameters['start'];
-              final endTime = state.uri.queryParameters['end'];
-
-              DateFormat dateFormat = DateFormat("HH:mm");
-
-              final timeInterval = TimeInterval(
-                  initialDate:
-                      startTime != null ? dateFormat.parse(startTime) : null,
-                  endDate: endTime != null ? dateFormat.parse(endTime) : null);
-
-              return NoTransitionPage(
-                  child: AddNewSession(
-                      idPhysicalPartition: int.parse(idPhysicalPartition!),
-                      selectedTimeInterval: timeInterval));
-            },
-          ),
-        ],
-      ),
-      GoRoute(
-        path: '/add_sessions',
-        builder: (context, state) => CreateSessionScreen(),
-      )
-    ]),
+            GoRoute(
+              path: '/add_sessions',
+              builder: (context, state) =>  const CreateSessionScreen(),
+            )
+          ]
+        ),
     StatefulShellBranch(routes: [
       GoRoute(
         path: '/profile',
@@ -154,3 +169,5 @@ List<StatefulShellBranch> buildBranches(RouterType routerType) {
     ])
   ];
 }
+
+

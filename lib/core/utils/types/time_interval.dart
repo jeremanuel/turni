@@ -27,6 +27,16 @@ class TimeInterval {
   String getInitialTextString(){
 
     if(initialDate == null) return '';
+    
+    final aDate = DateTime(initialDate!.year, initialDate!.month, initialDate!.day);
+
+    final now = DateTime.now().copyWith(hour: 0,second: 0, minute: 0, microsecond: 0, millisecond: 0);
+
+    if(aDate == now) return "Hoy";
+
+    final tomorrow = DateTime(now.year, now.month, now.day + 1);
+
+    if(aDate == tomorrow) return "Mañana";
 
     return DateFormat.MMMd().format(initialDate!);
 
