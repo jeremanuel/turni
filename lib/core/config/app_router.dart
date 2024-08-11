@@ -5,22 +5,17 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:turni/core/config/service_locator.dart';
-import 'package:turni/domain/entities/session.dart';
 import 'package:turni/presentation/admin/session_manager_screen/sessions_manager.dart';
 import 'package:turni/presentation/auth/check_status_page.dart';
 import 'package:turni/presentation/auth/login_page.dart';
 import 'package:turni/presentation/core/cubit/auth/auth_cubit.dart';
-import 'package:turni/presentation/feed/feed_page.dart';
 import 'package:turni/presentation/home_layout/widgets/custom_layout.dart';
-import 'package:turni/presentation/profile/profile_page.dart';
-import 'package:turni/presentation/turno/turno_page.dart';
+import 'package:turni/presentation/client/profile_manager_screen/profile/profile_page.dart';
 
 import '../../domain/entities/physical_partition.dart';
 import '../../presentation/admin/bloc/session_manager_bloc.dart';
 import '../../presentation/admin/bloc/session_manager_event.dart';
 import '../../presentation/admin/create_session_screen/create_sessions_screen.dart';
-
-
 
 import '../../domain/entities/club_type.dart';
 import '../../presentation/admin/session_manager_screen/utils/session_manager_add_page_builder.dart';
@@ -30,6 +25,8 @@ import '../../presentation/admin/session_manager_screen/widgets/calendar_side_co
 import '../../presentation/admin/session_manager_screen/widgets/reservate_session.dart';
 import '../../presentation/home/home.dart';
 import '../../presentation/session_feed/session_feed.dart';
+import '../../presentation/client/home_manager_screen/home/home.dart';
+import '../../presentation/client/session_manager_screen/session_feed/session_feed.dart';
 import '../utils/types/time_interval.dart';
 
 enum RouterType { clientRoute, adminRoute }
@@ -37,12 +34,10 @@ enum RouterType { clientRoute, adminRoute }
 enum ClientRoutes { session_feed }
 
 GoRouter buildGoRouter(RouterType routerType) {
-
   return GoRouter(
     initialLocation: '/',
     refreshListenable: sl<AuthCubit>(),
     redirect: (context, state) {
-
       final authCubit = sl<AuthCubit>();
 
       if (authCubit.getLoadingStatus()){
@@ -63,7 +58,6 @@ GoRouter buildGoRouter(RouterType routerType) {
 
         return routerType == RouterType.adminRoute ? '/dashboard' : '/feed';
       }
-
     },
     routes: [
       /// Estas dos rutas son comunes a ambos tipos de usuario.
@@ -92,14 +86,6 @@ List<StatefulShellBranch> buildBranches(RouterType routerType) {
     return [
       StatefulShellBranch(routes: [
         GoRoute(
-          path: '/feed',
-          builder: (context, state) {
-            return FeedPage();
-          },
-        ),
-      ]),
-      StatefulShellBranch(routes: [
-        GoRoute(
           path: '/home',
           builder: (context, state) {
             return HomePage();
@@ -116,10 +102,9 @@ List<StatefulShellBranch> buildBranches(RouterType routerType) {
       ])
     ];
   }
-  
+
   return [
-    StatefulShellBranch(
-      routes: [
+    StatefulShellBranch(routes: [
       GoRoute(
         path: '/dashboard',
         builder: (context, state) => Center(

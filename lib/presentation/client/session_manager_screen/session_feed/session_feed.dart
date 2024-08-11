@@ -1,25 +1,34 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../../core/config/service_locator.dart';
-import '../../domain/entities/club_type.dart';
-import '../../domain/entities/session.dart';
-import '../../domain/entities/template_message.dart';
-import '../core/cubit/auth/auth_cubit.dart';
-import 'cubit/session_cubit.dart';
+import '../../../../core/config/service_locator.dart';
+import '../../../../domain/entities/club_type.dart';
+import '../../../../domain/entities/session.dart';
+import '../../../../domain/entities/template_message.dart';
+import '../../../core/cubit/auth/auth_cubit.dart';
+import '../../../core/dates_carrousel/dates_carrousel.dart';
+import '../../bloc/client_session_manager_bloc.dart';
+import '../../bloc/client_session_manager_event.dart';
+import '../../bloc/client_session_manager_state.dart';
+
+extension StringExtension on String {
+  String capitalize() {
+    return "${this[0].toUpperCase()}${this.substring(1).toLowerCase()}";
+  }
+}
 
 class SessionFeedPage extends StatelessWidget {
   final ClubType clubType;
-  late final SessionCubit sessionCubit;
   final AuthCubit authCubit = sl<AuthCubit>();
+  final ClientSessionManagerBloc sessionManagerBloc =
+      sl<ClientSessionManagerBloc>();
 
   SessionFeedPage({super.key, required this.clubType}) {
-    sessionCubit = sl<SessionCubit>();
-    print(authCubit.state.userCredential!.location);
-    sessionCubit.loadSessions(
-        clubType, authCubit.state.userCredential!.location!);
+    sessionManagerBloc.add(LoadClubTypeEvent(clubType));
+    sessionManagerBloc.add(ClientSessionLoadEvent());
   }
 
   void launchWppMessage(Session session) {
@@ -39,8 +48,8 @@ class SessionFeedPage extends StatelessWidget {
     final maxHeight = MediaQuery.of(context).size.height;
     final maxWidth = MediaQuery.of(context).size.width;
 
-    return BlocBuilder<SessionCubit, SessionState>(
-        bloc: sessionCubit,
+    return BlocBuilder<ClientSessionManagerBloc, ClientSessionManagerState>(
+        bloc: sessionManagerBloc,
         builder: (context, state) {
           return Scaffold(
               backgroundColor: backgroundColor,
@@ -104,12 +113,67 @@ class SessionFeedPage extends StatelessWidget {
                                 fontSize: 24,
                                 fontWeight: FontWeight.w600),
                           ),
-                          gap,
                           Expanded(
                             child: ListView(
+                              addRepaintBoundaries: false,
                               children: getListItemView(state),
                             ),
                           ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    top: maxHeight * 0.05,
+                    left: 0,
+                    child: Container(
+                      height: maxHeight * .3,
+                      width: maxWidth,
+                      alignment: Alignment.topLeft,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 40),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                IconButton(
+                                    iconSize: 28,
+                                    onPressed: () => context.pop(),
+                                    icon: const Icon(
+                                      Icons.arrow_back,
+                                      color: Colors.white,
+                                    )),
+                                Text(
+                                  "${DateFormat('MMMM yyyy').format(sessionManagerBloc.fromNow).capitalize()} - ${clubType.name}",
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          SizedBox(
+                            height: maxHeight * .1,
+                            width: maxWidth,
+                            child: DatesCarrousel(
+                              containerWidth: maxWidth,
+                              datesCarrouselController:
+                                  sessionManagerBloc.datesCarrouselController,
+                              onSelect: (date) {
+                                DateTime dateNow = DateTime.now();
+                                sessionManagerBloc
+                                    .add(ClientSessionChangeDateEvent(
+                                  date.copyWith(
+                                      hour: dateNow.hour,
+                                      minute: dateNow.minute),
+                                ));
+                              },
+                            ),
+                          )
                         ],
                       ),
                     ),
@@ -119,14 +183,14 @@ class SessionFeedPage extends StatelessWidget {
         });
   }
 
-  List<Widget> getListItemView(SessionState state) {
-    if (state.isLoading) return [const Text('Loading')];
+  List<Widget> getListItemView(ClientSessionManagerState state) {
+    if (state.isLoadingSessions) return [const Text('Loading')];
 
     getBackgroundColor(int index) => index % 2 == 0
-        ? Color.fromRGBO(159, 121, 242, 1)
-        : Color.fromRGBO(103, 43, 234, 1);
+        ? const Color.fromRGBO(159, 121, 242, 1)
+        : const Color.fromRGBO(103, 43, 234, 1);
 
-    return state.sessions.asMap().entries.map((entry) {
+    return state.filteredSessions.asMap().entries.map((entry) {
       int index = entry.key;
       Session session = entry.value;
       return GestureDetector(
@@ -141,7 +205,7 @@ class SessionFeedPage extends StatelessWidget {
           child: Column(
             children: [
               Text(
-                '${DateFormat('hh:mm').format(session.startTime)} - ${DateFormat('hh:mm').format(session.startTime.add(const Duration(minutes: 30)))}',
+                '${DateFormat('hh:mm').format(session.startTime)} - ${DateFormat('hh:mm').format(session.startTime.add(Duration(minutes: session.duration)))}',
                 style: const TextStyle(
                   color: Colors.white,
                   fontSize: 24,

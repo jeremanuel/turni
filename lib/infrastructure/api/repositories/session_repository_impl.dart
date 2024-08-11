@@ -13,15 +13,6 @@ class SessionRepositoryImplementation extends SessionRepository {
   SessionRepositoryImplementation({required this.sessionProvider});
 
   @override
-  Future<List<Session>> getClientSessions(
-    int clubTypeId,
-    Coordinate coordinate,
-    RangeDate rangeDate,
-  ) async {
-    return sessionProvider.getSessions(clubTypeId, coordinate, rangeDate);
-  }
-
-  @override
   Future<List<ClubPartition>> getPhysicalPartitions() async {
     return sessionProvider.getClubPartitionsByAdmin();
   }
@@ -32,10 +23,11 @@ class SessionRepositoryImplementation extends SessionRepository {
   }
 
   @override
-  createSessions(List<Session> sessions, List<int> physicalPartitions, List<DateTime> dates) {
+  createSessions(List<Session> sessions, List<int> physicalPartitions,
+      List<DateTime> dates) {
     return sessionProvider.createSessions(sessions, physicalPartitions, dates);
   }
-  
+
   @override
   Future<Session> saveSession(Session session) {
     return sessionProvider.saveSession(session);

@@ -1,19 +1,19 @@
 import '../../../core/utils/entities/coordinate.dart';
 import '../../../core/utils/entities/range_date.dart';
 import '../../entities/session.dart';
-import '../../repositories/session_repository.dart';
+import '../../repositories/client/client_session_repository.dart';
 
-class GetSesssions {
-  final SessionRepository sessionRepository;
+class GetClientSessions {
+  final ClientSessionRepository clientSessionRepository;
 
-  GetSesssions(this.sessionRepository);
+  GetClientSessions(this.clientSessionRepository);
 
   Future<List<Session>> excute(
     int clubTypeId,
     Coordinate coordinate,
     RangeDate rangeDate,
   ) async {
-    final sesssions = await sessionRepository.getClientSessions(
+    final sesssions = await clientSessionRepository.getClientSessions(
         clubTypeId, coordinate, rangeDate);
 
     return sesssions;

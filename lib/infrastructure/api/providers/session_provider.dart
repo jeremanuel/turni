@@ -9,7 +9,7 @@ import '../../../domain/entities/session.dart';
 class SessionProvider {
   final dioInstance = sl<Dio>();
 
-  Future<List<Session>> getSessions(
+  Future<List<Session>> getClientSessions(
     clubTypeId,
     Coordinate coordinate,
     RangeDate rangeDate,
@@ -20,6 +20,7 @@ class SessionProvider {
         "coordinate": coordinate.toJson(),
         "range": rangeDate.toJson(),
       };
+
       final response = await dioInstance.post("/session", data: data);
 
       return (response.data as List)
@@ -85,10 +86,9 @@ class SessionProvider {
   }
 
   Future<Session> saveSession(Session session) async {
-
-  try {
+    try {
       final body = {
-        "session":session,
+        "session": session,
       };
 
       final response = await dioInstance.post("/admin/session", data: body);
