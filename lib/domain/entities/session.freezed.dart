@@ -41,6 +41,8 @@ mixin _$Session {
   String? get clubName => throw _privateConstructorUsedError;
   @JsonKey(name: "club_type_name")
   String? get clubTypeName => throw _privateConstructorUsedError;
+  @JsonKey(includeIfNull: false)
+  Client? get client => throw _privateConstructorUsedError;
 
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
   @JsonKey(ignore: true)
@@ -65,7 +67,10 @@ abstract class $SessionCopyWith<$Res> {
       @JsonKey(name: "admin_creator_id") int? adminCreatorId,
       @JsonKey(name: "partition_physical_id") int partitionPhysicalId,
       @JsonKey(name: "club_name") String? clubName,
-      @JsonKey(name: "club_type_name") String? clubTypeName});
+      @JsonKey(name: "club_type_name") String? clubTypeName,
+      @JsonKey(includeIfNull: false) Client? client});
+
+  $ClientCopyWith<$Res>? get client;
 }
 
 /// @nodoc
@@ -91,6 +96,7 @@ class _$SessionCopyWithImpl<$Res, $Val extends Session>
     Object? partitionPhysicalId = null,
     Object? clubName = freezed,
     Object? clubTypeName = freezed,
+    Object? client = freezed,
   }) {
     return _then(_value.copyWith(
       sessionId: null == sessionId
@@ -133,7 +139,23 @@ class _$SessionCopyWithImpl<$Res, $Val extends Session>
           ? _value.clubTypeName
           : clubTypeName // ignore: cast_nullable_to_non_nullable
               as String?,
+      client: freezed == client
+          ? _value.client
+          : client // ignore: cast_nullable_to_non_nullable
+              as Client?,
     ) as $Val);
+  }
+
+  @override
+  @pragma('vm:prefer-inline')
+  $ClientCopyWith<$Res>? get client {
+    if (_value.client == null) {
+      return null;
+    }
+
+    return $ClientCopyWith<$Res>(_value.client!, (value) {
+      return _then(_value.copyWith(client: value) as $Val);
+    });
   }
 }
 
@@ -157,7 +179,11 @@ abstract class _$$SessionImplCopyWith<$Res> implements $SessionCopyWith<$Res> {
       @JsonKey(name: "admin_creator_id") int? adminCreatorId,
       @JsonKey(name: "partition_physical_id") int partitionPhysicalId,
       @JsonKey(name: "club_name") String? clubName,
-      @JsonKey(name: "club_type_name") String? clubTypeName});
+      @JsonKey(name: "club_type_name") String? clubTypeName,
+      @JsonKey(includeIfNull: false) Client? client});
+
+  @override
+  $ClientCopyWith<$Res>? get client;
 }
 
 /// @nodoc
@@ -181,6 +207,7 @@ class __$$SessionImplCopyWithImpl<$Res>
     Object? partitionPhysicalId = null,
     Object? clubName = freezed,
     Object? clubTypeName = freezed,
+    Object? client = freezed,
   }) {
     return _then(_$SessionImpl(
       sessionId: null == sessionId
@@ -223,6 +250,10 @@ class __$$SessionImplCopyWithImpl<$Res>
           ? _value.clubTypeName
           : clubTypeName // ignore: cast_nullable_to_non_nullable
               as String?,
+      client: freezed == client
+          ? _value.client
+          : client // ignore: cast_nullable_to_non_nullable
+              as Client?,
     ));
   }
 }
@@ -243,7 +274,8 @@ class _$SessionImpl extends _Session {
       @JsonKey(name: "admin_creator_id") this.adminCreatorId,
       @JsonKey(name: "partition_physical_id") required this.partitionPhysicalId,
       @JsonKey(name: "club_name") this.clubName,
-      @JsonKey(name: "club_type_name") this.clubTypeName})
+      @JsonKey(name: "club_type_name") this.clubTypeName,
+      @JsonKey(includeIfNull: false) this.client})
       : super._();
 
   factory _$SessionImpl.fromJson(Map<String, dynamic> json) =>
@@ -280,10 +312,13 @@ class _$SessionImpl extends _Session {
   @override
   @JsonKey(name: "club_type_name")
   final String? clubTypeName;
+  @override
+  @JsonKey(includeIfNull: false)
+  final Client? client;
 
   @override
   String toString() {
-    return 'Session(sessionId: $sessionId, createdAt: $createdAt, startTime: $startTime, duration: $duration, clientId: $clientId, price: $price, adminCreatorId: $adminCreatorId, partitionPhysicalId: $partitionPhysicalId, clubName: $clubName, clubTypeName: $clubTypeName)';
+    return 'Session(sessionId: $sessionId, createdAt: $createdAt, startTime: $startTime, duration: $duration, clientId: $clientId, price: $price, adminCreatorId: $adminCreatorId, partitionPhysicalId: $partitionPhysicalId, clubName: $clubName, clubTypeName: $clubTypeName, client: $client)';
   }
 
   @override
@@ -309,7 +344,8 @@ class _$SessionImpl extends _Session {
             (identical(other.clubName, clubName) ||
                 other.clubName == clubName) &&
             (identical(other.clubTypeName, clubTypeName) ||
-                other.clubTypeName == clubTypeName));
+                other.clubTypeName == clubTypeName) &&
+            (identical(other.client, client) || other.client == client));
   }
 
   @JsonKey(ignore: true)
@@ -325,7 +361,8 @@ class _$SessionImpl extends _Session {
       adminCreatorId,
       partitionPhysicalId,
       clubName,
-      clubTypeName);
+      clubTypeName,
+      client);
 
   @JsonKey(ignore: true)
   @override
@@ -343,22 +380,22 @@ class _$SessionImpl extends _Session {
 
 abstract class _Session extends Session {
   factory _Session(
-          {@JsonKey(name: "session_id") required final int sessionId,
-          @JsonKey(name: "created_at") required final DateTime createdAt,
-          @JsonKey(
-              name: "start_time",
-              fromJson: ValueTransformers.fromJsonDateTimeLocale)
-          required final DateTime startTime,
-          @JsonKey(defaultValue: 90) required final int duration,
-          @JsonKey(name: "client_id") final int? clientId,
-          @JsonKey(fromJson: ValueTransformers.fromJsonDouble)
-          required final double price,
-          @JsonKey(name: "admin_creator_id") final int? adminCreatorId,
-          @JsonKey(name: "partition_physical_id")
-          required final int partitionPhysicalId,
-          @JsonKey(name: "club_name") final String? clubName,
-          @JsonKey(name: "club_type_name") final String? clubTypeName}) =
-      _$SessionImpl;
+      {@JsonKey(name: "session_id") required final int sessionId,
+      @JsonKey(name: "created_at") required final DateTime createdAt,
+      @JsonKey(
+          name: "start_time",
+          fromJson: ValueTransformers.fromJsonDateTimeLocale)
+      required final DateTime startTime,
+      @JsonKey(defaultValue: 90) required final int duration,
+      @JsonKey(name: "client_id") final int? clientId,
+      @JsonKey(fromJson: ValueTransformers.fromJsonDouble)
+      required final double price,
+      @JsonKey(name: "admin_creator_id") final int? adminCreatorId,
+      @JsonKey(name: "partition_physical_id")
+      required final int partitionPhysicalId,
+      @JsonKey(name: "club_name") final String? clubName,
+      @JsonKey(name: "club_type_name") final String? clubTypeName,
+      @JsonKey(includeIfNull: false) final Client? client}) = _$SessionImpl;
   _Session._() : super._();
 
   factory _Session.fromJson(Map<String, dynamic> json) = _$SessionImpl.fromJson;
@@ -394,6 +431,9 @@ abstract class _Session extends Session {
   @override
   @JsonKey(name: "club_type_name")
   String? get clubTypeName;
+  @override
+  @JsonKey(includeIfNull: false)
+  Client? get client;
   @override
   @JsonKey(ignore: true)
   _$$SessionImplCopyWith<_$SessionImpl> get copyWith =>
