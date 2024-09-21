@@ -6,7 +6,7 @@ Breve descripción del cambio.
 ## Checklist
 - [ ] Probé el código en el entorno local.
 - [ ] Probé el código en producción.
-- [ ] Añadí el curl nuevo/modificación.
+- [ ] Añadí captura de pantalla del cambio.
 
 ## Merge Strategy
 
