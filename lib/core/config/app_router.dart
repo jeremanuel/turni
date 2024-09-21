@@ -45,7 +45,7 @@ GoRouter buildGoRouter(RouterType routerType) {
           return authCubit.initialRoute;
         }
 
-        return routerType == RouterType.adminRoute ? '/dashboard' : '/feed';
+        return routerType == RouterType.adminRoute ? '/dashboard' : '/home';
       }
     },
     routes: [
