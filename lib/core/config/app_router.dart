@@ -2,13 +2,14 @@
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:turni/core/config/service_locator.dart';
-import 'package:turni/presentation/admin/session_manager_screen/sessions_manager.dart';
-import 'package:turni/presentation/auth/check_status_page.dart';
-import 'package:turni/presentation/auth/login_page.dart';
-import 'package:turni/presentation/core/cubit/auth/auth_cubit.dart';
-import 'package:turni/presentation/home_layout/widgets/custom_layout.dart';
-import 'package:turni/presentation/client/profile_manager_screen/profile/profile_page.dart';
+import '../../presentation/core/verification_code_screen/verification_code.dart';
+import 'service_locator.dart';
+import '../../presentation/admin/session_manager_screen/sessions_manager.dart';
+import '../../presentation/auth/check_status_page.dart';
+import '../../presentation/auth/login_page.dart';
+import '../../presentation/core/cubit/auth/auth_cubit.dart';
+import '../../presentation/home_layout/widgets/custom_layout.dart';
+import '../../presentation/client/profile_manager_screen/profile/profile_page.dart';
 
 import '../../presentation/admin/create_session_screen/create_sessions_screen.dart';
 
@@ -45,7 +46,7 @@ GoRouter buildGoRouter(RouterType routerType) {
           return authCubit.initialRoute;
         }
 
-        return routerType == RouterType.adminRoute ? '/dashboard' : '/home';
+        return routerType == RouterType.adminRoute ? '/dashboard' : '/verify';
       }
     },
     routes: [
@@ -55,6 +56,7 @@ GoRouter buildGoRouter(RouterType routerType) {
         builder: (context, state) => AuthCheck(),
       ),
       GoRoute(path: '/login', builder: (context, state) => const LoginPage()),
+      GoRoute(path: '/verify', builder: (context, state) => VerificationCode()),
       if (routerType == RouterType.clientRoute)
         GoRoute(
           path: "/session_feed",
