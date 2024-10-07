@@ -3,8 +3,10 @@ import 'package:flutter_localization/flutter_localization.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 import '../../domain/entities/club_type.dart';
+import '../../domain/repositories/IA_repository.dart';
 import '../../domain/repositories/admin_repository.dart';
 import '../../infrastructure/api/providers/admin_provider.dart';
+import '../../infrastructure/api/repositories/IA/gemini_repository.dart';
 import '../../infrastructure/api/repositories/admin_repository_impl.dart';
 import '../../presentation/client/bloc/client_session_manager_bloc.dart';
 import '../utils/dio_init.dart';
@@ -46,6 +48,11 @@ class ServiceLocator {
     sl.registerLazySingleton<HomeCubit>(() => HomeCubit());
     sl.registerLazySingleton<ClientSessionManagerBloc>(
         () => ClientSessionManagerBloc());
+
+      sl.registerLazySingleton<IARepository>(
+        () => GeminiRepository()..init(), 
+      );
+
 
     _initializeLocalization();
   }
