@@ -7,6 +7,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 
 import '../../core/utils/value_transformers.dart';
 import 'client.dart';
+import 'physical_partition.dart';
 
 part 'session.freezed.dart';
 part 'session.g.dart';
@@ -29,6 +30,8 @@ class Session with _$Session {
     @JsonKey(name: "club_name") String? clubName,
     @JsonKey(name: "club_type_name") String? clubTypeName,
     @JsonKey(includeIfNull: false,) Client? client,
+
+    @JsonKey(name:"partition_physical") PhysicalPartition? physicalPartition
   }) = _Session;
 
   Session._();
