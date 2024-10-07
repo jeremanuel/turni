@@ -10,6 +10,7 @@ import '../bloc/session_manager_bloc.dart';
 import '../bloc/session_manager_event.dart';
 import '../bloc/session_manager_state.dart';
 import '../../../domain/entities/club_partition.dart';
+import '../browser/browser.dart';
 import 'widgets/session_manager_day_carrousel.dart';
 import 'widgets/session_manager_card.dart';
 
@@ -79,6 +80,11 @@ class SessionsManager extends StatelessWidget {
   Column buildAgendaContainer(BuildContext context) {
     return Column(
       children: [
+        const SizedBox(
+          width:500,
+          child: Browser()
+        ),
+        const SizedBox(height: 20,),
         if (ResponsiveBuilder.isMobile(context))
           Padding(
             padding: const  EdgeInsets.all(8.0),
@@ -113,7 +119,7 @@ class SessionsManager extends StatelessWidget {
           ),
         ),
         const SizedBox(
-          height: 16,
+          height: 20,
         ),
         Expanded(
           child: Container(
@@ -166,7 +172,7 @@ class SessionsManager extends StatelessWidget {
           fromDate: state.currentDate.applied(const TimeOfDay(hour: 8, minute: 0)),
           lastDate: state.currentDate.applied(const TimeOfDay(hour: 22, minute: 0)),
           buildCard: (session, physicalPartition) {
-            return SessionManagerCard(session: session, physicalPartition : physicalPartition);
+            return SessionManagerCard(session: session, physicalPartition : physicalPartition,onReserve: (){},);
           },
           sessions: state.sessions,
           physicalPartitions:
