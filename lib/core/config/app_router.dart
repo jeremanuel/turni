@@ -23,8 +23,6 @@ import '../../presentation/admin/session_manager_screen/utils/session_manager_re
 import '../../presentation/admin/session_manager_screen/widgets/add_new_session.dart';
 import '../../presentation/admin/session_manager_screen/widgets/calendar_side_column.dart';
 import '../../presentation/admin/session_manager_screen/widgets/reservate_session.dart';
-import '../../presentation/home/home.dart';
-import '../../presentation/session_feed/session_feed.dart';
 import '../../presentation/client/home_manager_screen/home/home.dart';
 import '../../presentation/client/session_manager_screen/session_feed/session_feed.dart';
 import '../utils/types/time_interval.dart';
@@ -42,7 +40,7 @@ GoRouter buildGoRouter(RouterType routerType) {
 
       if (authCubit.getLoadingStatus()){
         if(state.matchedLocation != "/"){
-          authCubit.initialRoute = state.matchedLocation;
+          authCubit.initialRoute = state.uri.toString();
         }
         
         return '/';
