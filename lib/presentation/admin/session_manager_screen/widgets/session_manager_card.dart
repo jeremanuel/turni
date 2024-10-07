@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -7,10 +8,11 @@ import '../../../../domain/entities/physical_partition.dart';
 import '../../../../domain/entities/session.dart';
 
 class SessionManagerCard extends StatefulWidget {
-  const SessionManagerCard({super.key, required this.session, required this.physicalPartition});
+  const SessionManagerCard({super.key, required this.session, required this.physicalPartition,  this.onReserve});
 
   final Session session;
   final PhysicalPartition physicalPartition;
+  final Function? onReserve;
 
   @override
   State<SessionManagerCard> createState() => _SessionManagerCardState();
@@ -25,7 +27,7 @@ class _SessionManagerCardState extends State<SessionManagerCard> {
 
     if(widget.session.isReserved) return ReservedSessionCard(session: widget.session);
 
-    return NotReservedSessionCard(session: widget.session); 
+    return NotReservedSessionCard(session: widget.session, onReserve: widget.onReserve); 
 
   }
 }
@@ -51,49 +53,41 @@ class ReservedSessionCard extends StatelessWidget {
               color: Theme.of(context).colorScheme.primary,                  
               width: 16,
             ),
-            const SizedBox(
-              width: 4,
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      const Icon(Icons.access_time),
-                      Text(
-                        "${DateFormat.jm().format(session.startTime)} - ${DateFormat.jm().format(session.endTime)}",
-                      ),
-                    ],
-                  ),
-                  const Spacer(),                  
-                  Row(
-                    children: [
-                      const Icon(Icons.person),
-                      SizedBox(
-                        width: 90,
-                        child: Text(session.client!.person!.fullName, style: TextStyle(overflow: TextOverflow.ellipsis, fontSize: 12),)),
-                    ],
-                  ),
-
-                ],
+            Expanded(
+              flex: 5,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(Icons.access_time),
+                        Text(
+                          "${DateFormat.jm().format(session.startTime)} - ${DateFormat.jm().format(session.endTime)}",
+                        ),
+                      ],
+                    ),
+                    const Spacer(),                  
+                    Row(
+                      children: [
+                        const Icon(Icons.person),
+                        Expanded(child: Text(session.client!.person!.fullName, style: const TextStyle(overflow: TextOverflow.ellipsis, fontSize: 12),)),
+                      ],
+                    ),
+              
+                  ],
+                ),
               ),
             ),
-            const Spacer(),
-            Padding(
-              padding: const EdgeInsets.only(bottom: 8, right: 8),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.edit),
-                    onPressed: () {},
-                  ),
-                  const Spacer(),
-                ],
-              ),
-            )
+            if(session.physicalPartition?.clubPartition?.clubType != null)
+              ...[
+                const Spacer(),
+                Padding(
+                  padding: const EdgeInsets.all(8),
+                  child: Text("${session.physicalPartition!.clubPartition!.clubType!.name} | ${session.physicalPartition!.physicalIdentifier.toString()}"),
+                )
+              ]
           ],
         ),
       );
@@ -104,9 +98,10 @@ class ReservedSessionCard extends StatelessWidget {
 class NotReservedSessionCard extends StatelessWidget {
 
   final Session session;
+  final Function? onReserve;
 
 
-  const NotReservedSessionCard({super.key, required this.session});
+  const NotReservedSessionCard({super.key, required this.session,  this.onReserve});
 
   @override
   Widget build(BuildContext context) {
@@ -139,6 +134,7 @@ class NotReservedSessionCard extends StatelessWidget {
                 
                   OutlinedButton(
                     onPressed: () {
+                      onReserve?.call();
                       context.goNamed("SESSION_MANAGER_RESERVE", pathParameters: {"idSession":session.sessionId.toString()});
                     },
                     child: const Text("Reservar"),
@@ -152,6 +148,12 @@ class NotReservedSessionCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
+                  if(session.physicalPartition?.clubPartition?.clubType != null)
+                    ...[Padding(
+                      padding: const EdgeInsets.all(8),
+                      child: Text("${session.physicalPartition!.clubPartition!.clubType!.name} | ${session.physicalPartition!.physicalIdentifier.toString()}"),
+                    ), 
+                  const  Spacer()],
                   IconButton(
                     icon: const Icon(Icons.close),
                     onPressed: () {
@@ -183,12 +185,7 @@ class NotReservedSessionCard extends StatelessWidget {
                       },);
                     },
                   ),
-                  IconButton(
-                    icon: const Icon(Icons.edit),
-                    onPressed: () {
-                      context.go("/session_manager/edit");
-                    },
-                  ),
+         
                 ],
               ),
             )
