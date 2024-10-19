@@ -3,16 +3,26 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
+import '../../../../core/config/service_locator.dart';
 import '../../../../core/presentation/components/inputs/dropdown_widget.dart';
 import '../../../../domain/entities/physical_partition.dart';
 import '../../../../domain/entities/session.dart';
+import '../../bloc/session_manager_bloc.dart';
+import '../../bloc/session_manager_event.dart';
 
 class SessionManagerCard extends StatefulWidget {
-  const SessionManagerCard({super.key, required this.session, required this.physicalPartition,  this.onReserve});
+  const SessionManagerCard({
+    super.key, 
+    required this.session, 
+    required this.physicalPartition,  
+    this.onReserve, 
+    this.onDelete
+  });
 
   final Session session;
   final PhysicalPartition physicalPartition;
   final Function? onReserve;
+  final Function? onDelete;
 
   @override
   State<SessionManagerCard> createState() => _SessionManagerCardState();
@@ -174,8 +184,8 @@ class NotReservedSessionCard extends StatelessWidget {
                                   Row(
                                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                                     children: [
-                                      FilledButton(onPressed: (){}, child: const Text("Eliminar")),                                      
-                                      OutlinedButton(onPressed: (){}, child: const Text("Cancelar"))
+                                      FilledButton(onPressed: (){ sl<SessionManagerBloc>().add(DeleteSession(session.sessionId)); context.pop(); }, child: const Text("Eliminar")),                                      
+                                      OutlinedButton(onPressed: (){ context.pop(); }, child: const Text("Cancelar"))
                                     ],
                                   )                                  
                                 ],

@@ -5,16 +5,20 @@ import 'package:intl/intl.dart';
 import '../../../core/config/service_locator.dart';
 import '../../../core/utils/date_functions.dart';
 import '../../../core/utils/entities/range_date.dart';
+import '../../../core/utils/responsive_builder.dart';
 import '../../../domain/entities/client.dart';
 import '../../../domain/entities/generic_search_item.dart';
-import '../../../domain/entities/physical_partition.dart';
 import '../../../domain/entities/session.dart';
-import '../../../domain/repositories/IA_repository.dart';
+import '../../../domain/repositories/ia_repository.dart';
 import '../../../domain/repositories/admin_repository.dart';
 import '../session_manager_screen/widgets/session_manager_card.dart';
+import 'browser_options.dart';
 
 class Browser extends StatefulWidget {
-  const Browser({super.key});
+
+  final BrowserOptions browserOptions;
+
+  const Browser({super.key, required this.browserOptions});
 
   @override
   State<Browser> createState() => _BrowserState();
@@ -24,7 +28,6 @@ class _BrowserState extends State<Browser> {
 
   bool isLoadingData = false;
  
-  Timer? searchTimer;
   List<GenericSearchItem> result = [];
 
   String? prompt;
@@ -37,6 +40,7 @@ class _BrowserState extends State<Browser> {
 
   @override
   void initState() {
+    iaRepository.init(widget.browserOptions);
     super.initState();
   }
 
@@ -47,6 +51,7 @@ class _BrowserState extends State<Browser> {
 
   Widget buildTextfield(){
     return SearchAnchor(
+      isFullScreen: ResponsiveBuilder.isMobile(context),
       viewBackgroundColor: Theme.of(context).colorScheme.surfaceBright,
       searchController: _searchAnchorController,
       viewOnSubmitted: (value) {
@@ -73,7 +78,7 @@ class _BrowserState extends State<Browser> {
 
         return MenuView(
           prompt: prompt ?? '', 
-          suggestions:suggestions
+          suggestions:suggestions.toList()
         );
 
       },
@@ -156,13 +161,22 @@ class _BrowserState extends State<Browser> {
 
       if(iaResult.containsKey("error") && iaResult['error']){
 
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(iaResult['mensaje']),
-        ));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            behavior: SnackBarBehavior.floating,
+            content: SizedBox(
+              height: 50,
+              child: Text(iaResult['mensaje'])
+            ),
+            width: 600,
+            padding: const EdgeInsets.only(bottom: 8),
+          )
+        );
 
         setState(() {
           result = [];
           isLoadingData = false;
+          prompt = null;
         });
 
         _searchAnchorController.text = _searchAnchorController.text.substring(0, _searchAnchorController.text.length - 1);
@@ -171,7 +185,12 @@ class _BrowserState extends State<Browser> {
 
       }
 
-      final results = await adminRepository.genericSearch(iaResult['busqueda'], RangeDate(from:dateFormat.parse(iaResult['fechaInicio']), to:dateFormat.parse(iaResult['fechaFin'])));
+      final results = await adminRepository.genericSearch(
+        iaResult['busqueda'], 
+        RangeDate(from:dateFormat.parse(iaResult['fechaInicio']), 
+        to:dateFormat.parse(iaResult['fechaFin'])),
+        iaResult['club_partition']        
+        );
 
       setState(() {
         result = results;
@@ -196,32 +215,12 @@ class _BrowserState extends State<Browser> {
 
 class MenuView extends StatefulWidget {
 
-  const MenuView({
+   MenuView({
     super.key,
     required this.prompt, 
-    required this.suggestions,
-  });
-
-  final String prompt;
-  final Iterable<Widget> suggestions; 
-
-  @override
-  State<MenuView> createState() => _MenuViewState();
-}
-
-class _MenuViewState extends State<MenuView> {
-
-  bool isLoadingData = false;
-
-  void toggleIsLoading() => setState(() { isLoadingData = !isLoadingData; });
-  
-  @override
-  Widget build(BuildContext context) {
-    return ListView(
-    padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-      children: [
-     
-        SegmentedButton(
+    required List<Widget> suggestions,
+  }) : suggestions = [
+            SegmentedButton(
           onSelectionChanged: (p0) {
             
           },
@@ -235,14 +234,34 @@ class _MenuViewState extends State<MenuView> {
         ),
         
         
-        if(widget.suggestions.length < 1 && widget.prompt.isEmpty) const SizedBox(height: 140, child: Center(child:Text("Realize una busqueda y precione el boton de envio"))),
+        if(suggestions.isEmpty && prompt.isEmpty) const SizedBox(height: 140, child: Center(child:Text("Realize una busqueda y precione el boton de envio"))),
     
-    
+        if(suggestions.isEmpty && prompt.isNotEmpty) const SizedBox(height: 140, child: Center(child:Text("No se encontraron resultados"))),
+
         const SizedBox(height: 16,),
-    
-        ...widget.suggestions
-    
-      ],
+
+    ...suggestions
+  ];
+
+  final String prompt;
+  final List<Widget> suggestions; 
+
+  @override
+  State<MenuView> createState() => _MenuViewState();
+}
+
+class _MenuViewState extends State<MenuView> {
+
+  bool isLoadingData = false;
+
+  void toggleIsLoading() => setState(() { isLoadingData = !isLoadingData; });
+  
+  @override
+  Widget build(BuildContext context) {
+    return ListView.builder(
+    itemBuilder: (context, index) => widget.suggestions[index],
+    itemCount: widget.suggestions.length,
+    padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
     );
   }
 }

@@ -43,7 +43,7 @@ mixin _$Session {
   String? get clubTypeName => throw _privateConstructorUsedError;
   @JsonKey(includeIfNull: false)
   Client? get client => throw _privateConstructorUsedError;
-  @JsonKey(name: "partition_physical")
+  @JsonKey(name: "partition_physical", includeIfNull: false)
   PhysicalPartition? get physicalPartition =>
       throw _privateConstructorUsedError;
 
@@ -72,7 +72,7 @@ abstract class $SessionCopyWith<$Res> {
       @JsonKey(name: "club_name") String? clubName,
       @JsonKey(name: "club_type_name") String? clubTypeName,
       @JsonKey(includeIfNull: false) Client? client,
-      @JsonKey(name: "partition_physical")
+      @JsonKey(name: "partition_physical", includeIfNull: false)
       PhysicalPartition? physicalPartition});
 
   $ClientCopyWith<$Res>? get client;
@@ -204,7 +204,7 @@ abstract class _$$SessionImplCopyWith<$Res> implements $SessionCopyWith<$Res> {
       @JsonKey(name: "club_name") String? clubName,
       @JsonKey(name: "club_type_name") String? clubTypeName,
       @JsonKey(includeIfNull: false) Client? client,
-      @JsonKey(name: "partition_physical")
+      @JsonKey(name: "partition_physical", includeIfNull: false)
       PhysicalPartition? physicalPartition});
 
   @override
@@ -308,7 +308,8 @@ class _$SessionImpl extends _Session {
       @JsonKey(name: "club_name") this.clubName,
       @JsonKey(name: "club_type_name") this.clubTypeName,
       @JsonKey(includeIfNull: false) this.client,
-      @JsonKey(name: "partition_physical") this.physicalPartition})
+      @JsonKey(name: "partition_physical", includeIfNull: false)
+      this.physicalPartition})
       : super._();
 
   factory _$SessionImpl.fromJson(Map<String, dynamic> json) =>
@@ -349,7 +350,7 @@ class _$SessionImpl extends _Session {
   @JsonKey(includeIfNull: false)
   final Client? client;
   @override
-  @JsonKey(name: "partition_physical")
+  @JsonKey(name: "partition_physical", includeIfNull: false)
   final PhysicalPartition? physicalPartition;
 
   @override
@@ -435,7 +436,7 @@ abstract class _Session extends Session {
       @JsonKey(name: "club_name") final String? clubName,
       @JsonKey(name: "club_type_name") final String? clubTypeName,
       @JsonKey(includeIfNull: false) final Client? client,
-      @JsonKey(name: "partition_physical")
+      @JsonKey(name: "partition_physical", includeIfNull: false)
       final PhysicalPartition? physicalPartition}) = _$SessionImpl;
   _Session._() : super._();
 
@@ -476,7 +477,7 @@ abstract class _Session extends Session {
   @JsonKey(includeIfNull: false)
   Client? get client;
   @override
-  @JsonKey(name: "partition_physical")
+  @JsonKey(name: "partition_physical", includeIfNull: false)
   PhysicalPartition? get physicalPartition;
   @override
   @JsonKey(ignore: true)

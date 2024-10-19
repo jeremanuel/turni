@@ -3,7 +3,7 @@ import 'package:flutter_localization/flutter_localization.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 import '../../domain/entities/club_type.dart';
-import '../../domain/repositories/IA_repository.dart';
+import '../../domain/repositories/ia_repository.dart';
 import '../../domain/repositories/admin_repository.dart';
 import '../../infrastructure/api/providers/admin_provider.dart';
 import '../../infrastructure/api/repositories/IA/gemini_repository.dart';
@@ -32,14 +32,16 @@ class ServiceLocator {
     sl.registerSingleton<AuthRepository>(
         AuthRepositoryImpl(authProvider: AuthProvider()));
 
-        sl.registerSingleton<AdminRepository>(
-        AdminrepositroyImpl(adminProvider: AdminProvider())
-        );
+    sl.registerSingleton<AdminRepository>(
+    AdminrepositroyImpl(adminProvider: AdminProvider())
+    );
 
     sl.registerSingleton<AuthCubit>(
       AuthCubit(
         AuthUserCases(sl<AuthRepository>()))
     ); // Cubit singleton para manejo de la sesion.
+
+    sl.registerFactoryParam<SessionManagerBloc, int?, void>((sessionId, _) => SessionManagerBloc(sessionId),);
 
     //sl.registerLazySingleton<FeedCubit>(() => FeedCubit());
 
@@ -49,10 +51,9 @@ class ServiceLocator {
     sl.registerLazySingleton<ClientSessionManagerBloc>(
         () => ClientSessionManagerBloc());
 
-      sl.registerLazySingleton<IARepository>(
-        () => GeminiRepository()..init(), 
-      );
-
+    sl.registerLazySingleton<IARepository>(
+      () => GeminiRepository(), 
+    ); 
 
     _initializeLocalization();
   }
@@ -66,7 +67,5 @@ class ServiceLocator {
     sl.registerSingleton(localization);
   }
 
-  static initializeSessionManager(int? sessionId){
-    if(!sl.isRegistered<SessionManagerBloc>()) sl.registerLazySingleton<SessionManagerBloc>(() => SessionManagerBloc(sessionId));
-  }
+
 }

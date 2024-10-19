@@ -31,14 +31,12 @@ class Session with _$Session {
     @JsonKey(name: "club_type_name") String? clubTypeName,
     @JsonKey(includeIfNull: false,) Client? client,
 
-    @JsonKey(name:"partition_physical") PhysicalPartition? physicalPartition
+    @JsonKey(name:"partition_physical", includeIfNull: false) PhysicalPartition? physicalPartition
   }) = _Session;
 
   Session._();
 
   getDurationInMinutes() {
-
-
 
     return duration;
     

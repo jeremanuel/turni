@@ -2,7 +2,8 @@ import 'dart:convert';
 
 import 'package:google_generative_ai/google_generative_ai.dart';
 
-import '../../../../domain/repositories/IA_repository.dart';
+import '../../../../domain/repositories/ia_repository.dart';
+import '../../../../presentation/admin/browser/browser_options.dart';
 
 class GeminiRepository extends IARepository{
 
@@ -21,7 +22,7 @@ class GeminiRepository extends IARepository{
         "fechaInicio": "2024-10-06 00:00:00.000",
         "fechaFin":"2024-10-09 00:00:00.000",
         "busqueda":  "turnos" | "clientes-reserva" | "turnos-disponibles" | "turnos-reservados" // Esto puede ser SOLO UNA DE LAS DOS.
-        "modalidad": "padel" | "tenis" | "futbol", "basket", "Voleyball" // es opcional, ademas, se pueden incluir otras modalidades, esas son solo ejemplos.
+        "club_partition": 1 // Es opcional, el mapeo de cuales son los club partitions estan debajo, en caso de que no hayan mapeos, se ignora y nunca se rellena esta prop. 
         "cancha": "Cancha 1" // Es opcional, representa una posible cancha.
 
       }
@@ -70,15 +71,30 @@ class GeminiRepository extends IARepository{
 
   """;
 
-  void init(){
-     _gemini = GenerativeModel(
+  @override
+  void init(BrowserOptions browserOptions){
+
+    if(browserOptions.clubPartitions?.length != null && browserOptions.clubPartitions!.length > 1){
+      systemInstruction += """
+
+        Las club_partitions soportadas son : 
+         
+        ${browserOptions.clubPartitions!.map((e) => "${e.clubType!.name} = ${e.club_partition_id}",).join(" \n ")}
+
+        Esos son los mapeos de que nombre es cada club_partition, para que puedas completar correctamente el campo
+
+
+      """;  
+    } else {
+      systemInstruction += " NO HAY club_partitions soportadas, singifica que ignoras el campo ";
+    }
+
+    _gemini = GenerativeModel(
       model: 'gemini-1.5-flash',
       apiKey: "AIzaSyCNOxG7l80FjUdylNmQM8kG82-M9TXbC6w",
-      systemInstruction: Content.system(systemInstruction)
-      
-      );
+      systemInstruction: Content.system(systemInstruction)      
+    );
 
-    
   }
 
   @override

@@ -33,5 +33,9 @@ class SessionUserCases {
    return _sessionRepository.reservateSession(session.sessionId, client);
   }
 
+  Future deleteSession(sessionId){
+    return _sessionRepository.deleteSession(sessionId);
+  }
+
 
 }

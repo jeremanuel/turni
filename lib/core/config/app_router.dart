@@ -56,6 +56,8 @@ GoRouter buildGoRouter(RouterType routerType) {
 
         return routerType == RouterType.adminRoute ? '/dashboard' : '/feed';
       }
+
+      return null;
     },
     routes: [
       /// Estas dos rutas son comunes a ambos tipos de usuario.

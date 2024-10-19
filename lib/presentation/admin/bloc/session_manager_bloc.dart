@@ -151,6 +151,16 @@ class SessionManagerBloc extends Bloc<SessionManagerEvent, SessionManagerState> 
         )
       );
     });
+
+    
+    on<DeleteSession>((event, emit) {
+      _sessionUserCases.deleteSession(event.sessionId);
+      emit(
+        state.copyWith(
+          sessions: state.sessions.where((element) => element.sessionId != event.sessionId,).toList()
+        )
+      );
+    });
     
     if(sessionId == null) add(SessionLoadEvent());
 
@@ -158,6 +168,7 @@ class SessionManagerBloc extends Bloc<SessionManagerEvent, SessionManagerState> 
 
 
   }
+
 
 
 

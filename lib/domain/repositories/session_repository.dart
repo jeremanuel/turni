@@ -18,4 +18,6 @@ abstract class SessionRepository {
   Future<Session> saveSession(Session session);
 
   Future<Client?> reservateSession(int sessionId, Client client);
+
+  Future deleteSession(int sessionId);
 }

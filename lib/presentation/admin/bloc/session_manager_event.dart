@@ -24,6 +24,9 @@ class SessionManagerEvent with _$SessionManagerEvent {
 
   factory SessionManagerEvent.reserve(Session session, Client client) = ReserveEvent;
 
-factory SessionManagerEvent.loadFromSessionId(int sessionId, bool isFirstLoad) = LoadFromSessionIdEvent;
+  factory SessionManagerEvent.loadFromSessionId(int sessionId, bool isFirstLoad) = LoadFromSessionIdEvent;
+
+  factory SessionManagerEvent.deleteSession(int sessionId) = DeleteSession;
+
 
 }

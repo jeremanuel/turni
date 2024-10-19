@@ -32,7 +32,7 @@ class _SearchClientButtonState extends State<SearchClientButton> {
             onPressed: (){
               controller.toggle!();
             }, 
-            label: const Text("buscar"),
+            label: const Text("Buscar"),
             icon: const Icon(Icons.search),
           ),
     );

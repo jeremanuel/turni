@@ -177,7 +177,8 @@ class _AddNewSessionState extends State<AddNewSession> {
                     price: values['price'] != null ? double.parse(values['price']) : 0, 
                     partitionPhysicalId: widget.physicalPartition.partitionPhysicalId,
                     clientId: values['client']?.clientId != null ? int.tryParse(values['client'].clientId) : null,
-                    client: values['client'] != null && values['client'].clientId == null ? values['client'] : null
+                    client: values['client'] != null && values['client'].clientId == null ? values['client'] : null,
+                    physicalPartition: null
 
                   );
 

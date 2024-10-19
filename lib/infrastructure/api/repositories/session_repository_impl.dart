@@ -1,3 +1,6 @@
+import 'package:dio/dio.dart';
+
+import '../../../core/config/service_locator.dart';
 import '../../../core/utils/entities/coordinate.dart';
 import '../../../core/utils/entities/range_date.dart';
 import '../../../core/utils/types/time_interval.dart';
@@ -8,7 +11,9 @@ import '../../../domain/repositories/session_repository.dart';
 import '../providers/session_provider.dart';
 
 class SessionRepositoryImplementation extends SessionRepository {
+
   final SessionProvider sessionProvider;
+  final dioInstance = sl<Dio>();
 
   SessionRepositoryImplementation({required this.sessionProvider});
 
@@ -43,6 +48,19 @@ class SessionRepositoryImplementation extends SessionRepository {
   @override
   Future<List<Session>> getSessionsBySessionId(int sessionId) {
     return sessionProvider.getSessionsByAdminAndSessionId(sessionId);
+  }
+  
+  @override
+  Future deleteSession(int sessionId) async {
+    try {
+      await dioInstance.delete("/admin/session/$sessionId");
+
+      return true;
+
+    } catch (error) {
+
+      return false;
+    }
   }
   
 }

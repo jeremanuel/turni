@@ -22,12 +22,18 @@ class AdminrepositroyImpl extends AdminRepository {
   }
 
   @override
-  Future<List<GenericSearchItem>> genericSearch(String searchType, RangeDate rangeDate) async {
+  Future<List<GenericSearchItem>> genericSearch(String searchType, RangeDate rangeDate, int? clubPartitionId) async {
 
     DateFormat dateFormat = DateFormat("yyyy-MM-dd HH:mm:ss");
 
+    final queryParameters = {
+      "searchType":searchType, 
+      "to":dateFormat.format(rangeDate.to!,), 
+      "from": dateFormat.format(rangeDate.from!),
+      "club_partition_id":clubPartitionId
+    };
 
-    final result = await dioInstance.get("/admin/search", queryParameters: {"searchType":searchType, "to":dateFormat.format(rangeDate.to!), "from": dateFormat.format(rangeDate.from!)});
+    final result = await dioInstance.get("/admin/search", queryParameters:queryParameters);
 
     List rawClients = result.data['clients'];
 
