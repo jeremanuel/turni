@@ -11,6 +11,7 @@ import '../bloc/session_manager_event.dart';
 import '../bloc/session_manager_state.dart';
 import '../../../domain/entities/club_partition.dart';
 import '../browser/browser.dart';
+import '../browser/browser_options.dart';
 import 'widgets/session_manager_day_carrousel.dart';
 import 'widgets/session_manager_card.dart';
 
@@ -77,65 +78,67 @@ class SessionsManager extends StatelessWidget {
     );
   }
 
-  Column buildAgendaContainer(BuildContext context) {
-    return Column(
-      children: [
-        const SizedBox(
-          width:500,
-          child: Browser()
-        ),
-        const SizedBox(height: 20,),
-        if (ResponsiveBuilder.isMobile(context))
-          Padding(
-            padding: const  EdgeInsets.all(8.0),
-            child: SizedBox(height: 50, child: SessionManagerDayCarrousel(width: MediaQuery.of(context).size.width * 0.9,)),
-          ),
-        Container(
-          padding: const  EdgeInsets.symmetric(horizontal: 8),
-          height: 56,
-          child: BlocBuilder<SessionManagerBloc, SessionManagerState>(
-            bloc: sl<SessionManagerBloc>(),
-            builder: (context, state) {
-              return ListView(
-                scrollDirection: Axis.horizontal,
-                children: [
-                  if (ResponsiveBuilder.isMobile(context))
-                    const SizedBox(
-                      width: 8,
-                    ),
-                  ...state.clubPartitions.expand((e) => [
-                        buildChip(e, context, state),
-                        const SizedBox(
-                          width: 16,
-                        ),
-                      ]),
-                  if (ResponsiveBuilder.isMobile(context))
-                    const SizedBox(
-                      width: 8,
-                    ),
-                ],
-              );
-            },
-          ),
-        ),
-        const SizedBox(
-          height: 20,
-        ),
-        Expanded(
-          child: Container(
-              decoration: BoxDecoration(
-                boxShadow: [
-                  BoxShadow(
-                      blurRadius: 5,
-                      spreadRadius: 5,
-                      color:
-                          Theme.of(context).colorScheme.shadow.withOpacity(0.1))
-                ],
-                color: Theme.of(context).colorScheme.surface,
+  Widget buildAgendaContainer(BuildContext context) {
+    return BlocBuilder<SessionManagerBloc, SessionManagerState>(
+      bloc: sl<SessionManagerBloc>(),
+      builder: (context, state) {
+        return Column(
+          children: [
+             SizedBox(
+              width:500,
+              child: Browser(
+                browserOptions: BrowserOptions(clubPartitions: state.clubPartitions),
+              )
+            ),
+            const SizedBox(height: 8,),
+            if (ResponsiveBuilder.isMobile(context))
+              Padding(
+                padding: const  EdgeInsets.all(8.0),
+                child: SizedBox(height: 50, child: SessionManagerDayCarrousel(width: MediaQuery.of(context).size.width * 0.9,)),
               ),
-              child: buildAgenda(context)),
-        ),
-      ],
+            Container(
+              padding: const  EdgeInsets.symmetric(horizontal: 8),
+              height: 56,
+              child: ListView(
+                    scrollDirection: Axis.horizontal,
+                    children: [
+                      if (ResponsiveBuilder.isMobile(context))
+                        const SizedBox(
+                          width: 8,
+                        ),
+                      ...state.clubPartitions.expand((e) => [
+                            buildChip(e, context, state),
+                            const SizedBox(
+                              width: 16,
+                            ),
+                          ]),
+                      if (ResponsiveBuilder.isMobile(context))
+                        const SizedBox(
+                          width: 8,
+                        ),
+                    ],
+                  ),
+            ),
+            const SizedBox(
+              height: 8,
+            ),
+            Expanded(
+              child: Container(
+                  decoration: BoxDecoration(
+                    boxShadow: [
+                      BoxShadow(
+                          blurRadius: 5,
+                          spreadRadius: 5,
+                          color:
+                              Theme.of(context).colorScheme.shadow.withOpacity(0.1))
+                    ],
+                    color: Theme.of(context).colorScheme.surface,
+                  ),
+                  child: buildAgenda(context)),
+            ),
+          ],
+        );
+      }
     );
   }
 

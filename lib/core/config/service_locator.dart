@@ -41,8 +41,6 @@ class ServiceLocator {
         AuthUserCases(sl<AuthRepository>()))
     ); // Cubit singleton para manejo de la sesion.
 
-    sl.registerFactoryParam<SessionManagerBloc, int?, void>((sessionId, _) => SessionManagerBloc(sessionId),);
-
     //sl.registerLazySingleton<FeedCubit>(() => FeedCubit());
 
     sl.registerLazySingleton<CreateSesssionsFormBloc>(() => CreateSesssionsFormBloc());
@@ -67,5 +65,7 @@ class ServiceLocator {
     sl.registerSingleton(localization);
   }
 
-
+  static initializeSessionManager(int? sessionId){
+    if(!sl.isRegistered<SessionManagerBloc>()) sl.registerLazySingleton<SessionManagerBloc>(() => SessionManagerBloc(sessionId));
+  }
 }
