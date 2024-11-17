@@ -23,13 +23,15 @@ import '../../../core/custom_time_picker.dart';
 import '../../../core/pick_client/pick_client.dart';
 import '../../bloc/session_manager_bloc.dart';
 import '../../bloc/session_manager_event.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class AddNewSession extends StatefulWidget {
   AddNewSession(
       {super.key,
+      required BuildContext context,
       required int idPhysicalPartition,
       required this.selectedTimeInterval})
-      : clubPartition = _findPhysicalPartition(idPhysicalPartition) {
+      : clubPartition = _findPhysicalPartition(context, idPhysicalPartition) {
 
         physicalPartition = clubPartition.physicalPartitions!.firstWhere(
           (element) => element.partitionPhysicalId == idPhysicalPartition,
@@ -44,8 +46,8 @@ class AddNewSession extends StatefulWidget {
   late final Duration? duration;
   final GlobalKey<FormBuilderState> _formKey = GlobalKey<FormBuilderState>();
 
-  static ClubPartition _findPhysicalPartition(int idPhysicalPartition) {
-    return sl<SessionManagerBloc>().state.clubPartitions.firstWhere((element) {
+  static ClubPartition _findPhysicalPartition(BuildContext context, int idPhysicalPartition) {
+    return context.read<SessionManagerBloc>().state.clubPartitions.firstWhere((element) {
       final index = element.physicalPartitions!.indexWhere(
         (element) => element.partitionPhysicalId == idPhysicalPartition,
       );
@@ -161,7 +163,7 @@ class _AddNewSessionState extends State<AddNewSession> {
               child: FilledButton(
                 onPressed: isValid ? (){
       
-                  final sessionManagerBloc = sl<SessionManagerBloc>();
+                  final sessionManagerBloc = context.read<SessionManagerBloc>();
       
                   final currentDate = sessionManagerBloc.state.currentDate;
       

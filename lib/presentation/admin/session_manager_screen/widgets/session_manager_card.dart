@@ -7,8 +7,10 @@ import '../../../../core/config/service_locator.dart';
 import '../../../../core/presentation/components/inputs/dropdown_widget.dart';
 import '../../../../domain/entities/physical_partition.dart';
 import '../../../../domain/entities/session.dart';
+import '../../../../main.dart';
 import '../../bloc/session_manager_bloc.dart';
 import '../../bloc/session_manager_event.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class SessionManagerCard extends StatefulWidget {
   const SessionManagerCard({
@@ -16,28 +18,30 @@ class SessionManagerCard extends StatefulWidget {
     required this.session, 
     required this.physicalPartition,  
     this.onReserve, 
-    this.onDelete
+    this.onDelete, 
+    this.hasFocus = false
   });
 
   final Session session;
   final PhysicalPartition physicalPartition;
   final Function? onReserve;
   final Function? onDelete;
+  final bool hasFocus;
 
   @override
   State<SessionManagerCard> createState() => _SessionManagerCardState();
 }
 
-class _SessionManagerCardState extends State<SessionManagerCard> {
+class _SessionManagerCardState extends State<SessionManagerCard>  {
 
   final dropdownController = DropdownController(); 
 
   @override
   Widget build(BuildContext context) {
 
-    if(widget.session.isReserved) return ReservedSessionCard(session: widget.session);
+    if(widget.session.isReserved) return ReservedSessionCard(session: widget.session, hasFocus: widget.hasFocus,);
 
-    return NotReservedSessionCard(session: widget.session, onReserve: widget.onReserve); 
+    return NotReservedSessionCard(session: widget.session, onReserve: widget.onReserve, onDelete: widget.onDelete, hasFocus: widget.hasFocus); 
 
   }
 }
@@ -46,15 +50,29 @@ class _SessionManagerCardState extends State<SessionManagerCard> {
 class ReservedSessionCard extends StatelessWidget {
 
   final Session session;
+  final bool hasFocus;
+  const ReservedSessionCard({super.key, required this.session, this.hasFocus = false});
 
-  const ReservedSessionCard({super.key, required this.session});
+  getColor(context){
+
+    final color = Theme.of(context).colorScheme.surfaceContainerHigh;
+    
+    if(!hasFocus) return color;
+
+    HSLColor hslColor = HSLColor.fromColor(color);
+
+    double newLightness = (hslColor.lightness + 0.1).clamp(0.0, 1.0);
+  
+    // Devolver el nuevo color en formato RGB
+    return hslColor.withLightness(newLightness).toColor();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Container(
         width: 190,
         decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surfaceContainerHigh,
+            color: getColor(context),
             borderRadius: BorderRadius.circular(12)),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -109,16 +127,31 @@ class NotReservedSessionCard extends StatelessWidget {
 
   final Session session;
   final Function? onReserve;
+  final Function? onDelete;
+  final bool hasFocus;
 
+  const NotReservedSessionCard({super.key, required this.session,  this.onReserve, this.onDelete, this.hasFocus = false});
 
-  const NotReservedSessionCard({super.key, required this.session,  this.onReserve});
+    getColor(context){
+
+    final color = Theme.of(context).colorScheme.tertiaryContainer;
+    
+    if(!hasFocus) return color;
+
+    HSLColor hslColor = HSLColor.fromColor(color);
+
+    double newLightness = (hslColor.lightness + 0.1).clamp(0.0, 1.0);
+  
+    // Devolver el nuevo color en formato RGB
+    return hslColor.withLightness(newLightness).toColor();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Container(
         width: 190,
         decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.tertiaryContainer,
+            color: getColor(context),
             borderRadius: BorderRadius.circular(12)),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -169,9 +202,8 @@ class NotReservedSessionCard extends StatelessWidget {
                     onPressed: () {
                       showDialog(
                       context: context,
-                       builder: (context) {
+                       builder: (dialogContext) {
                         return  Dialog(
-                          
                           child: SizedBox(
                             height: 150,
                             width: 150,
@@ -184,8 +216,20 @@ class NotReservedSessionCard extends StatelessWidget {
                                   Row(
                                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                                     children: [
-                                      FilledButton(onPressed: (){ sl<SessionManagerBloc>().add(DeleteSession(session.sessionId)); context.pop(); }, child: const Text("Eliminar")),                                      
-                                      OutlinedButton(onPressed: (){ context.pop(); }, child: const Text("Cancelar"))
+                                      FilledButton(
+                                        onPressed: (){ 
+                                          context.read<SessionManagerBloc>().add(DeleteSession(session.sessionId)); 
+                                          Navigator.pop(dialogContext); 
+                                          onDelete?.call(); 
+                                        }, 
+                                        child: const Text("Eliminar")
+                                      ),                                      
+                                      OutlinedButton(
+                                        onPressed: (){  
+                                          Navigator.pop(dialogContext);
+                                        }, 
+                                        child: const Text("Cancelar")
+                                      )
                                     ],
                                   )                                  
                                 ],

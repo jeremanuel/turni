@@ -96,8 +96,8 @@ class _ClientListContainerState extends State<ClientListContainer> {
                   subtitle: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      if(client.person!.email != null && client.person!.email!.isNotEmpty) Text(client.person!.email!, overflow: TextOverflow.ellipsis,),
-                      if(client.person!.phone != null && client.person!.phone!.isNotEmpty) Text(client.person!.phone!, overflow: TextOverflow.ellipsis)
+                      if(client.person!.hasEmail()) Text(client.person!.email!, overflow: TextOverflow.ellipsis,),
+                      if(client.person!.hasPhone()) Text(client.person!.phone!, overflow: TextOverflow.ellipsis)
                     ],
                   ),
                   title: Text(client.person!.fullName),

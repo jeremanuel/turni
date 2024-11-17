@@ -2,30 +2,31 @@
 
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:turni/core/config/service_locator.dart';
-import 'package:turni/presentation/admin/session_manager_screen/sessions_manager.dart';
+import 'package:turni/presentation/admin/session_manager_screen/sessions_manager_desktop.dart';
 import 'package:turni/presentation/auth/check_status_page.dart';
 import 'package:turni/presentation/auth/login_page.dart';
 import 'package:turni/presentation/core/cubit/auth/auth_cubit.dart';
 import 'package:turni/presentation/home_layout/widgets/custom_layout.dart';
 import 'package:turni/presentation/client/profile_manager_screen/profile/profile_page.dart';
 
-import '../../domain/entities/physical_partition.dart';
 import '../../presentation/admin/bloc/session_manager_bloc.dart';
 import '../../presentation/admin/bloc/session_manager_event.dart';
+import '../../presentation/admin/bloc/session_manager_state.dart';
 import '../../presentation/admin/create_session_screen/create_sessions_screen.dart';
 
 import '../../domain/entities/club_type.dart';
+import '../../presentation/admin/session_manager_screen/session_manager_route.dart';
 import '../../presentation/admin/session_manager_screen/utils/session_manager_add_page_builder.dart';
 import '../../presentation/admin/session_manager_screen/utils/session_manager_reserve_page_builder.dart';
-import '../../presentation/admin/session_manager_screen/widgets/add_new_session.dart';
+import '../../presentation/admin/session_manager_screen/widgets/agenda_container.dart';
 import '../../presentation/admin/session_manager_screen/widgets/calendar_side_column.dart';
-import '../../presentation/admin/session_manager_screen/widgets/reservate_session.dart';
 import '../../presentation/client/home_manager_screen/home/home.dart';
 import '../../presentation/client/session_manager_screen/session_feed/session_feed.dart';
-import '../utils/types/time_interval.dart';
+import '../utils/responsive_builder.dart';
 
 enum RouterType { clientRoute, adminRoute }
 
@@ -38,19 +39,18 @@ GoRouter buildGoRouter(RouterType routerType) {
     redirect: (context, state) {
       final authCubit = sl<AuthCubit>();
 
-      if (authCubit.getLoadingStatus()){
-        if(state.matchedLocation != "/"){
+      if (authCubit.getLoadingStatus()) {
+        if (state.matchedLocation != "/") {
           authCubit.initialRoute = state.uri.toString();
         }
-        
+
         return '/';
-      } 
+      }
 
       if (authCubit.state.userCredential == null) return '/login';
 
       if (state.matchedLocation == "/" || state.matchedLocation == "/login") {
-
-        if(authCubit.initialRoute != null){
+        if (authCubit.initialRoute != null) {
           return authCubit.initialRoute;
         }
 
@@ -113,52 +113,52 @@ List<StatefulShellBranch> buildBranches(RouterType routerType) {
       )
     ]),
     StatefulShellBranch(
-      
-          routes: [
-            ShellRoute(
-                
-                builder: (context, state, child) {
-                  
-                  var idSession = state.pathParameters['idSession'];
-                  
-                  return SessionsManager(
-                    sideChild: child,
-                    sessionId: idSession != null ? int.tryParse(idSession) : null,
-                  );
-                  
-                },
-                routes: [
-                  GoRoute(
-                    path: '/session_manager',
-                    pageBuilder: (context, state) {
-                      return const NoTransitionPage(child: CalendarSideColumn());
-                    },
-                  ),
-                  GoRoute(
-                    path: '/session_manager/reserve/:idSession',
-                    name: "SESSION_MANAGER_RESERVE",
-                    pageBuilder: sessionManagerReservePageBuilder,
-                  ),    
-                  GoRoute(
-                    path: '/session_manager/edit',
-                    pageBuilder: (context, state) {
-                      return const NoTransitionPage(child: Text("Editar turno"));
-                    },
-                  ),
-                  GoRoute(
-                    path: '/session_manager/add/:idPhysicalPartition',
-                    name: "SESSION_MANAGER_ADD",
-                    pageBuilder: sessionManagerAddPageBuilder,
-                  ),
-                ], 
-                ),
+      routes: [
+      ShellRoute(
+        builder: (context, state, child) {
+          var idSession = state.pathParameters['idSession'];
 
-            GoRoute(
-              path: '/add_sessions',
-              builder: (context, state) =>  const CreateSessionScreen(),
-            )
-          ]
-        ),
+          final parsedIdSession = idSession != null ? int.tryParse(idSession) : null;
+          
+          return SessionManagerRoute(
+            routeName: state.topRoute?.name,
+            sessionId: parsedIdSession,
+            child: child  
+          );
+          
+        },
+        routes: [
+          GoRoute(
+            name: "SESSION_MANAGER",
+            path: '/session_manager',
+            pageBuilder: (context, state) {
+              context.read<SessionManagerBloc>().add(SetSelectedSession(null));
+              return const NoTransitionPage(child: CalendarSideColumn());
+            },
+          ),
+          GoRoute(
+            path: '/session_manager/reserve/:idSession',
+            name: "SESSION_MANAGER_RESERVE",
+            pageBuilder: sessionManagerReservePageBuilder,
+          ),
+          GoRoute(
+            path: '/session_manager/edit',
+            pageBuilder: (context, state) {
+              return const NoTransitionPage(child: Text("Editar turno"));
+            },
+          ),
+          GoRoute(
+            path: '/session_manager/add/:idPhysicalPartition',
+            name: "SESSION_MANAGER_ADD",
+            pageBuilder: sessionManagerAddPageBuilder,
+          ),
+        ],
+      ),
+      GoRoute(
+        path: '/add_sessions',
+        builder: (context, state) => const CreateSessionScreen(),
+      )
+    ]),
     StatefulShellBranch(routes: [
       GoRoute(
         path: '/profile',
@@ -169,5 +169,3 @@ List<StatefulShellBranch> buildBranches(RouterType routerType) {
     ])
   ];
 }
-
-

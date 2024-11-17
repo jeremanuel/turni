@@ -16,11 +16,13 @@ import 'session_manager_state.dart';
 
 class SessionManagerBloc extends Bloc<SessionManagerEvent, SessionManagerState> {
 
-  final SessionUserCases _sessionUserCases = SessionUserCases(SessionRepositoryImplementation(sessionProvider: SessionProvider()));
+  final SessionUserCases _sessionUserCases; 
 
   final DatesCarrouselController datesCarrouselController = DatesCarrouselController();
 
-  SessionManagerBloc(int? sessionId) : super(SessionManagerState(currentDate: DateTime.now(), sessions: [], clubPartitions: [], isFirstLoad: true,)) {
+  
+
+  SessionManagerBloc(int? sessionId, this._sessionUserCases) : super(SessionManagerState(currentDate: DateTime.now(), sessions: [], clubPartitions: [], isFirstLoad: true,)) {
 
 
     on<SessionChangeDateEvent>((event, emit) async {
@@ -161,6 +163,10 @@ class SessionManagerBloc extends Bloc<SessionManagerEvent, SessionManagerState> 
         )
       );
     });
+
+    on<SetSelectedSession>((event, emit) {
+      emit(state.copyWith(selectedSession: event.session));
+    });
     
     if(sessionId == null) add(SessionLoadEvent());
 
@@ -179,6 +185,13 @@ class SessionManagerBloc extends Bloc<SessionManagerEvent, SessionManagerState> 
         );
       return index != -1;
     });
+  }
+
+
+  @override
+  Future<void> close() {
+    // TODO: implement close
+    return super.close();
   }
 
   

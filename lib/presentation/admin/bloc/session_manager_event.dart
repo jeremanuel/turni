@@ -28,5 +28,7 @@ class SessionManagerEvent with _$SessionManagerEvent {
 
   factory SessionManagerEvent.deleteSession(int sessionId) = DeleteSession;
 
+  factory SessionManagerEvent.setSelectedSession(Session? session) = SetSelectedSession;
+
 
 }

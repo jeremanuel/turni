@@ -3,7 +3,6 @@ import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_portal/flutter_portal.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../core/config/service_locator.dart';
 import '../../../../core/utils/responsive_builder.dart';
 import '../../../../core/utils/types/time_interval.dart';
 import '../../../../domain/entities/club_partition.dart';
@@ -12,6 +11,7 @@ import '../../../../domain/entities/session.dart';
 import '../../../core/pick_client/pick_client.dart';
 import '../../bloc/session_manager_bloc.dart';
 import '../../bloc/session_manager_event.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class ReservateSession extends StatefulWidget {
 
@@ -102,7 +102,7 @@ class _ReservateSessionState extends State<ReservateSession> {
               child: FilledButton(
                 onPressed: isValid ? (){
       
-                final sessionManagerBloc = sl<SessionManagerBloc>();
+                final sessionManagerBloc = context.read<SessionManagerBloc>();
                 
                 final client = widget._formKey.currentState!.fields['client']?.value;
 

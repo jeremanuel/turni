@@ -5,9 +5,13 @@ import 'package:go_router/go_router.dart';
 import '../../domain/entities/club_type.dart';
 import '../../domain/repositories/ia_repository.dart';
 import '../../domain/repositories/admin_repository.dart';
+import '../../domain/repositories/session_repository.dart';
+import '../../domain/usercases/session_user_cases.dart';
 import '../../infrastructure/api/providers/admin_provider.dart';
+import '../../infrastructure/api/providers/session_provider.dart';
 import '../../infrastructure/api/repositories/IA/gemini_repository.dart';
 import '../../infrastructure/api/repositories/admin_repository_impl.dart';
+import '../../infrastructure/api/repositories/session_repository_impl.dart';
 import '../../presentation/client/bloc/client_session_manager_bloc.dart';
 import '../utils/dio_init.dart';
 import '../../domain/repositories/auth_repository.dart';
@@ -36,6 +40,8 @@ class ServiceLocator {
     AdminrepositroyImpl(adminProvider: AdminProvider())
     );
 
+    sl.registerSingleton<SessionRepository>(SessionRepositoryImplementation(sessionProvider: SessionProvider()));
+
     sl.registerSingleton<AuthCubit>(
       AuthCubit(
         AuthUserCases(sl<AuthRepository>()))
@@ -53,6 +59,9 @@ class ServiceLocator {
       () => GeminiRepository(), 
     ); 
 
+    sl.registerFactoryParam<SessionManagerBloc, int?, void>((sessionId, _) => SessionManagerBloc(sessionId, SessionUserCases(sl<SessionRepository>())),);
+
+
     _initializeLocalization();
   }
 
@@ -65,7 +74,4 @@ class ServiceLocator {
     sl.registerSingleton(localization);
   }
 
-  static initializeSessionManager(int? sessionId){
-    if(!sl.isRegistered<SessionManagerBloc>()) sl.registerLazySingleton<SessionManagerBloc>(() => SessionManagerBloc(sessionId));
-  }
 }

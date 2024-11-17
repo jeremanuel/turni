@@ -25,7 +25,8 @@ class Person {
 
   String get fullName => "$name $lastName";
 
-  
+  bool hasPhone() => phone != null && phone!.isNotEmpty;
+  bool hasEmail() => email != null && email!.isNotEmpty;
 
   Map<String, dynamic> toJson() => _$PersonToJson(this);
 }

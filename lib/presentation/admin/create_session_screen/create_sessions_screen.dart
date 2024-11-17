@@ -38,7 +38,7 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
       bloc: sl<CreateSesssionsFormBloc>(),
       listener: (context, state) {
         if(state.savedSessions){
-          sl<SessionManagerBloc>().add(SessionManagerEvent.reloadSessionsEvent());
+          context.read<SessionManagerBloc>().add(SessionManagerEvent.reloadSessionsEvent());
           context.go('/session_manager');
         }
       },
@@ -92,8 +92,11 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
   }
 
   SizedBox buildClubPartitionsHorizontalList(BuildContext context) {
-    final clubPartitions = sl<SessionManagerBloc>().state.clubPartitions;
+
+    final clubPartitions = context.read<SessionManagerBloc>().state.clubPartitions;
+    
     final formBloc = sl<CreateSesssionsFormBloc>();
+    
     return SizedBox(
       height: 40,
       child: ListView(

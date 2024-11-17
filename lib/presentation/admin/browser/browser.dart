@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 
 import '../../../core/config/service_locator.dart';
@@ -11,20 +12,21 @@ import '../../../domain/entities/generic_search_item.dart';
 import '../../../domain/entities/session.dart';
 import '../../../domain/repositories/ia_repository.dart';
 import '../../../domain/repositories/admin_repository.dart';
+import '../bloc/session_manager_bloc.dart';
 import '../session_manager_screen/widgets/session_manager_card.dart';
 import 'browser_options.dart';
 
-class Browser extends StatefulWidget {
+class GenericBrowser extends StatefulWidget {
 
   final BrowserOptions browserOptions;
 
-  const Browser({super.key, required this.browserOptions});
+  const GenericBrowser({super.key, required this.browserOptions});
 
   @override
-  State<Browser> createState() => _BrowserState();
+  State<GenericBrowser> createState() => _GenericBrowserState();
 }
 
-class _BrowserState extends State<Browser> {
+class _GenericBrowserState extends State<GenericBrowser> {
 
   bool isLoadingData = false;
  
@@ -46,10 +48,6 @@ class _BrowserState extends State<Browser> {
 
   @override
   Widget build(BuildContext context) {
-    return buildTextfield();
-  }
-
-  Widget buildTextfield(){
     return SearchAnchor(
       isFullScreen: ResponsiveBuilder.isMobile(context),
       viewBackgroundColor: Theme.of(context).colorScheme.surfaceBright,
@@ -76,14 +74,21 @@ class _BrowserState extends State<Browser> {
       },
       viewBuilder: (suggestions) {
 
-        return MenuView(
-          prompt: prompt ?? '', 
-          suggestions:suggestions.toList()
+        if(!_searchAnchorController.isAttached || !_searchAnchorController.isOpen) return const SizedBox();
+        
+        return BlocProvider.value(
+          value: BlocProvider.of<SessionManagerBloc>(context),
+          child: MenuView(
+            prompt: prompt ?? '', 
+            suggestions:suggestions.toList()
+          ),
         );
 
       },
       );
   }
+
+
 
   List<Widget> buildResult(){
 
@@ -137,14 +142,25 @@ class _BrowserState extends State<Browser> {
       subtitle: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    if(client.person!.email != null && client.person!.email!.isNotEmpty) Text(client.person!.email!, overflow: TextOverflow.ellipsis,),
-                    if(client.person!.phone != null && client.person!.phone!.isNotEmpty) Text(client.person!.phone!, overflow: TextOverflow.ellipsis)
+                    if(client.person!.hasEmail()) Text(client.person!.email!, overflow: TextOverflow.ellipsis,),
+                    if(client.person!.hasPhone()) Text(client.person!.phone!, overflow: TextOverflow.ellipsis)
                   ],
                 ),
       title: Text(client.person!.fullName),
     );
 
-  Widget buildSession(Session session) => Container(height: 100, margin: const EdgeInsets.only(bottom: 8), child: SessionManagerCard(session: session, physicalPartition: session.physicalPartition!, onReserve: () => _searchAnchorController.closeView(null)));
+  Widget buildSession(Session session){
+    return Container(
+      height: 100, 
+      margin: const EdgeInsets.only(bottom: 8), 
+      child: SessionManagerCard(
+        session: session, 
+        physicalPartition: 
+        session.physicalPartition!, 
+        onReserve: () => _searchAnchorController.closeView(null)
+        )
+      );
+  }
 
 
   Future onTapSearch() async {
@@ -153,7 +169,7 @@ class _BrowserState extends State<Browser> {
         prompt = _searchAnchorController.text;
       });
 
-      _searchAnchorController.text += " ";
+      _searchAnchorController.text += " "; /// Agrego un texto vacio al searchAnchor, para que dispare el suggestionBuilder, y se vea reflejada la carga.
 
       final iaResult = await searchResultsWithIA(_searchAnchorController.text);
 
@@ -179,6 +195,7 @@ class _BrowserState extends State<Browser> {
           prompt = null;
         });
 
+         /// Elimino el texto que agregue previamente.
         _searchAnchorController.text = _searchAnchorController.text.substring(0, _searchAnchorController.text.length - 1);
 
         return;
@@ -197,6 +214,7 @@ class _BrowserState extends State<Browser> {
         isLoadingData = false;
       });
 
+      /// Elimino el texto que agregue previamente.
       _searchAnchorController.text = _searchAnchorController.text.substring(0, _searchAnchorController.text.length - 1);
 
   }

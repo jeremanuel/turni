@@ -13,7 +13,7 @@ class SessionManagerState with _$SessionManagerState{
     required DateTime currentDate,
     required List<Session> sessions,
     required List<ClubPartition> clubPartitions,
-    
+    Session? selectedSession,
     
     ClubPartition? selectedClubPartition, 
     @Default(false) isFirstLoad,
