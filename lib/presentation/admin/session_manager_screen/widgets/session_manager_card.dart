@@ -152,12 +152,23 @@ class NotReservedSessionCard extends StatelessWidget {
         width: 190,
         decoration: BoxDecoration(
             color: getColor(context),
-            borderRadius: BorderRadius.circular(12)),
+            borderRadius: const BorderRadius.only(
+              topRight: Radius.circular(12),
+              bottomRight: Radius.circular(12),
+            ),
+            border: hasFocus ? Border(
+              top: BorderSide(color: Theme.of(context).colorScheme.primary),
+              right: BorderSide(color: Theme.of(context).colorScheme.primary),
+              bottom: BorderSide(color: Theme.of(context).colorScheme.primary) 
+            ) : null
+            ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
-              color: Theme.of(context).colorScheme.tertiary,
+              decoration: BoxDecoration(                
+                color: Theme.of(context).colorScheme.tertiary,
+              ),
               width: 16,
             ),
             Padding(

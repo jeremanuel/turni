@@ -33,17 +33,12 @@ class _ReservateSessionState extends State<ReservateSession> {
   bool isLoadingSession = false;
 
   @override
-  void initState() {
-    
-    super.initState();
-
-    
-  }
-
-  
-
-  @override
   Widget build(BuildContext context) {
+
+    if(widget.session.isReserved){
+      return Center(child: Text("No se puede reservar un turno ya reservado"),);
+    }
+
     return Portal(
       child: FormBuilder(
         autovalidateMode: AutovalidateMode.onUserInteraction,
@@ -73,7 +68,7 @@ class _ReservateSessionState extends State<ReservateSession> {
                           width: 8,
                         ),
                         InputChip(
-                            label:  Text("Cancha ${widget.physicalPartition.physicalIdentifier}")
+                            label: Text("Cancha ${widget.physicalPartition.physicalIdentifier}")
                         ),
                       ],
                     ),

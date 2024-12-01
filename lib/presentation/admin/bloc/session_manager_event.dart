@@ -30,5 +30,7 @@ class SessionManagerEvent with _$SessionManagerEvent {
 
   factory SessionManagerEvent.setSelectedSession(Session? session) = SetSelectedSession;
 
+  
+
 
 }

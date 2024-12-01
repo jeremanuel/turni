@@ -27,6 +27,7 @@ import '../../presentation/admin/session_manager_screen/widgets/calendar_side_co
 import '../../presentation/client/home_manager_screen/home/home.dart';
 import '../../presentation/client/session_manager_screen/session_feed/session_feed.dart';
 import '../utils/responsive_builder.dart';
+import 'app_routes.dart';
 
 enum RouterType { clientRoute, adminRoute }
 
@@ -129,8 +130,8 @@ List<StatefulShellBranch> buildBranches(RouterType routerType) {
         },
         routes: [
           GoRoute(
-            name: "SESSION_MANAGER",
-            path: '/session_manager',
+            name: AppRoutes.SESSION_MANAGER_ROUTE['name']!,
+            path: AppRoutes.SESSION_MANAGER_ROUTE['path']!,
             pageBuilder: (context, state) {
               context.read<SessionManagerBloc>().add(SetSelectedSession(null));
               return const NoTransitionPage(child: CalendarSideColumn());

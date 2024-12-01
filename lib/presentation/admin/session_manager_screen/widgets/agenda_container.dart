@@ -109,7 +109,6 @@ class AgendaContainer extends StatelessWidget {
               state.currentDate.applied(const TimeOfDay(hour: 22, minute: 0)),
           buildCard: (session, physicalPartition) {
             if(state.selectedSession == session){
-              print("Si hay?");
             }
             return SessionManagerCard(
              hasFocus: state.selectedSession == session, 
