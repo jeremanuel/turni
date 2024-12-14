@@ -28,16 +28,20 @@ class SessionManagerRoute extends StatelessWidget {
       child: BlocConsumer<SessionManagerBloc, SessionManagerState>(
         listenWhen: (previous, current) => previous.error != current.error && current.error != null,
         listener: (context, state) {
-
+          
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
+              width: 300,
+              backgroundColor: Theme.of(context).colorScheme.errorContainer,
               behavior: SnackBarBehavior.floating,
-              content: SizedBox(
-                height: 50,
-                child: Center(child: Text(state.error!.message))
-              ),
-              width: 600,
-              padding: const EdgeInsets.only(bottom: 8),
+              content: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.error, color: Theme.of(context).colorScheme.onErrorContainer,),
+                  const SizedBox(width: 8,),
+                  Text(state.error!.message, style: TextStyle(color: Theme.of(context).colorScheme.onErrorContainer),)
+                ],
+              )
             )
           );
 
@@ -45,6 +49,10 @@ class SessionManagerRoute extends StatelessWidget {
         },
         buildWhen: (previous, current) => previous.isFirstLoad != current.isFirstLoad,
         builder: (context, sessionManagerState) {
+
+          if(routeName == "ADD_SESSIONS_MASIVE"){
+            return child;
+          }
 
           if (sessionManagerState.isFirstLoad) {
             return const Center(

@@ -1,8 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_localization/flutter_localization.dart';
 import 'package:get_it/get_it.dart';
-import 'package:go_router/go_router.dart';
-import '../../domain/entities/club_type.dart';
 import '../../domain/repositories/ia_repository.dart';
 import '../../domain/repositories/admin_repository.dart';
 import '../../domain/repositories/session_repository.dart';
@@ -20,11 +18,9 @@ import '../../infrastructure/api/providers/auth_provider.dart';
 import '../../infrastructure/api/repositories/auth_repository_impl.dart';
 import '../../presentation/core/cubit/auth/auth_cubit.dart';
 import '../../presentation/client/home_manager_screen/home/cubit/home_cubit.dart';
-import '../../presentation/client/session_manager_screen/session_feed/cubit/session_cubit.dart';
 
 import '../../presentation/admin/create_session_screen/bloc/create_sesssions_form_bloc.dart';
 import '../../presentation/admin/bloc/session_manager_bloc.dart';
-import '../utils/entities/coordinate.dart';
 
 final sl = GetIt.instance;
 
