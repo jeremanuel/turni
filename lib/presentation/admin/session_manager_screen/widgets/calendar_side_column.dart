@@ -62,12 +62,11 @@ class CalendarSideColumn extends StatelessWidget {
 
   Widget calendarDatepicker2(BuildContext context) {
     return BlocBuilder<SessionManagerBloc, SessionManagerState>(
-      bloc: sl<SessionManagerBloc>(),
       buildWhen: (previous, current) => previous.currentDate != current.currentDate,
       builder: (context, state) {
         return CalendarDatePicker2(
             onValueChanged: (value) {
-              sl<SessionManagerBloc>()
+              context.read<SessionManagerBloc>()
                   .add(SessionChangeDateEvent(value.first ?? DateTime.now()));
             },
             config: CalendarDatePicker2Config(

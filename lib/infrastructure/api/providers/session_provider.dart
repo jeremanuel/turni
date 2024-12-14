@@ -46,19 +46,6 @@ class SessionProvider {
     }
   }
 
-   Future<List<Session>> getSessionsByAdminAndSessionId(int sessionId) async {
-    try {
-      final response = await dioInstance
-          .get("/admin/sessions/${sessionId}");
-
-      return (response.data as List)
-          .map((session) => Session.fromJson(session))
-          .toList();
-    } catch (error) {
-      print(error);
-      return [];
-    }
-  }
 
   Future<List<ClubPartition>> getClubPartitionsByAdmin() async {
     final response = await dioInstance.get("/admin/club_partitions");

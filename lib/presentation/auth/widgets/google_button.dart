@@ -21,7 +21,7 @@ class _GoogleRenderButtonState extends State<GoogleButton> {
       "https://www.googleapis.com/auth/user.phonenumbers.read",
       "https://www.googleapis.com/auth/userinfo.email"
     ],
-    signInOption: SignInOption.standard,
+    
   );
 
   @override

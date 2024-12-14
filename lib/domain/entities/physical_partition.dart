@@ -1,6 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 import '../../core/utils/value_transformers.dart';
+import 'club_partition.dart';
 
 
 part 'physical_partition.freezed.dart';
@@ -22,7 +23,10 @@ class PhysicalPartition with _$PhysicalPartition {
     @JsonKey(name: "is_cover") 
     required String? isCover, 
     required String? description,
-    @JsonKey(defaultValue: 90) int? durationInMinutes
+    @JsonKey(defaultValue: 90) int? durationInMinutes,
+    @JsonKey(name: "club_partition") 
+    ClubPartition? clubPartition,
+
   }
   ) = _PhysicalPartition;
 
