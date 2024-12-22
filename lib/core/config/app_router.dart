@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import '../../presentation/core/verification_code_screen/verification_code.dart';
 import 'service_locator.dart';
 
 import '../../presentation/auth/check_status_page.dart';
@@ -50,7 +51,7 @@ GoRouter buildGoRouter(RouterType routerType) {
           return authCubit.initialRoute;
         }
 
-        return routerType == RouterType.adminRoute ? '/dashboard' : '/verify';
+        return routerType == RouterType.adminRoute ? '/dashboard' : '/home';
       }
 
       return null;
