@@ -16,14 +16,13 @@ class SessionManagerDayCarrousel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<SessionManagerBloc, SessionManagerState>(
-      bloc: sl<SessionManagerBloc>(),
       builder: (context, state) {
         return DatesCarrousel(
-          datesCarrouselController: sl<SessionManagerBloc>().datesCarrouselController ,
+          datesCarrouselController: context.read<SessionManagerBloc>().datesCarrouselController ,
           initialDate: state.currentDate,
           containerWidth: width,
           onSelect: (date) {
-            sl<SessionManagerBloc>().add(SessionChangeDateEvent(date));
+            context.read<SessionManagerBloc>().add(SessionChangeDateEvent(date));
           },
         );
       },

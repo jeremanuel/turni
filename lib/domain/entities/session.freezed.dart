@@ -43,6 +43,9 @@ mixin _$Session {
   String? get clubTypeName => throw _privateConstructorUsedError;
   @JsonKey(includeIfNull: false)
   Client? get client => throw _privateConstructorUsedError;
+  @JsonKey(name: "partition_physical", includeIfNull: false)
+  PhysicalPartition? get physicalPartition =>
+      throw _privateConstructorUsedError;
 
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
   @JsonKey(ignore: true)
@@ -68,9 +71,12 @@ abstract class $SessionCopyWith<$Res> {
       @JsonKey(name: "partition_physical_id") int partitionPhysicalId,
       @JsonKey(name: "club_name") String? clubName,
       @JsonKey(name: "club_type_name") String? clubTypeName,
-      @JsonKey(includeIfNull: false) Client? client});
+      @JsonKey(includeIfNull: false) Client? client,
+      @JsonKey(name: "partition_physical", includeIfNull: false)
+      PhysicalPartition? physicalPartition});
 
   $ClientCopyWith<$Res>? get client;
+  $PhysicalPartitionCopyWith<$Res>? get physicalPartition;
 }
 
 /// @nodoc
@@ -97,6 +103,7 @@ class _$SessionCopyWithImpl<$Res, $Val extends Session>
     Object? clubName = freezed,
     Object? clubTypeName = freezed,
     Object? client = freezed,
+    Object? physicalPartition = freezed,
   }) {
     return _then(_value.copyWith(
       sessionId: null == sessionId
@@ -143,6 +150,10 @@ class _$SessionCopyWithImpl<$Res, $Val extends Session>
           ? _value.client
           : client // ignore: cast_nullable_to_non_nullable
               as Client?,
+      physicalPartition: freezed == physicalPartition
+          ? _value.physicalPartition
+          : physicalPartition // ignore: cast_nullable_to_non_nullable
+              as PhysicalPartition?,
     ) as $Val);
   }
 
@@ -155,6 +166,18 @@ class _$SessionCopyWithImpl<$Res, $Val extends Session>
 
     return $ClientCopyWith<$Res>(_value.client!, (value) {
       return _then(_value.copyWith(client: value) as $Val);
+    });
+  }
+
+  @override
+  @pragma('vm:prefer-inline')
+  $PhysicalPartitionCopyWith<$Res>? get physicalPartition {
+    if (_value.physicalPartition == null) {
+      return null;
+    }
+
+    return $PhysicalPartitionCopyWith<$Res>(_value.physicalPartition!, (value) {
+      return _then(_value.copyWith(physicalPartition: value) as $Val);
     });
   }
 }
@@ -180,10 +203,14 @@ abstract class _$$SessionImplCopyWith<$Res> implements $SessionCopyWith<$Res> {
       @JsonKey(name: "partition_physical_id") int partitionPhysicalId,
       @JsonKey(name: "club_name") String? clubName,
       @JsonKey(name: "club_type_name") String? clubTypeName,
-      @JsonKey(includeIfNull: false) Client? client});
+      @JsonKey(includeIfNull: false) Client? client,
+      @JsonKey(name: "partition_physical", includeIfNull: false)
+      PhysicalPartition? physicalPartition});
 
   @override
   $ClientCopyWith<$Res>? get client;
+  @override
+  $PhysicalPartitionCopyWith<$Res>? get physicalPartition;
 }
 
 /// @nodoc
@@ -208,6 +235,7 @@ class __$$SessionImplCopyWithImpl<$Res>
     Object? clubName = freezed,
     Object? clubTypeName = freezed,
     Object? client = freezed,
+    Object? physicalPartition = freezed,
   }) {
     return _then(_$SessionImpl(
       sessionId: null == sessionId
@@ -254,6 +282,10 @@ class __$$SessionImplCopyWithImpl<$Res>
           ? _value.client
           : client // ignore: cast_nullable_to_non_nullable
               as Client?,
+      physicalPartition: freezed == physicalPartition
+          ? _value.physicalPartition
+          : physicalPartition // ignore: cast_nullable_to_non_nullable
+              as PhysicalPartition?,
     ));
   }
 }
@@ -275,7 +307,9 @@ class _$SessionImpl extends _Session {
       @JsonKey(name: "partition_physical_id") required this.partitionPhysicalId,
       @JsonKey(name: "club_name") this.clubName,
       @JsonKey(name: "club_type_name") this.clubTypeName,
-      @JsonKey(includeIfNull: false) this.client})
+      @JsonKey(includeIfNull: false) this.client,
+      @JsonKey(name: "partition_physical", includeIfNull: false)
+      this.physicalPartition})
       : super._();
 
   factory _$SessionImpl.fromJson(Map<String, dynamic> json) =>
@@ -315,10 +349,13 @@ class _$SessionImpl extends _Session {
   @override
   @JsonKey(includeIfNull: false)
   final Client? client;
+  @override
+  @JsonKey(name: "partition_physical", includeIfNull: false)
+  final PhysicalPartition? physicalPartition;
 
   @override
   String toString() {
-    return 'Session(sessionId: $sessionId, createdAt: $createdAt, startTime: $startTime, duration: $duration, clientId: $clientId, price: $price, adminCreatorId: $adminCreatorId, partitionPhysicalId: $partitionPhysicalId, clubName: $clubName, clubTypeName: $clubTypeName, client: $client)';
+    return 'Session(sessionId: $sessionId, createdAt: $createdAt, startTime: $startTime, duration: $duration, clientId: $clientId, price: $price, adminCreatorId: $adminCreatorId, partitionPhysicalId: $partitionPhysicalId, clubName: $clubName, clubTypeName: $clubTypeName, client: $client, physicalPartition: $physicalPartition)';
   }
 
   @override
@@ -345,7 +382,9 @@ class _$SessionImpl extends _Session {
                 other.clubName == clubName) &&
             (identical(other.clubTypeName, clubTypeName) ||
                 other.clubTypeName == clubTypeName) &&
-            (identical(other.client, client) || other.client == client));
+            (identical(other.client, client) || other.client == client) &&
+            (identical(other.physicalPartition, physicalPartition) ||
+                other.physicalPartition == physicalPartition));
   }
 
   @JsonKey(ignore: true)
@@ -362,7 +401,8 @@ class _$SessionImpl extends _Session {
       partitionPhysicalId,
       clubName,
       clubTypeName,
-      client);
+      client,
+      physicalPartition);
 
   @JsonKey(ignore: true)
   @override
@@ -395,7 +435,9 @@ abstract class _Session extends Session {
       required final int partitionPhysicalId,
       @JsonKey(name: "club_name") final String? clubName,
       @JsonKey(name: "club_type_name") final String? clubTypeName,
-      @JsonKey(includeIfNull: false) final Client? client}) = _$SessionImpl;
+      @JsonKey(includeIfNull: false) final Client? client,
+      @JsonKey(name: "partition_physical", includeIfNull: false)
+      final PhysicalPartition? physicalPartition}) = _$SessionImpl;
   _Session._() : super._();
 
   factory _Session.fromJson(Map<String, dynamic> json) = _$SessionImpl.fromJson;
@@ -434,6 +476,9 @@ abstract class _Session extends Session {
   @override
   @JsonKey(includeIfNull: false)
   Client? get client;
+  @override
+  @JsonKey(name: "partition_physical", includeIfNull: false)
+  PhysicalPartition? get physicalPartition;
   @override
   @JsonKey(ignore: true)
   _$$SessionImplCopyWith<_$SessionImpl> get copyWith =>

@@ -1,9 +1,15 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_localization/flutter_localization.dart';
 import 'package:get_it/get_it.dart';
+import '../../domain/repositories/ia_repository.dart';
 import '../../domain/repositories/admin_repository.dart';
+import '../../domain/repositories/session_repository.dart';
+import '../../domain/usercases/session_user_cases.dart';
 import '../../infrastructure/api/providers/admin_provider.dart';
+import '../../infrastructure/api/providers/session_provider.dart';
+import '../../infrastructure/api/repositories/IA/gemini_repository.dart';
 import '../../infrastructure/api/repositories/admin_repository_impl.dart';
+import '../../infrastructure/api/repositories/session_repository_impl.dart';
 import '../../presentation/client/bloc/client_session_manager_bloc.dart';
 import '../../presentation/core/cubit/verification_code/verification_code_cubit.dart';
 import '../utils/dio_init.dart';
@@ -30,6 +36,9 @@ class ServiceLocator {
     sl.registerSingleton<AdminRepository>(
         AdminrepositroyImpl(adminProvider: AdminProvider()));
 
+    sl.registerSingleton<SessionRepository>(
+        SessionRepositoryImplementation(sessionProvider: SessionProvider()));
+
     sl.registerSingleton<AuthCubit>(AuthCubit(AuthUserCases(
         sl<AuthRepository>()))); // Cubit singleton para manejo de la sesion.
 
@@ -44,6 +53,15 @@ class ServiceLocator {
     sl.registerLazySingleton<ClientSessionManagerBloc>(
         () => ClientSessionManagerBloc());
 
+    sl.registerLazySingleton<IARepository>(
+      () => GeminiRepository(),
+    );
+
+    sl.registerFactoryParam<SessionManagerBloc, int?, void>(
+      (sessionId, _) => SessionManagerBloc(
+          sessionId, SessionUserCases(sl<SessionRepository>())),
+    );
+
     _initializeLocalization();
   }
 
@@ -54,11 +72,5 @@ class ServiceLocator {
     ], initLanguageCode: 'es');
 
     sl.registerSingleton(localization);
-  }
-
-  static initializeSessionManager(int? sessionId) {
-    if (!sl.isRegistered<SessionManagerBloc>())
-      sl.registerLazySingleton<SessionManagerBloc>(
-          () => SessionManagerBloc(sessionId));
   }
 }

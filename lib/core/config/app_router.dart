@@ -1,24 +1,28 @@
 // ignore_for_file: constant_identifier_names
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import '../../presentation/core/verification_code_screen/verification_code.dart';
 import 'service_locator.dart';
-import '../../presentation/admin/session_manager_screen/sessions_manager.dart';
+
 import '../../presentation/auth/check_status_page.dart';
 import '../../presentation/auth/login_page.dart';
 import '../../presentation/core/cubit/auth/auth_cubit.dart';
 import '../../presentation/home_layout/widgets/custom_layout.dart';
 import '../../presentation/client/profile_manager_screen/profile/profile_page.dart';
 
+import '../../presentation/admin/bloc/session_manager_bloc.dart';
+import '../../presentation/admin/bloc/session_manager_event.dart';
 import '../../presentation/admin/create_session_screen/create_sessions_screen.dart';
 
 import '../../domain/entities/club_type.dart';
+import '../../presentation/admin/session_manager_screen/session_manager_route.dart';
 import '../../presentation/admin/session_manager_screen/utils/session_manager_add_page_builder.dart';
 import '../../presentation/admin/session_manager_screen/utils/session_manager_reserve_page_builder.dart';
 import '../../presentation/admin/session_manager_screen/widgets/calendar_side_column.dart';
 import '../../presentation/client/home_manager_screen/home/home.dart';
 import '../../presentation/client/session_manager_screen/session_feed/session_feed.dart';
+import 'app_routes.dart';
 
 enum RouterType { clientRoute, adminRoute }
 
@@ -33,7 +37,7 @@ GoRouter buildGoRouter(RouterType routerType) {
 
       if (authCubit.getLoadingStatus()) {
         if (state.matchedLocation != "/") {
-          authCubit.initialRoute = state.matchedLocation;
+          authCubit.initialRoute = state.uri.toString();
         }
 
         return '/';
@@ -48,6 +52,8 @@ GoRouter buildGoRouter(RouterType routerType) {
 
         return routerType == RouterType.adminRoute ? '/dashboard' : '/verify';
       }
+
+      return null;
     },
     routes: [
       /// Estas dos rutas son comunes a ambos tipos de usuario.
@@ -108,15 +114,20 @@ List<StatefulShellBranch> buildBranches(RouterType routerType) {
         builder: (context, state, child) {
           var idSession = state.pathParameters['idSession'];
 
-          return SessionsManager(
-            sideChild: child,
-            sessionId: idSession != null ? int.tryParse(idSession) : null,
-          );
+          final parsedIdSession =
+              idSession != null ? int.tryParse(idSession) : null;
+
+          return SessionManagerRoute(
+              routeName: state.topRoute?.name,
+              sessionId: parsedIdSession,
+              child: child);
         },
         routes: [
           GoRoute(
-            path: '/session_manager',
+            name: AppRoutes.SESSION_MANAGER_ROUTE['name']!,
+            path: AppRoutes.SESSION_MANAGER_ROUTE['path']!,
             pageBuilder: (context, state) {
+              context.read<SessionManagerBloc>().add(SetSelectedSession(null));
               return const NoTransitionPage(child: CalendarSideColumn());
             },
           ),
@@ -136,12 +147,13 @@ List<StatefulShellBranch> buildBranches(RouterType routerType) {
             name: "SESSION_MANAGER_ADD",
             pageBuilder: sessionManagerAddPageBuilder,
           ),
+          GoRoute(
+            path: '/add_sessions',
+            name: "ADD_SESSIONS_MASIVE",
+            builder: (context, state) => const CreateSessionScreen(),
+          )
         ],
       ),
-      GoRoute(
-        path: '/add_sessions',
-        builder: (context, state) => const CreateSessionScreen(),
-      )
     ]),
     StatefulShellBranch(routes: [
       GoRoute(

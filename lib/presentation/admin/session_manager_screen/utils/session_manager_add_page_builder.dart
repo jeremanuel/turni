@@ -2,10 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
-import '../../../../core/config/service_locator.dart';
 import '../../../../core/utils/types/time_interval.dart';
+import '../../../../main.dart';
 import '../../bloc/session_manager_bloc.dart';
+import '../../bloc/session_manager_event.dart';
+import '../../create_session_screen/create_sessions_screen.dart';
 import '../widgets/add_new_session.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 
 /// Metodo utilizado en el pagebuilder de la ruta.
@@ -19,10 +22,12 @@ Page<dynamic> sessionManagerAddPageBuilder(BuildContext context,GoRouterState st
   final endTime = state.uri.queryParameters['end'];
 
   DateFormat dateFormat = DateFormat("HH:mm");
+  
   final startDate = startTime != null ? dateFormat.parse(startTime) : null;
   final endDate = endTime != null ? dateFormat.parse(endTime) : null;
+  final selectedDay = context.read<SessionManagerBloc>().state.currentDate;
 
-  final selectedDay = sl<SessionManagerBloc>().state.currentDate;
+  context.read<SessionManagerBloc>().add(SetSelectedSession(null));
 
   final timeInterval = TimeInterval(
     initialDate: startDate != null ? selectedDay.copyWith(minute:startDate.minute, hour: startDate.hour ) : null,
@@ -31,6 +36,7 @@ Page<dynamic> sessionManagerAddPageBuilder(BuildContext context,GoRouterState st
 
   return NoTransitionPage(
     child: AddNewSession(
+      context: context,
       idPhysicalPartition: int.parse(idPhysicalPartition!), 
       selectedTimeInterval: timeInterval
     )

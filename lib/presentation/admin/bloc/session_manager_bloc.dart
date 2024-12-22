@@ -3,6 +3,8 @@ import 'package:collection/collection.dart';
 import 'package:meta/meta.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
+import '../../../core/utils/domain_error.dart';
+import '../../../core/utils/either.dart';
 import '../../../domain/entities/club_partition.dart';
 import '../../../domain/entities/session.dart';
 import '../../../domain/usercases/session_user_cases.dart';
@@ -16,11 +18,13 @@ import 'session_manager_state.dart';
 
 class SessionManagerBloc extends Bloc<SessionManagerEvent, SessionManagerState> {
 
-  final SessionUserCases _sessionUserCases = SessionUserCases(SessionRepositoryImplementation(sessionProvider: SessionProvider()));
+  final SessionUserCases _sessionUserCases; 
 
   final DatesCarrouselController datesCarrouselController = DatesCarrouselController();
 
-  SessionManagerBloc(int? sessionId) : super(SessionManagerState(currentDate: DateTime.now(), sessions: [], clubPartitions: [], isFirstLoad: true,)) {
+  
+
+  SessionManagerBloc(int? sessionId, this._sessionUserCases) : super(SessionManagerState(currentDate: DateTime.now(), sessions: [], clubPartitions: [], isFirstLoad: true,)) {
 
 
     on<SessionChangeDateEvent>((event, emit) async {
@@ -131,13 +135,27 @@ class SessionManagerBloc extends Bloc<SessionManagerEvent, SessionManagerState> 
         );
       }
       
-
-      final [sessions as List<Session>, clubPartitions as List<ClubPartition>] = await Future.wait([
+      final [getSessionsResult as Either<DomainError, List<Session>>, clubPartitions as List<ClubPartition>] = await Future.wait([
         _sessionUserCases.getSessionsBySessionId(event.sessionId),
         _sessionUserCases.getClubPartitions()
       ]);
 
-      final session = sessions.firstWhere((element) => element.sessionId == event.sessionId);
+      final result = getSessionsResult.whenOrNull(
+        left: (failure){
+          emit(state.copyWith(error: failure));
+          return null;
+        },
+        right: (value) => value,
+      );
+
+      if(result == null){ // Si falla, se cargan los Turnos con normalidad.
+        add(SessionLoadEvent());
+        return;
+      }
+
+      final sessions = result;
+
+      final session = result.firstWhere((element) => element.sessionId == event.sessionId);
 
       final selectedClubPartition = getNewSelectedClubPartition(session, clubPartitions);
       
@@ -151,6 +169,20 @@ class SessionManagerBloc extends Bloc<SessionManagerEvent, SessionManagerState> 
         )
       );
     });
+
+    
+    on<DeleteSession>((event, emit) {
+      _sessionUserCases.deleteSession(event.sessionId);
+      emit(
+        state.copyWith(
+          sessions: state.sessions.where((element) => element.sessionId != event.sessionId,).toList()
+        )
+      );
+    });
+
+    on<SetSelectedSession>((event, emit) {
+      emit(state.copyWith(selectedSession: event.session));
+    });
     
     if(sessionId == null) add(SessionLoadEvent());
 
@@ -161,6 +193,7 @@ class SessionManagerBloc extends Bloc<SessionManagerEvent, SessionManagerState> 
 
 
 
+
   ClubPartition getNewSelectedClubPartition(Session session, List<ClubPartition> clubPartitions){
     return clubPartitions.firstWhere((element) {
         final index = element.physicalPartitions!.indexWhere(
@@ -168,6 +201,13 @@ class SessionManagerBloc extends Bloc<SessionManagerEvent, SessionManagerState> 
         );
       return index != -1;
     });
+  }
+
+
+  @override
+  Future<void> close() {
+    // TODO: implement close
+    return super.close();
   }
 
   

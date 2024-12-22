@@ -1,3 +1,5 @@
+import '../../core/utils/domain_error.dart';
+import '../../core/utils/either.dart';
 import '../../core/utils/types/time_interval.dart';
 import '../entities/client.dart';
 import '../entities/club_partition.dart';
@@ -13,7 +15,7 @@ class SessionUserCases {
     return _sessionRepository.getSessions(date);
   }
 
-  Future<List<Session>> getSessionsBySessionId(int sessionId) async {
+  Future<Either<DomainError, List<Session>>> getSessionsBySessionId(int sessionId) async {
     return _sessionRepository.getSessionsBySessionId(sessionId);
   }
 
@@ -31,6 +33,10 @@ class SessionUserCases {
 
   Future<Client?> reservateSession(Session session, Client client) async {
    return _sessionRepository.reservateSession(session.sessionId, client);
+  }
+
+  Future deleteSession(sessionId){
+    return _sessionRepository.deleteSession(sessionId);
   }
 
 
