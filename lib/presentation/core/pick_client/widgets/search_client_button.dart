@@ -150,7 +150,14 @@ class _ClientListContainerState extends State<ClientListContainer> {
            
   }
 
-  Future<List<Client>> getClients(String value) {
-    return sl<AdminRepository>().getClients(search!);
+  Future<List<Client>> getClients(String value) async {
+    final response = await sl<AdminRepository>().getClients(search!);
+
+    final value = response.when(
+      left: (failure) => null, 
+      right: (value) => value,
+    );
+
+    return value?.data ?? [];
   }
 }

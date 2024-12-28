@@ -2,22 +2,29 @@ import 'package:dio/dio.dart';
 import 'package:intl/intl.dart';
 
 import '../../../core/config/service_locator.dart';
+import '../../../core/utils/domain_error.dart';
+import '../../../core/utils/either.dart';
 import '../../../core/utils/entities/range_date.dart';
 import '../../../domain/entities/client.dart';
 import '../../../domain/entities/generic_search_item.dart';
+import '../../../domain/entities/request/page_response.dart';
 import '../../../domain/entities/session.dart';
 import '../../../domain/repositories/admin_repository.dart';
 import '../providers/admin_provider.dart';
+import 'base/base_repository.dart';
 
-class AdminrepositroyImpl extends AdminRepository {
+class AdminrepositroyImpl extends BaseRepository implements AdminRepository {
 
   final dioInstance = sl<Dio>();
   final AdminProvider adminProvider;
 
   AdminrepositroyImpl({required this.adminProvider});
-  Future<List<Client>> getClients(String search) async {
 
-    return adminProvider.getClients(search);
+  @override
+
+  Future<Either<DomainError, PageResponse<Client>>> getClients(String search, [int? page, String? sortKey, bool? isAscending]) async {
+
+    return safeCall(() => adminProvider.getClients(search, page));
 
   }
 

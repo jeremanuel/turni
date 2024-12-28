@@ -2,26 +2,19 @@ import 'package:dio/dio.dart';
 import '../../../core/config/service_locator.dart';
 import '../../../domain/entities/client.dart';
 import '../../../domain/entities/request/google_user_request.dart';
+import '../../../domain/entities/request/page_response.dart';
 import '../../../domain/entities/user.dart';
 
 class AdminProvider {
   final dioInstance = sl<Dio>();
 
-  Future<List<Client>> getClients(String search) async {
+  Future<PageResponse<Client>> getClients(String search, [int? page]) async {
 
-    try{
-      final response = await dioInstance.get("/admin/clients", queryParameters: {"search":search});
+    final response = await dioInstance.get("/admin/clients", queryParameters: {"search":search, "page":page});
 
-      final values = response.data.map<Client>((el) => Client.fromJson(el)).toList();
+    final clients = response.data['data'].map<Client>((el) => Client.fromJson(el)).toList();
 
-      print(values);
-
-      return values;
-
-    }catch(e){
-      print(e);
-      return [];
-    }
+    return PageResponse(response.data['total'], clients);
 
   }
 

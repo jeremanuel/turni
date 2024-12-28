@@ -24,6 +24,7 @@ Page<dynamic> sessionManagerReservePageBuilder(
       .sessions
       .firstWhereOrNull((element) => element.sessionId == idSession);
 
+
   final sessionManagerbloc = context.read<SessionManagerBloc>();
 
   if (session == null) {
@@ -58,7 +59,7 @@ Page<dynamic> sessionManagerReservePageBuilder(
       final session = state.sessions.firstWhereOrNull((element) => element.sessionId == idSession);
       
       if(session == null){
-        context.goNamed(AppRoutes.SESSION_MANAGER_ROUTE['name']!);
+        context.goNamed(AppRoutes.SESSION_MANAGER_ROUTE.name);
       }
 
       

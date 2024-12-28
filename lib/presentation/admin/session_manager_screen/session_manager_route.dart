@@ -45,7 +45,7 @@ class SessionManagerRoute extends StatelessWidget {
             )
           );
 
-          context.goNamed(AppRoutes.SESSION_MANAGER_ROUTE['name']!);
+          context.goNamed(AppRoutes.SESSION_MANAGER_ROUTE.name);
         },
         buildWhen: (previous, current) => previous.isFirstLoad != current.isFirstLoad,
         builder: (context, sessionManagerState) {

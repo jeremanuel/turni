@@ -14,6 +14,9 @@ class DesktopLayout extends StatelessWidget {
   Widget build(BuildContext context) {
     
     return Scaffold(
+      drawer: const Drawer(
+        child: Text("Drawer"),
+      ),
       body:  Padding(
         padding: const EdgeInsets.symmetric(vertical: 16),
         child: Row(
@@ -110,21 +113,35 @@ class SideBar extends StatelessWidget {
     }
 
     return const [
-      NavigationRailDestination(
-        padding: EdgeInsets.all(16),
-        icon: Icon(Icons.dashboard), 
-        label: Text("Dashboard")
+        NavigationRailDestination(
+            padding: EdgeInsets.all(16),
+            icon: Icon(Icons.dashboard), 
+            label: Text("Dashboard")
         ),
         NavigationRailDestination(
-        padding: EdgeInsets.all(16),
-        icon: Icon(Icons.calendar_month), 
-        label: Text("Turnos")
+          padding: EdgeInsets.all(16),
+          icon: Icon(Icons.calendar_month), 
+          label: Text("Turnos")
         ),
         NavigationRailDestination(
-        padding: EdgeInsets.all(16),
-        icon: Icon(Icons.person), 
-        label: Text("Perfil")
+          padding: EdgeInsets.all(16),
+          icon: Icon(Icons.person), 
+          label: Text("Clientes")
+        ),
+          NavigationRailDestination(
+          padding: EdgeInsets.all(16),
+          icon: Icon(Icons.build), 
+          label: Text("Perfil")
         )
     ];
   }
 }
+
+/*       BottomNavigationBarItem(
+        label: "Clientes",
+        icon: Icon(Icons.person),
+        activeIcon: Icon(Icons.person)),
+      BottomNavigationBarItem(
+          label: "Perfil",
+          icon: Icon(Icons.build),
+          activeIcon: Icon(Icons.build)) */

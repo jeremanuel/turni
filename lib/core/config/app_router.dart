@@ -3,6 +3,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import '../../domain/repositories/admin_repository.dart';
+import '../../presentation/admin/clients_list/bloc/clients_list_bloc.dart';
+import '../../presentation/admin/clients_list/clients_list_page.dart' deferred as list;
+import '../../presentation/admin/clients_list/list_utils/client_list_filters.dart';
 import 'service_locator.dart';
 
 import '../../presentation/auth/check_status_page.dart';
@@ -108,25 +112,23 @@ List<StatefulShellBranch> buildBranches(RouterType routerType) {
         ),
       )
     ]),
-    StatefulShellBranch(
-      routes: [
+    StatefulShellBranch(routes: [
       ShellRoute(
         builder: (context, state, child) {
           var idSession = state.pathParameters['idSession'];
 
-          final parsedIdSession = idSession != null ? int.tryParse(idSession) : null;
-          
+          final parsedIdSession =
+              idSession != null ? int.tryParse(idSession) : null;
+
           return SessionManagerRoute(
-            routeName: state.topRoute?.name,
-            sessionId: parsedIdSession,
-            child: child  
-          );
-          
+              routeName: state.topRoute?.name,
+              sessionId: parsedIdSession,
+              child: child);
         },
         routes: [
           GoRoute(
-            name: AppRoutes.SESSION_MANAGER_ROUTE['name']!,
-            path: AppRoutes.SESSION_MANAGER_ROUTE['path']!,
+            name: AppRoutes.SESSION_MANAGER_ROUTE.name,
+            path: AppRoutes.SESSION_MANAGER_ROUTE.path,
             pageBuilder: (context, state) {
               context.read<SessionManagerBloc>().add(SetSelectedSession(null));
               return const NoTransitionPage(child: CalendarSideColumn());
@@ -148,14 +150,40 @@ List<StatefulShellBranch> buildBranches(RouterType routerType) {
             name: "SESSION_MANAGER_ADD",
             pageBuilder: sessionManagerAddPageBuilder,
           ),
-        GoRoute(
-          path: '/add_sessions',
-          name:"ADD_SESSIONS_MASIVE",
-          builder: (context, state) => const CreateSessionScreen(),
-        )
+          GoRoute(
+            path: '/add_sessions',
+            name: "ADD_SESSIONS_MASIVE",
+            builder: (context, state) => const CreateSessionScreen(),
+          )
         ],
       ),
+    ]),
+    StatefulShellBranch(routes: [
+      GoRoute(
+        path: AppRoutes.CLIENTS_LIST_ROUTE.path,
+        name: AppRoutes.CLIENTS_LIST_ROUTE.name,
+        builder: (context, state){
 
+          final params = state.uri.queryParameters;
+          
+          return FutureBuilder(
+            future: list.loadLibrary(),
+            builder:(context, snapshot) {
+              if(snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              if(snapshot.hasError) {
+                return const Center(child: Text("Error al cargar la página"));
+              }
+              return BlocProvider( 
+              create: (context) => ClientsListBloc(context, sl<AdminRepository>(), ClientListFilters.fromJson(params), params['sort'], bool.tryParse(params['order'] ?? '')),
+              child: list.ClientsList(),
+            );
+            }
+           
+          );
+        },
+      )
     ]),
     StatefulShellBranch(routes: [
       GoRoute(

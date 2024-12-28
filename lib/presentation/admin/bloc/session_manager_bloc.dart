@@ -147,7 +147,7 @@ class SessionManagerBloc extends Bloc<SessionManagerEvent, SessionManagerState> 
         },
         right: (value) => value,
       );
-
+    
       if(result == null){ // Si falla, se cargan los Turnos con normalidad.
         add(SessionLoadEvent());
         return;

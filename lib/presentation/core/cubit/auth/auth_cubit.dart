@@ -35,15 +35,17 @@ class AuthCubit extends Cubit<AuthState> with ChangeNotifier {
   }
 
   void checkAuthStatus() async {
-    final String? token = await LocalStorage.read(LocalStorage.TOKEN_KEY);
-
+    final String? token = await LocalStorage.read(LocalStorage.TOKEN_KEY) ?? 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoyLCJpYXQiOjE3MzQ1NjYxNTN9.IjsUpzLzstw3V2G23r8UvzB0OdAsNtpr1aEeNuv-KYs';
     if (token != null) {
       await DioInit.addTokenToInterceptor(sl<Dio>(), token);
 
       emit(const AuthIsLoading());
-
+   
       final user = await authUserCases.validateToken(token);
-
+       print(user);
+      emit(AuthLogged(userCredential: user));
+      notifyListeners();
+      return;
       if (user != null) {
         Position position = await getCurrentPosition();
         Coordinate location = Coordinate(

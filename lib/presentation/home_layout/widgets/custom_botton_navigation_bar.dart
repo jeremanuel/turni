@@ -44,9 +44,13 @@ class CustomBottomNavigationBar extends StatelessWidget {
           icon: Icon(Icons.calendar_month),
           activeIcon: Icon(Icons.calendar_month)),
       BottomNavigationBarItem(
+        label: "Clientes",
+        icon: Icon(Icons.person),
+        activeIcon: Icon(Icons.person)),
+      BottomNavigationBarItem(
           label: "Perfil",
-          icon: Icon(Icons.person),
-          activeIcon: Icon(Icons.person))
+          icon: Icon(Icons.build),
+          activeIcon: Icon(Icons.build))
     ];
   }
 }
