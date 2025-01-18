@@ -3,10 +3,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import '../../domain/entities/client.dart';
 import '../../domain/repositories/admin_repository.dart';
+import '../../domain/repositories/payment_repository.dart';
+import '../../infrastructure/api/repositories/admin_repository_impl.dart';
+import '../../presentation/admin/client_page/client_page.dart';
 import '../../presentation/admin/clients_list/bloc/clients_list_bloc.dart';
 import '../../presentation/admin/clients_list/clients_list_page.dart' deferred as list;
 import '../../presentation/admin/clients_list/list_utils/client_list_filters.dart';
+import '../../presentation/admin/cubit/scaffold_cubit.dart';
+import '../utils/responsive_builder.dart';
+import 'custom_routes/custom_dialog_route.dart';
 import 'service_locator.dart';
 
 import '../../presentation/auth/check_status_page.dart';
@@ -15,8 +22,8 @@ import '../../presentation/core/cubit/auth/auth_cubit.dart';
 import '../../presentation/home_layout/widgets/custom_layout.dart';
 import '../../presentation/client/profile_manager_screen/profile/profile_page.dart';
 
-import '../../presentation/admin/bloc/session_manager_bloc.dart';
-import '../../presentation/admin/bloc/session_manager_event.dart';
+import '../../presentation/admin/session_manager_screen/bloc/session_manager_bloc.dart';
+import '../../presentation/admin/session_manager_screen/bloc/session_manager_event.dart';
 import '../../presentation/admin/create_session_screen/create_sessions_screen.dart';
 
 import '../../domain/entities/club_type.dart';
@@ -32,12 +39,16 @@ enum RouterType { clientRoute, adminRoute }
 
 enum ClientRoutes { session_feed }
 
+GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
+String? currentRoute;
 GoRouter buildGoRouter(RouterType routerType) {
   return GoRouter(
+    
     initialLocation: '/',
     refreshListenable: sl<AuthCubit>(),
     redirect: (context, state) {
       final authCubit = sl<AuthCubit>();
+              
 
       if (authCubit.getLoadingStatus()) {
         if (state.matchedLocation != "/") {
@@ -56,7 +67,7 @@ GoRouter buildGoRouter(RouterType routerType) {
 
         return routerType == RouterType.adminRoute ? '/dashboard' : '/feed';
       }
-
+      
       return null;
     },
     routes: [
@@ -74,8 +85,9 @@ GoRouter buildGoRouter(RouterType routerType) {
         ),
       StatefulShellRoute.indexedStack(
         branches: buildBranches(routerType),
-        builder: (context, state, navigationShell) =>
-            CustomLayout(child: navigationShell),
+        builder: (context, state, navigationShell) {
+          return CustomLayout(child: navigationShell, scaffoldKey: scaffoldKey,);
+        },
       )
     ],
   );
@@ -129,6 +141,7 @@ List<StatefulShellBranch> buildBranches(RouterType routerType) {
           GoRoute(
             name: AppRoutes.SESSION_MANAGER_ROUTE.name,
             path: AppRoutes.SESSION_MANAGER_ROUTE.path,
+            redirect: setCurrentRoute,
             pageBuilder: (context, state) {
               context.read<SessionManagerBloc>().add(SetSelectedSession(null));
               return const NoTransitionPage(child: CalendarSideColumn());
@@ -137,10 +150,13 @@ List<StatefulShellBranch> buildBranches(RouterType routerType) {
           GoRoute(
             path: '/session_manager/reserve/:idSession',
             name: "SESSION_MANAGER_RESERVE",
+            redirect: setCurrentRoute,  
             pageBuilder: sessionManagerReservePageBuilder,
+
           ),
           GoRoute(
             path: '/session_manager/edit',
+            redirect: setCurrentRoute,
             pageBuilder: (context, state) {
               return const NoTransitionPage(child: Text("Editar turno"));
             },
@@ -148,42 +164,83 @@ List<StatefulShellBranch> buildBranches(RouterType routerType) {
           GoRoute(
             path: '/session_manager/add/:idPhysicalPartition',
             name: "SESSION_MANAGER_ADD",
+            redirect: setCurrentRoute,
             pageBuilder: sessionManagerAddPageBuilder,
           ),
           GoRoute(
             path: '/add_sessions',
             name: "ADD_SESSIONS_MASIVE",
+            redirect: setCurrentRoute,
             builder: (context, state) => const CreateSessionScreen(),
           )
         ],
       ),
     ]),
-    StatefulShellBranch(routes: [
-      GoRoute(
-        path: AppRoutes.CLIENTS_LIST_ROUTE.path,
-        name: AppRoutes.CLIENTS_LIST_ROUTE.name,
-        builder: (context, state){
+    StatefulShellBranch(
+      routes: [
+        GoRoute(
+          path: AppRoutes.CLIENTS_LIST_ROUTE.path,
+          name: AppRoutes.CLIENTS_LIST_ROUTE.name,
+          redirect: setCurrentRoute,
+          builder: (context, state){
 
-          final params = state.uri.queryParameters;
-          
-          return FutureBuilder(
-            future: list.loadLibrary(),
-            builder:(context, snapshot) {
-              if(snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator());
+            final params = state.uri.queryParameters;
+            
+            return FutureBuilder(
+              future: list.loadLibrary(),
+              builder:(context, snapshot) {
+                if(snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                if(snapshot.hasError) {
+                  return const Center(child: Text("Error al cargar la página"));
+                }
+                return BlocProvider( 
+                create: (context) => ClientsListBloc(context, sl<AdminRepository>(), ClientListFilters.fromJson(params), params['sort'], bool.tryParse(params['order'] ?? '')),
+                child: list.ClientsList(),
+              );
               }
-              if(snapshot.hasError) {
-                return const Center(child: Text("Error al cargar la página"));
-              }
-              return BlocProvider( 
-              create: (context) => ClientsListBloc(context, sl<AdminRepository>(), ClientListFilters.fromJson(params), params['sort'], bool.tryParse(params['order'] ?? '')),
-              child: list.ClientsList(),
+            
             );
-            }
-           
-          );
-        },
-      )
+          },
+       
+        ),
+
+        GoRoute(
+          path: AppRoutes.CLIENT_ROUTE.path,
+          name: AppRoutes.CLIENT_ROUTE.name,
+          redirect: (context, state) {
+
+            final clientFromList = state.extra as Client?;
+
+            if(ResponsiveBuilder.isMobile(context)) return null;
+
+            scaffoldKey.currentState?.openEndDrawer();
+
+            final scaffoldCubit = sl<ScaffoldCubit>();
+
+            final clientId = int.tryParse(
+              state.pathParameters['clientId'] ?? '',
+            );
+
+            if(clientId != null) scaffoldCubit.setChild(Clientpage(clientId: clientId, client: clientFromList,));
+
+            return currentRoute ?? AppRoutes.CLIENTS_LIST_ROUTE.path;
+          },
+          builder: (context, state){
+
+            if(ResponsiveBuilder.isDesktop(context)) return const SizedBox();
+
+            final clientFromList = state.extra as Client?;
+
+            final clientId = int.tryParse(
+              state.pathParameters['clientId'] ?? '',
+            );
+
+            return Clientpage(clientId: clientId!, client: clientFromList, );
+          },
+        )
+
     ]),
     StatefulShellBranch(routes: [
       GoRoute(
@@ -195,3 +252,8 @@ List<StatefulShellBranch> buildBranches(RouterType routerType) {
     ])
   ];
 }
+ String? setCurrentRoute(BuildContext context, GoRouterState state) {
+  currentRoute = state.fullPath;
+  return null;
+}
+

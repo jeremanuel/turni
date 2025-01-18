@@ -21,8 +21,8 @@ import '../../../../domain/entities/session.dart';
 import '../../../../domain/repositories/admin_repository.dart';
 import '../../../core/custom_time_picker.dart';
 import '../../../core/pick_client/pick_client.dart';
-import '../../bloc/session_manager_bloc.dart';
-import '../../bloc/session_manager_event.dart';
+import '../bloc/session_manager_bloc.dart';
+import '../bloc/session_manager_event.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class AddNewSession extends StatefulWidget {

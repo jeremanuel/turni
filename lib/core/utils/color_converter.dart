@@ -5,12 +5,22 @@ class ColorConverter implements JsonConverter<Color?, String?> {
   const ColorConverter();
 
   @override
-  Color? fromJson(String? json) {
-    if(json == null || json.isEmpty) return null;
+  Color? fromJson(String? hexCode) {
 
-    final valuesList = json.split(",").map((e) => int.parse(e)).toList();
+    if(hexCode == null) return null;
+    
+    // Si el código de color tiene el prefijo "#", lo eliminamos
+    hexCode = hexCode.replaceAll('#', '');
 
-    return Color.fromRGBO(valuesList[0], valuesList[1],valuesList[2], valuesList[3].toDouble());
+    // Convertimos el código hexadecimal en un valor entero
+    int colorInt = int.parse(hexCode, radix: 16);
+
+    // Si el código tiene 6 caracteres, agregamos la opacidad máxima (FF) al principio
+    if (hexCode.length == 6) {
+      colorInt = 0xFF000000 | colorInt;
+    }
+
+    return Color(colorInt);
   }
 
   @override

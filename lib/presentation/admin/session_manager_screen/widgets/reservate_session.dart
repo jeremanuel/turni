@@ -9,8 +9,8 @@ import '../../../../domain/entities/club_partition.dart';
 import '../../../../domain/entities/physical_partition.dart';
 import '../../../../domain/entities/session.dart';
 import '../../../core/pick_client/pick_client.dart';
-import '../../bloc/session_manager_bloc.dart';
-import '../../bloc/session_manager_event.dart';
+import '../bloc/session_manager_bloc.dart';
+import '../bloc/session_manager_event.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class ReservateSession extends StatefulWidget {

@@ -12,7 +12,7 @@ import '../../../domain/entities/generic_search_item.dart';
 import '../../../domain/entities/session.dart';
 import '../../../domain/repositories/ia_repository.dart';
 import '../../../domain/repositories/admin_repository.dart';
-import '../bloc/session_manager_bloc.dart';
+import '../session_manager_screen/bloc/session_manager_bloc.dart';
 import '../session_manager_screen/widgets/session_manager_card.dart';
 import 'browser_options.dart';
 

@@ -26,4 +26,8 @@ class DateFunctions {
     return DateFormat.MMMd().format(date);
 
   }
+
+  static String formatDateToDefaultFormat(DateTime date){
+    return DateFormat.yMd().format(date);
+  }
 }

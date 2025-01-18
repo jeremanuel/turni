@@ -15,10 +15,10 @@ class CustomBottomNavigationBar extends StatelessWidget {
     return BottomNavigationBar(
         currentIndex: selectedIndex,
         onTap: onTap,
-        items: buildNavigationItems());
+        items: buildNavigationItems(context));
   }
 
-  List<BottomNavigationBarItem> buildNavigationItems() {
+  List<BottomNavigationBarItem> buildNavigationItems(context) {
     final isAdmin = sl<AuthCubit>().isAdmin();
 
     if (!isAdmin) {
@@ -34,7 +34,7 @@ class CustomBottomNavigationBar extends StatelessWidget {
       ];
     }
 
-    return const [
+    return  [
       BottomNavigationBarItem(
           label: "Dashboard",
           icon: Icon(Icons.dashboard),

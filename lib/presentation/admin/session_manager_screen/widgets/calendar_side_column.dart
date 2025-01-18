@@ -5,9 +5,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/config/service_locator.dart';
-import '../../bloc/session_manager_bloc.dart';
-import '../../bloc/session_manager_event.dart';
-import '../../bloc/session_manager_state.dart';
+import '../bloc/session_manager_bloc.dart';
+import '../bloc/session_manager_event.dart';
+import '../bloc/session_manager_state.dart';
 import 'session_manager_day_carrousel.dart';
 
 class CalendarSideColumn extends StatelessWidget {

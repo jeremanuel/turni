@@ -8,8 +8,8 @@ import '../../../../core/presentation/components/inputs/dropdown_widget.dart';
 import '../../../../domain/entities/physical_partition.dart';
 import '../../../../domain/entities/session.dart';
 import '../../../../main.dart';
-import '../../bloc/session_manager_bloc.dart';
-import '../../bloc/session_manager_event.dart';
+import '../bloc/session_manager_bloc.dart';
+import '../bloc/session_manager_event.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class SessionManagerCard extends StatefulWidget {

@@ -2,8 +2,11 @@ import 'dart:math';
 
 import 'package:data_table_2/data_table_2.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../../core/config/app_routes.dart';
 import '../../../../core/presentation/components/inputs/LabelChip.dart';
+import '../../../../core/utils/responsive_builder.dart';
 import '../../../../domain/entities/client.dart';
 
 class ClientsDataRow extends DataRow2 {
@@ -14,11 +17,34 @@ class ClientsDataRow extends DataRow2 {
 
   ClientsDataRow(this.context, this.client) 
   : super(
-    cells: _buildCells(client, Theme.of(context).colorScheme), 
+    onTap: () => context.pushNamed(AppRoutes.CLIENT_ROUTE.name, pathParameters: {"clientId":client.clientId!}, extra: client),
+    cells: _buildCells(client, Theme.of(context).colorScheme, context), 
     color: WidgetStateProperty.all(Theme.of(context).colorScheme.surfaceContainerLow)
   );
 
-  static List<DataCell> _buildCells(Client client, ColorScheme colorScheme) =>[
+  static List<DataCell> _buildCells(Client client, ColorScheme colorScheme, context) {
+    
+    final mobileList = [
+                DataCell(
+                  Text(client.clientId!)
+                ),
+                DataCell(
+                  
+                  Text(client.person!.fullName, overflow: TextOverflow.ellipsis,)
+                ),
+            
+                DataCell(
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      spacing: 8,
+                      children: client.labels?.map((e) => Labelchip(e)).toList() ?? []
+                    ),
+                  )
+                )
+            ];
+            
+    final desktopList = [
                 DataCell(
                   Text(client.clientId!)
                 ),
@@ -53,11 +79,14 @@ class ClientsDataRow extends DataRow2 {
                     scrollDirection: Axis.horizontal,
                     child: Row(
                       spacing: 8,
-                      children: client.labels.map((e) => Labelchip(e)).toList() 
+                      children: client.labels?.map((e) => Labelchip(e)).toList() ?? []
                     ),
                   )
                 )
             ];
+
+    return ResponsiveBuilder.isMobile(context) ? mobileList : desktopList;
+  }
 
 
 }

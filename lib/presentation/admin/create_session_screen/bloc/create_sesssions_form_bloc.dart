@@ -9,7 +9,7 @@ import '../../../../domain/entities/session.dart';
 import '../../../../domain/usercases/session_user_cases.dart';
 import '../../../../infrastructure/api/providers/session_provider.dart';
 import '../../../../infrastructure/api/repositories/session_repository_impl.dart';
-import '../../bloc/session_manager_bloc.dart';
+import '../../session_manager_screen/bloc/session_manager_bloc.dart';
 
 part 'create_sesssions_form_event.dart';
 part 'create_sesssions_form_state.dart';

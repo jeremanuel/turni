@@ -32,7 +32,7 @@ class CustomDrawer extends StatelessWidget {
                 height: 100,
                 width: 100,
                 child: CircleAvatar(
-                  backgroundImage: NetworkImage(authCubit.state.userCredential!.picture!),
+                  backgroundImage: NetworkImage(authCubit.state.userCredential!.picture ?? ""),
                 ),
               ),
              const  SizedBox(
@@ -41,7 +41,7 @@ class CustomDrawer extends StatelessWidget {
               SizedBox(
                 height: 80,
                 width: 80,
-                child: Center(child: Text(authCubit.state.userCredential!.person!.name, overflow: TextOverflow.clip, style: TextStyles.h2,)))
+                child: Center(child: Text(authCubit.state.userCredential!.person.name, overflow: TextOverflow.clip, style: TextStyles.h2,)))
             ],
           )
         );

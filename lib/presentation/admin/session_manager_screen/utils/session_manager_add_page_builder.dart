@@ -4,8 +4,8 @@ import 'package:intl/intl.dart';
 
 import '../../../../core/utils/types/time_interval.dart';
 import '../../../../main.dart';
-import '../../bloc/session_manager_bloc.dart';
-import '../../bloc/session_manager_event.dart';
+import '../bloc/session_manager_bloc.dart';
+import '../bloc/session_manager_event.dart';
 import '../../create_session_screen/create_sessions_screen.dart';
 import '../widgets/add_new_session.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';

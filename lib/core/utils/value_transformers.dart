@@ -40,6 +40,14 @@ class ValueTransformers {
     return newVal;
   }
 
+  static DateTime? fromJsonDateTimeLocaleNullable(value) {
+    if(value == null) return null;
+
+    final newVal = DateTime.parse(value).toLocal();
+
+    return newVal;
+  }
+
   static int? toJsonInt(value){
     
     if(value == null) return null;

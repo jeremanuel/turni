@@ -12,29 +12,25 @@ class CustomLayout extends StatelessWidget {
 
   final StatefulNavigationShell child;
 
-    const CustomLayout({
-      super.key, 
-      required this.child
+  const CustomLayout({super.key, 
+    required this.child,
+    required this.scaffoldKey
   });
+
+
+  final GlobalKey<ScaffoldState> scaffoldKey;
+
 
   @override
   Widget build(BuildContext context) {
     final isDesktop = MediaQuery.of(context).size.width > 700;
 
     if(isDesktop){
-     return DesktopLayout(child: child);
+     return DesktopLayout(scaffoldKey: scaffoldKey, child: child);
     }
 
     return MobileLayout(child: child,); 
   }
 
-  Scaffold buildMobileLayout() {
-    return Scaffold(
-    body: child,
-    bottomNavigationBar:  CustomBottomNavigationBar(
-      selectedIndex: child.currentIndex,
-      onTap: (index) => child.goBranch(index),
-    ),
-  );
-  }
+
 }

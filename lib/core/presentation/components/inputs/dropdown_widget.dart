@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_portal/flutter_portal.dart';
 
+import '../../../utils/responsive_builder.dart';
+
 class DropdownWidget extends StatefulWidget {
   
   const DropdownWidget({super.key, required this.child, required this.menuWidget, required this.dropdownController, this.aligned});
@@ -30,12 +32,19 @@ class _DropdownWidgetState extends State<DropdownWidget> {
         });
     };
     widget.dropdownController.show = () {
+      if(ResponsiveBuilder.isMobile(context)) {
+        showDialog(context: context, builder: (context) => buildMenu(context),);
+      }
+
       setState(() {
         isVisible = true;
       });
     };
     
     widget.dropdownController.toggle = () {
+      if(ResponsiveBuilder.isMobile(context)) {
+        showDialog(context: context, builder: (context) => buildMenu(context),);
+      }
       setState(() {
         isVisible = !isVisible;
       });
@@ -45,6 +54,16 @@ class _DropdownWidgetState extends State<DropdownWidget> {
 
   @override
   Widget build(BuildContext context) {
+
+    if(ResponsiveBuilder.isMobile(context)){
+      return GestureDetector(
+        onTap: () {
+          showDialog(context: context, builder: (context) => buildMenu(context),);
+        },
+        child: widget.child
+      );
+    }
+
     return PortalTarget(
       visible: isVisible,
       portalFollower: GestureDetector(
@@ -71,24 +90,35 @@ class _DropdownWidgetState extends State<DropdownWidget> {
                 ),
               );
             },
-            child: Container(
-              width: 300,
-
-              decoration:  BoxDecoration(
-                color: Theme.of(context).colorScheme.surfaceVariant,
-                borderRadius: const BorderRadius.all(Radius.circular(8)),
-                boxShadow: [
-                  BoxShadow(
-                    blurRadius: 8,
-                    color: Theme.of(context).colorScheme.shadow.withOpacity(0.1)
-                  )
-                ]
-              ),
-              child: widget.menuWidget,
-            )),
+            child: buildMenu(context)),
         child: widget.child,
       ),
     );
+  }
+
+  Widget buildMenu(BuildContext context) {
+    final menuWidget = Container(
+      width: 300,
+            decoration:  BoxDecoration(
+              color: Theme.of(context).colorScheme.surfaceVariant,
+              borderRadius: const BorderRadius.all(Radius.circular(8)),
+              boxShadow: [
+                BoxShadow(
+                  blurRadius: 8,
+                  color: Theme.of(context).colorScheme.shadow.withOpacity(0.1)
+                )
+              ]
+            ),
+            child: widget.menuWidget,
+    );
+  
+    if(ResponsiveBuilder.isMobile(context)) {
+      return Dialog(
+        child: menuWidget,
+      );
+    }
+
+    return menuWidget;
   }
 
   

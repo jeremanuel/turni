@@ -3,15 +3,15 @@ import 'package:collection/collection.dart';
 import 'package:meta/meta.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
-import '../../../core/utils/domain_error.dart';
-import '../../../core/utils/either.dart';
-import '../../../domain/entities/club_partition.dart';
-import '../../../domain/entities/session.dart';
-import '../../../domain/usercases/session_user_cases.dart';
-import '../../../infrastructure/api/providers/session_provider.dart';
-import '../../../infrastructure/api/repositories/session_repository_impl.dart';
-import '../../core/dates_carrousel/dates_carrousel.dart';
-import '../session_manager_screen/widgets/reservate_session.dart';
+import '../../../../core/utils/domain_error.dart';
+import '../../../../core/utils/either.dart';
+import '../../../../domain/entities/club_partition.dart';
+import '../../../../domain/entities/session.dart';
+import '../../../../domain/usercases/session_user_cases.dart';
+import '../../../../infrastructure/api/providers/session_provider.dart';
+import '../../../../infrastructure/api/repositories/session_repository_impl.dart';
+import '../../../core/dates_carrousel/dates_carrousel.dart';
+import '../widgets/reservate_session.dart';
 import 'session_manager_event.dart';
 import 'session_manager_state.dart';
 

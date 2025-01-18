@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../core/config/service_locator.dart';
 import '../../../core/utils/responsive_builder.dart';
-import '../bloc/session_manager_bloc.dart';
-import '../bloc/session_manager_state.dart';
+import 'bloc/session_manager_bloc.dart';
+import 'bloc/session_manager_state.dart';
 import 'widgets/agenda_container.dart';
 
 class SessionManagerDesktop extends StatelessWidget {

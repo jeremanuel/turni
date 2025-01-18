@@ -9,8 +9,8 @@ import '../../../core/utils/responsive_builder.dart';
 import '../../../core/utils/types/time_interval.dart';
 import '../../../domain/entities/physical_partition.dart';
 import '../../core/agenda/agenda.dart';
-import '../bloc/session_manager_bloc.dart';
-import '../bloc/session_manager_event.dart';
+import '../session_manager_screen/bloc/session_manager_bloc.dart';
+import '../session_manager_screen/bloc/session_manager_event.dart';
 import 'bloc/create_sesssions_form_bloc.dart';
 
 import 'widgets/add_session_button.dart';

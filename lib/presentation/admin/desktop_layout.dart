@@ -1,19 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:turni/core/config/service_locator.dart';
 import 'package:turni/presentation/core/cubit/auth/auth_cubit.dart';
 
+import 'cubit/scaffold_cubit.dart';
+
 class DesktopLayout extends StatelessWidget {
 
   final StatefulNavigationShell child;
 
-  const DesktopLayout({super.key, required this.child});
-
+  const DesktopLayout({super.key, required this.child, required this.scaffoldKey});
+  final GlobalKey<ScaffoldState> scaffoldKey;
   @override
   Widget build(BuildContext context) {
     
     return Scaffold(
+      key: scaffoldKey,
       drawer: const Drawer(
         child: Text("Drawer"),
       ),
@@ -45,6 +49,23 @@ class DesktopLayout extends StatelessWidget {
       ),
     );
 
+  }
+}
+
+class EndDrawer extends StatelessWidget {
+  const EndDrawer({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Builder(
+      builder: (context) {
+        final scaffoldCubit = sl<ScaffoldCubit>();
+
+        return scaffoldCubit.state.child ?? const SizedBox();
+      },
+    );
   }
 }
 

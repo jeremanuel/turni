@@ -5,6 +5,7 @@ import 'package:flutter_form_builder/flutter_form_builder.dart';
 
 import '../../../../core/presentation/components/inputs/LabelChip.dart';
 import '../../../../core/presentation/components/inputs/dropdown_menu_form.dart';
+import '../../../../core/utils/responsive_builder.dart';
 import '../../../../domain/entities/label.dart';
 import '../bloc/clients_list_bloc.dart';
 import '../list_utils/client_list_filters.dart';
@@ -68,37 +69,58 @@ class _ClientListFiltersContainerState extends State<ClientListFiltersContainer>
           child: TapRegion(
             onTapInside: (event) => focus(),
             onTapOutside: (event) => unFocus(),
-            child: Container( 
-              padding:const EdgeInsets.all(12),
-              height: 102,
-              decoration: BoxDecoration(
-                color: colorSchenme.surfaceContainerLow,
-                border: Border.symmetric(horizontal: getBorder(colorSchenme))
-              ),
-              child: Row(
-                spacing: 10,
-                children: [
-                  const _SearchBarFilter(),
-                  const SizedBox(width: 100),
-                  const _StatusFilter(),
-                  const SizedBox(width: 20),
-                  const LabelsFilter(),
-                  const Spacer(),
-                  _clearFiltersButton(clientsBloc: clientsBloc, filtersFormKey: clientsBloc.filtersFormKey),
-                  const VerticalDivider(),
-                  FilledButton(
-                    onPressed: clientsBloc.isDirty(clientsBloc.filtersFormKey.currentState?.instantValue ?? {})  ? onSearch : null, 
-                    child: const Row(
-                      spacing: 8,
+            child: Column(
+              children: [
+                Container( 
+                  padding:const EdgeInsets.all(12),
+                  height: 102,
+                  decoration: BoxDecoration(
+                    color: colorSchenme.surfaceContainerLow,
+                    border: Border.symmetric(horizontal: getBorder(colorSchenme))
+                  ),
+                  child: Row(
+                    spacing: 10,
+                    children: [
+                      const _SearchBarFilter(),
+                      if(ResponsiveBuilder.isDesktop(context)) ...[
+                        const SizedBox(width: 100),
+                        const _StatusFilter(),
+                        const SizedBox(width: 20),
+                        const LabelsFilter(),
+                        const Spacer(),
+                        _ClearFiltersButton(clientsBloc: clientsBloc, filtersFormKey: clientsBloc.filtersFormKey),
+                
+                      ] 
+                      else ...[const Spacer(), IconButton(onPressed: (){}, icon: const Icon(Icons.filter_alt_outlined), tooltip: "Mas filtros",)], 
+                      const VerticalDivider(),
+                      Tooltip(
+                        message: "Buscar",
+                        child: FilledButton(
+                          onPressed: clientsBloc.isDirty(clientsBloc.filtersFormKey.currentState?.instantValue ?? {})  ? onSearch : null, 
+                          child: const Row(
+                            spacing: 8,
+                            children: [
+                              Icon(Icons.person_search_sharp),
+                            ],
+                          )
+                        ),
+                      )
+                      
+                    ],
+                  ),
+                ),
+                if(ResponsiveBuilder.isMobile(context) && !clientsBloc.hasDefaultFilters())
+                  Container(
+                    height: 40,
+                    color: colorSchenme.onPrimary,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
                       children: [
-                        Icon(Icons.person_search_sharp),
-                        Text("Buscar"),
+                        _ClearFiltersButton(clientsBloc: clientsBloc, filtersFormKey: clientsBloc.filtersFormKey)
                       ],
-                    )
-                )
-                  
-                ],
-              ),
+                    ),
+                  )                
+              ],
             ),
           ),
         ),
@@ -117,9 +139,8 @@ class _ClientListFiltersContainerState extends State<ClientListFiltersContainer>
   }
 }
 
-class _clearFiltersButton extends StatelessWidget {
-  const _clearFiltersButton({
-    super.key,
+class _ClearFiltersButton extends StatelessWidget {
+  const _ClearFiltersButton({
     required this.clientsBloc,
     required this.filtersFormKey,
   });
@@ -129,6 +150,7 @@ class _clearFiltersButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    
     return TextButton(
     onPressed: !clientsBloc.hasDefaultFilters() ? (){ filtersFormKey.currentState?.patchValue(ClientListFilters().toJson()); clientsBloc.add(ClientsListEvent.changeFilters(ClientListFilters())); } : null, 
     child: const Row(
@@ -229,7 +251,7 @@ class _SearchBarFilterState extends State<_SearchBarFilter> {
           ],
         ),
         SizedBox(
-          width: 300,
+          width: ResponsiveBuilder.isMobile(context) ? 200 : 300,
           height: 48,
           child: FormBuilderField<String>(
             onChanged: (value){

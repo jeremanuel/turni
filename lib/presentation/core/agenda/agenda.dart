@@ -534,6 +534,7 @@ class _BlankSpaceState extends State<BlankSpace> {
         color: Colors.transparent,
         child: InkWell(
           onTap: () {
+            print(widget.physicalPartition!.partitionPhysicalId.toString());
             context.goNamed(
               "SESSION_MANAGER_ADD",
               pathParameters:{

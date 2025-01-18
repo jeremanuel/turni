@@ -1,9 +1,9 @@
 
 import 'package:freezed_annotation/freezed_annotation.dart';
 
-import '../../../core/utils/domain_error.dart';
-import '../../../domain/entities/club_partition.dart';
-import '../../../domain/entities/session.dart';
+import '../../../../core/utils/domain_error.dart';
+import '../../../../domain/entities/club_partition.dart';
+import '../../../../domain/entities/session.dart';
 
 part 'session_manager_state.freezed.dart';
 
