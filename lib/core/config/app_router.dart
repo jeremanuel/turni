@@ -13,7 +13,6 @@ import '../../presentation/admin/clients_list/clients_list_page.dart' deferred a
 import '../../presentation/admin/clients_list/list_utils/client_list_filters.dart';
 import '../../presentation/admin/cubit/scaffold_cubit.dart';
 import '../utils/responsive_builder.dart';
-import 'custom_routes/custom_dialog_route.dart';
 import 'service_locator.dart';
 
 import '../../presentation/auth/check_status_page.dart';
@@ -209,7 +208,7 @@ List<StatefulShellBranch> buildBranches(RouterType routerType) {
         GoRoute(
           path: AppRoutes.CLIENT_ROUTE.path,
           name: AppRoutes.CLIENT_ROUTE.name,
-          redirect: (context, state) {
+          redirect: (context, state) {  
 
             final clientFromList = state.extra as Client?;
 

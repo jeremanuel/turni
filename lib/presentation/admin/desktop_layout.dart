@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:turni/core/config/service_locator.dart';
 import 'package:turni/presentation/core/cubit/auth/auth_cubit.dart';
 
+import 'client_page/client_page.dart';
 import 'cubit/scaffold_cubit.dart';
 
 class DesktopLayout extends StatelessWidget {
@@ -21,10 +22,12 @@ class DesktopLayout extends StatelessWidget {
       drawer: const Drawer(
         child: Text("Drawer"),
       ),
+      endDrawer: Builder(builder: (context) {
+        return sl<ScaffoldCubit>().state.child!;
+      },),
       body:  Padding(
         padding: const EdgeInsets.symmetric(vertical: 16),
         child: Row(
-          
           children: [
                        
             const SizedBox(width: 20,),

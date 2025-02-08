@@ -16,7 +16,7 @@ class ClientsDataSource extends AsyncDataTableSource{
   List<Client>? clients;
 
   ClientsDataSource(this.context, {required AdminRepository adminRepository, required this.filters, this.columnNameSort, this.isAscending}) : _adminRepository  = adminRepository;
-
+  
   @override
   Future<AsyncRowsResponse> getRows(int startIndex, int count) async {
 

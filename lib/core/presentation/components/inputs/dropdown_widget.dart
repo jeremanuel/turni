@@ -97,19 +97,14 @@ class _DropdownWidgetState extends State<DropdownWidget> {
   }
 
   Widget buildMenu(BuildContext context) {
-    final menuWidget = Container(
-      width: 300,
-            decoration:  BoxDecoration(
-              color: Theme.of(context).colorScheme.surfaceVariant,
-              borderRadius: const BorderRadius.all(Radius.circular(8)),
-              boxShadow: [
-                BoxShadow(
-                  blurRadius: 8,
-                  color: Theme.of(context).colorScheme.shadow.withOpacity(0.1)
-                )
-              ]
+    final menuWidget = SizedBox(
+            width: 300,
+            child: Material(
+              color: Theme.of(context).colorScheme.surfaceContainerHighest,
+              borderRadius: const BorderRadius.all(Radius.circular(8)),              
+              child: widget.menuWidget,
+              
             ),
-            child: widget.menuWidget,
     );
   
     if(ResponsiveBuilder.isMobile(context)) {

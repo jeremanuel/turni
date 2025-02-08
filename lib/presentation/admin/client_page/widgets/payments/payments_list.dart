@@ -5,30 +5,20 @@ import '../../../../../core/config/service_locator.dart';
 import '../../../../../core/utils/date_functions.dart';
 import '../../../../../domain/entities/payment/payment.dart';
 import '../../../../../domain/repositories/payment_repository.dart';
-import '../../client_page.dart';
 
 class Paymentslist extends StatefulWidget {
   final int clientId;
   final Function(Payment?)? onPaymentsLoad;
+  final PaymentsDataSource paymentDataSource;
 
-  const Paymentslist({super.key, required  this.clientId, this.onPaymentsLoad} );
+  const Paymentslist({super.key, required  this.clientId, this.onPaymentsLoad, required this.paymentDataSource});
 
   @override
   State<Paymentslist> createState() => _PaymentslistState();
 }
 
 class _PaymentslistState extends State<Paymentslist> {
-  late final PaymentsDataSource paymentDataSource;
-      @override
-  void initState() {
-    paymentDataSource = PaymentsDataSource(
-        widget.clientId,
-        widget.onPaymentsLoad,
-        paymentRepository: sl<PaymentRepository>()
-    );
 
-    super.initState();
-  }
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
@@ -42,7 +32,7 @@ class _PaymentslistState extends State<Paymentslist> {
         DataColumn(label: Text("Método de Pago")),
         DataColumn(label: Text("Subscripcion")),
       ],
-      source: paymentDataSource,
+      source: widget.paymentDataSource,
       autoRowsToHeight: true,
       wrapInCard: false,
       columnSpacing: 12,
@@ -75,7 +65,6 @@ class PaymentsDataSource extends AsyncDataTableSource {
     final page = (startIndex / count).ceil() + 1;
 
     final result = await paymentRepository.getClientPayments(clientId, page);
-   
     
     final pageResponse = result.whenOrNull(
       left: (failure) => throw failure,

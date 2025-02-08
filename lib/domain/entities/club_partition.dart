@@ -4,6 +4,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import '../../core/utils/value_transformers.dart';
 import 'club_type.dart';
 import 'physical_partition.dart';
+import 'subscription/subscription.dart';
 
 part 'club_partition.freezed.dart';
 part 'club_partition.g.dart';
@@ -23,7 +24,9 @@ class ClubPartition with _$ClubPartition {
       @JsonKey(name: "partition_physical")
       List<PhysicalPartition>? physicalPartitions,
        @JsonKey(name: "club_type")
-      ClubType? clubType
+      ClubType? clubType,
+      @JsonKey(name: "subscription")
+      List<Subscription>? subscriptions,
 
   }) = _ClubPartition;
 

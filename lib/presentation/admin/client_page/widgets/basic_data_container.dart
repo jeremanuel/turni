@@ -25,6 +25,7 @@ class BasicDataContainer extends StatelessWidget {
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+
         children: [
           Row(
             children: [
@@ -63,7 +64,9 @@ class BasicDataContainer extends StatelessWidget {
               Text("Edad: ", style: Theme.of(context).textTheme.labelLarge,),
               Text("25 años", style: Theme.of(context).textTheme.bodyLarge),
             ]
-          )
+          ),
+          SizedBox(height: 4,),
+          Text("Sin observaciones", style: Theme.of(context).textTheme.bodyLarge),
         ],
       ),
     );

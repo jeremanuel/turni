@@ -33,6 +33,7 @@ class Client with _$Client {
 
   Client._();
 
+  int get intClientId => int.parse(clientId!);
 
   factory Client.fromJson(Map<String, dynamic> json) => _$ClientFromJson(json);
 

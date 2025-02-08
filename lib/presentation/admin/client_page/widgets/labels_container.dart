@@ -21,25 +21,28 @@ class LabelsContainer extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-                Row(
-                  spacing: 4,
-                  children: [
-                    Text("Etiquetas", style: textTheme.headlineSmall,),
-                    const Icon(Icons.info_outlined, size: 18,)
-                  ],
-                ),
-                const SizedBox(height: 24,),
-                Wrap(
-                  spacing: 8,
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  children: [
-                    if(client.labels != null && client.labels!.isNotEmpty) ...client.labels!.map((e) => Labelchip(e),)
-                    else const Text("No hay etiquetas cargadas"),
-                    SizedBox(
-                      width: 200,
-                      child: TextButton(onPressed: (){}, child: Row(spacing: 4 ,children: [Icon(Icons.add),const Text("Agregar etiqueta",)],),  ))
-                  ],
-                )
+        Row(
+          spacing: 4,
+          children: [
+            Text("Etiquetas", style: textTheme.headlineSmall,),
+            Tooltip(
+              child: const Icon(Icons.info_outlined, size: 18,), 
+             message: "Las etiquetas son una forma de clasificar a los clientes",
+            )
+          ],
+        ),
+        const SizedBox(height: 24,),
+        Wrap(
+          spacing: 8,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
+            if(client.labels != null && client.labels!.isNotEmpty) ...client.labels!.map((e) => Labelchip(e),)
+            else const Text("No hay etiquetas cargadas"),
+            SizedBox(
+              width: 200,
+              child: TextButton(onPressed: (){}, child: Row(spacing: 4 ,children: [Icon(Icons.add),const Text("Agregar etiqueta",)],),  ))
+          ],
+        )
       ],
     );
     

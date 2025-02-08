@@ -1,10 +1,13 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_localization/flutter_localization.dart';
 import 'package:get_it/get_it.dart';
+import '../../domain/entities/client.dart';
+import '../../domain/entities/subscription/subscription.dart';
 import '../../domain/repositories/ia_repository.dart';
 import '../../domain/repositories/admin_repository.dart';
 import '../../domain/repositories/payment_repository.dart';
 import '../../domain/repositories/session_repository.dart';
+import '../../domain/repositories/subscription_repository.dart';
 import '../../domain/usercases/session_user_cases.dart';
 import '../../infrastructure/api/providers/admin_provider.dart';
 import '../../infrastructure/api/providers/session_provider.dart';
@@ -12,6 +15,8 @@ import '../../infrastructure/api/repositories/IA/gemini_repository.dart';
 import '../../infrastructure/api/repositories/admin_repository_impl.dart';
 import '../../infrastructure/api/repositories/payment_repository_impl.dart';
 import '../../infrastructure/api/repositories/session_repository_impl.dart';
+import '../../infrastructure/api/repositories/subscription_repository_impl.dart';
+import '../../presentation/admin/client_page/bloc/client_page_bloc.dart';
 import '../../presentation/admin/cubit/scaffold_cubit.dart';
 import '../../presentation/client/bloc/client_session_manager_bloc.dart';
 import '../utils/dio_init.dart';
@@ -36,6 +41,9 @@ class ServiceLocator {
         AuthRepositoryImpl(authProvider: AuthProvider()));
     
     sl.registerSingleton<PaymentRepository>(PaymentRepositoryImpl());
+
+   sl.registerSingleton<SubscriptionRepository>(SubscriptionRepositoryImpl());
+
 
     sl.registerSingleton<AdminRepository>(
     AdminrepositroyImpl(adminProvider: AdminProvider())
@@ -66,7 +74,9 @@ class ServiceLocator {
       () => GeminiRepository(), 
     ); 
 
-    sl.registerFactoryParam<SessionManagerBloc, int?, void>((sessionId, _) => SessionManagerBloc(sessionId, SessionUserCases(sl<SessionRepository>())),);
+    sl.registerFactoryParam<SessionManagerBloc, int?, void>((sessionId, _) => SessionManagerBloc(sessionId, SessionUserCases(sl<SessionRepository>())));
+
+    sl.registerFactoryParam<ClientPageBloc, Client?, void>((client, _) => ClientPageBloc(client, sl<SubscriptionRepository>()));
 
 
     _initializeLocalization();

@@ -9,8 +9,9 @@ import '../../../domain/entities/request/page_response.dart';
 import '../../../domain/repositories/payment_repository.dart';
 import 'base/base_repository.dart';
 
-class PaymentRepositoryImpl extends BaseRepository implements PaymentRepository{
-        final dioInstance = sl<Dio>();
+class PaymentRepositoryImpl extends BaseRepository implements PaymentRepository {
+  
+  final dioInstance = sl<Dio>();
 
   @override
   Future<Either<DomainError, PageResponse<Payment>>> getClientPayments(int clientId, int page) {  
@@ -21,7 +22,19 @@ class PaymentRepositoryImpl extends BaseRepository implements PaymentRepository{
 
       return PageResponse(response.data['total'], response.data['data'].map<Payment>((el) => Payment.fromJson(el)).toList());
 
-    },);
+    });
+
+  }
+  
+  @override
+  Future<Either<DomainError, Payment>> createPayment(Map<String, dynamic> paymentData) {
+
+    return safeCall<Payment>(() async {
+      final response = await dioInstance.post("/admin/payment", data: {"payment":paymentData});	
+
+      return Payment.fromJson(response.data['payment']);
+
+    });
 
   }
 }

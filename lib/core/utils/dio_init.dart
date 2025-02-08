@@ -15,10 +15,8 @@ class DioInit {
 
   static addTokenToInterceptor(Dio dio, String token) {
     _authInterceptor = InterceptorsWrapper(
-      onRequest: (RequestOptions requestOptions,
-          RequestInterceptorHandler handler) async {
-        requestOptions.headers
-            .putIfAbsent('Authorization', () => 'Bearer $token');
+      onRequest: (RequestOptions requestOptions, RequestInterceptorHandler handler) async {
+        requestOptions.headers.putIfAbsent('Authorization', () => 'Bearer $token');
         handler.next(requestOptions);
       },
     );

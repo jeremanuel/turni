@@ -16,7 +16,7 @@ class Payment with _$Payment {
     @JsonKey(name: "client_id")
     required int clientId,
     @JsonKey(name: "client_subscription_id")
-    required int clientSubscriptionId,
+    int? clientSubscriptionId,
     @JsonKey(fromJson: ValueTransformers.fromJsonDouble)
     required double amount,
     @JsonKey(name: "payment_method")

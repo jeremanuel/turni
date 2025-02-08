@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_portal/flutter_portal.dart';
+import '../../../core/config/service_locator.dart';
 import '../../../domain/entities/client.dart';
 import '../../../domain/entities/payment/payment.dart';
+import '../../../domain/repositories/payment_repository.dart';
+import 'bloc/client_page_bloc.dart';
 import 'widgets/add_payment_button.dart';
 import 'widgets/basic_data_container.dart';
 import 'widgets/labels_container.dart';
@@ -47,32 +51,33 @@ class _ClientpageState extends State<Clientpage> {
 
     return Portal(
       child: ClientInherited(
-        client: client!,
-        child: Container(
-          color: colorScheme.surfaceContainer,
-          width: 700,
-          child: ListView(
-            children: [
-              BasicDataContainer(colorScheme: colorScheme),
-              const SizedBox(height: 24,),
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    SizedBox(height: 24,),
-                    PaymentsContainer(),
-                    SubscriptionContainer(),
-                    SizedBox(height: 24,),
-                    LabelsContainer(),
-                    SizedBox(height: 24,)
-        
-        
-            ],
-          ),)])
-        
+          (p0) => setState(() {client = p0;}),
+          client: client!,
+          child: Container(
+            color: colorScheme.surfaceContainer,
+            width: 700,
+            child: ListView(
+              children: [
+                BasicDataContainer(colorScheme: colorScheme),
+                const SizedBox(height: 24,),
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(height: 24,),
+                      PaymentsContainer(),
+                      SubscriptionContainer(),
+                      SizedBox(height: 24,),
+                      LabelsContainer(),
+                      SizedBox(height: 24,)
+          
+          
+              ],
+            ),)])
+          
+          ),
         ),
-      ),
     );
   }
 }
@@ -88,6 +93,7 @@ class _PaymentsContainerState extends State<PaymentsContainer> {
 
   String? alertMessage;
   String? infoMessage;
+  PaymentsDataSource? paymentDataSource;
 
 
   setAlertBasedOnLastPayment(Payment? payment){
@@ -112,7 +118,23 @@ class _PaymentsContainerState extends State<PaymentsContainer> {
   }
 
   @override
+  void initState() {
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      paymentDataSource = PaymentsDataSource(
+        int.parse(ClientInherited.of(context)!.client.clientId!),
+        setAlertBasedOnLastPayment,
+        paymentRepository: sl<PaymentRepository>()
+      );
+      setState(() {});
+    });
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
+
+    if(paymentDataSource == null) return const SizedBox();
+
     final textTheme = Theme.of(context).textTheme;
     final client = ClientInherited.of(context)!.client;
 
@@ -128,19 +150,20 @@ class _PaymentsContainerState extends State<PaymentsContainer> {
             const Spacer(),
             if(alertMessage != null || infoMessage != null)
             Chip(
-              label:  Text(alertMessage ?? infoMessage!, style: const TextStyle(color:Colors.white )),
+              label: Text(alertMessage ?? infoMessage!, style: const TextStyle(color:Colors.white )),
               backgroundColor: getMessageColor(),
               visualDensity:  const VisualDensity(vertical: -4),
               side: BorderSide.none,
             ),
             const SizedBox(width: 8,),
-            const AddPaymentButton(),
-            //TextButton(onPressed: (){}, child: Row(children: [ Icon(Icons.add), SizedBox(width: 8,) ,Text("Registrar nuevo pago") ],)),
+            AddPaymentButton(client: client, onPaymentCreated: (p0) {
+              paymentDataSource!.refreshDatasource(); 
+            }),
 
           ],
         ),
         const SizedBox(height: 16),
-        SizedBox(height: 360, child: Paymentslist(clientId: int.parse(client.clientId!,), onPaymentsLoad: setAlertBasedOnLastPayment,)),
+        SizedBox(height: 360, child: Paymentslist(clientId: int.parse(client.clientId!), onPaymentsLoad: setAlertBasedOnLastPayment, paymentDataSource: paymentDataSource!,)),
       ],
     );
   }
@@ -149,8 +172,6 @@ class _PaymentsContainerState extends State<PaymentsContainer> {
 
     if(alertMessage != null) return const Color.fromARGB(255, 189, 44, 44);
 
-    
-
     return const Color.fromARGB(255, 114, 155, 111);
   }
 }
@@ -158,8 +179,9 @@ class _PaymentsContainerState extends State<PaymentsContainer> {
 class ClientInherited extends InheritedWidget {
 
   final Client client;
+  final Function(Client) updateClient;
 
-  const ClientInherited({super.key, required super.child, required this.client});
+  ClientInherited(this.updateClient, {super.key, required super.child, required this.client});
 
   static ClientInherited? of(BuildContext context) {
     return context.dependOnInheritedWidgetOfExactType<ClientInherited>();
@@ -167,7 +189,12 @@ class ClientInherited extends InheritedWidget {
 
   @override
   bool updateShouldNotify(covariant InheritedWidget oldWidget) {
-    return oldWidget is ClientInherited && oldWidget.client != client;
+    final value = oldWidget is ClientInherited && oldWidget.client != client;
+    return value;
   }
+
+
+
+
 
 }

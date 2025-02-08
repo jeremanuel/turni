@@ -42,24 +42,10 @@ class AuthCubit extends Cubit<AuthState> with ChangeNotifier {
       emit(const AuthIsLoading());
    
       final user = await authUserCases.validateToken(token);
-       print(user);
+
       emit(AuthLogged(userCredential: user));
-      notifyListeners();
-      return;
-      if (user != null) {
-        Position position = await getCurrentPosition();
-        Coordinate location = Coordinate(
-          latitud: position.latitude,
-          longitud: position.longitude,
-        );
+  
 
-        user.location = location;
-
-        emit(AuthLogged(userCredential: user));
-      } else {
-        authUserCases.logout();
-        emit(const AuthNotLogged());
-      }
     } else {
       authUserCases.logout();
       emit(const AuthNotLogged());

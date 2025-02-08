@@ -6,6 +6,8 @@ part 'payment_method.g.dart';
 @freezed
 class PaymentMethod with _$PaymentMethod {
 
+  
+
   factory PaymentMethod({
     @JsonKey(name: "payment_method_id")
     required int paymentMethodId,

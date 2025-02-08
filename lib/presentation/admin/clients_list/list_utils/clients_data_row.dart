@@ -11,13 +11,12 @@ import '../../../../domain/entities/client.dart';
 
 class ClientsDataRow extends DataRow2 {
 
-  // Por ahora un Map en lugar de un Client, ya que no hay "etiquetas"
   final Client client;
   final BuildContext context;
 
   ClientsDataRow(this.context, this.client) 
   : super(
-    onTap: () => context.pushNamed(AppRoutes.CLIENT_ROUTE.name, pathParameters: {"clientId":client.clientId!}, extra: client),
+    onTap: () => context.goNamed(AppRoutes.CLIENT_ROUTE.name, pathParameters: {"clientId":client.clientId!}, extra: client),
     cells: _buildCells(client, Theme.of(context).colorScheme, context), 
     color: WidgetStateProperty.all(Theme.of(context).colorScheme.surfaceContainerLow)
   );
