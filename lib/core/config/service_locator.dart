@@ -16,7 +16,6 @@ import '../../infrastructure/api/repositories/admin_repository_impl.dart';
 import '../../infrastructure/api/repositories/payment_repository_impl.dart';
 import '../../infrastructure/api/repositories/session_repository_impl.dart';
 import '../../infrastructure/api/repositories/subscription_repository_impl.dart';
-import '../../presentation/admin/client_page/bloc/client_page_bloc.dart';
 import '../../presentation/admin/cubit/scaffold_cubit.dart';
 import '../../presentation/client/bloc/client_session_manager_bloc.dart';
 import '../utils/dio_init.dart';
@@ -75,8 +74,6 @@ class ServiceLocator {
     ); 
 
     sl.registerFactoryParam<SessionManagerBloc, int?, void>((sessionId, _) => SessionManagerBloc(sessionId, SessionUserCases(sl<SessionRepository>())));
-
-    sl.registerFactoryParam<ClientPageBloc, Client?, void>((client, _) => ClientPageBloc(client, sl<SubscriptionRepository>()));
 
 
     _initializeLocalization();

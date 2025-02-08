@@ -5,7 +5,6 @@ import '../../../core/config/service_locator.dart';
 import '../../../domain/entities/client.dart';
 import '../../../domain/entities/payment/payment.dart';
 import '../../../domain/repositories/payment_repository.dart';
-import 'bloc/client_page_bloc.dart';
 import 'widgets/add_payment_button.dart';
 import 'widgets/basic_data_container.dart';
 import 'widgets/labels_container.dart';
