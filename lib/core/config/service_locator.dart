@@ -11,6 +11,7 @@ import '../../infrastructure/api/repositories/IA/gemini_repository.dart';
 import '../../infrastructure/api/repositories/admin_repository_impl.dart';
 import '../../infrastructure/api/repositories/session_repository_impl.dart';
 import '../../presentation/client/bloc/client_session_manager_bloc.dart';
+import '../../presentation/core/cubit/verification_code/verification_code_cubit.dart';
 import '../utils/dio_init.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../../domain/usercases/auth_user_cases.dart';
@@ -33,30 +34,33 @@ class ServiceLocator {
         AuthRepositoryImpl(authProvider: AuthProvider()));
 
     sl.registerSingleton<AdminRepository>(
-    AdminrepositroyImpl(adminProvider: AdminProvider())
-    );
+        AdminrepositroyImpl(adminProvider: AdminProvider()));
 
-    sl.registerSingleton<SessionRepository>(SessionRepositoryImplementation(sessionProvider: SessionProvider()));
+    sl.registerSingleton<SessionRepository>(
+        SessionRepositoryImplementation(sessionProvider: SessionProvider()));
 
-    sl.registerSingleton<AuthCubit>(
-      AuthCubit(
-        AuthUserCases(sl<AuthRepository>()))
-    ); // Cubit singleton para manejo de la sesion.
+    sl.registerSingleton<AuthCubit>(AuthCubit(AuthUserCases(
+        sl<AuthRepository>()))); // Cubit singleton para manejo de la sesion.
 
     //sl.registerLazySingleton<FeedCubit>(() => FeedCubit());
 
-    sl.registerLazySingleton<CreateSesssionsFormBloc>(() => CreateSesssionsFormBloc());
+    sl.registerLazySingleton<CreateSesssionsFormBloc>(
+        () => CreateSesssionsFormBloc());
 
     sl.registerLazySingleton<HomeCubit>(() => HomeCubit());
+    sl.registerLazySingleton<VerificationCodeCubit>(
+        () => VerificationCodeCubit());
     sl.registerLazySingleton<ClientSessionManagerBloc>(
         () => ClientSessionManagerBloc());
 
     sl.registerLazySingleton<IARepository>(
-      () => GeminiRepository(), 
-    ); 
+      () => GeminiRepository(),
+    );
 
-    sl.registerFactoryParam<SessionManagerBloc, int?, void>((sessionId, _) => SessionManagerBloc(sessionId, SessionUserCases(sl<SessionRepository>())),);
-
+    sl.registerFactoryParam<SessionManagerBloc, int?, void>(
+      (sessionId, _) => SessionManagerBloc(
+          sessionId, SessionUserCases(sl<SessionRepository>())),
+    );
 
     _initializeLocalization();
   }
@@ -69,5 +73,4 @@ class ServiceLocator {
 
     sl.registerSingleton(localization);
   }
-
 }

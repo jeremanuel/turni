@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import '../../presentation/core/verification_code_screen/verification_code.dart';
 import 'service_locator.dart';
 
 import '../../presentation/auth/check_status_page.dart';
@@ -50,7 +51,7 @@ GoRouter buildGoRouter(RouterType routerType) {
           return authCubit.initialRoute;
         }
 
-        return routerType == RouterType.adminRoute ? '/dashboard' : '/feed';
+        return routerType == RouterType.adminRoute ? '/dashboard' : '/home';
       }
 
       return null;
@@ -62,6 +63,7 @@ GoRouter buildGoRouter(RouterType routerType) {
         builder: (context, state) => AuthCheck(),
       ),
       GoRoute(path: '/login', builder: (context, state) => const LoginPage()),
+      GoRoute(path: '/verify', builder: (context, state) => VerificationCode()),
       if (routerType == RouterType.clientRoute)
         GoRoute(
           path: "/session_feed",
@@ -108,20 +110,18 @@ List<StatefulShellBranch> buildBranches(RouterType routerType) {
         ),
       )
     ]),
-    StatefulShellBranch(
-      routes: [
+    StatefulShellBranch(routes: [
       ShellRoute(
         builder: (context, state, child) {
           var idSession = state.pathParameters['idSession'];
 
-          final parsedIdSession = idSession != null ? int.tryParse(idSession) : null;
-          
+          final parsedIdSession =
+              idSession != null ? int.tryParse(idSession) : null;
+
           return SessionManagerRoute(
-            routeName: state.topRoute?.name,
-            sessionId: parsedIdSession,
-            child: child  
-          );
-          
+              routeName: state.topRoute?.name,
+              sessionId: parsedIdSession,
+              child: child);
         },
         routes: [
           GoRoute(
@@ -148,14 +148,13 @@ List<StatefulShellBranch> buildBranches(RouterType routerType) {
             name: "SESSION_MANAGER_ADD",
             pageBuilder: sessionManagerAddPageBuilder,
           ),
-        GoRoute(
-          path: '/add_sessions',
-          name:"ADD_SESSIONS_MASIVE",
-          builder: (context, state) => const CreateSessionScreen(),
-        )
+          GoRoute(
+            path: '/add_sessions',
+            name: "ADD_SESSIONS_MASIVE",
+            builder: (context, state) => const CreateSessionScreen(),
+          )
         ],
       ),
-
     ]),
     StatefulShellBranch(routes: [
       GoRoute(
