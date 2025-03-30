@@ -5,8 +5,9 @@ import 'package:go_router/go_router.dart';
 import 'package:turni/core/config/service_locator.dart';
 import 'package:turni/presentation/core/cubit/auth/auth_cubit.dart';
 
+import '../../core/presentation/components/inputs/snackbars/snackbars_functions.dart';
 import 'client_page/client_page.dart';
-import 'cubit/scaffold_cubit.dart';
+import 'states/scaffold_cubit/scaffold_cubit.dart';
 
 class DesktopLayout extends StatelessWidget {
 
@@ -15,39 +16,47 @@ class DesktopLayout extends StatelessWidget {
   const DesktopLayout({super.key, required this.child, required this.scaffoldKey});
   final GlobalKey<ScaffoldState> scaffoldKey;
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context2) {
     
-    return Scaffold(
-      key: scaffoldKey,
-      drawer: const Drawer(
-        child: Text("Drawer"),
-      ),
-      endDrawer: Builder(builder: (context) {
-        return sl<ScaffoldCubit>().state.child!;
-      },),
-      body:  Padding(
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        child: Row(
-          children: [
-                       
-            const SizedBox(width: 20,),
-            SideBar(child: child),
-            const SizedBox(width: 20,),
+    return ScaffoldMessenger(
+      child: Scaffold(
+        key: scaffoldKey,
+        
+        drawer: const Drawer(
+          child: Text("Drawer"),
+        ),
+        endDrawer: BlocBuilder<ScaffoldCubit, ScaffoldCubitState>(
+          bloc: sl<ScaffoldCubit>(),
+          builder: (context, state) {
+            
+    
 
-            Expanded(
-              child: Material(
-                elevation: 25,
-                color: Theme.of(context).colorScheme.surfaceContainer,
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: child,
+          return state.child!;
+        },),
+        body:  Padding(
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          child: Row(
+            children: [
+                         
+              const SizedBox(width: 20,),
+              SideBar(child: child),
+              const SizedBox(width: 20,),
+      
+              Expanded(
+                child: Material(
+                  elevation: 25,
+                  color: Theme.of(context2).colorScheme.surfaceContainer,
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: child,
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(width: 20,),
-
-
-          ],
+              const SizedBox(width: 20,),
+      
+      
+            ],
+          ),
         ),
       ),
     );

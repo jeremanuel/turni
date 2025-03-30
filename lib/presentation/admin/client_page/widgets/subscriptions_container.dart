@@ -17,9 +17,17 @@ import '../client_page.dart';
 import '../../../../domain/entities/client.dart';
 import 'subscriptions_container/add_subscription_button.dart';
 
-class SubscriptionContainer extends StatelessWidget {
+class SubscriptionContainer extends StatefulWidget {
 
   const SubscriptionContainer({super.key});
+
+  @override
+  State<SubscriptionContainer> createState() => _SubscriptionContainerState();
+}
+
+class _SubscriptionContainerState extends State<SubscriptionContainer> {
+
+  final scrollController = ScrollController();
 
   @override
   Widget build(BuildContext context) {
@@ -27,31 +35,37 @@ class SubscriptionContainer extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
     final client = ClientInherited.of(context)!.client;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Text("Subscripciones", style: textTheme.headlineSmall),
-            const Spacer(),
-            AddSubscriptionButton(client:client)
-          ],
-        ),
-        const SizedBox(height: 24,),
-        if(client.clientSubscriptions == null || client.clientSubscriptions!.isEmpty) const Text("El cliente no tiene subscripciones cargadas")
-        else SizedBox(
-          height: 120,
-          child: ListView.separated(
-            
-            itemCount: client.clientSubscriptions?.length ?? 0,
-            scrollDirection: Axis.horizontal,
-            itemBuilder: (context, index) {
-              return _SubscriptionCard(clientSubscription: client.clientSubscriptions![index]);
-            },
-            separatorBuilder: (context, index) => const SizedBox(width: 8)
+    return Scrollbar(
+      controller: scrollController,
+      thumbVisibility: true,
+
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Text("Subscripciones", style: textTheme.headlineSmall),
+              const Spacer(),
+              AddSubscriptionButton(client:client)
+            ],
           ),
-        )
-      ],
+          const SizedBox(height: 24,),
+          if(client.clientSubscriptions == null || client.clientSubscriptions!.isEmpty) const Text("El cliente no tiene subscripciones cargadas")
+          else SizedBox(
+            height: 152,
+            child: ListView.separated(
+              padding: EdgeInsets.symmetric(vertical: 16),
+              controller: scrollController,
+              itemCount: client.clientSubscriptions?.length ?? 0,
+              scrollDirection: Axis.horizontal,
+              itemBuilder: (context, index) {
+                return _SubscriptionCard(clientSubscription: client.clientSubscriptions![index]);
+              },
+              separatorBuilder: (context, index) => const SizedBox(width: 8)
+            ),
+          )
+        ],
+      ),
     );
   }
 }

@@ -3,8 +3,6 @@ import 'package:intl/intl.dart';
 
 import '../../core/config/environment.dart';
 import '../../core/utils/transformers/symbols.dart';
-import 'person.dart';
-import 'session.dart';
 
 class TemplateMessage {
   TemplateMessage({required this.link});

@@ -1,7 +1,4 @@
-import 'dart:math';
 
-import 'package:flutter/material.dart';
-import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 import '../../core/utils/value_transformers.dart';
@@ -20,6 +17,7 @@ class Client with _$Client {
     String? clientId,
     @JsonKey(name: "person_id", fromJson: ValueTransformers.fromJsonString)
     String? personId,
+
     @JsonKey(name: "user_id", fromJson: ValueTransformers.fromJsonString)
     String? userId,
     Person? person,

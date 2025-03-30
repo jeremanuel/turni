@@ -31,6 +31,7 @@ class _PaymentslistState extends State<Paymentslist> {
         DataColumn(label: Text("Monto")),
         DataColumn(label: Text("Método de Pago")),
         DataColumn(label: Text("Subscripcion")),
+        DataColumn(label: Text("Observaciones")),
       ],
       source: widget.paymentDataSource,
       autoRowsToHeight: true,
@@ -88,9 +89,21 @@ class PaymentsDataSource extends AsyncDataTableSource {
         DataCell(Text(payment.paymentMethod.name)),
         DataCell(
           Text(
-            payment.clientSubscriptionId.toString(),
+            payment.clientSubscription?.subscription.name ?? '',
             style:const TextStyle(
               fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+        DataCell(
+          Tooltip(
+            message: payment.observation ?? '',
+            child: Text(
+              payment.observation ?? '',
+              style:const TextStyle(
+                fontWeight: FontWeight.bold,
+              ),
+              overflow: TextOverflow.ellipsis,
             ),
           ),
         ),

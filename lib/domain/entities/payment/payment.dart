@@ -1,7 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
-import '../../../core/utils/date_functions.dart';
 import '../../../core/utils/value_transformers.dart';
+import '../subscription/client_subscription.dart';
 import 'payment_method.dart';
 
 part 'payment.freezed.dart';
@@ -21,12 +21,13 @@ class Payment with _$Payment {
     required double amount,
     @JsonKey(name: "payment_method")
     required PaymentMethod paymentMethod,
-    String? observations,
+    String? observation,
     @JsonKey(name: "payment_date", fromJson: ValueTransformers.fromJsonDateTimeLocale)
     required DateTime paymentDate,
-    @JsonKey(name: "created_by_admin")
-  
-    required int createdByAdmin
+    @JsonKey(name: "created_by_admin")  
+    required int createdByAdmin,
+    @JsonKey(name: "client_subscription")  
+    ClientSubscription? clientSubscription
   }) = _Payment;
 
   factory Payment.fromJson(Map<String, dynamic> json) => _$PaymentFromJson(json);

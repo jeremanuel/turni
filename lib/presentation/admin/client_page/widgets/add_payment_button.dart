@@ -34,10 +34,12 @@ class _AddPaymentButtonState extends State<AddPaymentButton> {
   @override
   Widget build(BuildContext context) {
     return DropdownWidget(
-      menuWidget: AddPaymentContainer(client: widget.client, onPaymentCreated: (p0) {
-        widget.onPaymentCreated.call(p0);
-        Future.delayed(const Duration(seconds: 3)).then((value) => dropdownController.hide?.call());
-      }), 
+      menuWidget: AddPaymentContainer(
+        client: widget.client, 
+        onPaymentCreated: (p0) {
+          widget.onPaymentCreated.call(p0);
+          Future.delayed(const Duration(seconds: 3)).then((value) => dropdownController.hide?.call());
+        }), 
       dropdownController: dropdownController,
       child: buildButton(context)
     );
@@ -91,7 +93,7 @@ class _AddPaymentContainerState extends State<AddPaymentContainer> {
 
   @override
   void initState() {
-    subscriptions = widget.client.clientSubscriptions?.map((e) => e.subscription).toList() ?? [];
+    subscriptions = [...Set.from(widget.client.clientSubscriptions?.map((e) => e.subscription)?? [])] ;
     super.initState();
   }
 
@@ -120,8 +122,15 @@ class _AddPaymentContainerState extends State<AddPaymentContainer> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            const Spacer(),
             Icon(Icons.check, color: Theme.of(context).colorScheme.onPrimary, size: 50).animate().fadeIn(delay: const Duration(milliseconds: 400)),
-            Text("Pago creado", style: Theme.of(context).textTheme.titleLarge!.copyWith(color: Theme.of(context).colorScheme.onPrimary)).animate().fadeIn(delay: const Duration(milliseconds: 450))
+            Text("Pago creado", style: Theme.of(context).textTheme.titleLarge!.copyWith(color: Theme.of(context).colorScheme.onPrimary)).animate().fadeIn(delay: const Duration(milliseconds: 450)),
+            const Spacer(),
+            Row(
+              children: [
+                Divider(color: Theme.of(context).colorScheme.onPrimary).animate().custom(builder: (context, value, child) => SizedBox(width: value, child: child), duration: const Duration(seconds: 2, milliseconds: 500), begin: 0, end: 300, curve: Curves.easeInOut),
+              ],
+            )
           ],
         )
       );
@@ -137,59 +146,71 @@ class _AddPaymentContainerState extends State<AddPaymentContainer> {
       key: formKey,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
-        height: 430,
+        height: 460,
         child:  Column(
           spacing: 8,
           children: [
-            Text("Nuevo pago", style: Theme.of(context).textTheme.titleLarge,),
+            Row(
+              children: [
+                SizedBox(width: 8,),
+                Text("Nuevo pago", style: Theme.of(context).textTheme.titleLarge,),
+              ],
+            ),
             const Divider(),
-            const Spacer(),
+            SizedBox(height: 4,),
             buildSubscriptionField(),
             buildAmountField(),
             buildPaymentMethodField(),
             buildObservationsField(),
             const Spacer(),
-            FilledButton(
-              onPressed: () async {
-
-              final currentFormState = formKey.currentState!;
-
-              if(!currentFormState.validate()) return;
+            Row(
+              spacing: 8,
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                TextButton(onPressed: (){}, child: Text("Cancelar")),
+                FilledButton(
+                  onPressed: () async {
                 
-              setState(() {
-                isCreatingPayment = true;
-              });
-
-              final instantValue = currentFormState.instantValue;
-
-              final int? selectedSubscription = instantValue['subscription']?.subscriptionId;
-
-              final result = await paymentRepository.createPayment({
-                  "amount": double.parse(instantValue['amount']),
-                  "payment_method_id": instantValue['payment_method'],
-                  "observation": instantValue['observations'],
-                  "client_subscription_id": widget.client.clientSubscriptions!.firstWhereOrNull((element) => element.subscription.subscriptionId == selectedSubscription)?.clientSubscriptionId,
-                  "client_id": int.parse(widget.client.clientId!),
-                  "created_by_admin": sl<AuthCubit>().state.userCredential!.admin!.adminId
-                });
-
-              result.when(
-                right: widget.onPaymentCreated,
-                left: (failure) => setState(() {
-                  error = failure;
-                  isCreatingPayment = false;
-                }),
-              );
-
-              setState(() {
-                isCreatingPayment = false;
-                isPaymentCreated = true;
-              });
-
-              
-
-              }, 
-              child: isCreatingPayment ? SizedBox(height: 24,width: 24, child: CircularProgressIndicator(color: Theme.of(context).colorScheme.onPrimary, strokeWidth: 2,)) : const Text("Crear Pago")
+                  final currentFormState = formKey.currentState!;
+                
+                  if(!currentFormState.validate()) return;
+                    
+                  setState(() {
+                    isCreatingPayment = true;
+                  });
+                
+                  final instantValue = currentFormState.instantValue;
+                
+                  final int? selectedSubscription = instantValue['subscription']?.subscriptionId;
+                
+                  final result = await paymentRepository.createPayment({
+                      "amount": double.parse(instantValue['amount']),
+                      "payment_method_id": instantValue['payment_method'],
+                      "observation": instantValue['observations'],
+                      "client_subscription_id": widget.client.clientSubscriptions!.firstWhereOrNull((element) => element.subscription.subscriptionId == selectedSubscription)?.clientSubscriptionId,
+                      "client_id": int.parse(widget.client.clientId!),
+                      "created_by_admin": sl<AuthCubit>().state.userCredential!.admin!.adminId
+                    });
+                
+                  result.when(
+                    right: widget.onPaymentCreated,
+                    left: (failure) => setState(() {
+                      error = failure;
+                      isCreatingPayment = false;
+                    }),
+                  );
+                
+                  setState(() {
+                    isCreatingPayment = false;
+                    isPaymentCreated = true;
+                  });
+                
+                  
+                
+                  }, 
+                  child: isCreatingPayment ? SizedBox(height: 24,width: 24, child: CircularProgressIndicator(color: Theme.of(context).colorScheme.onPrimary, strokeWidth: 2,)) : const Text("Crear Pago")
+                ),
+              ],
             )
           ],
         )

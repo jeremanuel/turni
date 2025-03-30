@@ -1,17 +1,16 @@
 // ignore_for_file: prefer_const_constructors
 
-import 'package:data_table_2/data_table_2.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 
-import '../../../core/config/service_locator.dart';
+import '../../../core/config/app_routes.dart';
+import '../../../core/presentation/components/paginated_table/paginated_table.dart';
+import '../../../core/prototypes/trina_grid_prototype.dart';
 import '../../../core/utils/responsive_builder.dart';
-import '../../../domain/repositories/admin_repository.dart';
+import '../../../domain/entities/client.dart';
 import 'bloc/clients_list_bloc.dart';
-import 'list_utils/client_list_filters.dart';
-import 'list_utils/clients_data_source_sf.dart';
 import 'widgets/client_list_filters_container.dart';
 import 'widgets/client_list_header.dart';
 
@@ -25,17 +24,14 @@ class ClientsList extends StatefulWidget {
 class _ClientsListState extends State<ClientsList> {
 
   bool isLoading = false;
-  final source = ClientsDataSourceSf(sl<AdminRepository>(), ClientListFilters());
 
   @override
   void initState() {
     super.initState();
-    source.addListener(_onDataSourceChanged);
   }
 
   @override
   void dispose() {
-    source.removeListener(_onDataSourceChanged);
     super.dispose();
   }
 
@@ -53,18 +49,11 @@ class _ClientsListState extends State<ClientsList> {
           if(ResponsiveBuilder.isDesktop(context)) ClientListHeader(),
           ClientListFiltersContainer(),
           Expanded(
-            child: AsyncPaginatedDataTable2(
-              autoRowsToHeight: true,
-              minWidth: 600,
-              source: clientsBloc.state.dataSource,
-              errorBuilder: (error) => Center(child: Text(error.toString())),
-              wrapInCard: false,
-              dragStartBehavior: DragStartBehavior.down,
-              sortColumnIndex: 1,
-              empty: Center(child: Text("No se encontraron Clientes")),
-              rowsPerPage: 15,
-              columns:  getColumns(),
-            )
+            child: PaginatedTable<Client>(
+              columns: getColumns(),
+              dataSource: clientsBloc.state.dataSource,
+              onTap: (row, Client client) => context.goNamed(AppRoutes.CLIENT_ROUTE.name, extra: {"client":client, "bloc":context.read<ClientsListBloc>()}, pathParameters: {"clientId":client.clientId!}),
+            ),
           ),
         ],
       );
@@ -73,57 +62,27 @@ class _ClientsListState extends State<ClientsList> {
 
     return Scaffold(
       appBar: AppBar(),
-      floatingActionButton: FloatingActionButton(onPressed: (){}, tooltip: "Nuevo cliente", child: Icon(Icons.person_add_alt_1_rounded), ),
+      floatingActionButton: FloatingActionButton(onPressed: () => context.goNamed(AppRoutes.NEW_CLIENT_ROUTE.name, extra: context.read<ClientsListBloc>()), tooltip: "Nuevo cliente", child: Icon(Icons.person_add_alt_1_rounded), ),
       body: child,
     );
   }
 
-  List<DataColumn>  getColumns() {
+  List<GridColumn> getColumns() {
 
     final mobileColumns = [
-      DataColumn2(
-        fixedWidth: 60,
-        size: ColumnSize.S,
-        label: const Row(
-          children: [
-            Text("ID"),
-          ],
-        ),
-      ),
-      DataColumn2(
-        fixedWidth: 250,
-        label: Text("Cliente"),
-      ),
-    
-      DataColumn2(
-        label: Text("Etiquetas"),
-      ),
+      GridColumn(columnName: "name", label: const ColumnWrapper(padding: EdgeInsets.only(left: 16),child: Text("Cliente"),), width: 200,),
+      GridColumn(columnName: "phone", label: const ColumnWrapper(child: Text("Telefono")), width: 150),
+      GridColumn(columnName: "labels", label: const ColumnWrapper(child: Text("Etiquetas")), columnWidthMode: ColumnWidthMode.fill)
     ];
+
     final desktopColumns = [
-            DataColumn2(
-              fixedWidth: 60,
-              label: const Row(
-                children: [
-                  Text("ID"),
-                ],
-              ),
-            ),
-            DataColumn2(
-              label: Text("Cliente"),
-            ),
-            DataColumn2(
-              label: Text("Telefono"),
-            ),
-            DataColumn2(
-              label: Text("Email"),
-            ),
-            DataColumn2(
-              label: Text("Estado"),
-            ),
-            DataColumn2(
-              label: Text("Etiquetas"),
-            ),
-          ];
+      GridColumn(columnName: "id", label: const ColumnWrapper(child: Center(child: Text("ID"))),  width: 80),
+      GridColumn(columnName: "name", label: const ColumnWrapper(child: Text("Cliente")), width: 300),
+      GridColumn(columnName: "phone", label: const ColumnWrapper(child: Text("Telefono")), width: 200),
+      GridColumn(columnName: "email", label: const ColumnWrapper(child: Text("Email")), width: 350),
+      GridColumn(columnName: "labels", label: const ColumnWrapper(child: Text("Etiquetas")), columnWidthMode: ColumnWidthMode.fill)
+    ];
+
     return ResponsiveBuilder.isMobile(context) ? mobileColumns : desktopColumns;
 
   }

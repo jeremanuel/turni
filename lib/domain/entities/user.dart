@@ -50,6 +50,7 @@ class User {
         picture: userData.photoUrl,
         client: Client(
           person: Person(
+            
             name: userData.displayName!.split(' ')[0],
             lastName: userData.displayName!.split(' ')[1],
             email: userData.email,

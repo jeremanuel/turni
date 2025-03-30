@@ -4,9 +4,9 @@ import '../entities/payment/payment.dart';
 import '../entities/request/page_response.dart';
 
 abstract class PaymentRepository {
-      Future<Either<DomainError, PageResponse<Payment>>> getClientPayments(int clientId, int page);
+    Future<Either<DomainError, PageResponse<Payment>>> getClientPayments(int clientId, int page);
 
-      Future<Either<DomainError, Payment>> createPayment(Map<String, dynamic> paymentData);
+    Future<Either<DomainError, Payment>> createPayment(Map<String, dynamic> paymentData);
 
       
 

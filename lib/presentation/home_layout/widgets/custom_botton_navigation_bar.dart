@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
-import 'package:turni/core/config/service_locator.dart';
-import 'package:turni/presentation/core/cubit/auth/auth_cubit.dart';
+import '../../../core/config/service_locator.dart';
+import '../../core/cubit/auth/auth_cubit.dart';
 
 class CustomBottomNavigationBar extends StatelessWidget {
   final int selectedIndex;
@@ -35,19 +34,19 @@ class CustomBottomNavigationBar extends StatelessWidget {
     }
 
     return  [
-      BottomNavigationBarItem(
+      const BottomNavigationBarItem(
           label: "Dashboard",
           icon: Icon(Icons.dashboard),
           activeIcon: Icon(Icons.dashboard)),
-      BottomNavigationBarItem(
+      const BottomNavigationBarItem(
           label: "Turnos",
           icon: Icon(Icons.calendar_month),
           activeIcon: Icon(Icons.calendar_month)),
-      BottomNavigationBarItem(
+      const BottomNavigationBarItem(
         label: "Clientes",
         icon: Icon(Icons.person),
         activeIcon: Icon(Icons.person)),
-      BottomNavigationBarItem(
+      const BottomNavigationBarItem(
           label: "Perfil",
           icon: Icon(Icons.build),
           activeIcon: Icon(Icons.build))

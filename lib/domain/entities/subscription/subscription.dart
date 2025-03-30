@@ -1,8 +1,6 @@
-import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import '../../../core/utils/value_transformers.dart';
 
-import '../club_partition.dart';
 import 'subscription_price_log.dart';
 
 part 'subscription.freezed.dart';

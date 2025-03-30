@@ -1,4 +1,3 @@
-import 'package:data_table_2/data_table_2.dart';
 import 'package:flutter/material.dart';
 
 class DataTable2Prototype extends StatelessWidget {
@@ -6,7 +5,7 @@ class DataTable2Prototype extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return  Text("data");/*AsyncPaginatedDataTable2/ (
+    return  const Text("data");/*AsyncPaginatedDataTable2/ (
             errorBuilder: (error) => Center(child: Text(error.toString())),
             wrapInCard: false,
             dragStartBehavior: DragStartBehavior.down,

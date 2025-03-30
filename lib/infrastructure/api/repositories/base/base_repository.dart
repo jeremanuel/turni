@@ -2,9 +2,10 @@ import 'package:dio/dio.dart';
 
 import '../../../../core/utils/domain_error.dart';
 import '../../../../core/utils/either.dart';
+import '../../../../core/utils/repository_response.dart';
 
 class BaseRepository {
-  Future<Either<DomainError, T>> safeCall<T>(Future<T> Function() getDataFunction) async {
+  Future<RepositoryResponse<T>> safeCall<T>(Future<T> Function() getDataFunction) async {
 
     try {
       final data = await getDataFunction();

@@ -20,6 +20,7 @@ class ClientsDataSource extends AsyncDataTableSource{
   @override
   Future<AsyncRowsResponse> getRows(int startIndex, int count) async {
 
+    
     final page = (startIndex / count).ceil() + 1;
     final result = await _adminRepository.getClients(filters.search ?? '', page);
     
@@ -32,10 +33,13 @@ class ClientsDataSource extends AsyncDataTableSource{
     );
 
     clients = pageInfo.data;
+    final rows = pageInfo.data.map((client) => ClientsDataRow(context, client)).toList();
 
-    return AsyncRowsResponse(pageInfo.total, pageInfo.data.map((client) => ClientsDataRow(context, client)).toList());
+    return AsyncRowsResponse(pageInfo.total, rows);
     
   }
+
+  
 
   
 

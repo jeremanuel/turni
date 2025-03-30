@@ -4,10 +4,12 @@ import 'package:flutter_localization/flutter_localization.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
 
-import 'package:turni/core/config/app_router.dart';
-import 'package:turni/core/config/environment.dart';
-import 'package:turni/core/config/service_locator.dart';
-import 'package:turni/presentation/core/cubit/auth/auth_cubit.dart';
+import 'core/config/app_router.dart';
+import 'core/config/environment.dart';
+import 'core/config/service_locator.dart';
+import 'presentation/admin/states/scaffold_cubit/scaffold_cubit.dart';
+import 'presentation/core/cubit/auth/auth_cubit.dart';
+import 'package:flutter_web_plugins/url_strategy.dart';
 
 void main() async {
   await Environment.initEnvironment();
@@ -27,7 +29,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final localization = sl<FlutterLocalization>();
-
+    //usePathUrlStrategy();
     return BlocBuilder<AuthCubit, AuthState>(
       bloc: sl<AuthCubit>(),
       buildWhen: (previous, current) =>

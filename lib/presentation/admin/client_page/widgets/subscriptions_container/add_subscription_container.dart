@@ -166,7 +166,7 @@ class _AddSubscriptionContainerState extends State<AddSubscriptionContainer> {
 
                         final clientInherited = ClientInherited.of(context);
 
-                        clientInherited?.updateClient(widget.client.copyWith(clientSubscriptions: [result, ...widget.client.clientSubscriptions!]));
+                        clientInherited?.updateClient(widget.client.copyWith(clientSubscriptions: [result, ...widget.client.clientSubscriptions ?? []]));
 
                         return setState(() {
                           isConfirmed = true;

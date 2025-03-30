@@ -1,6 +1,5 @@
 import 'package:calendar_date_picker2/calendar_date_picker2.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_portal/flutter_portal.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../utils/types/time_interval.dart';
@@ -27,7 +26,6 @@ class _FilterChipIntervalDateState extends State<FilterChipIntervalDate> {
   @override
   void initState() {
     interval = widget.initialValue;
-    // TODO: implement initState
     super.initState();
   }
 
@@ -68,7 +66,7 @@ class _FilterChipIntervalDateState extends State<FilterChipIntervalDate> {
     }
 
     
-    return Text("Seleccione Fecha");
+    return const Text("Seleccione Fecha");
     
   }
 
@@ -104,8 +102,8 @@ class _FilterChipIntervalDateState extends State<FilterChipIntervalDate> {
                   setState(() {
                     interval = selectedInterval;
                   });
-                }, child: Text("Cancelar")),
-                SizedBox(width: 8,),
+                }, child: const Text("Cancelar")),
+                const SizedBox(width: 8,),
                 TextButton(
                   onPressed: interval == null || interval!.endDate == null && interval!.initialDate == null ? null : (){
                   widget.onApply(interval!);
@@ -114,7 +112,7 @@ class _FilterChipIntervalDateState extends State<FilterChipIntervalDate> {
                   });
                   dropdownController.hide!();
                 }, 
-                child: Text("Aplicar"))
+                child: const Text("Aplicar"))
 
               ],
             ),
@@ -131,10 +129,10 @@ class _FilterChipIntervalDateState extends State<FilterChipIntervalDate> {
       height: 60,
       child: Row(
           children: [
-            if(interval?.initialDate == null) Text("Inicio"),
+            if(interval?.initialDate == null) const Text("Inicio"),
             if(interval?.initialDate != null) Text(DateFormat.MMMd().format(interval!.initialDate!)),
             const Text(" - "),
-            if(interval?.endDate == null) Text("Fin"),
+            if(interval?.endDate == null) const Text("Fin"),
             if(interval?.endDate != null) Text(DateFormat.MMMd().format(interval!.endDate!)),
       
           ],

@@ -11,6 +11,7 @@ import 'package:turni/domain/usercases/auth_user_cases.dart';
 import 'package:turni/infrastructure/localstorage/provider/local_storage.dart';
 
 import '../../../../core/utils/entities/coordinate.dart';
+import '../../../admin/states/global_data/global_data_cubit.dart';
 
 part 'auth_state.dart';
 
@@ -44,6 +45,8 @@ class AuthCubit extends Cubit<AuthState> with ChangeNotifier {
       final user = await authUserCases.validateToken(token);
 
       emit(AuthLogged(userCredential: user));
+
+      sl<GlobalDataCubit>();
   
 
     } else {
@@ -56,6 +59,7 @@ class AuthCubit extends Cubit<AuthState> with ChangeNotifier {
 
   Future signInGoogle() async {
     emit(const AuthLogged());
+    sl<GlobalDataCubit>();
     notifyListeners();
   }
 
@@ -87,6 +91,10 @@ class AuthCubit extends Cubit<AuthState> with ChangeNotifier {
 
   bool isAdmin() {
     return state.userCredential?.isAdmin ?? false;
+  }
+
+  int getClubId(){
+    return state.userCredential!.admin!.clubPartitions.first.club_id;
   }
 
 /*   void setInitialRoute(String? route){

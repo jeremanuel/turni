@@ -5,13 +5,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../domain/entities/client.dart';
 import '../../domain/repositories/admin_repository.dart';
-import '../../domain/repositories/payment_repository.dart';
-import '../../infrastructure/api/repositories/admin_repository_impl.dart';
 import '../../presentation/admin/client_page/client_page.dart';
 import '../../presentation/admin/clients_list/bloc/clients_list_bloc.dart';
 import '../../presentation/admin/clients_list/clients_list_page.dart' deferred as list;
 import '../../presentation/admin/clients_list/list_utils/client_list_filters.dart';
-import '../../presentation/admin/cubit/scaffold_cubit.dart';
+import '../../presentation/admin/states/scaffold_cubit/scaffold_cubit.dart';
 import '../utils/responsive_builder.dart';
 import 'service_locator.dart';
 
@@ -39,16 +37,15 @@ enum RouterType { clientRoute, adminRoute }
 enum ClientRoutes { session_feed }
 
 GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
+final GlobalKey customLayoutKey = GlobalKey();
 String? currentRoute;
 GoRouter buildGoRouter(RouterType routerType) {
-  return GoRouter(
+  final goRouter =  GoRouter(
     
-    initialLocation: '/',
+    initialLocation: '/clients',
     refreshListenable: sl<AuthCubit>(),
     redirect: (context, state) {
       final authCubit = sl<AuthCubit>();
-              
-
       if (authCubit.getLoadingStatus()) {
         if (state.matchedLocation != "/") {
           authCubit.initialRoute = state.uri.toString();
@@ -85,11 +82,13 @@ GoRouter buildGoRouter(RouterType routerType) {
       StatefulShellRoute.indexedStack(
         branches: buildBranches(routerType),
         builder: (context, state, navigationShell) {
-          return CustomLayout(child: navigationShell, scaffoldKey: scaffoldKey,);
+          return CustomLayout(scaffoldKey: scaffoldKey, key: customLayoutKey,child: navigationShell);
         },
       )
     ],
   );
+
+  return goRouter;
 }
 
 List<StatefulShellBranch> buildBranches(RouterType routerType) {
@@ -178,6 +177,58 @@ List<StatefulShellBranch> buildBranches(RouterType routerType) {
     StatefulShellBranch(
       routes: [
         GoRoute(
+          routes: [
+            GoRoute(
+          path: AppRoutes.CLIENT_ROUTE.path,
+          name: AppRoutes.CLIENT_ROUTE.name,
+          redirect: (context, state) {  
+            
+            final extraMap = state.extra as Map?;
+            final clientFromList = extraMap?['client'] as Client?;
+            final bloc = extraMap?['bloc'] as ClientsListBloc;
+
+            if(ResponsiveBuilder.isMobile(context)) return null;
+
+            scaffoldKey.currentState?.openEndDrawer();
+
+            final scaffoldCubit = sl<ScaffoldCubit>();
+
+            final clientId = int.tryParse(
+              state.pathParameters['clientId'] ?? '',
+            );
+
+            if(clientId != null) {
+              scaffoldCubit.setChild(
+                BlocProvider.value(
+                  value: bloc,
+                  child: Clientpage(clientId: clientId, client: clientFromList, onUpdateClient: (p0) {
+              }),
+            ));
+            }
+
+            return currentRoute ?? AppRoutes.CLIENTS_LIST_ROUTE.path;
+          },
+          builder: (context, state){
+
+            if(ResponsiveBuilder.isDesktop(context)) return const SizedBox();
+
+            final extraMap = state.extra as Map?;
+            final clientFromList = extraMap?['client'] as Client?;
+            final bloc = extraMap?['bloc'] as ClientsListBloc;
+
+            final clientId = int.tryParse(
+              state.pathParameters['clientId'] ?? '',
+            );
+
+            return BlocProvider.value(
+              value: bloc,
+              child: Clientpage(clientId: clientId!, client: clientFromList, onUpdateClient: (p0) {
+                
+              },),
+            );
+          },
+        )
+          ],
           path: AppRoutes.CLIENTS_LIST_ROUTE.path,
           name: AppRoutes.CLIENTS_LIST_ROUTE.name,
           redirect: setCurrentRoute,
@@ -205,12 +256,13 @@ List<StatefulShellBranch> buildBranches(RouterType routerType) {
        
         ),
 
+        
         GoRoute(
-          path: AppRoutes.CLIENT_ROUTE.path,
-          name: AppRoutes.CLIENT_ROUTE.name,
+          path: AppRoutes.NEW_CLIENT_ROUTE.path,
+          name: AppRoutes.NEW_CLIENT_ROUTE.name,
+         
           redirect: (context, state) {  
 
-            final clientFromList = state.extra as Client?;
 
             if(ResponsiveBuilder.isMobile(context)) return null;
 
@@ -218,25 +270,23 @@ List<StatefulShellBranch> buildBranches(RouterType routerType) {
 
             final scaffoldCubit = sl<ScaffoldCubit>();
 
-            final clientId = int.tryParse(
-              state.pathParameters['clientId'] ?? '',
-            );
-
-            if(clientId != null) scaffoldCubit.setChild(Clientpage(clientId: clientId, client: clientFromList,));
-
-            return currentRoute ?? AppRoutes.CLIENTS_LIST_ROUTE.path;
+            scaffoldCubit.setChild(BlocProvider.value(
+              value: state.extra as Bloc,
+              child:  Clientpage(clientId: -1, createNewClient: true, onUpdateClient: (p0) {
+                
+              },)));
+       
+           return currentRoute ?? AppRoutes.CLIENTS_LIST_ROUTE.path;
           },
           builder: (context, state){
 
-            if(ResponsiveBuilder.isDesktop(context)) return const SizedBox();
+            if(ResponsiveBuilder.isDesktop(context)) {
+              return const SizedBox();
+            }
 
-            final clientFromList = state.extra as Client?;
-
-            final clientId = int.tryParse(
-              state.pathParameters['clientId'] ?? '',
-            );
-
-            return Clientpage(clientId: clientId!, client: clientFromList, );
+            return  Clientpage(clientId: -1, createNewClient: true, onUpdateClient: (p0) {
+              
+            },);
           },
         )
 

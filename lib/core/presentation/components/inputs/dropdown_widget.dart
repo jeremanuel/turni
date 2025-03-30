@@ -5,12 +5,13 @@ import '../../../utils/responsive_builder.dart';
 
 class DropdownWidget extends StatefulWidget {
   
-  const DropdownWidget({super.key, required this.child, required this.menuWidget, required this.dropdownController, this.aligned});
+  const DropdownWidget({super.key, required this.child, required this.menuWidget, required this.dropdownController, this.aligned, this.obscureBackground = true});
 
   final Widget child;
   final Widget menuWidget;
   final DropdownController dropdownController;
   final Aligned? aligned;
+  final bool obscureBackground;
 
   @override
   State<DropdownWidget> createState() => _DropdownWidgetState();
@@ -66,13 +67,16 @@ class _DropdownWidgetState extends State<DropdownWidget> {
 
     return PortalTarget(
       visible: isVisible,
-      portalFollower: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTapUp: (details) {
-          setState(() {
-            isVisible = false;
-          });
-        },        
+      portalFollower: ColoredBox(
+        color: widget.obscureBackground ? const Color.fromARGB(104, 0, 0, 0) : Colors.transparent,
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTapUp: (details) {
+            setState(() {
+              isVisible = false;
+            });
+          },        
+        ),
       ),
       child: PortalTarget(
         visible: isVisible,
@@ -100,7 +104,7 @@ class _DropdownWidgetState extends State<DropdownWidget> {
     final menuWidget = SizedBox(
             width: 300,
             child: Material(
-              color: Theme.of(context).colorScheme.surfaceContainerHighest,
+              color: Theme.of(context).colorScheme.surfaceContainerHigh,
               borderRadius: const BorderRadius.all(Radius.circular(8)),              
               child: widget.menuWidget,
               

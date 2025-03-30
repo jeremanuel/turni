@@ -30,4 +30,15 @@ class DateFunctions {
   static String formatDateToDefaultFormat(DateTime date){
     return DateFormat.yMd().format(date);
   }
+
+  static DateTime? tryParseDate(String? value){
+    if(value == null) return null;
+
+    return DateFormat.yMd().tryParse(value);
+  }
+
+  static String differenceInYears(DateTime date){
+    return (DateTime.now().difference(date).inDays / 365).floor().toString();
+  }
+
 }

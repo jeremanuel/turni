@@ -1,10 +1,9 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_localization/flutter_localization.dart';
 import 'package:get_it/get_it.dart';
-import '../../domain/entities/client.dart';
-import '../../domain/entities/subscription/subscription.dart';
 import '../../domain/repositories/ia_repository.dart';
 import '../../domain/repositories/admin_repository.dart';
+import '../../domain/repositories/label_repository.dart';
 import '../../domain/repositories/payment_repository.dart';
 import '../../domain/repositories/session_repository.dart';
 import '../../domain/repositories/subscription_repository.dart';
@@ -13,10 +12,12 @@ import '../../infrastructure/api/providers/admin_provider.dart';
 import '../../infrastructure/api/providers/session_provider.dart';
 import '../../infrastructure/api/repositories/IA/gemini_repository.dart';
 import '../../infrastructure/api/repositories/admin_repository_impl.dart';
+import '../../infrastructure/api/repositories/label_repository_impl.dart';
 import '../../infrastructure/api/repositories/payment_repository_impl.dart';
 import '../../infrastructure/api/repositories/session_repository_impl.dart';
 import '../../infrastructure/api/repositories/subscription_repository_impl.dart';
-import '../../presentation/admin/cubit/scaffold_cubit.dart';
+import '../../presentation/admin/states/global_data/global_data_cubit.dart';
+import '../../presentation/admin/states/scaffold_cubit/scaffold_cubit.dart';
 import '../../presentation/client/bloc/client_session_manager_bloc.dart';
 import '../utils/dio_init.dart';
 import '../../domain/repositories/auth_repository.dart';
@@ -41,7 +42,9 @@ class ServiceLocator {
     
     sl.registerSingleton<PaymentRepository>(PaymentRepositoryImpl());
 
-   sl.registerSingleton<SubscriptionRepository>(SubscriptionRepositoryImpl());
+    sl.registerSingleton<LabelRepository>(LabelRepositoryImpl());
+
+    sl.registerSingleton<SubscriptionRepository>(SubscriptionRepositoryImpl());
 
 
     sl.registerSingleton<AdminRepository>(
@@ -59,6 +62,9 @@ class ServiceLocator {
       ScaffoldCubit()
     ); // Cubit singleton para manejo de la sesion.
 
+    sl.registerLazySingleton<GlobalDataCubit>(() {
+      return GlobalDataCubit(sl<LabelRepository>());
+    });
 
 
     //sl.registerLazySingleton<FeedCubit>(() => FeedCubit());

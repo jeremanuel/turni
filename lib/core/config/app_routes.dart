@@ -6,7 +6,10 @@ class AppRoutes {
 
   static const CLIENTS_LIST_ROUTE = RouteDefinition("CLIENTS_LIST", "/clients");
 
-  static const CLIENT_ROUTE = RouteDefinition("CLIENT", '/client/:clientId');
+  static const CLIENT_ROUTE = RouteDefinition("CLIENT", 'client/:clientId');
+
+  static const NEW_CLIENT_ROUTE = RouteDefinition("NEW_CLIENT", '/client');
+
 
 }
 

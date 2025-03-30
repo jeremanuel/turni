@@ -41,7 +41,7 @@ class _AddSubscriptionButtonState extends State<AddSubscriptionButton> {
 
   onPressAddSubscription(BuildContext context, Client client){
     
-    if(client.clientSubscriptions!.any((subscription) => subscription.isActive)){
+    if(client.clientSubscriptions?.any((subscription) => subscription.isActive) ?? false){
       return SnackbarsFunctions.showErrorsSnackbar(context, "El cliente ya tiene una subscripcion activa");
     }
 

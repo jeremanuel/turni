@@ -5,6 +5,7 @@ import '../../../core/config/service_locator.dart';
 import '../../../core/utils/domain_error.dart';
 import '../../../core/utils/either.dart';
 import '../../../core/utils/entities/range_date.dart';
+import '../../../core/utils/repository_response.dart';
 import '../../../domain/entities/client.dart';
 import '../../../domain/entities/generic_search_item.dart';
 import '../../../domain/entities/request/page_response.dart';
@@ -51,6 +52,17 @@ class AdminrepositroyImpl extends BaseRepository implements AdminRepository {
 
     
     return [...clientsResult, ...sessionsResult];
+
+  }
+  
+  @override
+  Future<RepositoryResponse<Client>> createOrSaveClient(Map<String, dynamic> clientData) {
+    return safeCall(() async {
+      final result = await dioInstance.post("/admin/saveClient", data: {"clientData": clientData});
+
+      return Client.fromJson(result.data['client']);
+
+    });
 
   }
 }

@@ -1,16 +1,19 @@
 import 'package:json_annotation/json_annotation.dart';
-import 'package:turni/core/utils/value_transformers.dart';
+import '../../core/utils/value_transformers.dart';
 
 part 'person.g.dart';
 
 @JsonSerializable()
 class Person {
-  Person(
-      {this.personId,
+  Person({
+      this.personId,
       this.phone,
       required this.name,
       required this.lastName,
-      required this.email});
+      required this.email,
+      this.birdDate,
+      this.observation
+      });
 
   final String name;
   @JsonKey(name: "last_name")
@@ -19,6 +22,11 @@ class Person {
   final String? phone;
   @JsonKey(name: "person_id", fromJson: ValueTransformers.fromJsonString)
   final String? personId;
+  @JsonKey(name: "bird_date", fromJson: ValueTransformers.fromJsonDateTimeLocaleNullable)
+  final DateTime? birdDate;
+  final String? observation;
+
+  
 
   factory Person.fromJson(Map<String, dynamic> json) => _$PersonFromJson(json);
 
