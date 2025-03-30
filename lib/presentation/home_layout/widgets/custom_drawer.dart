@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:turni/core/config/service_locator.dart';
-import 'package:turni/presentation/core/cubit/auth/auth_cubit.dart';
-import 'package:turni/presentation/core/input/custom_outlined_button.dart';
-import 'package:turni/presentation/core/styles/text_styles.dart';
+import '../../../core/config/service_locator.dart';
+import '../../core/cubit/auth/auth_cubit.dart';
+import '../../core/input/custom_outlined_button.dart';
+import '../../core/styles/text_styles.dart';
 
 class CustomDrawer extends StatelessWidget {
   CustomDrawer({super.key});
@@ -17,7 +17,7 @@ class CustomDrawer extends StatelessWidget {
         children: [
           buildDrawerHeader(),
           const Spacer(),
-          CustomOutlinedButton(onPressed: authCubit.signOutGoogle, child: Center(child: Text("Salir")) )
+          CustomOutlinedButton(onPressed: authCubit.signOutGoogle, child: const Center(child: Text("Salir")) )
         ],
       )
     );
