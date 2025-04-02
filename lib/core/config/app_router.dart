@@ -177,8 +177,33 @@ List<StatefulShellBranch> buildBranches(RouterType routerType) {
     StatefulShellBranch(
       routes: [
         GoRoute(
-          routes: [
-            GoRoute(
+          path: AppRoutes.CLIENTS_LIST_ROUTE.path,
+          name: AppRoutes.CLIENTS_LIST_ROUTE.name,
+          redirect: setCurrentRoute,
+          builder: (context, state){
+
+            final params = state.uri.queryParameters;
+            
+            return FutureBuilder(
+              future: list.loadLibrary(),
+              builder:(context, snapshot) {
+                if(snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                if(snapshot.hasError) {
+                  return const Center(child: Text("Error al cargar la página"));
+                }
+                return BlocProvider( 
+                create: (context) => ClientsListBloc(context, sl<AdminRepository>(), ClientListFilters.fromJson(params), params['sort'], bool.tryParse(params['order'] ?? '')),
+                child: list.ClientsList(),
+              );
+              }
+            
+            );
+          },
+       
+        ),
+        GoRoute(
           path: AppRoutes.CLIENT_ROUTE.path,
           name: AppRoutes.CLIENT_ROUTE.name,
           redirect: (context, state) {  
@@ -227,33 +252,6 @@ List<StatefulShellBranch> buildBranches(RouterType routerType) {
               },),
             );
           },
-        )
-          ],
-          path: AppRoutes.CLIENTS_LIST_ROUTE.path,
-          name: AppRoutes.CLIENTS_LIST_ROUTE.name,
-          redirect: setCurrentRoute,
-          builder: (context, state){
-
-            final params = state.uri.queryParameters;
-            
-            return FutureBuilder(
-              future: list.loadLibrary(),
-              builder:(context, snapshot) {
-                if(snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-                if(snapshot.hasError) {
-                  return const Center(child: Text("Error al cargar la página"));
-                }
-                return BlocProvider( 
-                create: (context) => ClientsListBloc(context, sl<AdminRepository>(), ClientListFilters.fromJson(params), params['sort'], bool.tryParse(params['order'] ?? '')),
-                child: list.ClientsList(),
-              );
-              }
-            
-            );
-          },
-       
         ),
 
         

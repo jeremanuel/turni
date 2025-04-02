@@ -85,8 +85,10 @@ class ServiceLocator {
     _initializeLocalization();
   }
 
-  static _initializeLocalization() {
+  static _initializeLocalization() async {
     final FlutterLocalization localization = FlutterLocalization.instance;
+    await FlutterLocalization.instance.ensureInitialized();
+
     localization.init(mapLocales: [
       const MapLocale('es', {'title': 'Localizacion'})
     ], initLanguageCode: 'es');
