@@ -1,36 +1,63 @@
-import 'package:json_annotation/json_annotation.dart';
 
-@JsonSerializable()
-class Session {
-  
-  final int sessionId;
-  final DateTime createdAt;
-  final DateTime startTime;
-  final String duration;
-  final int? clientId;
-  final double price;
-  final int adminCreatorId;
-  final int partitionPhysicalId;
+import 'package:calendar_view/calendar_view.dart';
 
-  Session(
-    this.sessionId, 
-    this.createdAt, 
-    this.startTime, 
-    this.duration, 
-    this.clientId, 
-    this.price, 
-    this.adminCreatorId, 
-    this.partitionPhysicalId
-  );
+import 'package:flutter/material.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 
-  getDurationInMinutes(){
+import '../../core/utils/value_transformers.dart';
+import 'client.dart';
+import 'physical_partition.dart';
+
+part 'session.freezed.dart';
+part 'session.g.dart';
+
+@freezed
+
+class Session with _$Session {
+  factory Session({
+    @JsonKey(name: "session_id") required int sessionId,
+    @JsonKey(name: "created_at") required DateTime createdAt,
+    @JsonKey(
+        name: "start_time", fromJson: ValueTransformers.fromJsonDateTimeLocale)
+    required DateTime startTime,
+    @JsonKey(defaultValue: 90)
+    required int duration,
+    @JsonKey(name: "client_id") int? clientId,
+    @JsonKey(fromJson: ValueTransformers.fromJsonDouble) required double price,
+    @JsonKey(name: "admin_creator_id") int? adminCreatorId,
+    @JsonKey(name: "partition_physical_id") required int partitionPhysicalId,
+    @JsonKey(name: "club_name") String? clubName,
+    @JsonKey(name: "club_type_name") String? clubTypeName,
+    @JsonKey(includeIfNull: false,) Client? client,
+
+    @JsonKey(name:"partition_physical", includeIfNull: false) PhysicalPartition? physicalPartition
+  }) = _Session;
+
+  Session._();
+
+  getDurationInMinutes() {
+
+    return duration;
     
-   final [hours, minutes] = duration.split(':');
+  }
 
-   return (int.parse(hours) * 60) + int.parse(minutes);
+  static Session fromDates(DateTime startTime, TimeOfDay duration) {
+    return Session(
+      sessionId: 1,
+      createdAt: DateTime.now(), 
+      startTime: startTime, 
+      duration: duration.getTotalMinutes, //"${duration.hour}:${duration.minute}", 
+      price: 1500, 
+      adminCreatorId: 1,
+      partitionPhysicalId: 1
+    );
 
   }
 
   get endTime => startTime.add(Duration(minutes: getDurationInMinutes()));
-  
+
+  factory Session.fromJson(Map<String, dynamic> json) =>
+      _$SessionFromJson(json);
+
+  bool get isReserved => clientId != null;
 }

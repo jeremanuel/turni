@@ -1,225 +1,233 @@
 
-// import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 
-// Map<String, dynamic> getInputOptions({
-//   required BuildContext context,
-//   required InputStyle style,
-//   required String labelText,
-//   required String? supportingText,
-//   required bool compact,
-//   required bool variableWidth,
-//   FocusNode? focusNode,
-//   required IconData? trailingIcon,
-//   required IconData? leadingIcon,
-//   required String? placeHolder,
-//   required bool inputAlignRight,
-//   required String? prefixText,
-//   required String? suffixText,
-//   required String? errorText,
-//   Function()? onTrailIconTap,
-//   required Set<MaterialState> currentStates,
-//   MouseCursor cursor = SystemMouseCursors.text,
-// }) {
-//   InputDecoration getInputDecoration(
-//       {required InputBorder border, Color? fillColor}) {
-//     return InputDecoration(
-//       isDense: compact,
-//       fillColor: fillColor,
-//       filled: fillColor != null,
+Map<String, dynamic> getInputOptions({
+  required BuildContext context,
+  required InputStyle style,
+  required String labelText,
+  required String? supportingText,
+  required bool compact,
+  required bool variableWidth,
+  FocusNode? focusNode,
+  required IconData? trailingIcon,
+  required IconData? leadingIcon,
+  required String? placeHolder,
+  required bool inputAlignRight,
+  required String? prefixText,
+  required String? suffixText,
+  required String? errorText,
+  Function()? onTrailIconTap,
+  required Set<MaterialState> currentStates,
+  MouseCursor cursor = SystemMouseCursors.text,
+}) {
+  InputDecoration getInputDecoration(
+      {required InputBorder border, Color? fillColor}) {
+    return InputDecoration(
+      isDense: compact,
+      fillColor: fillColor,
+      filled: fillColor != null,
 
-//       floatingLabelStyle: MaterialStateTextStyle.resolveWith((Set<MaterialState> states) {
-//         return BodyTextStyleSmall(
-//           color: (states.contains(MaterialState.disabled))
-//               ? AppTheme.colors(context).onSurface.withOpacity(0.38)
-//               : (currentStates.contains(MaterialState.error))
-//                   ? AppTheme.colors(context).error
-//                   : ( states.contains(MaterialState.focused) || currentStates.contains(MaterialState.focused) )
-//                     ? AppTheme.colors(context).primary
-//                     :AppTheme.colors(context).onSurfaceVariant,
-//           ).copyWith(height: 0.3);
-//       }),
+      // floatingLabelStyle: MaterialStateTextStyle.resolveWith((Set<MaterialState> states) {
+      //   return BodyTextStyleSmall(
+      //     color: (states.contains(MaterialState.disabled))
+      //         ? AppTheme.colors(context).onSurface.withOpacity(0.38)
+      //         : (currentStates.contains(MaterialState.error))
+      //             ? AppTheme.colors(context).error
+      //             : ( states.contains(MaterialState.focused) || currentStates.contains(MaterialState.focused) )
+      //               ? AppTheme.colors(context).primary
+      //               :AppTheme.colors(context).onSurfaceVariant,
+      //     ).copyWith(height: 0.3);
+      // }),
       
-//       labelText: labelText,
-//       labelStyle: MaterialStateTextStyle.resolveWith((Set<MaterialState> states) {
-//         return BodyTextStyleSmall(
-//           color: (states.contains(MaterialState.disabled))
-//               ? AppTheme.colors(context).onSurface.withOpacity(0.38)
-//               : (currentStates.contains(MaterialState.error))
-//                   ? AppTheme.colors(context).error
-//                     :AppTheme.colors(context).onSurfaceVariant,
-//           ).copyWith(height: 0.3);
-//       }),
+      labelText: labelText,
+      // labelStyle: MaterialStateTextStyle.resolveWith((Set<MaterialState> states) {
+      //   return BodyTextStyleSmall(
+      //     color: (states.contains(MaterialState.disabled))
+      //         ? AppTheme.colors(context).onSurface.withOpacity(0.38)
+      //         : (currentStates.contains(MaterialState.error))
+      //             ? AppTheme.colors(context).error
+      //               :AppTheme.colors(context).onSurfaceVariant,
+      //     ).copyWith(height: 0.3);
+      // }),
 
-//         hintText: placeHolder,
+        hintText: placeHolder,
         
-//         prefixText: prefixText,
-//         prefixStyle: (( compact ) ? const BodyTextStyleMedium() : const BodyTextStyleLarge()).copyWith(
-//           color: (!currentStates.contains(MaterialState.disabled)) 
-//             ? AppTheme.colors(context).onSurfaceVariant
-//             : AppTheme.colors(context).onSurface.withOpacity(0.38)
-//         ),
+        prefixText: prefixText,
+        // prefixStyle: (( compact ) ? const BodyTextStyleMedium() : const BodyTextStyleLarge()).copyWith(
+        //   color: (!currentStates.contains(MaterialState.disabled)) 
+        //     ? AppTheme.colors(context).onSurfaceVariant
+        //     : AppTheme.colors(context).onSurface.withOpacity(0.38)
+        // ),
         
-//         suffixText: suffixText,
-//         suffixStyle: (( compact ) ? const BodyTextStyleMedium() : const BodyTextStyleLarge()).copyWith(
-//           color: (!currentStates.contains(MaterialState.disabled)) 
-//             ? AppTheme.colors(context).onSurfaceVariant
-//             : AppTheme.colors(context).onSurface.withOpacity(0.38)
-//         ),
+        suffixText: suffixText,
+        // suffixStyle: (( compact ) ? const BodyTextStyleMedium() : const BodyTextStyleLarge()).copyWith(
+        //   color: (!currentStates.contains(MaterialState.disabled)) 
+        //     ? AppTheme.colors(context).onSurfaceVariant
+        //     : AppTheme.colors(context).onSurface.withOpacity(0.38)
+        // ),
 
-//         suffixIcon: ( trailingIcon == null ) 
-//           ? null 
-//           : MouseRegion(
-//             cursor: cursor,
-//             child: ( currentStates.contains(MaterialState.error) && !currentStates.contains(MaterialState.disabled) ) 
-//               ? Icon( Icons.error, color: AppTheme.colors(context).error )
-//               : Icon( trailingIcon,
-//                 color: (!currentStates.contains(MaterialState.disabled)) 
-//                   ? AppTheme.colors(context).onSurfaceVariant
-//                   : AppTheme.colors(context).onSurface.withOpacity(0.38)
-//             ),
-//           ),
+        // suffixIcon: ( trailingIcon == null ) 
+        //   ? null 
+        //   : MouseRegion(
+        //     cursor: cursor,
+        //     child: ( currentStates.contains(MaterialState.error) && !currentStates.contains(MaterialState.disabled) ) 
+        //       ? Icon( Icons.error, color: AppTheme.colors(context).error )
+        //       : Icon( trailingIcon,
+        //         color: (!currentStates.contains(MaterialState.disabled)) 
+        //           ? AppTheme.colors(context).onSurfaceVariant
+        //           : AppTheme.colors(context).onSurface.withOpacity(0.38)
+        //     ),
+        //   ),
         
-//         prefixIcon: ( leadingIcon == null ) 
-//           ? null 
-//           : MouseRegion(
-//             cursor: cursor,
-//             child: Icon( leadingIcon, color: (!currentStates.contains(MaterialState.disabled)) 
-//                 ? AppTheme.colors(context).onSurfaceVariant
-//                 : AppTheme.colors(context).onSurface.withOpacity(0.38)),
-//           ),
-//       // errorStyle: const BodyTextStyleSmall().copyWith(height: 0.1),
-//       border: border,
-//     );
-//   }
+        // prefixIcon: ( leadingIcon == null ) 
+        //   ? null 
+        //   : MouseRegion(
+        //     cursor: cursor,
+        //     child: Icon( leadingIcon, color: (!currentStates.contains(MaterialState.disabled)) 
+        //         ? AppTheme.colors(context).onSurfaceVariant
+        //         : AppTheme.colors(context).onSurface.withOpacity(0.38)),
+        //   ),
+      border: border,
+    );
+  }
 
-//   final Map<String, dynamic> inputStyle = {
-//     'textInputStyle': (compact)
-//         ? const BodyTextStyleMedium()
-//         : const BodyTextStyleLarge().copyWith(height: 1),
-//     'expands' : true, 
-//     'height': (compact) ? 48.0 : 56.0,
-//     'width': (variableWidth) ? null : 210.0,
-//   };
+  final Map<String, dynamic> inputStyle = {
+    // 'textInputStyle': (compact)
+    //     ? const BodyTextStyleMedium()
+    //     : const BodyTextStyleLarge().copyWith(height: 1),
+    'textInputStyle': TextStyle(
+      fontSize: (compact) ? 14.0 : 16.0,
+    ),
+    'expands' : true, 
+    'height': (compact) ? 48.0 : 56.0,
+    'width': (variableWidth) ? null : 210.0,
+  };
 
-//   inputStyle['cursorColor'] = () => MaterialStateColor.resolveWith(
-//     (Set<MaterialState> states) {
-//       if (currentStates.contains(MaterialState.error)) {
-//         return AppTheme.colors(context).error;
-//       } 
-//       return AppTheme.colors(context).primary;
-//     }
-//   );
+  // inputStyle['cursorColor'] = () => MaterialStateColor.resolveWith(
+  //   (Set<MaterialState> states) {
+  //     if (currentStates.contains(MaterialState.error)) {
+  //       return AppTheme.colors(context).error;
+  //     } 
+  //     return AppTheme.colors(context).primary;
+  //   }
+  // );
 
-//   inputStyle['inputDecoration'] = () {
-//     switch (style) {
-//       case (InputStyle.filled):
-//         return getInputDecoration(
-//           border: MaterialStateUnderlineInputBorder.resolveWith(
-//               (Set<MaterialState> states) {
-//             double width = 1.0;
-//             Color color = AppTheme.colors(context).onSurfaceVariant;
+  inputStyle['inputDecoration'] = () {
+    switch (style) {
+      case (InputStyle.filled):
+        return getInputDecoration(
+          border: MaterialStateUnderlineInputBorder.resolveWith(
+              (Set<MaterialState> states) {
+            double width = 1.0;
+            // Color color = AppTheme.colors(context).onSurfaceVariant;
+          
+            // if (currentStates.contains(MaterialState.error)) {
+            //   color = AppTheme.colors(context).error;
+            //   width = 2;
+            // } else if (states.contains(MaterialState.disabled)) {
+            //   color = AppTheme.colors(context).onSurface.withOpacity(0.38);
+            // } else if (states.contains(MaterialState.focused) || currentStates.contains(MaterialState.focused)) {
+            //   color = AppTheme.colors(context).primary;
+            //   width = 2;
+            // }
+            return UnderlineInputBorder(
+              borderSide: BorderSide(
+                // color: color,
+                color: Colors.black,
+                width: width,
+              ),
+            );
+          }),
+          // fillColor:
+          //     MaterialStateColor.resolveWith((Set<MaterialState> states) {
+          //   if (states.contains(MaterialState.disabled)) {
+          //     return AppTheme.colors(context)
+          //         .disabledFieldBackground!
+          //         .withOpacity(0.12);
+          //   }
+          //   return AppTheme.colors(context).surfaceVariant;
+          // }),
+        );
 
-//             if (currentStates.contains(MaterialState.error)) {
-//               color = AppTheme.colors(context).error;
-//               width = 2;
-//             } else if (states.contains(MaterialState.disabled)) {
-//               color = AppTheme.colors(context).onSurface.withOpacity(0.38);
-//             } else if (states.contains(MaterialState.focused) || currentStates.contains(MaterialState.focused)) {
-//               color = AppTheme.colors(context).primary;
-//               width = 2;
-//             }
-//             return UnderlineInputBorder(
-//               borderSide: BorderSide(
-//                 color: color,
-//                 width: width,
-//               ),
-//             );
-//           }),
-//           fillColor:
-//               MaterialStateColor.resolveWith((Set<MaterialState> states) {
-//             if (states.contains(MaterialState.disabled)) {
-//               return AppTheme.colors(context)
-//                   .disabledFieldBackground!
-//                   .withOpacity(0.12);
-//             }
-//             return AppTheme.colors(context).surfaceVariant;
-//           }),
-//         );
+      case (InputStyle.outlined):
+        return getInputDecoration(
+          border: MaterialStateOutlineInputBorder.resolveWith(
+              (Set<MaterialState> states) {
+            double width = 1.0;
+            // Color color = AppTheme.colors(context).onSurfaceVariant;
 
-//       case (InputStyle.outlined):
-//         return getInputDecoration(
-//           border: MaterialStateOutlineInputBorder.resolveWith(
-//               (Set<MaterialState> states) {
-//             double width = 1.0;
-//             Color color = AppTheme.colors(context).onSurfaceVariant;
+            // if (currentStates.contains(MaterialState.error)) {
+            //   color = AppTheme.colors(context).error;
+            //   width = 2;
+            // } else if (states.contains(MaterialState.disabled)) {
+            //   color = AppTheme.colors(context).onSurface.withOpacity(0.12);
+            // } else if (states.contains(MaterialState.focused) || currentStates.contains(MaterialState.focused)) {
+            //   color = AppTheme.colors(context).primary;
+            //   width = 2;
+            // }
+            return OutlineInputBorder(
+              borderSide: BorderSide(
+                // color: color,
+                color: Colors.black,
+                width: width,
+              ),
+            );
+          }),
+        );
+    }
+  };
 
-//             if (currentStates.contains(MaterialState.error)) {
-//               color = AppTheme.colors(context).error;
-//               width = 2;
-//             } else if (states.contains(MaterialState.disabled)) {
-//               color = AppTheme.colors(context).onSurface.withOpacity(0.12);
-//             } else if (states.contains(MaterialState.focused) || currentStates.contains(MaterialState.focused)) {
-//               color = AppTheme.colors(context).primary;
-//               width = 2;
-//             }
-//             return OutlineInputBorder(
-//               borderSide: BorderSide(
-//                 color: color,
-//                 width: width,
-//               ),
-//             );
-//           }),
-//         );
-//     }
-//   };
+  return inputStyle;
+}
 
-//   return inputStyle;
-// }
+/// [setError] Funcion que checkea si el valor es valido y retorna el error
+/// Tiene que ser invocado en el onChanged del input dentro de un setState(). 
+/// Se lo debe asignar al texto de error del input.
+String? setError( 
+  String? value,
+  Set<MaterialState> states,  
+  String? Function(String?)? validator,
+){
+  String? error;
+  if( validator != null && validator(value) != null ){
+    states.add(MaterialState.error);
+    error = validator(value);
+  }
+  else{
+    states.remove(MaterialState.error);
+  }
+  return error;
+}
 
-// /// [setError] Funcion que checkea si el valor es valido y retorna el error
-// /// Tiene que ser invocado en el onChanged del input dentro de un setState(). 
-// /// Se lo debe asignar al texto de error del input.
-// String? setError( 
-//   String? value,
-//   Set<MaterialState> states,  
-//   String? Function(String?)? validator,
-// ){
-//   String? error;
-//   if( validator != null && validator(value) != null ){
-//     states.add(MaterialState.error);
-//     error = validator(value);
-//   }
-//   else{
-//     states.remove(MaterialState.error);
-//   }
-//   return error;
-// }
+/// [supportingErrorContainer] Genera el contenedor de error o soporte para los inputs
+Widget supportingErrorContainer( 
+  BuildContext context,
+  Set<MaterialState> states,
+  String? errorText,
+  String? supportingText,
+){
+  return ( supportingText == null && states.contains(MaterialState.disabled) )
+    ? const SizedBox()
+    :(supportingText != null || states.contains(MaterialState.error))
+      ? Container(
+        padding: const EdgeInsets.only(left: 16,),
+        child: Text(
+          ( states.contains(MaterialState.disabled) ) 
+            ? supportingText! : ( states.contains(MaterialState.error) ) ? errorText! : supportingText!,
+            // style: BodyTextStyleSmall(
+            style: TextStyle(
+            color: (states.contains(MaterialState.disabled))
+                // ? AppTheme.colors(context).onSurface.withOpacity(0.38)
+                ? Colors.black.withOpacity(0.38)
+                : (states.contains(MaterialState.error))
+                    // ? AppTheme.colors(context).error
+                    // : AppTheme.colors(context).onSurfaceVariant,
+                    ? Colors.red
+                    : Colors.black,
+            ).copyWith(height: 1.5),
+        ),
+      )
+      : const SizedBox();
+}
 
-// /// [supportingErrorContainer] Genera el contenedor de error o soporte para los inputs
-// Widget supportingErrorContainer( 
-//   BuildContext context,
-//   Set<MaterialState> states,
-//   String? errorText,
-//   String? supportingText,
-// ){
-//   return ( supportingText == null && states.contains(MaterialState.disabled) )
-//     ? const SizedBox()
-//     :(supportingText != null || states.contains(MaterialState.error))
-//       ? Container(
-//         padding: const EdgeInsets.only(left: 16,),
-//         child: Text(
-//           ( states.contains(MaterialState.disabled) ) 
-//             ? supportingText! : ( states.contains(MaterialState.error) ) ? errorText! : supportingText!,
-//             style: BodyTextStyleSmall(
-//             color: (states.contains(MaterialState.disabled))
-//                 ? AppTheme.colors(context).onSurface.withOpacity(0.38)
-//                 : (states.contains(MaterialState.error))
-//                     ? AppTheme.colors(context).error
-//                     : AppTheme.colors(context).onSurfaceVariant,
-//             ).copyWith(height: 1.5),
-//         ),
-//       )
-//       : const SizedBox();
-// }
-
-// enum InputStyle { filled, outlined }
+enum InputStyle { filled, outlined }

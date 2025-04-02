@@ -1,8 +1,6 @@
-import 'dart:io';
-
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
-import 'package:turni/core/config/environment.dart';
+import '../config/environment.dart';
 
 class DioInit {
   static Dio init() {
@@ -17,10 +15,8 @@ class DioInit {
 
   static addTokenToInterceptor(Dio dio, String token) {
     _authInterceptor = InterceptorsWrapper(
-      onRequest: (RequestOptions requestOptions,
-          RequestInterceptorHandler handler) async {
-        requestOptions.headers
-            .putIfAbsent('Authorization', () => 'Bearer $token');
+      onRequest: (RequestOptions requestOptions, RequestInterceptorHandler handler) async {
+        requestOptions.headers.putIfAbsent('Authorization', () => 'Bearer $token');
         handler.next(requestOptions);
       },
     );

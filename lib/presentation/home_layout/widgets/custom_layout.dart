@@ -6,33 +6,31 @@ import 'package:turni/presentation/admin/desktop_layout.dart';
 import 'package:turni/presentation/home_layout/widgets/custom_botton_navigation_bar.dart';
 import 'package:turni/presentation/home_layout/widgets/custom_drawer.dart';
 
+import 'mobile_layout.dart';
+
 class CustomLayout extends StatelessWidget {
 
   final StatefulNavigationShell child;
 
-    const CustomLayout({
-      super.key, 
-      required this.child
+  const CustomLayout({super.key, 
+    required this.child,
+    required this.scaffoldKey
   });
+
+
+  final GlobalKey<ScaffoldState> scaffoldKey;
+
 
   @override
   Widget build(BuildContext context) {
     final isDesktop = MediaQuery.of(context).size.width > 700;
 
     if(isDesktop){
-     return DesktopLayout(child: child);
+     return DesktopLayout(scaffoldKey: scaffoldKey, child: child);
     }
 
-    return buildMobileLayout(); 
+    return MobileLayout(child: child,); 
   }
 
-  Scaffold buildMobileLayout() {
-    return Scaffold(
-    body: child,
-    bottomNavigationBar:  CustomBottomNavigationBar(
-      selectedIndex: child.currentIndex,
-      onTap: (index) => child.goBranch(index),
-    ),
-  );
-  }
+
 }

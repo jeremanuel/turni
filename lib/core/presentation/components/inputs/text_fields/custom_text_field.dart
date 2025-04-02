@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_form_builder/flutter_form_builder.dart';
 
-import '../../../../utils/form_builder/form_builder.dart';
-import '../../../../utils/form_builder/form_builder_field.dart';
+import '../../../../utils/responsive_builder.dart';
 import '../inputs_decorations.dart';
 
 class CustomTextField extends StatefulWidget {
@@ -10,8 +11,8 @@ class CustomTextField extends StatefulWidget {
     {
     super.key, 
     this.name, 
-    this.compact = false, 
-    // this.style = InputStyle.outlined, 
+    // this.compact = false, 
+    this.style = InputStyle.outlined, 
     required this.labelText, 
     this.enabled = true, 
     this.onChanged, 
@@ -20,7 +21,7 @@ class CustomTextField extends StatefulWidget {
     this.supportingText, 
     this.placeHolder, 
     this.validator, 
-    this.variableWidth = false, 
+    this.variableWidth = true, 
     this.autovalidateMode = AutovalidateMode.onUserInteraction, 
     this.prefixText, 
     this.suffixText, 
@@ -29,6 +30,7 @@ class CustomTextField extends StatefulWidget {
     this.inputFormatter,
   }){
     assert(name == null || initialValue == null, 'initialValue no es usado si se especifica name.');
+    compact = ResponsiveBuilder.isDesktop(context) ? true : false;
   }
 
   final void Function(String?)? onChanged;
@@ -45,13 +47,13 @@ class CustomTextField extends StatefulWidget {
   final String? initialValue;
 
   /// [compact] Si esta en true el textfield se muestra mas pequeño.
-  final bool compact; //Esta seguramente se maneje internamente respecto al dispositivo. Por ahora asi como esta.
+  late final bool compact; //Esta seguramente se maneje internamente respecto al dispositivo. Por ahora asi como esta.
 
   /// [variableWidth] Si esta en true el ancho del textfield se adapta al contenido. Si es false toma un ancho fijo.
   final bool variableWidth;
   
-  // /// [style] Define el estilo del textfield. TODO: A definir.
-  // final InputStyle style;
+  /// [style] Define el estilo del textfield. TODO: A definir.
+  final InputStyle style;
 
   /// [leadingIcon] Icono que se muestra a la izquierda del textfield.
   final IconData? leadingIcon;  
@@ -78,7 +80,7 @@ class CustomTextField extends StatefulWidget {
   final bool inputAlignRight;
 
 
-  final inputFormatter;
+  final List<TextInputFormatter>? inputFormatter;
   @override
   State<CustomTextField> createState() => _CustomTextFieldState();
 }
@@ -88,7 +90,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
   @override
   void initState() {
     super.initState();
-    // _initDecoration(context);
+    _initDecoration(context);
     initialValue = ( widget.name != null ) ? (FormBuilder.of(context)?.initialValue[widget.name]) : widget.initialValue;
   }
   @override
@@ -104,7 +106,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
 
   late Color Function() cursorColor;
 
-  // late Set<MaterialState> states = (widget.enabled) ? <MaterialState>{} : <MaterialState>{MaterialState.disabled};
+  late Set<WidgetState> states = (widget.enabled) ? <WidgetState>{} : <WidgetState>{WidgetState.disabled};
 
   late double? width;
 
@@ -116,23 +118,23 @@ class _CustomTextFieldState extends State<CustomTextField> {
 
   @override
   Widget build(BuildContext context) {
-    // if (widget.enabled && states.contains(MaterialState.disabled)) {
-    //   states.remove(MaterialState.disabled);
-    // } else if( !widget.enabled && !states.contains(MaterialState.disabled) ){
-    //   states.add(MaterialState.disabled);
-    // }
-    // return Column(
-    //   crossAxisAlignment: CrossAxisAlignment.start,
-    //   children: [
-    //     SizedBox(
-    //       height: height,
-    //       width: width, 
-    //       child: textField(),
-    //     ),
-    //     supportingErrorContainer( context, states, errorText, widget.supportingText ),
-    //   ],
-    // );
-    return textField();
+    if (widget.enabled && states.contains(WidgetState.disabled)) {
+      states.remove(WidgetState.disabled);
+    } else if( !widget.enabled && !states.contains(WidgetState.disabled) ){
+      states.add(WidgetState.disabled);
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          height: height,
+          width: width, 
+          child: textField(),
+        ),
+        supportingErrorContainer( context, states, errorText, widget.supportingText ),
+      ],
+    );
+    // return textField();
   }
 
   Widget textField(){ 
@@ -142,7 +144,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
     }) => TextFormField(
       validator: widget.validator,
       autovalidateMode: widget.autovalidateMode,
-      // expands: expands,
+      expands: expands,
       maxLines: null,
       // cursorColor: cursorColor(),
       inputFormatters: widget.inputFormatter,
@@ -151,8 +153,8 @@ class _CustomTextFieldState extends State<CustomTextField> {
         widget.onChanged?.call(value);
         field?.didChange(value);
       },
-      // decoration: getInputDecoration(),
-      // style: textInputStyle,
+      decoration: getInputDecoration(),
+      style: textInputStyle,
       enabled: widget.enabled,
       textAlign: (widget.inputAlignRight) ? TextAlign.right : TextAlign.left,
     );
@@ -170,29 +172,29 @@ class _CustomTextFieldState extends State<CustomTextField> {
   }
 
 
-  // _initDecoration(BuildContext context) {
-  //   Map<String,dynamic> options = getInputOptions(
-  //     context: context,
-  //     style: widget.style,
-  //     labelText: widget.labelText,
-  //     supportingText: null,
-  //     compact: widget.compact,
-  //     variableWidth: widget.variableWidth,
-  //     currentStates: states,
-  //     leadingIcon: widget.leadingIcon,
-  //     trailingIcon: widget.trailingIcon,
-  //     placeHolder: widget.placeHolder,
-  //     suffixText: widget.suffixText,
-  //     prefixText: widget.prefixText,
-  //     inputAlignRight: widget.inputAlignRight,
-  //     errorText: errorText,
-  //   );
+  _initDecoration(BuildContext context) {
+    Map<String,dynamic> options = getInputOptions(
+      context: context,
+      style: widget.style,
+      labelText: widget.labelText,
+      supportingText: null,
+      compact: widget.compact,
+      variableWidth: widget.variableWidth,
+      currentStates: states,
+      leadingIcon: widget.leadingIcon,
+      trailingIcon: widget.trailingIcon,
+      placeHolder: widget.placeHolder,
+      suffixText: widget.suffixText,
+      prefixText: widget.prefixText,
+      inputAlignRight: widget.inputAlignRight,
+      errorText: errorText,
+    );
     
-  //   textInputStyle = options['textInputStyle'];
-  //   getInputDecoration = options['inputDecoration'];
-  //   cursorColor = options['cursorColor'];
-  //   width = options['width'];
-  //   height = options['height'];
-  //   expands = options['expands'];
-  // }
+    textInputStyle = options['textInputStyle'];
+    getInputDecoration = options['inputDecoration'];
+    // cursorColor = options['cursorColor'];
+    width = options['width'];
+    height = options['height'];
+    expands = options['expands'];
+  }
 }

@@ -1,14 +1,16 @@
 import 'dart:math';
 
+import '../../../core/utils/entities/coordinate.dart';
+import '../../../core/utils/entities/range_date.dart';
 import '../../../domain/entities/club_partition.dart';
 import '../../../domain/entities/club_type.dart';
 import '../../../domain/entities/physical_partition.dart';
 import '../../../domain/entities/session.dart';
 import '../../../domain/repositories/session_repository.dart';
 
-class SessionRepositoryTest extends SessionRepository {
+class SessionRepositoryTest  {
   @override
-  List<ClubPartition> getPhysicalPartitions() {
+  Future<List<ClubPartition>> getPhysicalPartitions() async {
     // TODO: implement getPhysicalPartitions
     return [
       ClubPartition(
@@ -50,7 +52,7 @@ class SessionRepositoryTest extends SessionRepository {
             isCover: "false",
             description: "description"),
         ],
-        clubType: ClubType(club_type_id: 1, name: "Padel")
+        clubType: ClubType(clubTypeId: 1, name: "Padel")
         ),
         ClubPartition(
         club_partition_id: 2,
@@ -75,7 +77,7 @@ class SessionRepositoryTest extends SessionRepository {
             isCover: "false",
             description: "description"),
         ],
-        clubType: ClubType(club_type_id: 2, name: "Tenis")
+        clubType: ClubType(clubTypeId: 2, name: "Tenis")
 
         ),
         ClubPartition(
@@ -102,7 +104,34 @@ class SessionRepositoryTest extends SessionRepository {
               description: "description"),
 
             ],
-            clubType: ClubType(club_type_id: 2, name: "Futbol")
+            clubType: ClubType(clubTypeId: 2, name: "Futbol")
+
+        ),
+                ClubPartition(
+        club_partition_id: 3,
+        club_id: 1,
+        club_type_id: 2,
+        phone: "2284690141",
+        physicalPartitions: [
+          PhysicalPartition(
+              partitionPhysicalId: 1,
+              clubPartitionId: 1,
+              minPlayers: 5,
+              maxPlayers: 2,
+              physicalIdentifier: 3,
+              isCover: "false",
+              description: "description"),
+          PhysicalPartition(
+              partitionPhysicalId: 2,
+              clubPartitionId: 1,
+              minPlayers: 5,
+              maxPlayers: 2,
+              physicalIdentifier: 4,
+              isCover: "false",
+              description: "description"),
+
+            ],
+            clubType: ClubType(clubTypeId: 2, name: "Futbol")
 
         )
     ];
@@ -110,10 +139,9 @@ class SessionRepositoryTest extends SessionRepository {
 
   @override
   Future<List<Session>> getSessions(DateTime date) async {
-
     await Future.delayed(Duration(seconds: 1));
     return [
-      if (Random().nextBool())
+     /*  if (Random().nextBool())
         Session(1, DateTime.now(), DateTime(2024, 3, 12, 10), "01:30", null,
             1500, 1, 1),
       if (Random().nextBool())
@@ -160,7 +188,13 @@ class SessionRepositoryTest extends SessionRepository {
             1, 3),
       if (Random().nextBool())
         Session(1, DateTime.now(), DateTime(2024, 3, 12, 15), "01:30", 2, 1500,
-            1, 4)
+            1, 4) */
     ];
+  }
+
+  @override
+  Future<List<Session>> getClientSessions(int clubTypeId, Coordinate coordinate, RangeDate rangeDate) {
+    // TODO: implement getClientSessions
+    throw UnimplementedError();
   }
 }
