@@ -1,0 +1,4 @@
+{
+  "java.configuration.detectJdksAtStart": false,
+  "dart.flutterSdkPath": ".fvm/versions/3.29.3"
+}
