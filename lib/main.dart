@@ -19,11 +19,13 @@ void main() async {
   Intl.defaultLocale = 'es';
   //usePathUrlStrategy();
 
-  runApp(const MyApp());
+  runApp( MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+   MyApp({super.key});
+
+  final routerConfig = buildGoRouter(RouterType.adminRoute);
 
   // This widget is the root of your application.
   @override
@@ -39,8 +41,7 @@ class MyApp extends StatelessWidget {
         return MaterialApp.router(
           localizationsDelegates: localization.localizationsDelegates,
           supportedLocales: localization.supportedLocales,
-          routerConfig: buildGoRouter(
-              isAdmin ? RouterType.adminRoute : RouterType.clientRoute),
+          routerConfig: routerConfig,
           debugShowCheckedModeBanner: false,
           title: 'Turni',
           theme: ThemeData(

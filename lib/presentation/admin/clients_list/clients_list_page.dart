@@ -4,13 +4,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
+import 'package:trina_grid/trina_grid.dart';
 
 import '../../../core/config/app_routes.dart';
 import '../../../core/presentation/components/paginated_table/paginated_table.dart';
+import '../../../core/presentation/components/trina_paginated_table/trina_paginated_table.dart';
 import '../../../core/prototypes/trina_grid_prototype.dart';
 import '../../../core/utils/responsive_builder.dart';
 import '../../../domain/entities/client.dart';
 import 'bloc/clients_list_bloc.dart';
+import 'list_utils/client_list_filters.dart';
 import 'widgets/client_list_filters_container.dart';
 import 'widgets/client_list_header.dart';
 
@@ -35,10 +38,6 @@ class _ClientsListState extends State<ClientsList> {
     super.dispose();
   }
 
-  void _onDataSourceChanged() {
-    setState(() {});
-  }
-
   @override
   Widget build(BuildContext context) {
 
@@ -49,19 +48,53 @@ class _ClientsListState extends State<ClientsList> {
           if(ResponsiveBuilder.isDesktop(context)) ClientListHeader(),
           ClientListFiltersContainer(),
           Expanded(
-            child: PaginatedTable<Client>(
-              columns: getColumns(),
-              dataSource: clientsBloc.state.dataSource,
-              onTap: (row, Client client) => context.goNamed(AppRoutes.CLIENT_ROUTE.name, extra: {"client":client, "bloc":context.read<ClientsListBloc>()}, pathParameters: {"clientId":client.clientId!}),
+            child: TrinaPaginatedTable(
+              loadPage: (page, pageSize) {
+
+                //clientsBloc.add(ClientsListLoadEvent(page: page, pageSize: pageSize));
+              },
+              columns: [
+                TrinaColumn(
+                  title: "Nombre", 
+                  field: "name", 
+                  type: TrinaColumnType.text(), 
+                  titleRenderer: (rendererContext) => ColumnBuilder(text: "Nombre"),
+                  enableEditingMode: false,
+                  
+                  ),
+                TrinaColumn(
+                  title: "Email", 
+                  field: "email", 
+                  type: TrinaColumnType.text(),
+                  titleRenderer: (rendererContext) => ColumnBuilder(text: "Email"),
+                  enableEditingMode: false
+                ),
+                TrinaColumn(
+                  title: "Telefono", 
+                  field: "phone", 
+                  type: TrinaColumnType.text(),
+                  titleRenderer: (rendererContext) => ColumnBuilder(text: "phone"),
+                  enableEditingMode: false
+                ),
+                TrinaColumn(
+                  title: "Etiquetas", 
+                  field: "labels", 
+                  type: TrinaColumnType.text(),
+                  titleRenderer: (rendererContext) => ColumnBuilder(text: "Etiquetas"),
+                  enableEditingMode: false
+
+                ),
+              ], 
+              getStateManager: (trinaGridStateManager ) { clientsBloc.stateManager = trinaGridStateManager; clientsBloc.add(ChangeFilters(ClientListFilters()));},
             ),
           ),
+          SizedBox(height: 16)
         ],
       );
 
     if(ResponsiveBuilder.isDesktop(context)) return child;
 
     return Scaffold(
-      appBar: AppBar(),
       floatingActionButton: FloatingActionButton(onPressed: () => context.goNamed(AppRoutes.NEW_CLIENT_ROUTE.name, extra: context.read<ClientsListBloc>()), tooltip: "Nuevo cliente", child: Icon(Icons.person_add_alt_1_rounded), ),
       body: child,
     );
@@ -100,6 +133,34 @@ class _ClientsListState extends State<ClientsList> {
       GridColumn(width: 110, columnName: "status", label: tinyColumnWrapper(Text("Estado"))),
       GridColumn(columnName: "labels", label: columnWrapper(Text("Etiquetas"))),
     ];
+  }
+}
+
+class ColumnBuilder extends StatelessWidget {
+  const ColumnBuilder({
+    super.key, 
+    required this.text,
+  });
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: () {
+        
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          border: Border(
+            bottom: BorderSide(color: Theme.of(context).colorScheme.outlineVariant, width: 1),
+          )
+        ),
+        padding: EdgeInsets.only(left: 8),
+        child: Text(text),
+        alignment: Alignment.centerLeft,
+      ),
+    );
   }
 }
 

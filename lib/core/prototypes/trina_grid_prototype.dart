@@ -38,7 +38,7 @@ class _TrinaGridExamplePageState extends State<TrinaGridExamplePage> {
       type: TrinaColumnType.text(),
     ),
     TrinaColumn(
-      title: 'Name',
+      title: 'Name2',
       field: 'name',
       type: TrinaColumnType.text(),
     ),
