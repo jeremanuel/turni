@@ -7,9 +7,7 @@ import 'package:intl/intl.dart';
 import 'core/config/app_router.dart';
 import 'core/config/environment.dart';
 import 'core/config/service_locator.dart';
-import 'presentation/admin/states/scaffold_cubit/scaffold_cubit.dart';
 import 'presentation/core/cubit/auth/auth_cubit.dart';
-import 'package:flutter_web_plugins/url_strategy.dart';
 
 void main() async {
   await Environment.initEnvironment();

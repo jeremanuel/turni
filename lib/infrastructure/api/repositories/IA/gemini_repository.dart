@@ -101,15 +101,12 @@ class GeminiRepository extends IARepository{
   void testPrompt() async {
     final response = await _gemini.generateContent([Content.text("Turnos disponibles para mañana")]);
     
-    print(jsonDecode(response.text!)); 
   }
   
   @override
   Future<Map<String, dynamic>> getResult(String prompt) async {
 
     final result = await _gemini.generateContent([Content.text(prompt)]);
-
-    print(result.text);
 
     return jsonDecode(result.text!.replaceAll("json", '').replaceAll('`', ''));
 

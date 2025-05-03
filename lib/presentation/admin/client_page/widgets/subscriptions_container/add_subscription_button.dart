@@ -5,7 +5,6 @@ import '../../../../../core/presentation/components/inputs/dropdown_widget.dart'
 import '../../../../../core/presentation/components/inputs/snackbars/snackbars_functions.dart';
 import '../../../../../core/utils/responsive_builder.dart';
 import '../../../../../domain/entities/client.dart';
-import '../../../../../domain/repositories/subscription_repository.dart';
 import '../../../../core/cubit/auth/auth_cubit.dart';
 import 'add_subscription_container.dart';
 

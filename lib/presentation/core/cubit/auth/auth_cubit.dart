@@ -3,14 +3,13 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:turni/core/config/service_locator.dart';
-import 'package:turni/core/utils/dio_init.dart';
-import 'package:turni/domain/entities/user.dart';
+import '../../../../core/config/service_locator.dart';
+import '../../../../core/utils/dio_init.dart';
+import '../../../../domain/entities/user.dart';
 import 'package:google_sign_in_platform_interface/google_sign_in_platform_interface.dart';
-import 'package:turni/domain/usercases/auth_user_cases.dart';
-import 'package:turni/infrastructure/localstorage/provider/local_storage.dart';
+import '../../../../domain/usercases/auth_user_cases.dart';
+import '../../../../infrastructure/localstorage/provider/local_storage.dart';
 
-import '../../../../core/utils/entities/coordinate.dart';
 import '../../../admin/states/global_data/global_data_cubit.dart';
 
 part 'auth_state.dart';
@@ -36,24 +35,19 @@ class AuthCubit extends Cubit<AuthState> with ChangeNotifier {
   }
 
   void checkAuthStatus() async {
-    final String? token = await LocalStorage.read(LocalStorage.TOKEN_KEY) ?? 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoyLCJpYXQiOjE3MzQ1NjYxNTN9.IjsUpzLzstw3V2G23r8UvzB0OdAsNtpr1aEeNuv-KYs';
-    if (token != null) {
-      await DioInit.addTokenToInterceptor(sl<Dio>(), token);
+    final String token = await LocalStorage.read(LocalStorage.TOKEN_KEY) ?? 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoyLCJpYXQiOjE3MzQ1NjYxNTN9.IjsUpzLzstw3V2G23r8UvzB0OdAsNtpr1aEeNuv-KYs';
+    await DioInit.addTokenToInterceptor(sl<Dio>(), token);
 
-      emit(const AuthIsLoading());
-   
-      final user = await authUserCases.validateToken(token);
+    emit(const AuthIsLoading());
+ 
+    final user = await authUserCases.validateToken(token);
 
-      emit(AuthLogged(userCredential: user));
+    emit(AuthLogged(userCredential: user));
 
-      sl<GlobalDataCubit>();
+    sl<GlobalDataCubit>();
+
+
   
-
-    } else {
-      authUserCases.logout();
-      emit(const AuthNotLogged());
-    }
-
     notifyListeners();
   }
 

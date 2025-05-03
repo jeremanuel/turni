@@ -1,5 +1,4 @@
 import 'package:dio/dio.dart';
-import 'package:freezed_annotation/freezed_annotation.dart';
 
 import '../../../core/config/service_locator.dart';
 import '../../../core/utils/domain_error.dart';

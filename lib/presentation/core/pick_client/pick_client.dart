@@ -1,15 +1,8 @@
-import 'dart:async';
 
-import 'package:async/async.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 
-import '../../../core/config/service_locator.dart';
-import '../../../core/presentation/components/inputs/dropdown_widget.dart';
 import '../../../domain/entities/client.dart';
-import '../../../domain/entities/person.dart';
-import '../../../domain/repositories/admin_repository.dart';
 import 'widgets/new_client_form.dart';
 import 'widgets/search_client_button.dart';
 
@@ -38,7 +31,6 @@ class PickClient extends StatefulWidget {
 }
 
 class _PickClientState extends State<PickClient> {
-  final SearchController _searchController = SearchController();
   bool newMode = false;
   
   final GlobalKey<FormFieldState<Client?>> fieldKey = GlobalKey<FormFieldState<Client?>>();

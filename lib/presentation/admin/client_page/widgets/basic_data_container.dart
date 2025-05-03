@@ -1,11 +1,9 @@
 
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 
 import '../../../../core/config/service_locator.dart';
-import '../../../../core/presentation/components/inputs/animation/splash_animation.dart';
 import '../../../../core/presentation/components/inputs/date_picker/date_picker.dart';
 import '../../../../core/presentation/components/inputs/snackbars/snackbars_functions.dart';
 import '../../../../core/utils/date_functions.dart';
@@ -38,7 +36,7 @@ class BasicDataContainer extends StatelessWidget {
         color: colorScheme.primaryContainer,
         borderRadius:const BorderRadius.vertical(bottom: Radius.circular(20)),
       ),
-      child: (isEditing || client == null) ? EditBasicDataContainer(client: client, onToggleEditing: onToggleEditing) : InfoBasicDataContainer(client: client!, onToggleEditing: onToggleEditing),
+      child: (isEditing || client == null) ? EditBasicDataContainer(client: client, onToggleEditing: onToggleEditing) : InfoBasicDataContainer(client: client, onToggleEditing: onToggleEditing),
     );
   }
 }

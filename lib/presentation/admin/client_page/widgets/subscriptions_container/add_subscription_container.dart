@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
@@ -9,7 +11,6 @@ import '../../../../../domain/entities/club_partition.dart';
 import '../../../../../domain/entities/subscription/client_subscription.dart';
 import '../../../../../domain/entities/subscription/subscription.dart';
 import '../../../../../domain/repositories/subscription_repository.dart';
-import '../../../../auth/check_status_page.dart';
 import '../../../../core/cubit/auth/auth_cubit.dart';
 import '../../client_page.dart';
 

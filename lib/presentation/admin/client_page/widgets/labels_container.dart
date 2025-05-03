@@ -4,7 +4,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 
 import '../../../../core/config/service_locator.dart';
-import '../../../../core/presentation/components/inputs/LabelChip.dart';
+import '../../../../core/presentation/components/inputs/label_chip.dart';
 import '../../../../core/presentation/components/inputs/dropdown_widget.dart';
 import '../../../../core/presentation/components/inputs/snackbars/snackbars_functions.dart';
 import '../../../../domain/entities/label.dart';
@@ -211,7 +211,7 @@ List<Color> labelColors = [
 
             if(value!.length < 3) return "Minimo 3 Caracteres";
 
-            if(value!.length > 30) return "Maximo 30 caracteres";
+            if(value.length > 30) return "Maximo 30 caracteres";
 
             return null;
           },
@@ -223,7 +223,7 @@ List<Color> labelColors = [
             helperText: ""
           ),  
         ),
-        SizedBox(height: 4),
+        const SizedBox(height: 4),
         Scrollbar(
           controller: _scrollController,
           thumbVisibility: true,
@@ -258,7 +258,7 @@ List<Color> labelColors = [
           ),
         ),
         const SizedBox(height:4),
-        Divider(height: 1),
+        const Divider(height: 1),
         const SizedBox(height: 4),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -294,8 +294,8 @@ List<Color> labelColors = [
                     widget.onSelectLabel(
                       Label(-1, labelName, pickedColor, sl<AuthCubit>().getClubId())
                     );
-                  } : null, child: Text("Crear")),
-                  SizedBox(width: 8,)
+                  } : null, child: const Text("Crear")),
+                  const SizedBox(width: 8,)
                 ],
               ),
             ),
@@ -394,8 +394,6 @@ List<Color> labelColors = [
   @override
   Widget build(BuildContext context) {
     
-    final textTheme = Theme.of(context).textTheme;
-
     return SizedBox(
       child: !isCreatingNew ? buildList() : buildNewLabelForm().animate().moveX(),
     )

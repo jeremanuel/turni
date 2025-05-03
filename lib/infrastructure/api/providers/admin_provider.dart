@@ -1,9 +1,7 @@
 import 'package:dio/dio.dart';
 import '../../../core/config/service_locator.dart';
 import '../../../domain/entities/client.dart';
-import '../../../domain/entities/request/google_user_request.dart';
 import '../../../domain/entities/request/page_response.dart';
-import '../../../domain/entities/user.dart';
 
 class AdminProvider {
   final dioInstance = sl<Dio>();

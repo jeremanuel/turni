@@ -1,5 +1,5 @@
-import 'package:turni/domain/entities/user.dart';
-import 'package:turni/domain/repositories/auth_repository.dart';
+import '../entities/user.dart';
+import '../repositories/auth_repository.dart';
 
 class AuthUserCases {
   final AuthRepository authRepository;

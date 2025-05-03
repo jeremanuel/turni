@@ -4,7 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 
 import '../../../../core/config/service_locator.dart';
-import '../../../../core/presentation/components/inputs/LabelChip.dart';
+import '../../../../core/presentation/components/inputs/label_chip.dart';
 import '../../../../core/presentation/components/inputs/dropdown_menu_form.dart';
 import '../../../../core/utils/responsive_builder.dart';
 import '../../states/global_data/global_data_cubit.dart';
@@ -102,7 +102,7 @@ class _ClientListFiltersContainerState extends State<ClientListFiltersContainer>
                             filtersFormKey: clientsBloc.filtersFormKey),
                       ] else ...[
                         const Spacer(),
-                        Text("data5"),
+                        const Text("data5"),
                         IconButton(
                           onPressed: () {},
                           icon: const Icon(Icons.filter_alt_outlined),
@@ -217,41 +217,6 @@ class LabelsFilter extends StatelessWidget {
   }
 }
 
-class _StatusFilter extends StatelessWidget {
-  const _StatusFilter();
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      spacing: 8,
-      children: [
-        const Text("Estado"),
-        DropdownMenuForm(
-          name: "statusId",
-          dropdownMenuEntries: [
-            DropdownMenuEntry(
-                value: 1,
-                labelWidget: Chip(
-                  label: const Text("Activo"),
-                  backgroundColor: Colors.green.shade600,
-                  side: BorderSide.none,
-                ),
-                label: "Activo"),
-            DropdownMenuEntry(
-                value: 1,
-                labelWidget: Chip(
-                  label: const Text("Inactivo"),
-                  backgroundColor: Colors.red.shade600,
-                  side: BorderSide.none,
-                ),
-                label: "Inactivo")
-          ],
-        )
-      ],
-    );
-  }
-}
 
 class _SearchBarFilter extends StatefulWidget {
   const _SearchBarFilter();
@@ -283,7 +248,6 @@ class _SearchBarFilterState extends State<_SearchBarFilter> {
           height: 48,
           child: FormBuilderField<String>(
               onChanged: (value) {
-                print("${_controller?.text} | $value");
                 if (_controller?.text == value) return;
               
                 _controller?.text = value ?? '';

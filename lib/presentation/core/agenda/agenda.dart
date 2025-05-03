@@ -1,11 +1,9 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-import '../../../core/utils/responsive_builder.dart';
 import '../../../core/utils/types/time_interval.dart';
 import '../../../domain/entities/physical_partition.dart';
 import '../../../domain/entities/session.dart';
@@ -324,7 +322,7 @@ class Agenda extends StatelessWidget {
         width: columnWidth- 16,
         height: 40 - 16,
         decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.primaryContainer.withOpacity(0.5),
+              color: Theme.of(context).colorScheme.primaryContainer.withValues(alpha:0.5),
               borderRadius: BorderRadius.circular(4),
         ),
            
@@ -534,7 +532,6 @@ class _BlankSpaceState extends State<BlankSpace> {
         color: Colors.transparent,
         child: InkWell(
           onTap: () {
-            print(widget.physicalPartition!.partitionPhysicalId.toString());
             context.goNamed(
               "SESSION_MANAGER_ADD",
               pathParameters:{

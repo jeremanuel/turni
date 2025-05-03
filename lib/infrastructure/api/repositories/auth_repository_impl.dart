@@ -1,8 +1,8 @@
-import 'package:turni/domain/entities/request/google_user_request.dart';
-import 'package:turni/domain/entities/user.dart';
-import 'package:turni/domain/repositories/auth_repository.dart';
-import 'package:turni/infrastructure/api/providers/auth_provider.dart';
-import 'package:turni/infrastructure/localstorage/provider/local_storage.dart';
+import '../../../domain/entities/request/google_user_request.dart';
+import '../../../domain/entities/user.dart';
+import '../../../domain/repositories/auth_repository.dart';
+import '../providers/auth_provider.dart';
+import '../../localstorage/provider/local_storage.dart';
 
 class AuthRepositoryImpl extends AuthRepository {
   final AuthProvider authProvider;
@@ -13,8 +13,8 @@ class AuthRepositoryImpl extends AuthRepository {
   Future<User> login(User user) async {
     final reqData = GoogleUserRequest(
         id: user.socialId!,
-        displayName: user.person!.name,
-        email: user.person!.email!,
+        displayName: user.person.name,
+        email: user.person.email!,
         photoUrl: user.picture);
 
     return authProvider.login(reqData);

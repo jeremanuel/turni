@@ -1,20 +1,14 @@
 
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/config/service_locator.dart';
-import '../../../../core/presentation/components/inputs/dropdown_widget.dart';
-import '../../../../core/presentation/components/inputs/snackbars/snackbars_functions.dart';
 import '../../../../core/utils/date_functions.dart';
-import '../../../../core/utils/responsive_builder.dart';
-import '../../../../domain/entities/club_partition.dart';
 import '../../../../domain/entities/subscription/client_subscription.dart';
-import '../../../../domain/entities/subscription/subscription.dart';
 import '../../../../domain/repositories/subscription_repository.dart';
-import '../../../core/cubit/auth/auth_cubit.dart';
 import '../client_page.dart';
-import '../../../../domain/entities/client.dart';
 import 'subscriptions_container/add_subscription_button.dart';
 
 class SubscriptionContainer extends StatefulWidget {
@@ -54,7 +48,7 @@ class _SubscriptionContainerState extends State<SubscriptionContainer> {
           else SizedBox(
             height: 152,
             child: ListView.separated(
-              padding: EdgeInsets.symmetric(vertical: 16),
+              padding: const EdgeInsets.symmetric(vertical: 16),
               controller: scrollController,
               itemCount: client.clientSubscriptions?.length ?? 0,
               scrollDirection: Axis.horizontal,

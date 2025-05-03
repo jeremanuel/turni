@@ -25,9 +25,7 @@ class DioInit {
   }
 
   static removeTokenInterceptor(Dio dio) {
-    print('INTERCEPTORS ANTEREMOVED: ${dio.interceptors.length}');
-    print('REMOVE ${dio.interceptors.remove(_authInterceptor)}');
-    print('INTERCEPTORS REMOVED: ${dio.interceptors.length}');
+    dio.interceptors.remove(_authInterceptor);
   }
 
   static Interceptor? _authInterceptor;

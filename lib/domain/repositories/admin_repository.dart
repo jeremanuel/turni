@@ -1,5 +1,3 @@
-import '../../core/utils/domain_error.dart';
-import '../../core/utils/either.dart';
 import '../../core/utils/entities/range_date.dart';
 import '../../core/utils/repository_response.dart';
 import '../entities/client.dart';

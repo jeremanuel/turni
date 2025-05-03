@@ -3,10 +3,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 
-import '../../../../core/presentation/components/inputs/LabelChip.dart';
+import '../../../../core/presentation/components/inputs/label_chip.dart';
 import '../../../../core/presentation/components/paginated_table/paginated_table.dart';
 import '../../../../core/utils/responsive_builder.dart';
-import '../../../../domain/entities/client.dart';
 import '../../../../domain/entities/label.dart';
 import '../../../../domain/entities/request/page_response.dart';
 import '../../../../domain/repositories/admin_repository.dart';
@@ -40,7 +39,7 @@ class ClientsDataSourceSf<Client> extends DataGridSourceCustomASource<Client>  {
         Row(
 
           children: [
-            SizedBox(width: 16),
+            const SizedBox(width: 16),
             Text(cells[0].value.toString(), overflow: TextOverflow.ellipsis)
           ]
         ),

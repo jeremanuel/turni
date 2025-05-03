@@ -152,12 +152,12 @@ class _AddPaymentContainerState extends State<AddPaymentContainer> {
           children: [
             Row(
               children: [
-                SizedBox(width: 8,),
+                const SizedBox(width: 8,),
                 Text("Nuevo pago", style: Theme.of(context).textTheme.titleLarge,),
               ],
             ),
             const Divider(),
-            SizedBox(height: 4,),
+            const SizedBox(height: 4,),
             buildSubscriptionField(),
             buildAmountField(),
             buildPaymentMethodField(),
@@ -167,7 +167,7 @@ class _AddPaymentContainerState extends State<AddPaymentContainer> {
               spacing: 8,
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                TextButton(onPressed: (){}, child: Text("Cancelar")),
+                TextButton(onPressed: (){}, child: const Text("Cancelar")),
                 FilledButton(
                   onPressed: () async {
                 

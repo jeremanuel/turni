@@ -27,7 +27,7 @@ class SessionProvider {
           .map((session) => Session.fromJson(session))
           .toList();
     } catch (error) {
-      print('error: $error');
+      // TODO: Manejar error.
       return [];
     }
   }
@@ -41,7 +41,7 @@ class SessionProvider {
           .map((session) => Session.fromJson(session))
           .toList();
     } catch (error) {
-      print(error);
+      // TODO: Manejar error.
       return [];
     }
   }
@@ -92,13 +92,14 @@ class SessionProvider {
   try { 
 
 
-      final response = await dioInstance.post("/admin/reserve/${sessionId}", data: {"client": client.toJson()});
-      print(response.data['client']);
+      final response = await dioInstance.post("/admin/reserve/$sessionId", data: {"client": client.toJson()});
+      
       return Client.fromJson(response.data['client']);
 
     } catch (e) {      
-      print(e);
+      // TODO: Manejar error.
     }
+  return null;
 
   }
 

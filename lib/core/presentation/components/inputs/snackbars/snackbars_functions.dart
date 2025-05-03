@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../../../../presentation/admin/states/scaffold_cubit/scaffold_cubit.dart';
-import '../../../../config/service_locator.dart';
 
 class SnackbarsFunctions {
   static void showErrorsSnackbar(BuildContext context, String error){

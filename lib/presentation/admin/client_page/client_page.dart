@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_portal/flutter_portal.dart';
 import '../../../core/config/service_locator.dart';
-import '../../../core/presentation/components/inputs/snackbars/snackbars_functions.dart';
 import '../../../domain/entities/client.dart';
 import '../../../domain/entities/payment/payment.dart';
 import '../../../domain/repositories/payment_repository.dart';

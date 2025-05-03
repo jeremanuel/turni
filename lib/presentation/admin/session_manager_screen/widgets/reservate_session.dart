@@ -36,7 +36,7 @@ class _ReservateSessionState extends State<ReservateSession> {
   Widget build(BuildContext context) {
 
     if(widget.session.isReserved){
-      return Center(child: Text("No se puede reservar un turno ya reservado"),);
+      return const Center(child: Text("No se puede reservar un turno ya reservado"),);
     }
 
     return Portal(

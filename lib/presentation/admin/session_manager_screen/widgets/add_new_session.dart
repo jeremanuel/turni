@@ -1,7 +1,4 @@
-import 'dart:async';
-import 'dart:math';
 
-import 'package:async/async.dart';
 import 'package:calendar_view/calendar_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -9,16 +6,11 @@ import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_portal/flutter_portal.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../core/config/service_locator.dart';
-import '../../../../core/presentation/components/inputs/dropdown_widget.dart';
 import '../../../../core/utils/responsive_builder.dart';
 import '../../../../core/utils/types/time_interval.dart';
-import '../../../../domain/entities/client.dart';
 import '../../../../domain/entities/club_partition.dart';
-import '../../../../domain/entities/person.dart';
 import '../../../../domain/entities/physical_partition.dart';
 import '../../../../domain/entities/session.dart';
-import '../../../../domain/repositories/admin_repository.dart';
 import '../../../core/custom_time_picker.dart';
 import '../../../core/pick_client/pick_client.dart';
 import '../bloc/session_manager_bloc.dart';
@@ -142,7 +134,7 @@ class _AddNewSessionState extends State<AddNewSession> {
                       child: FormBuilderTextField(
                         name: "price",
                         decoration: InputDecoration(
-                          prefix: Text("\$"),
+                          prefix: const Text("\$"),
                           border: const OutlineInputBorder(),
                           filled: true,
                           fillColor: Theme.of(context).colorScheme.surface,
@@ -179,8 +171,7 @@ class _AddNewSessionState extends State<AddNewSession> {
                     price: values['price'] != null ? double.parse(values['price']) : 0, 
                     partitionPhysicalId: widget.physicalPartition.partitionPhysicalId,
                     clientId: values['client']?.clientId != null ? int.tryParse(values['client'].clientId) : null,
-                    client: values['client'] != null && values['client'].clientId == null ? values['client'] : null,
-                    physicalPartition: null
+                    client: values['client'] != null && values['client'].clientId == null ? values['client'] : null
 
                   );
 
@@ -209,7 +200,7 @@ class _AddNewSessionState extends State<AddNewSession> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text("Nuevo Turno", style: const TextStyle(fontSize: 16),),
+              const Text("Nuevo Turno", style: TextStyle(fontSize: 16),),
               Text("${widget.selectedTimeInterval.getInitialTextString()} | ${widget.selectedTimeInterval.toStringTime()}", style: const TextStyle(fontSize: 16),),
             ],
           ),

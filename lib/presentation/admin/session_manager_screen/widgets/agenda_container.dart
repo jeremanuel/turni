@@ -76,7 +76,7 @@ class AgendaContainer extends StatelessWidget {
                             color: Theme.of(context)
                                 .colorScheme
                                 .shadow
-                                .withOpacity(0.1))
+                                .withValues(alpha:0.1))
                       ],
                       color: Theme.of(context).colorScheme.surface,
                     ),

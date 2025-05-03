@@ -97,7 +97,7 @@ class PaginationContainer extends StatelessWidget {
       Container(
         decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.primary,
-          borderRadius: BorderRadius.all(Radius.circular(25))
+          borderRadius: const BorderRadius.all(Radius.circular(25))
         ),
         child: IconButton(onPressed: null, icon: Text((currentPage).toString(), style: TextStyle(color: Theme.of(context).colorScheme.onPrimary),)  )),
 
@@ -111,7 +111,7 @@ class PaginationContainer extends StatelessWidget {
 }
 
 class ColumnWrapper extends StatelessWidget {
-  const ColumnWrapper({
+  const ColumnWrapper({super.key, 
     required this.child,
     this.padding = EdgeInsets.zero
   });
@@ -166,7 +166,7 @@ abstract class DataGridSourceCustomASource<T> extends DataGridSource {
     
     notifyListeners();
 
-    final response = await getPaginatedData!(page);
+    final response = await getPaginatedData(page);
 
     if(currentPage > response.total) currentPage = response.total;
 

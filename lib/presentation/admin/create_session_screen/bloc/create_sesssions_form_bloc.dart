@@ -1,7 +1,6 @@
 import 'package:bloc/bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
-import '../../../../core/config/service_locator.dart';
 import '../../../../core/utils/types/time_interval.dart';
 import '../../../../domain/entities/club_partition.dart';
 import '../../../../domain/entities/physical_partition.dart';
@@ -9,7 +8,6 @@ import '../../../../domain/entities/session.dart';
 import '../../../../domain/usercases/session_user_cases.dart';
 import '../../../../infrastructure/api/providers/session_provider.dart';
 import '../../../../infrastructure/api/repositories/session_repository_impl.dart';
-import '../../session_manager_screen/bloc/session_manager_bloc.dart';
 
 part 'create_sesssions_form_event.dart';
 part 'create_sesssions_form_state.dart';
@@ -20,7 +18,7 @@ class CreateSesssionsFormBloc extends Bloc<CreateSesssionsFormEvent, CreateSesss
   final SessionUserCases _sessionUserCases = SessionUserCases(SessionRepositoryImplementation(sessionProvider: SessionProvider()));
 
 
-  CreateSesssionsFormBloc() : super(_CreateSessionManagerState()) {
+  CreateSesssionsFormBloc() : super(const _CreateSessionManagerState()) {
 
 
     on<ChangeSelectionClubPartition>((ChangeSelectionClubPartition event, emit){

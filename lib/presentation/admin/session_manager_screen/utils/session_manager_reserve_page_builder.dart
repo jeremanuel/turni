@@ -66,7 +66,7 @@ Page<dynamic> sessionManagerReservePageBuilder(
     },
     child: ReservateSession(
         session: session,
-        clubPartition: selectedClubPartition!,
+        clubPartition: selectedClubPartition,
         physicalPartition: physicalPartition!,
       ),
   ));

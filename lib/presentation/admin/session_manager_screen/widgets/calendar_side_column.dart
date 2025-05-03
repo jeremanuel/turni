@@ -1,10 +1,8 @@
 import 'package:calendar_date_picker2/calendar_date_picker2.dart';
-import 'package:calendar_view/calendar_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../core/config/service_locator.dart';
 import '../bloc/session_manager_bloc.dart';
 import '../bloc/session_manager_event.dart';
 import '../bloc/session_manager_state.dart';
@@ -67,7 +65,7 @@ class CalendarSideColumn extends StatelessWidget {
         return CalendarDatePicker2(
             onValueChanged: (value) {
               context.read<SessionManagerBloc>()
-                  .add(SessionChangeDateEvent(value.first ?? DateTime.now()));
+                  .add(SessionChangeDateEvent(value.first));
             },
             config: CalendarDatePicker2Config(
            

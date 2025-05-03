@@ -1,7 +1,7 @@
 
 import 'package:flutter/material.dart';
-import 'package:turni/core/config/service_locator.dart';
-import 'package:turni/presentation/core/cubit/auth/auth_cubit.dart';
+import '../../core/config/service_locator.dart';
+import '../core/cubit/auth/auth_cubit.dart';
 
 class AuthCheck extends StatelessWidget {
 
@@ -19,7 +19,7 @@ class AuthCheck extends StatelessWidget {
     return Center(
             child: TextButton(onPressed: () {
               authCubit.checkAuthStatus();
-            }, child:  Text("data")),
+            }, child:  const CircularProgressIndicator()),
         );
   }
 }

@@ -11,13 +11,7 @@ class Labelchip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
 
-    if(label.value == "Primer etiqueta"){
-      print("test");
-    }
-
     final labelColor = label.color ?? Theme.of(context).colorScheme.primaryContainer;
-
-    final labelColorIsDark = ThemeData.estimateBrightnessForColor(labelColor) == Brightness.dark;
 
     final backgroundColor = adjustColorBrightness(labelColor);
 
@@ -25,7 +19,7 @@ class Labelchip extends StatelessWidget {
 
     return Chip(
       onDeleted: onDelete,
-      deleteIcon: Icon(Icons.close),
+      deleteIcon: const Icon(Icons.close),
       label: Text(
         label.value,
         style: TextStyle(

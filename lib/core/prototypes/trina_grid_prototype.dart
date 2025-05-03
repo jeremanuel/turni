@@ -93,7 +93,6 @@ class _TrinaGridExamplePageState extends State<TrinaGridExamplePage> {
           rendererContext: rendererContext,
           formatAsCurrency: true,
           type: TrinaAggregateColumnType.sum,
-          format: '#,###',
           alignment: Alignment.center,
           titleSpanBuilder: (text) {
             return [
@@ -177,7 +176,7 @@ class _TrinaGridExamplePageState extends State<TrinaGridExamplePage> {
               stateManager = event.stateManager;
             },
             onChanged: (TrinaGridOnChangedEvent event) {
-              print(event);
+              
             },
             configuration: const TrinaGridConfiguration(
               style: TrinaGridStyleConfig(

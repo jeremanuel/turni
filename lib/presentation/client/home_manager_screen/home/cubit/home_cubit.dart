@@ -23,8 +23,6 @@ class HomeCubit extends Cubit<HomeState> {
       ClubTypeRepositoryImplementation(clubTypeProvider: ClubTypeProvider()),
     ).excute(authCubit.state.userCredential!.location!);
 
-    print(authCubit.state.userCredential!.location!);
-
     emit(HomeLoaded(clubTypes));
   }
 }

@@ -10,7 +10,7 @@ class SplashAnimation extends StatelessWidget {
   final double height;  
   final Color? color;
 
-      SplashAnimation({
+      const SplashAnimation({super.key, 
     required this.child,
     required this.width,
     required this.height,

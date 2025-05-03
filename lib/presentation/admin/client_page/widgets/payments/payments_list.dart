@@ -1,7 +1,6 @@
 import 'package:data_table_2/data_table_2.dart';
 import 'package:flutter/material.dart';
 
-import '../../../../../core/config/service_locator.dart';
 import '../../../../../core/utils/date_functions.dart';
 import '../../../../../domain/entities/payment/payment.dart';
 import '../../../../../domain/repositories/payment_repository.dart';

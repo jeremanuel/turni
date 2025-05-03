@@ -1,11 +1,10 @@
-import 'dart:math';
 
 import 'package:data_table_2/data_table_2.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/config/app_routes.dart';
-import '../../../../core/presentation/components/inputs/LabelChip.dart';
+import '../../../../core/presentation/components/inputs/label_chip.dart';
 import '../../../../core/utils/responsive_builder.dart';
 import '../../../../domain/entities/client.dart';
 
@@ -69,7 +68,7 @@ class ClientsDataRow extends DataRow2 {
                   Chip(
                     label: const Text("Activo", style: TextStyle(color:Colors.white )),
                     backgroundColor: Colors.green.shade600,
-                    visualDensity: VisualDensity(vertical: -4),
+                    visualDensity: const VisualDensity(vertical: -4),
                     side: BorderSide.none,
                   )
                 ),

@@ -115,9 +115,6 @@ class ClientSessionManagerBloc
               UtilDates.isSameDate(session.startTime, event.newDate))
           .toList();
 
-      print(sessions.length);
-      print(filter.length);
-
       final newSessions = [...state.sessions, ...sessions];
 
       emit(state.copyWith(

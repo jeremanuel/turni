@@ -46,7 +46,7 @@ class _AgendaEditCardState extends State<AgendaEditCard> {
     return Container(
             width: 190,
             decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surfaceVariant,
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
                 borderRadius: BorderRadius.circular(12)
                 ),
             child: Row(

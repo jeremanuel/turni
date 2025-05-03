@@ -3,13 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
-import '../../../../core/config/service_locator.dart';
 import '../../../../domain/entities/client.dart';
 import '../../../../domain/repositories/admin_repository.dart';
 import '../list_utils/client_list_filters.dart';
-import '../list_utils/clients_data_source.dart';
 import '../list_utils/clients_data_source_sf.dart';
-import '../widgets/client_list_filters_container.dart';
 
 part 'clients_list_event.dart';
 part 'clients_list_state.dart';

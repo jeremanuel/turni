@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../../core/config/service_locator.dart';
 import '../../../core/dates_carrousel/dates_carrousel.dart';
 
 import '../bloc/session_manager_bloc.dart';

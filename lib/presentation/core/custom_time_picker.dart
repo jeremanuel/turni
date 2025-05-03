@@ -111,7 +111,7 @@ class _CustomTimePickerState extends State<CustomTimePicker> {
                   counterText: "",     
                   contentPadding: EdgeInsets.zero,                                            
                   filled: true,
-                  fillColor: Theme.of(context).colorScheme.surface.withOpacity(0.5),
+                  fillColor: Theme.of(context).colorScheme.surface.withValues(alpha:0.5),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),                      
                   focusedBorder: OutlineInputBorder(
                     borderSide: BorderSide(color: Theme.of(context).colorScheme.primary )
@@ -121,10 +121,10 @@ class _CustomTimePickerState extends State<CustomTimePicker> {
               
               ),
             ),
-            SizedBox(
+            const SizedBox(
               height: 80,
               width: 25,
-              child: const Text(":", style: TextStyle(fontSize: 40 ), textAlign: TextAlign.center,)),
+              child:  Text(":", style: TextStyle(fontSize: 40 ), textAlign: TextAlign.center,)),
             SizedBox(
               height: 100,
               width: 100,
@@ -159,7 +159,7 @@ class _CustomTimePickerState extends State<CustomTimePicker> {
                   counterText: "",     
                   contentPadding: EdgeInsets.zero,                              
                   filled: true,
-                  fillColor: Theme.of(context).colorScheme.surface.withOpacity(0.5),
+                  fillColor: Theme.of(context).colorScheme.surface.withValues(alpha:0.5),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),                      
                   focusedBorder: OutlineInputBorder(
                     borderSide: BorderSide(color: Theme.of(context).colorScheme.primary )
@@ -185,8 +185,10 @@ class _CustomTimePickerState extends State<CustomTimePicker> {
   
             if(intValue == null) return "Valor incorrecto";
   
-            if(intValue > 59 || intValue < 0) return "Valor fuera de rango"; 
-          }
+            if(intValue > 59 || intValue < 0) return "Valor fuera de rango";
+
+            return null; 
+        }
 
   String? validateHour(value) {
             if(value == null || value == "") return "Inserte una hora";

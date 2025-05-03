@@ -7,7 +7,6 @@ import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 
 import '../../../core/config/app_routes.dart';
 import '../../../core/presentation/components/paginated_table/paginated_table.dart';
-import '../../../core/prototypes/trina_grid_prototype.dart';
 import '../../../core/utils/responsive_builder.dart';
 import '../../../domain/entities/client.dart';
 import 'bloc/clients_list_bloc.dart';
@@ -35,9 +34,7 @@ class _ClientsListState extends State<ClientsList> {
     super.dispose();
   }
 
-  void _onDataSourceChanged() {
-    setState(() {});
-  }
+
 
   @override
   Widget build(BuildContext context) {

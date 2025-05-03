@@ -1,8 +1,5 @@
 import '../../core/utils/domain_error.dart';
 import '../../core/utils/either.dart';
-import '../../core/utils/entities/coordinate.dart';
-import '../../core/utils/entities/range_date.dart';
-import '../../core/utils/types/time_interval.dart';
 import '../entities/client.dart';
 import '../entities/club_partition.dart';
 import '../entities/session.dart';

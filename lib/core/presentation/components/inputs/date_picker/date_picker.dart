@@ -115,9 +115,9 @@ class ChildWidget extends StatelessWidget {
       },
       decoration: inputDecoration.copyWith(
         helperText: field.value == null ? null : ("${DateFunctions.differenceInYears(field.value!)} años"),
-        suffixIcon: field.value != null ? IconButton(onPressed: (){field.didChange(null);}, icon: Icon(Icons.close)) : null,
+        suffixIcon: field.value != null ? IconButton(onPressed: (){field.didChange(null);}, icon: const Icon(Icons.close)) : null,
         errorText: field.errorText,
-        errorStyle: TextStyle(fontSize: 10, height: 0.8)
+        errorStyle: const TextStyle(fontSize: 10, height: 0.8)
       ),
       controller: textEditingController,
       onTap: () {
@@ -136,7 +136,7 @@ class DateTextInputFormatter extends TextInputFormatter {
     String formatted = '';
     int cursorPosition = newValue.selection.end;
 
-    if (text.length > 0) {
+    if (text.isNotEmpty) {
       formatted += text.substring(0, text.length > 2 ? 2 : text.length);
       if (text.length > 2) formatted += '/';
     }
