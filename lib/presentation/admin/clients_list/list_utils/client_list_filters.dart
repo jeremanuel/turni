@@ -11,6 +11,7 @@ class ClientListFilters with _$ClientListFilters {
   factory ClientListFilters({@Default("") String? search, int? statusId, int? labelId}) = _ClientListFilters;
 
   factory ClientListFilters.fromJson(Map<String, dynamic> json) => _$ClientListFiltersFromJson(json);
+  
 
 }
 

@@ -61,7 +61,11 @@ class _ClientpageState extends State<Clientpage> {
 
     return Portal(
           child: ClientInherited(
-              (newClient) => setState(() {client = newClient; widget.onUpdateClient(newClient); context.read<ClientsListBloc>().state.dataSource.loadPage(context.read<ClientsListBloc>().state.dataSource.currentPage); }),
+              (newClient) => 
+              setState(() {
+                client = newClient; widget.onUpdateClient(newClient); 
+                //context.read<ClientsListBloc>().state.dataSource.loadPage(context.read<ClientsListBloc>().state.dataSource.currentPage); TODO: rehacer
+              }),
               client: client!,
               child: Container(
                 color: colorScheme.surfaceContainer,
@@ -115,7 +119,7 @@ class _ClientpageState extends State<Clientpage> {
       client = c; isEditingMode = false;
     });
 
-    context.read<ClientsListBloc>().state.dataSource.loadPage(context.read<ClientsListBloc>().state.dataSource.currentPage);
+    //context.read<ClientsListBloc>().state.dataSource.loadPage(context.read<ClientsListBloc>().state.dataSource.currentPage); TODO: rehacer
   }
 }
 class PaymentsContainer extends StatefulWidget {

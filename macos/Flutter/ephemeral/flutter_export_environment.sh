@@ -1,6 +1,6 @@
 #!/bin/sh
 # This is a generated file; do not edit or check into version control.
-export "FLUTTER_ROOT=C:\Users\Jeremias\fvm\versions\3.29.3"
+export "FLUTTER_ROOT=C:\Users\Jeremias\fvm\versions\3.31.0-0.1.pre"
 export "FLUTTER_APPLICATION_PATH=C:\Users\Jeremias\Desktop\Proyectos\TNPD\turni"
 export "COCOAPODS_PARALLEL_CODE_SIGN=true"
 export "FLUTTER_BUILD_DIR=build"

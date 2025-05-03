@@ -6,12 +6,14 @@ import 'package:trina_grid/trina_grid.dart';
 
 import '../../../../core/config/service_locator.dart';
 import '../../../../core/presentation/components/inputs/LabelChip.dart';
+import '../../../../core/presentation/components/trina_paginated_table/trina_paginated_table.dart';
 import '../../../../domain/entities/client.dart';
 import '../../../../domain/repositories/admin_repository.dart';
 import '../list_utils/client_list_filters.dart';
 import '../list_utils/clients_data_source.dart';
 import '../list_utils/clients_data_source_sf.dart';
 import '../widgets/client_list_filters_container.dart';
+import 'package:turni/domain/entities/request/page_response.dart';
 
 part 'clients_list_event.dart';
 part 'clients_list_state.dart';
@@ -29,42 +31,98 @@ class ClientsListBloc extends Bloc<ClientsListEvent, ClientsListState> {
 
     on<ChangeFilters>((event, emit) async {
 
+    final data = await adminRepository.getClients(event.newFilter.search ?? '', 1);
 
-    final data = await adminRepository.getClients("", 1);
+    emit(state.copyWith(
+      filters: event.newFilter
+    ));
+
 
     data.whenOrNull(
       right: (value) {
-        stateManager.scroll.bodyRowsVertical!.jumpTo(0);
-        stateManager.refRows.clearFromOriginal();
+        
+        stateManager.scroll.bodyRowsVertical?.jumpTo(0);
+        stateManager.refRows.clear();
         stateManager.insertRows(0, value.data.map(_clientToRow).toList());
-        stateManager.totalPage ;
+        stateManager.setPageSize(15);
+        stateManager.setShowLoading(false);
+
+        emit(
+          state.copyWith(
+            totalClients: value.total
+          )
+        );
+        
       },
     );
 
     });
 
-    on<ChangeSort>((event, emit){
-        var dataSource = state.dataSource;
+    on<OnChangePage>((event, emit) async {
 
-/*       dataSource.columnNameSort = event.columnIndex == 0 ? 'id' : event.columnIndex == 1 ? 'name' : 'phone';
-      dataSource.isAscending = event.ascending;
- */
+    final data = await adminRepository.getClients("", event.newPage);
+
+    data.whenOrNull(
+      right: (value) {
+        
+        rebuildRows(value);
+
+        emit(
+          state.copyWith(
+            totalClients: value.total
+          )
+        );
+        
+      },  
+    );
+
+    });
+
+
+    on<ChangeSort>((event, emit) async { 
+
+
       emit(
         state.copyWith(
-          dataSource: dataSource
+          columnNameSort: event.columnNameSort,
+          isAscending: event.ascending
       ));
 
-      dataSource.loadPage(dataSource.currentPage);
+      final data = await adminRepository.getClients("", 1, event.columnNameSort, event.ascending);
+
+
+      data.whenOrNull(
+        right: (value) {
+          
+          rebuildRows(value);
+
+          emit(
+            state.copyWith(
+              totalClients: value.total
+            )
+          );
+          
+        },
+    );
+
 
     });
   }
 
+  void rebuildRows(PageResponse<Client> value) {
+    stateManager.scroll.bodyRowsVertical?.jumpTo(0);
+    stateManager.refRows.clear();
+    stateManager.insertRows(0, value.data.map(_clientToRow).toList());
+    stateManager.setPageSize(15);
+    stateManager.setShowLoading(false);
+  }
+
   bool hasDefaultFilters(){
-    return (state.dataSource.filters.search == null || state.dataSource.filters.search!.isEmpty) && state.dataSource.filters.statusId == null && state.dataSource.filters.labelId == null;
+    return (state.filters?.search == null || (state.filters?.search?.isEmpty ?? false)) && state.filters?.statusId == null && state.filters?.labelId == null;
   }
 
   bool isDirty(Map<String, dynamic> filters){
-    return (state.dataSource.filters.search ?? '') != (filters['search'] ?? '')|| state.dataSource.filters.statusId != filters['statusId'] || state.dataSource.filters.labelId != filters['labelId'];
+    return (state.filters?.search ?? '') != (filters['search'] ?? '')|| state.filters?.statusId != filters['statusId'] || state.filters?.labelId != filters['labelId'];
   }
 
   TrinaRow _clientToRow(Client client){
@@ -95,7 +153,7 @@ class ClientsListBloc extends Bloc<ClientsListEvent, ClientsListState> {
               child: Row(
                 spacing: 4,
                 children: [
-                  ...client.labels!.map((e) => Labelchip(e)).toList()
+                  ...client.labels!.map((e) => Labelchip(e))
                 ],
               ),
             );

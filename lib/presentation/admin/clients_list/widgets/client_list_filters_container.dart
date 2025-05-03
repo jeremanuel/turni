@@ -55,7 +55,7 @@ class _ClientListFiltersContainerState extends State<ClientListFiltersContainer>
     final colorSchenme = Theme.of(context).colorScheme;
 
     return FormBuilder(
-      initialValue: clientsBloc.state.dataSource.filters.toJson(),
+      initialValue: clientsBloc.state.filters?.toJson() ?? {},
       key: clientsBloc.filtersFormKey,
       onChanged: () => setState(() {}),
       child: CallbackShortcuts(
@@ -102,7 +102,6 @@ class _ClientListFiltersContainerState extends State<ClientListFiltersContainer>
                             filtersFormKey: clientsBloc.filtersFormKey),
                       ] else ...[
                         const Spacer(),
-                        Text("data5"),
                         IconButton(
                           onPressed: () {},
                           icon: const Icon(Icons.filter_alt_outlined),
@@ -175,19 +174,24 @@ class _ClearFiltersButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return TextButton(
-        onPressed: !clientsBloc.hasDefaultFilters()
-            ? () {
-                filtersFormKey.currentState
-                    ?.patchValue(ClientListFilters().toJson());
-                clientsBloc
-                    .add(ClientsListEvent.changeFilters(ClientListFilters()));
-              }
-            : null,
-        child: const Row(
-          spacing: 8,
-          children: [Icon(Icons.filter_alt_off_sharp), Text("Limpiar Filtros")],
-        ));
+    return BlocBuilder<ClientsListBloc, ClientsListState>(
+      buildWhen: (previous, current) => previous.filters != current.filters,
+      builder: (context, state) {
+       return TextButton(
+          onPressed: !clientsBloc.hasDefaultFilters()
+              ? () {
+                  filtersFormKey.currentState
+                      ?.patchValue(ClientListFilters().toJson());
+                  clientsBloc
+                      .add(ClientsListEvent.changeFilters(ClientListFilters()));
+                }
+              : null,
+          child: const Row(
+            spacing: 8,
+            children: [Icon(Icons.filter_alt_off_sharp), Text("Limpiar Filtros")],
+          )); 
+      },
+    );
   }
 }
 

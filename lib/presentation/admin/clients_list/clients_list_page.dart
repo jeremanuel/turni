@@ -1,5 +1,6 @@
 // ignore_for_file: prefer_const_constructors
 
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -9,9 +10,7 @@ import 'package:trina_grid/trina_grid.dart';
 import '../../../core/config/app_routes.dart';
 import '../../../core/presentation/components/paginated_table/paginated_table.dart';
 import '../../../core/presentation/components/trina_paginated_table/trina_paginated_table.dart';
-import '../../../core/prototypes/trina_grid_prototype.dart';
 import '../../../core/utils/responsive_builder.dart';
-import '../../../domain/entities/client.dart';
 import 'bloc/clients_list_bloc.dart';
 import 'list_utils/client_list_filters.dart';
 import 'widgets/client_list_filters_container.dart';
@@ -25,7 +24,6 @@ class ClientsList extends StatefulWidget {
 }
 
 class _ClientsListState extends State<ClientsList> {
-
   bool isLoading = false;
 
   @override
@@ -40,97 +38,148 @@ class _ClientsListState extends State<ClientsList> {
 
   @override
   Widget build(BuildContext context) {
-
     final clientsBloc = BlocProvider.of<ClientsListBloc>(context);
-    
+
     final child = Column(
-        children: [
-          if(ResponsiveBuilder.isDesktop(context)) ClientListHeader(),
-          ClientListFiltersContainer(),
-          Expanded(
-            child: TrinaPaginatedTable(
-              loadPage: (page, pageSize) {
-
-                //clientsBloc.add(ClientsListLoadEvent(page: page, pageSize: pageSize));
-              },
-              columns: [
-                TrinaColumn(
-                  title: "Nombre", 
-                  field: "name", 
-                  type: TrinaColumnType.text(), 
-                  titleRenderer: (rendererContext) => ColumnBuilder(text: "Nombre"),
-                  enableEditingMode: false,
-                  
+      children: [
+        if (ResponsiveBuilder.isDesktop(context)) ClientListHeader(),
+        ClientListFiltersContainer(),
+        BlocBuilder<ClientsListBloc, ClientsListState>(
+          builder: (context, state) {
+            return Expanded(
+              child: TrinaPaginatedTable(
+                
+                loadPage: (page, p1) {
+                  clientsBloc.add(OnChangePage(page));
+                },
+                totalRows: clientsBloc.state.totalClients ?? 0,
+                columns: [
+                  TrinaColumn(
+                      title: "Nombre",
+                      field: "name",
+                      type: TrinaColumnType.text(),
+                      //titleRenderer: (rendererContext) => ColumnBuilder(text: "Nombre", onSort:(direction) => clientsBloc.add(ChangeSort("name", direction)), sortDirection: state.columnNameSort == "name" ? state.isAscending : null),
+                      enableEditingMode: false,
+                      suppressedAutoSize: true, 
+                      
+                      ),
+                  TrinaColumn(
+                      title: "Email",
+                      field: "email",
+                      type: TrinaColumnType.text(),
+                /*       titleRenderer: (rendererContext) =>
+                          ColumnBuilder(
+                            text: "Email", 
+                            onSort: (direction) {
+                            
+                          },
+                        ), */
+                      enableEditingMode: false,
+                      suppressedAutoSize: true,
+                      width: 300),
+                  TrinaColumn(
+                      title: "Telefono",
+                      field: "phone",
+                      type: TrinaColumnType.text(),
+           /*            titleRenderer: (rendererContext) =>
+                          ColumnBuilder(text: "phone", onSort: (bool direction) {  },), */
+                      enableEditingMode: false,
+                      suppressedAutoSize: true,
+                      width: 150),
+                  TrinaColumn(
+                    title: "Etiquetas",
+                    field: "labels",
+                    type: TrinaColumnType.text(),
+/*                     titleRenderer: (rendererContext) =>
+                        ColumnBuilder(text: "Etiquetas", onSort: (bool direction) {  },),
+ */                    enableEditingMode: false,
                   ),
-                TrinaColumn(
-                  title: "Email", 
-                  field: "email", 
-                  type: TrinaColumnType.text(),
-                  titleRenderer: (rendererContext) => ColumnBuilder(text: "Email"),
-                  enableEditingMode: false
-                ),
-                TrinaColumn(
-                  title: "Telefono", 
-                  field: "phone", 
-                  type: TrinaColumnType.text(),
-                  titleRenderer: (rendererContext) => ColumnBuilder(text: "phone"),
-                  enableEditingMode: false
-                ),
-                TrinaColumn(
-                  title: "Etiquetas", 
-                  field: "labels", 
-                  type: TrinaColumnType.text(),
-                  titleRenderer: (rendererContext) => ColumnBuilder(text: "Etiquetas"),
-                  enableEditingMode: false
+                ],
+                getStateManager: (trinaGridStateManager) {
+                  clientsBloc.stateManager = trinaGridStateManager;
+                  clientsBloc.add(ChangeFilters(ClientListFilters()));
+                },
+              ),
+            );
+          },
+        ),
+        SizedBox(height: 16)
+      ],
+    );
 
-                ),
-              ], 
-              getStateManager: (trinaGridStateManager ) { clientsBloc.stateManager = trinaGridStateManager; clientsBloc.add(ChangeFilters(ClientListFilters()));},
-            ),
-          ),
-          SizedBox(height: 16)
-        ],
-      );
-
-    if(ResponsiveBuilder.isDesktop(context)) return child;
+    if (ResponsiveBuilder.isDesktop(context)) return child;
 
     return Scaffold(
-      floatingActionButton: FloatingActionButton(onPressed: () => context.goNamed(AppRoutes.NEW_CLIENT_ROUTE.name, extra: context.read<ClientsListBloc>()), tooltip: "Nuevo cliente", child: Icon(Icons.person_add_alt_1_rounded), ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => context.goNamed(AppRoutes.NEW_CLIENT_ROUTE.name,
+            extra: context.read<ClientsListBloc>()),
+        tooltip: "Nuevo cliente",
+        child: Icon(Icons.person_add_alt_1_rounded),
+      ),
       body: child,
     );
   }
 
   List<GridColumn> getColumns() {
-
     final mobileColumns = [
-      GridColumn(columnName: "name", label: const ColumnWrapper(padding: EdgeInsets.only(left: 16),child: Text("Cliente"),), width: 200,),
-      GridColumn(columnName: "phone", label: const ColumnWrapper(child: Text("Telefono")), width: 150),
-      GridColumn(columnName: "labels", label: const ColumnWrapper(child: Text("Etiquetas")), columnWidthMode: ColumnWidthMode.fill)
+      GridColumn(
+        columnName: "name",
+        label: const ColumnWrapper(
+          padding: EdgeInsets.only(left: 16),
+          child: Text("Cliente"),
+        ),
+        width: 200,
+      ),
+      GridColumn(
+          columnName: "phone",
+          label: const ColumnWrapper(child: Text("Telefono")),
+          width: 150),
+      GridColumn(
+          columnName: "labels",
+          label: const ColumnWrapper(child: Text("Etiquetas")),
+          columnWidthMode: ColumnWidthMode.fill)
     ];
 
     final desktopColumns = [
-      GridColumn(columnName: "id", label: const ColumnWrapper(child: Center(child: Text("ID"))),  width: 80),
-      GridColumn(columnName: "name", label: const ColumnWrapper(child: Text("Cliente")), width: 300),
-      GridColumn(columnName: "phone", label: const ColumnWrapper(child: Text("Telefono")), width: 200),
-      GridColumn(columnName: "email", label: const ColumnWrapper(child: Text("Email")), width: 350),
-      GridColumn(columnName: "labels", label: const ColumnWrapper(child: Text("Etiquetas")), columnWidthMode: ColumnWidthMode.fill)
+      GridColumn(
+          columnName: "id",
+          label: const ColumnWrapper(child: Center(child: Text("ID"))),
+          width: 80),
+      GridColumn(
+          columnName: "name",
+          label: const ColumnWrapper(child: Text("Cliente")),
+          width: 300),
+      GridColumn(
+          columnName: "phone",
+          label: const ColumnWrapper(child: Text("Telefono")),
+          width: 200),
+      GridColumn(
+          columnName: "email",
+          label: const ColumnWrapper(child: Text("Email")),
+          width: 350),
+      GridColumn(
+          columnName: "labels",
+          label: const ColumnWrapper(child: Text("Etiquetas")),
+          columnWidthMode: ColumnWidthMode.fill)
     ];
 
     return ResponsiveBuilder.isMobile(context) ? mobileColumns : desktopColumns;
-
   }
 
   List<GridColumn> get buildColumns {
     return [
       GridColumn(
         width: 80,
-        columnName: "id", 
+        columnName: "id",
         label: tinyColumnWrapper(Text("ID")),
       ),
-      GridColumn(columnName: "name", label: columnWrapper(Text("Nombre"))), 
+      GridColumn(columnName: "name", label: columnWrapper(Text("Nombre"))),
       GridColumn(columnName: "phone", label: columnWrapper(Text("Telefono"))),
       GridColumn(columnName: "email", label: columnWrapper(Text("Email"))),
-      GridColumn(width: 110, columnName: "status", label: tinyColumnWrapper(Text("Estado"))),
+      GridColumn(
+          width: 110,
+          columnName: "status",
+          label: tinyColumnWrapper(Text("Estado"))),
       GridColumn(columnName: "labels", label: columnWrapper(Text("Etiquetas"))),
     ];
   }
@@ -138,49 +187,64 @@ class _ClientsListState extends State<ClientsList> {
 
 class ColumnBuilder extends StatelessWidget {
   const ColumnBuilder({
-    super.key, 
-    required this.text,
+    super.key,
+    required this.text, 
+    this.sortDirection, required this.onSort,
   });
 
   final String text;
+  final bool? sortDirection;
+  final Function(bool direction) onSort;
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () {
-        
+        onSort(sortDirection != null ? !sortDirection! : true);
       },
       child: Container(
         decoration: BoxDecoration(
-          border: Border(
-            bottom: BorderSide(color: Theme.of(context).colorScheme.outlineVariant, width: 1),
-          )
-        ),
+            border: Border(
+          bottom: BorderSide(
+              color: Theme.of(context).colorScheme.outlineVariant),
+        )),
         padding: EdgeInsets.only(left: 8),
-        child: Text(text),
         alignment: Alignment.centerLeft,
+        child: Row(
+          children: [
+            Text(text),
+             if(sortDirection != null)
+            Icon(
+              sortDirection! ? Icons.arrow_upward : Icons.arrow_downward,
+              size: 16,
+              color: Theme.of(context).colorScheme.outlineVariant,
+            )
+          ],
+        ),
       ),
     );
   }
 }
 
 columnWrapper(Text text) => Column(
-  children: [
-    Expanded(
-      child: Padding(
-        padding: const EdgeInsets.only(left: 8),
-        child: Align(alignment: Alignment.centerLeft, child: text),
-      ),
-    ),
-    Divider(height: 1),
-  ],
-);
+      children: [
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.only(left: 8),
+            child: Align(alignment: Alignment.centerLeft, child: text),
+          ),
+        ),
+        Divider(height: 1),
+      ],
+    );
 
 tinyColumnWrapper(Text text) => Column(
-  children: [
-    Expanded(
-      child: Center(child: text),
-    ),
-    Divider(height: 1),
-  ],
-);
+      children: [
+        Expanded(
+          child: Center(child: text),
+        ),
+        Divider(height: 1),
+      ],
+    );
+
+
