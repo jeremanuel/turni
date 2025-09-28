@@ -2,11 +2,11 @@ import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../core/config/app_routes.dart';
+import '../../../../core/config/router/app_routes.dart';
 import '../bloc/session_manager_bloc.dart';
 import '../bloc/session_manager_event.dart';
 import '../bloc/session_manager_state.dart';
-import '../widgets/reservate_session.dart';
+import '../widgets/session_info/session_info.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 /// Metodo utilizado en el pagebuilder de la ruta.
@@ -64,7 +64,7 @@ Page<dynamic> sessionManagerReservePageBuilder(
 
       
     },
-    child: ReservateSession(
+    child: SessionInfo(
         session: session,
         clubPartition: selectedClubPartition,
         physicalPartition: physicalPartition!,

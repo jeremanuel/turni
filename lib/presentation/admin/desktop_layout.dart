@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_portal/flutter_portal.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/config/service_locator.dart';
@@ -25,34 +26,35 @@ class DesktopLayout extends StatelessWidget {
       endDrawer: BlocBuilder<ScaffoldCubit, ScaffoldCubitState>(
         bloc: sl<ScaffoldCubit>(),
         builder: (context, state) {
-          
-        
-    
         return state.child!;
-      },),
-      body:  Padding(
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        child: Row(
-          children: [
-                       
-            const SizedBox(width: 20,),
-            SideBar(child: child),
-            const SizedBox(width: 20,),
-            
-            Expanded(
-              child: Material(
-                elevation: 25,
-                color: Theme.of(context2).colorScheme.surfaceContainer,
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: child,
+      }),
+      body:  Scaffold(
+        body: Portal(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            child: Row(
+              children: [
+                           
+                const SizedBox(width: 20,),
+                SideBar(child: child),
+                const SizedBox(width: 20,),
+                
+                Expanded(
+                  child: Material(
+                    elevation: 25,
+                    color: Theme.of(context2).colorScheme.surfaceContainer,
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: child,
+                    ),
+                  ),
                 ),
-              ),
+                const SizedBox(width: 20,),
+                
+                
+              ],
             ),
-            const SizedBox(width: 20,),
-            
-            
-          ],
+          ),
         ),
       ),
     );

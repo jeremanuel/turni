@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_portal/flutter_portal.dart';
 import '../../../core/config/service_locator.dart';
+import '../../../core/utils/domain_error.dart';
 import '../../../domain/entities/client.dart';
 import '../../../domain/entities/payment/payment.dart';
+import '../../../domain/repositories/admin_repository.dart';
 import '../../../domain/repositories/payment_repository.dart';
 import '../clients_list/bloc/clients_list_bloc.dart';
 import 'widgets/add_payment_button.dart';
@@ -36,12 +38,39 @@ class _ClientpageState extends State<Clientpage> {
 
   Client? client;
   bool isEditingMode = false;
+  bool isLoadingClient = false;
+  final AdminRepository _adminRepository = sl<AdminRepository>();
+  DomainError? error;
 
   @override
   void initState()  { 
     isEditingMode = widget.createNewClient;
     client = widget.client;
+    
+    if(client == null && widget.clientId != -1){
+      loadClient();
+      isLoadingClient = true;
+    }
+
     super.initState();
+  }
+
+
+  loadClient() async {
+    final clientResponse = await _adminRepository.getClients("", 1, null, null, widget.clientId);
+
+    clientResponse.when(
+      left: (failure) {
+        error = failure;
+        isLoadingClient = false;
+        setState(() {});
+      }, 
+      right: (value) {
+        client = value.data.first;
+        isLoadingClient = false;
+        setState(() {});
+      },
+    );
   }
 
 
@@ -56,15 +85,36 @@ class _ClientpageState extends State<Clientpage> {
       return buildNewClientMode(colorScheme);
     }
 
-    if(client == null) return const Center(child: Text("No pudo cargar los datos del cliente"));
+    if(isLoadingClient){
+      return Container(
+        width: 800,
+        color: colorScheme.surfaceContainer,
+        child:const Center(
+          child: CircularProgressIndicator(),
+        ),
+
+      );
+    }
+
+    if(error != null){
+      return Container(
+        width: 800,
+        color: colorScheme.surfaceContainer,
+        child: Center(
+          child: Text(error!.message, style: const TextStyle(color: Colors.red),),
+        ),
+      );
+    }
 
     return Portal(
           child: ClientInherited(
-              (newClient) => setState(() {client = newClient; widget.onUpdateClient(newClient); context.read<ClientsListBloc>().state.dataSource.loadPage(context.read<ClientsListBloc>().state.dataSource.currentPage); }),
+              (newClient) => setState(() {
+                client = newClient; widget.onUpdateClient(newClient); 
+              }),
               client: client!,
               child: Container(
                 color: colorScheme.surfaceContainer,
-                width: 700,
+                width: 800,
                 child: Builder(
                   builder: (context) {
         
@@ -84,7 +134,7 @@ class _ClientpageState extends State<Clientpage> {
                               LabelsContainer(),
                               SizedBox(height: 24)
                       ],
-                    ),) ]);
+                    ))]);
                   }
                 )
               
@@ -114,7 +164,8 @@ class _ClientpageState extends State<Clientpage> {
       client = c; isEditingMode = false;
     });
 
-    context.read<ClientsListBloc>().state.dataSource.loadPage(context.read<ClientsListBloc>().state.dataSource.currentPage);
+    widget.onUpdateClient(c);
+
   }
 }
 class PaymentsContainer extends StatefulWidget {

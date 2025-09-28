@@ -5,7 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 
-import '../../../core/config/app_routes.dart';
+import '../../../core/config/router/app_routes.dart';
 import '../../../core/presentation/components/paginated_table/paginated_table.dart';
 import '../../../core/utils/responsive_builder.dart';
 import '../../../domain/entities/client.dart';
@@ -59,7 +59,16 @@ class _ClientsListState extends State<ClientsList> {
 
     return Scaffold(
       appBar: AppBar(),
-      floatingActionButton: FloatingActionButton(onPressed: () => context.goNamed(AppRoutes.NEW_CLIENT_ROUTE.name, extra: context.read<ClientsListBloc>()), tooltip: "Nuevo cliente", child: Icon(Icons.person_add_alt_1_rounded), ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => context.goNamed(
+          AppRoutes.NEW_CLIENT_ROUTE.name, 
+          extra: {
+            'onClientCreated': (Client client) => context.read<ClientsListBloc?>()?.state.dataSource.loadPage(context.read<ClientsListBloc>().state.dataSource.currentPage)
+          }
+        ), 
+        tooltip: "Nuevo cliente", 
+        child: Icon(Icons.person_add_alt_1_rounded), 
+      ),  
       body: child,
     );
   }

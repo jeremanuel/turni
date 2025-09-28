@@ -94,6 +94,7 @@ class AgendaContainer extends StatelessWidget {
           previous.selectedClubPartition != current.selectedClubPartition ||
           previous.isLoadingSessions != current.isLoadingSessions || previous.selectedSession != current.selectedSession,
       builder: (context, state) {
+       
         if (state.isLoadingSessions) {
           return const Center(
             child: CircularProgressIndicator(),

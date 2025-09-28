@@ -23,6 +23,14 @@ class _PaymentslistState extends State<Paymentslist> {
     final colorScheme = Theme.of(context).colorScheme;
 
     return AsyncPaginatedDataTable2(
+      errorBuilder: (error) {
+        return Center(
+          child: Text(
+            error.toString(),
+            style: TextStyle(color: colorScheme.error),
+          ),
+        );
+      },
       empty: const Center(child: Text("El cliente no tiene pagos cargados")),
       headingRowColor: WidgetStateProperty.resolveWith((states) => colorScheme.surfaceContainer),
       columns: const [

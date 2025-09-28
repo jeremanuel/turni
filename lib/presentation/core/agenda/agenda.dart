@@ -115,9 +115,9 @@ class Agenda extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-
+    
         final remainingSpace = calculateRemainingSpace(constraints);
-
+    
         return Padding(
           padding: const EdgeInsets.only(top: 16),
           child: ScrollConfiguration(
@@ -197,10 +197,13 @@ class Agenda extends StatelessWidget {
       children: [
         buildHeaders(context),
         Expanded(
-          child: Row(
-            children: physicalPartitions
-                .map((el) => buildPartitionColumn(el, context))
-                .toList(),
+          child: Material(
+            type: MaterialType.transparency,
+            child: Row(
+              children: physicalPartitions
+                  .map((el) => buildPartitionColumn(el, context))
+                  .toList(),
+            ),
           ),
         ),
       ],
@@ -528,30 +531,27 @@ class _BlankSpaceState extends State<BlankSpace> {
           isHovered = false;
         });
       },      
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () {
-            context.goNamed(
-              "SESSION_MANAGER_ADD",
-              pathParameters:{
-                "idPhysicalPartition":widget.physicalPartition!.partitionPhysicalId.toString()
-              },
-              queryParameters: {
-                "start": dateFormat.format(widget.blankSpaceTimeInterval!.initialDate!),
-                'end':dateFormat.format(widget.blankSpaceTimeInterval!.endDate!)
-              },
-            );
-          },
-          child: SizedBox(
-            height: widget.height.toDouble(),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 2),
-              child: Center(
-                child: isHovered ? childHovered : childNotHovered,
-              ),
-            )                       
-          ),
+      child: InkWell(
+        onTap: () {
+          context.goNamed(
+            "SESSION_MANAGER_ADD",
+            pathParameters:{
+              "idPhysicalPartition":widget.physicalPartition!.partitionPhysicalId.toString()
+            },
+            queryParameters: {
+              "start": dateFormat.format(widget.blankSpaceTimeInterval!.initialDate!),
+              'end':dateFormat.format(widget.blankSpaceTimeInterval!.endDate!)
+            },
+          );
+        },
+        child: SizedBox(
+          height: widget.height.toDouble(),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 2),
+            child: Center(
+              child: isHovered ? childHovered : childNotHovered,
+            ),
+          )                       
         ),
       ));
   }

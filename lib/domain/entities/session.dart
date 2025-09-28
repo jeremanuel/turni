@@ -6,6 +6,8 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 
 import '../../core/utils/value_transformers.dart';
 import 'client.dart';
+import 'extra.dart';
+import 'payment/payment.dart';
 import 'physical_partition.dart';
 
 part 'session.freezed.dart';
@@ -29,6 +31,11 @@ class Session with _$Session {
     @JsonKey(name: "club_name") String? clubName,
     @JsonKey(name: "club_type_name") String? clubTypeName,
     @JsonKey(includeIfNull: false,) Client? client,
+    @JsonKey(includeIfNull: false)
+    List<Payment>? payments,
+    @JsonKey(includeIfNull: false)
+    List<Extra>? extras,
+
 
     @JsonKey(name:"partition_physical", includeIfNull: false) PhysicalPartition? physicalPartition
   }) = _Session;
@@ -40,6 +47,47 @@ class Session with _$Session {
     return duration;
     
   }
+
+  double get extrasTotalPrice {
+    if (extras == null) return 0.0;
+
+    return extras!.fold(0.0, (total, extra) => total + (extra.amount));
+  }
+  
+
+  double get totalPayedPrice {
+    return sessionPayedPrice + extrasPayedPrice;
+  }
+
+  double get extrasPayedPrice {
+    if(extras == null) return 0.0;
+    
+    return extras!.where((extra) => extra.payment != null).fold(0.0, (total, extra) => total + extra.payment!.amount);
+  }
+
+  double get sessionPayedPrice {
+    if(payments == null) return 0.0;
+    return payments!.fold(0.0, (total, payment) => total + payment.amount);
+  }
+
+  double get totalPrice {
+    return price + extrasTotalPrice;
+  }
+
+  double get remainingTotalPrice {
+    return totalPrice - totalPayedPrice;
+  }
+
+  double get remainingSessionPrice {
+    return price - sessionPayedPrice;
+  }
+
+  double get remainingExtrasPrice {
+    return extrasTotalPrice - extrasPayedPrice;
+  }
+
+
+  
 
   static Session fromDates(DateTime startTime, TimeOfDay duration) {
     return Session(

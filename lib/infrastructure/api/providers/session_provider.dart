@@ -97,7 +97,7 @@ class SessionProvider {
       return Client.fromJson(response.data['client']);
 
     } catch (e) {      
-      // TODO: Manejar error.
+      print(e);
     }
   return null;
 

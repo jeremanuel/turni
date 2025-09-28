@@ -20,6 +20,7 @@ class SessionManagerBloc extends Bloc<SessionManagerEvent, SessionManagerState> 
   
 
   SessionManagerBloc(int? sessionId, this._sessionUserCases) : super(SessionManagerState(currentDate: DateTime.now(), sessions: [], clubPartitions: [], isFirstLoad: true,)) {
+      print("test desde bloc:");
 
 
     on<SessionChangeDateEvent>((event, emit) async {
@@ -71,7 +72,7 @@ class SessionManagerBloc extends Bloc<SessionManagerEvent, SessionManagerState> 
     });
 
     on<ReloadSessionsEvent>((event, emit) async {
-
+print("test desde bloc:");
       emit(
         state.copyWith(
           isLoadingSessions: true,
@@ -93,6 +94,7 @@ class SessionManagerBloc extends Bloc<SessionManagerEvent, SessionManagerState> 
     on<SaveSessionEvent>((event, emit) async {
 
       final session = await _sessionUserCases.saveSession(event.session);
+     
 
       emit(
         state.copyWith(
@@ -179,6 +181,7 @@ class SessionManagerBloc extends Bloc<SessionManagerEvent, SessionManagerState> 
       emit(state.copyWith(selectedSession: event.session));
     });
     
+
     if(sessionId == null) add(SessionLoadEvent());
 
     if(sessionId != null) add(LoadFromSessionIdEvent(sessionId, true));

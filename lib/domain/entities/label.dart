@@ -27,7 +27,7 @@ class Label with _$Label {
 
     if(clientLabels == null) return [];
 
-    return (clientLabels.map((el) => Label.fromJson(el['label'])).toList());
+    return (clientLabels.where((el) => el['label'] != null).map((el) => Label.fromJson(el['label'])).toList());
 
   }
 

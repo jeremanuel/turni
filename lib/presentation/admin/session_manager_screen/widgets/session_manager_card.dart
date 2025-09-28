@@ -3,12 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
+import '../../../../core/config/router/app_routes.dart';
 import '../../../../core/presentation/components/inputs/dropdown_widget.dart';
 import '../../../../domain/entities/physical_partition.dart';
 import '../../../../domain/entities/session.dart';
-import '../bloc/session_manager_bloc.dart';
-import '../bloc/session_manager_event.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 
 class SessionManagerCard extends StatefulWidget {
   const SessionManagerCard({
@@ -67,56 +65,175 @@ class ReservedSessionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return Ink(
         width: 190,
         decoration: BoxDecoration(
             color: getColor(context),
-            borderRadius: BorderRadius.circular(12)),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              color: Theme.of(context).colorScheme.primary,                  
-              width: 16,
-            ),
-            Expanded(
-              flex: 5,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        const Icon(Icons.access_time),
-                        Text(
-                          "${DateFormat.jm().format(session.startTime)} - ${DateFormat.jm().format(session.endTime)}",
-                        ),
-                      ],
-                    ),
-                    const Spacer(),                  
-                    Row(
-                      children: [
-                        const Icon(Icons.person),
-                        Expanded(child: Text(session.client!.person!.fullName, style: const TextStyle(overflow: TextOverflow.ellipsis, fontSize: 12),)),
-                      ],
-                    ),
-              
-                  ],
+            borderRadius: BorderRadius.circular(12)
+        ),
+        child: InkWell(
+          onTap: () {
+            context.goNamed("SESSION_MANAGER_RESERVE", pathParameters: {"idSession":session.sessionId.toString()});
+
+          },
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                color: Theme.of(context).colorScheme.primary,                  
+                width: 16,
+              ),
+              Expanded(
+                flex: 5,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric( horizontal: 4),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        spacing: 4,
+                        children: [
+                          const Icon(Icons.access_time, size: 18,),
+                          Text(
+                            "${DateFormat.jm().format(session.startTime)} - ${DateFormat.jm().format(session.endTime)}",
+                          ),
+                          const Spacer(),
+                          IconButton(
+                      icon: const Icon(Icons.close, size: 18,),
+                      onPressed: () {
+                        showDialog(
+                        context: context,
+                         builder: (dialogContext) {
+                          return const CloseSessionDialog(isReserved: true);
+                        },);
+                      },
+                    )
+                        ],
+                      ),
+                      const Spacer(),                  
+                      Row(
+                        spacing: 4,
+                        children: [
+                          const Icon(Icons.person, size: 18),
+                          Expanded(child: Text(session.client!.person!.fullName, style: const TextStyle(overflow: TextOverflow.ellipsis, fontSize: 12),)),
+                          IconButton(
+                            onPressed: () {
+                            context.goNamed(AppRoutes.CLIENT_ROUTE.name, pathParameters: {"clientId":session.client!.clientId!});
+                            
+                          }, icon: const Icon(Icons.open_in_new_rounded, size: 18,))
+                        ],
+                      ),
+                
+                    ],
+                  ),
                 ),
               ),
-            ),
-            if(session.physicalPartition?.clubPartition?.clubType != null)
-              ...[
-                const Spacer(),
-                Padding(
-                  padding: const EdgeInsets.all(8),
-                  child: Text("${session.physicalPartition!.clubPartition!.clubType!.name} | ${session.physicalPartition!.physicalIdentifier.toString()}"),
-                )
-              ]
-          ],
+              if(session.physicalPartition?.clubPartition?.clubType != null)
+                ...[
+                  const Spacer(),
+                  Padding(
+                    padding: const EdgeInsets.all(8),
+                    child: Text("${session.physicalPartition!.clubPartition!.clubType!.name} | ${session.physicalPartition!.physicalIdentifier.toString()}"),
+                  )
+                ]
+            ],
+          ),
         ),
       );
+  }
+
+
+}
+
+class CloseSessionDialog extends StatefulWidget {
+  const CloseSessionDialog({
+    super.key, 
+    required this.isReserved,
+  });
+
+  final bool isReserved;
+
+  @override
+  State<CloseSessionDialog> createState() => _CloseSessionDialogState();
+}
+
+class _CloseSessionDialogState extends State<CloseSessionDialog> {
+
+  int? opcionSeleccionada;
+
+  @override
+  void initState() {
+    if(!widget.isReserved){
+      opcionSeleccionada = 1;
+    }
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+
+    final textTheme = Theme.of(context).textTheme;
+
+    return Dialog(
+      child: SizedBox(
+        height: 350,
+        width: 400,
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            spacing: 4,
+            children: [
+            Text("Cerrar Turno", style: textTheme.headlineSmall),
+            Text("Seleccione la accion a realizar", style: textTheme.labelLarge),
+            const SizedBox(height: 16),
+    
+             RadioListTile(
+              
+              value: 0, 
+              groupValue: opcionSeleccionada, 
+              onChanged: widget.isReserved ? (a){
+                setState(() {
+                  opcionSeleccionada = a as int;
+                });
+              } : null, 
+              title: const Text("Cancelar Reserva"),
+              subtitle: const Text("El turno quedara disponible para otros clientes"),
+              ),
+             const Divider(height: 1,),
+             RadioListTile(
+              value: 1, 
+              groupValue: opcionSeleccionada, 
+              onChanged: (a){
+                setState(() {
+                  opcionSeleccionada = a;
+                });
+              }, 
+              title: const Text("Eliminar Turno"),
+              subtitle: const Text("El turno sera eliminado de la agenda y no podra ser reservado"),
+              ),
+            const Spacer(),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [                                      
+                TextButton(
+                  onPressed: (){  
+                    //Navigator.pop(dialogContext);
+                  }, 
+                  child: const Text("Cancelar")
+                ),
+                TextButton(
+                  onPressed: opcionSeleccionada == null ? null : (){  
+                    //Navigator.pop(dialogContext);
+                  },
+                  child: const Text("Aceptar")
+                )
+              ],
+            )                                  
+            ],
+          ),
+        )),
+                      );
   }
 }
 
@@ -146,7 +263,7 @@ class NotReservedSessionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return Ink(
         width: 190,
         decoration: BoxDecoration(
             color: getColor(context),
@@ -160,99 +277,65 @@ class NotReservedSessionCard extends StatelessWidget {
               bottom: BorderSide(color: Theme.of(context).colorScheme.primary) 
             ) : null
             ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              decoration: BoxDecoration(                
-                color: Theme.of(context).colorScheme.tertiary,
+        child: InkWell(
+          onTap: () {
+            onReserve?.call();
+            context.goNamed("SESSION_MANAGER_RESERVE", pathParameters: {"idSession":session.sessionId.toString()});
+          },
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                decoration: BoxDecoration(                
+                  color: Theme.of(context).colorScheme.tertiary,
+                ),
+                width: 16,
               ),
-              width: 16,
-            ),
-            Padding(
-              padding: const EdgeInsets.all( 8.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      const Icon(Icons.access_time),
-                      Text(
-                        "${DateFormat.jm().format(session.startTime)} - ${DateFormat.jm().format(session.endTime)}",
-                      ),
-                    ],
-                  ),
-                  const Spacer(),
-                
-                  OutlinedButton(
-                    onPressed: () {
-                      onReserve?.call();
-                      context.goNamed("SESSION_MANAGER_RESERVE", pathParameters: {"idSession":session.sessionId.toString()});
-                    },
-                    child: const Text("Reservar"),
-                  ),
-                ],
+              Padding(
+                padding: const EdgeInsets.all( 8.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(Icons.access_time, size: 18,),
+                        Text(
+                          "${DateFormat.jm().format(session.startTime)} - ${DateFormat.jm().format(session.endTime)}",
+                        ),
+                      ],
+                    ),
+                    const Spacer(),
+                  ],
+                ),
               ),
-            ),
-            const Spacer(),
-            Padding(
-              padding: const EdgeInsets.only(bottom: 8, right: 8),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  if(session.physicalPartition?.clubPartition?.clubType != null)
-                    ...[Padding(
-                      padding: const EdgeInsets.all(8),
-                      child: Text("${session.physicalPartition!.clubPartition!.clubType!.name} | ${session.physicalPartition!.physicalIdentifier.toString()}"),
-                    ), 
-                  const  Spacer()],
-                  IconButton(
-                    icon: const Icon(Icons.close),
-                    onPressed: () {
-                      showDialog(
-                      context: context,
-                       builder: (dialogContext) {
-                        return  Dialog(
-                          child: SizedBox(
-                            height: 150,
-                            width: 150,
-                            child: Padding(
-                              padding: const EdgeInsets.all(16),
-                              child: Column(
-                                children: [
-                                  const Text("Seguro que desea eliminar el turno?"),
-                                  const Spacer(),
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                    children: [
-                                      FilledButton(
-                                        onPressed: (){ 
-                                          context.read<SessionManagerBloc>().add(DeleteSession(session.sessionId)); 
-                                          Navigator.pop(dialogContext); 
-                                          onDelete?.call(); 
-                                        }, 
-                                        child: const Text("Eliminar")
-                                      ),                                      
-                                      OutlinedButton(
-                                        onPressed: (){  
-                                          Navigator.pop(dialogContext);
-                                        }, 
-                                        child: const Text("Cancelar")
-                                      )
-                                    ],
-                                  )                                  
-                                ],
-                              ),
-                            )),
-                        );
-                      },);
-                    },
-                  ),
-         
-                ],
-              ),
-            )
-          ],
+              const Spacer(),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8, right: 8),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    if(session.physicalPartition?.clubPartition?.clubType != null)
+                      ...[Padding(
+                        padding: const EdgeInsets.all(8),
+                        child: Text("${session.physicalPartition!.clubPartition!.clubType!.name} | ${session.physicalPartition!.physicalIdentifier.toString()}"),
+                      ), 
+                    const  Spacer()],
+                    IconButton(
+                      icon: const Icon(Icons.close, size: 18,),
+                      onPressed: () {
+                        showDialog(
+                        context: context,
+                         builder: (dialogContext) {
+                          return const CloseSessionDialog(isReserved: false);
+                        },);
+                      },
+                    ),
+           
+                  ],
+                ),
+              )
+            ],
+          ),
         ),
       );
   }
