@@ -55,7 +55,7 @@ class _ClientListFiltersContainerState extends State<ClientListFiltersContainer>
     final colorSchenme = Theme.of(context).colorScheme;
 
     return FormBuilder(
-      initialValue: clientsBloc.state.dataSource.filters.toJson(),
+      initialValue: clientsBloc.state.filters.toJson(),
       key: clientsBloc.filtersFormKey,
       onChanged: () => setState(() {}),
       child: CallbackShortcuts(

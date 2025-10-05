@@ -3,9 +3,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:syncfusion_flutter_datagrid/datagrid.dart';
+import 'package:trina_grid/trina_grid.dart';
 
 import '../../../core/config/app_routes.dart';
+import '../../../core/presentation/components/inputs/label_chip.dart';
 import '../../../core/presentation/components/paginated_table/paginated_table.dart';
 import '../../../core/utils/responsive_builder.dart';
 import '../../../domain/entities/client.dart';
@@ -23,6 +24,7 @@ class ClientsList extends StatefulWidget {
 class _ClientsListState extends State<ClientsList> {
 
   bool isLoading = false;
+  late final TrinaGridStateManager _stateManager;
 
   @override
   void initState() {
@@ -34,23 +36,93 @@ class _ClientsListState extends State<ClientsList> {
     super.dispose();
   }
 
+/* 
+        child: PaginatedTable<Client>(
+              columns: getColumns(),
+              dataSource: clientsBloc.state.dataSource,
+              onTap: (row, Client client) => context.goNamed(AppRoutes.CLIENT_ROUTE.name, extra: {"client":client, "bloc":context.read<ClientsListBloc>()}, pathParameters: {"clientId":client.clientId!}),
+            ),
 
+ */
 
   @override
   Widget build(BuildContext context) {
-
     final clientsBloc = BlocProvider.of<ClientsListBloc>(context);
+    final colorScheme = Theme.of(context).colorScheme;
     
     final child = Column(
         children: [
           if(ResponsiveBuilder.isDesktop(context)) ClientListHeader(),
           ClientListFiltersContainer(),
           Expanded(
-            child: PaginatedTable<Client>(
-              columns: getColumns(),
-              dataSource: clientsBloc.state.dataSource,
-              onTap: (row, Client client) => context.goNamed(AppRoutes.CLIENT_ROUTE.name, extra: {"client":client, "bloc":context.read<ClientsListBloc>()}, pathParameters: {"clientId":client.clientId!}),
-            ),
+            child: TrinaGrid(
+              configuration: TrinaGridConfiguration.dark(
+                localeText: TrinaGridLocaleText.spanish(),
+                style: TrinaGridStyleConfig(
+                    iconColor: colorScheme.onSurfaceVariant,
+                    gridBorderColor: Colors.transparent,
+                    gridBorderWidth: 0,
+                    enableCellBorderVertical: false,
+                    enableColumnBorderVertical: false,
+                    enableColumnBorderHorizontal: false,
+                    activatedColor: colorScheme.primary.withValues(alpha:0.1),
+                    cellActiveColor: Colors.transparent,
+                    activatedBorderColor: colorScheme.primary,
+                    borderColor: colorScheme.outlineVariant,
+                    gridBackgroundColor: colorScheme.surfaceContainer,
+                    menuBackgroundColor: colorScheme.surface,
+                    rowColor: colorScheme.surfaceContainer,
+                    cellTextStyle: TextStyle(color: colorScheme.onSurface,),
+                    columnTextStyle: TextStyle(color: colorScheme.onSurface,),
+                    columnAscendingIcon: Icon(Icons.arrow_upward),
+                    columnDescendingIcon: Icon(Icons.arrow_downward),
+                    evenRowColor: colorScheme.surfaceContainerLow,
+                    dragTargetColumnColor: colorScheme.primary,
+                    
+                    
+                    
+                ),
+                columnSize: TrinaGridColumnSizeConfig(autoSizeMode: TrinaAutoSizeMode.scale),
+              ),
+              columns: getTrinaColumns(),
+              rows: [],
+              onLoaded: (event) => _stateManager = event.stateManager..showSetColumnsPopup(context),
+              createFooter: (stateManager) => TrinaLazyPagination(
+                enableGotoPage: false,
+                
+                stateManager: stateManager,
+                pageSizes: [10, 20, 50, 100],
+                fetch: (data) async {
+                  final data = await clientsBloc.fetchClients(1);
+
+                  return TrinaLazyPaginationResponse(
+                    totalPage: data.total,
+                    rows: data.data.map((e) {
+                      return TrinaRow(
+                        cells: {
+                          "id": TrinaCell(value: e.clientId ?? '',),
+                          "name": TrinaCell(value: e.person?.fullName ?? ''),
+                          "phone": TrinaCell(value: e.person?.phone ?? ''),
+                          "email": TrinaCell(value: e.person?.email ?? ''),
+                          "labels": TrinaCell(renderer: (rendererContext) {
+                            if(e.labels == null) return SizedBox();
+
+                            return Row(
+                              children: [
+                                ...e.labels!.map((label) => Labelchip(label))
+                              ],
+                            );
+                          },),
+                        }
+                      );
+                    }).toList(),
+                  );
+                   
+                  
+                },
+            
+              ),
+              ),
           ),
         ],
       );
@@ -63,41 +135,26 @@ class _ClientsListState extends State<ClientsList> {
       body: child,
     );
   }
-
-  List<GridColumn> getColumns() {
-
+  List<TrinaColumn> getTrinaColumns() {
     final mobileColumns = [
-      GridColumn(columnName: "name", label: const ColumnWrapper(padding: EdgeInsets.only(left: 16),child: Text("Cliente"),), width: 200,),
-      GridColumn(columnName: "phone", label: const ColumnWrapper(child: Text("Telefono")), width: 150),
-      GridColumn(columnName: "labels", label: const ColumnWrapper(child: Text("Etiquetas")), columnWidthMode: ColumnWidthMode.fill)
+      TrinaColumn(title: "Cliente", field: "name", type: TrinaColumnType.text(), width: 200),
+      TrinaColumn(title: "Telefono", field: "phone", type: TrinaColumnType.text(), width: 150),
+      TrinaColumn(title: "Etiquetas", field: "labels", type: TrinaColumnType.text(), width: 150),
     ];
 
     final desktopColumns = [
-      GridColumn(columnName: "id", label: const ColumnWrapper(child: Center(child: Text("ID"))),  width: 80),
-      GridColumn(columnName: "name", label: const ColumnWrapper(child: Text("Cliente")), width: 300),
-      GridColumn(columnName: "phone", label: const ColumnWrapper(child: Text("Telefono")), width: 200),
-      GridColumn(columnName: "email", label: const ColumnWrapper(child: Text("Email")), width: 350),
-      GridColumn(columnName: "labels", label: const ColumnWrapper(child: Text("Etiquetas")), columnWidthMode: ColumnWidthMode.fill)
+      TrinaColumn(title: "ID", field: "id", type: TrinaColumnType.text(), width: 80, enableEditingMode: false, ),
+      TrinaColumn(title: "Cliente", field: "name", type: TrinaColumnType.text(), width: 300, enableEditingMode: false),
+      TrinaColumn(title: "Telefono", field: "phone", type: TrinaColumnType.text(), enableEditingMode: false),
+      TrinaColumn(title: "Email", field: "email", type: TrinaColumnType.text(), width: 350, enableEditingMode: false),
+      TrinaColumn(title: "Etiquetas", field: "labels", type: TrinaColumnType.text(),  minWidth: 500, enableEditingMode: false),
     ];
 
     return ResponsiveBuilder.isMobile(context) ? mobileColumns : desktopColumns;
-
   }
 
-  List<GridColumn> get buildColumns {
-    return [
-      GridColumn(
-        width: 80,
-        columnName: "id", 
-        label: tinyColumnWrapper(Text("ID")),
-      ),
-      GridColumn(columnName: "name", label: columnWrapper(Text("Nombre"))), 
-      GridColumn(columnName: "phone", label: columnWrapper(Text("Telefono"))),
-      GridColumn(columnName: "email", label: columnWrapper(Text("Email"))),
-      GridColumn(width: 110, columnName: "status", label: tinyColumnWrapper(Text("Estado"))),
-      GridColumn(columnName: "labels", label: columnWrapper(Text("Etiquetas"))),
-    ];
-  }
+
+
 }
 
 columnWrapper(Text text) => Column(
