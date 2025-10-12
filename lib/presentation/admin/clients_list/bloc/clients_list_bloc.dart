@@ -2,6 +2,7 @@ import 'package:bloc/bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:trina_grid/trina_grid.dart';
 
 import '../../../../domain/entities/client.dart';
 import '../../../../domain/entities/request/page_response.dart';
@@ -16,7 +17,7 @@ class ClientsListBloc extends Bloc<ClientsListEvent, ClientsListState> {
 
   final filtersFormKey = GlobalKey<FormBuilderState>();
   late AdminRepository adminRepository;
-
+  late final TrinaGridStateManager stateManager;
 
   ClientsListBloc(BuildContext context, this.adminRepository, ClientListFilters filters, String? columnNameSort,bool? isAscending): 
   super(ClientsListState.initial(context, adminRepository, filters, columnNameSort, isAscending))
@@ -25,32 +26,15 @@ class ClientsListBloc extends Bloc<ClientsListEvent, ClientsListState> {
   
 
     on<ChangeFilters>((event, emit){
-
-   /*    var dataSource = state.dataSource;
-
-      dataSource.filters = event.newFilter;
       emit(
         state.copyWith(
-          dataSource: dataSource
-      )); */
-
-
+          filters: event.newFilter
+      )); 
+      
+      stateManager.setFilter((element) => false);
     });
 
-    on<ChangeSort>((event, emit){
-/*         var dataSource = state.dataSource;
 
-/*       dataSource.columnNameSort = event.columnIndex == 0 ? 'id' : event.columnIndex == 1 ? 'name' : 'phone';
-      dataSource.isAscending = event.ascending;
- */
-      emit(
-        state.copyWith(
-          dataSource: dataSource
-      )); */
-
-    
-
-    });
   }
 
   bool hasDefaultFilters(){
@@ -61,8 +45,8 @@ class ClientsListBloc extends Bloc<ClientsListEvent, ClientsListState> {
     return (state.filters.search ?? '') != (filters['search'] ?? '')|| state.filters.statusId != filters['statusId'] || state.filters.labelId != filters['labelId'];
   }
 
-  Future<PageResponse<Client> > fetchClients (int page) async {
-    final response = await adminRepository.getClients("");
+  Future<PageResponse<Client> > fetchClients (int page, String? sortKey, bool? isAscending) async {
+    final response = await adminRepository.getClients(state.filters.search ?? '', page, sortKey, isAscending);
 
     final decodedResponse = response.when(
       right: (value) => value,
@@ -70,5 +54,9 @@ class ClientsListBloc extends Bloc<ClientsListEvent, ClientsListState> {
     );
 
     return decodedResponse!;
+  }
+
+  void refetchClients(){
+    stateManager.setFilter((element) => false);
   }
 }
