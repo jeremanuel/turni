@@ -55,7 +55,7 @@ class _ClientListFiltersContainerState extends State<ClientListFiltersContainer>
     final colorSchenme = Theme.of(context).colorScheme;
 
     return FormBuilder(
-      initialValue: clientsBloc.state.dataSource.filters.toJson(),
+      initialValue: clientsBloc.state.filters.toJson(),
       key: clientsBloc.filtersFormKey,
       onChanged: () => setState(() {}),
       child: CallbackShortcuts(
@@ -102,7 +102,7 @@ class _ClientListFiltersContainerState extends State<ClientListFiltersContainer>
                             filtersFormKey: clientsBloc.filtersFormKey),
                       ] else ...[
                         const Spacer(),
-                        const Text("data5"),
+                      
                         IconButton(
                           onPressed: () {},
                           icon: const Icon(Icons.filter_alt_outlined),

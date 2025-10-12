@@ -168,7 +168,7 @@ class _AddPaymentContainerState extends State<AddPaymentContainer> {
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 TextButton(onPressed: (){}, child: const Text("Cancelar")),
-                FilledButton(
+                TextButton(
                   onPressed: () async {
                 
                   final currentFormState = formKey.currentState!;

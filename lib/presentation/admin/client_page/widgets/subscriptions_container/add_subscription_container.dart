@@ -68,9 +68,10 @@ class _AddSubscriptionContainerState extends State<AddSubscriptionContainer> {
     return SizedBox(
     height: 200,
     child: ListView(
-      children: widget.clubPartitions!.expand((clubPartition){
+      children: [
+        ListTile(title: Text("Nueva subscripcion", style: Theme.of(context).textTheme.titleLarge)),
+        ...widget.clubPartitions!.expand((clubPartition){
         return [
-          ListTile(title: Text("Nueva subscripcion", style: Theme.of(context).textTheme.titleLarge)),
           Divider(
             height: 1,
             color: Theme.of(context).colorScheme.onSurface,
@@ -89,7 +90,7 @@ class _AddSubscriptionContainerState extends State<AddSubscriptionContainer> {
           })
         ];
       },
-    ).toList(),
+    )]
   ),
   );
   }

@@ -1,4 +1,5 @@
-import 'package:data_table_2/data_table_2.dart';
+import 'package:turni/core/presentation/components/custom_trina_grid/custom_trina_grid.dart';
+import 'package:trina_grid/trina_grid.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../../core/utils/date_functions.dart';
@@ -8,9 +9,10 @@ import '../../../../../domain/repositories/payment_repository.dart';
 class Paymentslist extends StatefulWidget {
   final int clientId;
   final Function(Payment?)? onPaymentsLoad;
-  final PaymentsDataSource paymentDataSource;
-
-  const Paymentslist({super.key, required  this.clientId, this.onPaymentsLoad, required this.paymentDataSource});
+  final PaymentRepository paymentRepository;
+  final void Function(TrinaGridOnLoadedEvent)? onLoaded;
+ 
+  const Paymentslist({super.key, required  this.clientId, this.onPaymentsLoad, required this.paymentRepository, this.onLoaded});
 
   @override
   State<Paymentslist> createState() => _PaymentslistState();
@@ -20,92 +22,97 @@ class _PaymentslistState extends State<Paymentslist> {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return AsyncPaginatedDataTable2(
-      empty: const Center(child: Text("El cliente no tiene pagos cargados")),
-      headingRowColor: WidgetStateProperty.resolveWith((states) => colorScheme.surfaceContainer),
-      columns: const [
-        DataColumn(label: Text("Fecha")),
-        DataColumn(label: Text("Monto")),
-        DataColumn(label: Text("Método de Pago")),
-        DataColumn(label: Text("Subscripcion")),
-        DataColumn(label: Text("Observaciones")),
+    return CustomTrinaGrid(
+      onLoaded: widget.onLoaded,
+      columns: [
+        TrinaColumn(
+          title: 'Fecha',
+          field: 'fecha',
+          type: TrinaColumnType.text(),
+          enableContextMenu: false,
+          enableDropToResize: false,
+          enableEditingMode: false,
+          
+        ),
+        TrinaColumn(
+          title: 'Monto',
+          field: 'monto',
+          type: TrinaColumnType.text(),
+          width: 80,
+          enableContextMenu: false,
+          enableDropToResize: false,
+          enableEditingMode: false
+        ),
+        TrinaColumn(
+          title: 'Método de Pago',
+          field: 'metodo',
+          type: TrinaColumnType.text(),
+          enableContextMenu: false,
+          enableDropToResize: false,
+          enableEditingMode: false
+        ),
+        TrinaColumn(
+          title: 'Subscripcion',
+          field: 'subscripcion',
+          type: TrinaColumnType.text(),
+          enableContextMenu: false,
+          enableDropToResize: false,
+          enableEditingMode: false
+        ),
+        TrinaColumn(
+          title: 'Observaciones',
+          field: 'observaciones',
+          type: TrinaColumnType.text(),
+          enableEditingMode: false
+        ),
       ],
-      source: widget.paymentDataSource,
-      autoRowsToHeight: true,
-      wrapInCard: false,
-      columnSpacing: 12,
-      horizontalMargin: 16,
-      rowsPerPage: 5, // Cambia según el número deseado por página
-      showFirstLastButtons: true,
-      headingTextStyle: TextStyle(
-        fontWeight: FontWeight.bold,
-        color: colorScheme.onSurface,
+      rows:  [],
+      createFooter: (stateManager) => TrinaLazyPagination(
+        showTotalRows: false,
+        enableGotoPage: false,
+        initialPageSize: 5,
+        stateManager: stateManager,
+        pageSizes: const [5, 10, 20],
+        fetch: (request) async {
+          final page = request.page;
+          final result = await widget.paymentRepository.getClientPayments(widget.clientId, page);
+          final pageResponse = result.whenOrNull(
+            left: (failure) => throw failure,
+            right: (value) => value,
+          );
+          if (page == 1) {
+            widget.onPaymentsLoad?.call(pageResponse!.data.isNotEmpty ? pageResponse.data.first : null);
+          }
+          return TrinaLazyPaginationResponse(
+            totalRecords: pageResponse!.total,
+            totalPage: (pageResponse.total / stateManager.pageSize).ceil(),
+            rows: pageResponse.data.map((payment) {
+              return TrinaRow(cells: {
+                'fecha': TrinaCell(value: DateFunctions.formatDateToDefaultFormat(payment.paymentDate)),
+                'monto': TrinaCell(value: payment.amount.toString()),
+                'metodo': TrinaCell(value: payment.paymentMethod.name),
+                'subscripcion': TrinaCell(value: payment.clientSubscription?.subscription.name ?? '',
+                  renderer: (ctx) => Text(
+                    payment.clientSubscription?.subscription.name ?? '',
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+                'observaciones': TrinaCell(
+                  renderer: (ctx) => Tooltip(
+                    message: payment.observation ?? '',
+                    child: Text(
+                      payment.observation ?? '',
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  value: payment.observation ?? '',
+                ),
+              });
+            }).toList(),
+          );
+        },
       ),
     );
-  }
-}
-
-class PaymentsDataSource extends AsyncDataTableSource {
-
-  PaymentsDataSource(
-    this.clientId, this.onPaymentsLoad, {
-    required this.paymentRepository,
-  });
-
-  PaymentRepository paymentRepository;
-  final int clientId;
-  final Function(Payment?)? onPaymentsLoad;
-  
-  @override
-  Future<AsyncRowsResponse> getRows(int startIndex, int count) async {
-
-  
-    final page = (startIndex / count).ceil() + 1;
-
-    final result = await paymentRepository.getClientPayments(clientId, page);
-    
-    final pageResponse = result.whenOrNull(
-      left: (failure) => throw failure,
-      right: (value) => value,
-    );
-
-    if(page == 1){
-      onPaymentsLoad?.call(pageResponse!.data.isNotEmpty ? pageResponse.data.first : null);
-    }
-
-    return AsyncRowsResponse(pageResponse!.total, pageResponse.data.map(rowFromPayment).toList());
-
-    
-  }
-
-  DataRow rowFromPayment(Payment payment){
-    return DataRow(
-      cells: [
-        DataCell(Text(DateFunctions.formatDateToDefaultFormat(payment.paymentDate))),
-        DataCell(Text(payment.amount.toString())),
-        DataCell(Text(payment.paymentMethod.name)),
-        DataCell(
-          Text(
-            payment.clientSubscription?.subscription.name ?? '',
-            style:const TextStyle(
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-        DataCell(
-          Tooltip(
-            message: payment.observation ?? '',
-            child: Text(
-              payment.observation ?? '',
-              style:const TextStyle(
-                fontWeight: FontWeight.bold,
-              ),
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-        ),
-    ]);
   }
 }
