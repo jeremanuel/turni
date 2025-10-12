@@ -29,31 +29,41 @@ class _PaymentslistState extends State<Paymentslist> {
           title: 'Fecha',
           field: 'fecha',
           type: TrinaColumnType.text(),
-          enableContextMenu: false
+          enableContextMenu: false,
+          enableDropToResize: false,
+          enableEditingMode: false,
+          
         ),
         TrinaColumn(
           title: 'Monto',
           field: 'monto',
           type: TrinaColumnType.text(),
           width: 80,
-           enableContextMenu: false
+          enableContextMenu: false,
+          enableDropToResize: false,
+          enableEditingMode: false
         ),
         TrinaColumn(
           title: 'Método de Pago',
           field: 'metodo',
           type: TrinaColumnType.text(),
-          enableContextMenu: false
+          enableContextMenu: false,
+          enableDropToResize: false,
+          enableEditingMode: false
         ),
         TrinaColumn(
           title: 'Subscripcion',
           field: 'subscripcion',
           type: TrinaColumnType.text(),
-          enableContextMenu: false
+          enableContextMenu: false,
+          enableDropToResize: false,
+          enableEditingMode: false
         ),
         TrinaColumn(
           title: 'Observaciones',
           field: 'observaciones',
           type: TrinaColumnType.text(),
+          enableEditingMode: false
         ),
       ],
       rows:  [],

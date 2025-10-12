@@ -24,12 +24,14 @@ class CustomTrinaGrid extends StatelessWidget {
 	Widget build(BuildContext context) {
 		final colorScheme = Theme.of(context).colorScheme;
 		return TrinaGrid(
-      noRowsWidget: Center(
+      noRowsWidget: const Center(
         child: Text("No hay registros"),
       ),
 			configuration: configuration ?? TrinaGridConfiguration.dark(
 				localeText: const TrinaGridLocaleText.spanish(),
+        
 				style: TrinaGridStyleConfig(
+          
 					iconColor: colorScheme.onSurfaceVariant,
 					gridBorderColor: Colors.transparent,
 					gridBorderWidth: 0,
