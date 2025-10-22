@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_portal/flutter_portal.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/config/service_locator.dart';
@@ -19,17 +20,11 @@ class DesktopLayout extends StatelessWidget {
     return Scaffold(
       key: scaffoldKey,
       
-      drawer: const Drawer(
-        child: Text("Drawer"),
-      ),
+    
       endDrawer: BlocBuilder<ScaffoldCubit, ScaffoldCubitState>(
         bloc: sl<ScaffoldCubit>(),
-        builder: (context, state) {
-          
-        
-    
-        return state.child!;
-      },),
+        builder: (context, state) => state.child!
+        ),
       body:  Padding(
         padding: const EdgeInsets.symmetric(vertical: 16),
         child: Row(
@@ -43,10 +38,7 @@ class DesktopLayout extends StatelessWidget {
               child: Material(
                 elevation: 25,
                 color: Theme.of(context2).colorScheme.surfaceContainer,
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: child,
-                ),
+                child: child,
               ),
             ),
             const SizedBox(width: 20,),
@@ -98,7 +90,7 @@ class SideBar extends StatelessWidget {
         padding: const EdgeInsets.all(32),
         child: SvgPicture.asset(
                 "assets/img/logotype_white.svg",
-                semanticsLabel: 'Logo de la app de Turni',
+                semanticsLabel: 'Logo de Turni',
                 height: 25,
                 colorFilter:  ColorFilter.mode(Theme.of(context).colorScheme.onSurface, BlendMode.srcIn)
               ),
@@ -156,6 +148,11 @@ class SideBar extends StatelessWidget {
           padding: EdgeInsets.all(16),
           icon: Icon(Icons.person), 
           label: Text("Clientes")
+        ),
+        NavigationRailDestination(
+          padding: EdgeInsets.all(16),
+          icon: Icon(Icons.attach_money), 
+          label: Text("Pagos")
         ),
           NavigationRailDestination(
           padding: EdgeInsets.all(16),

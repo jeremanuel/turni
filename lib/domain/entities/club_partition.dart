@@ -10,7 +10,7 @@ part 'club_partition.freezed.dart';
 part 'club_partition.g.dart';
 
 @freezed
-class ClubPartition with _$ClubPartition {
+sealed class ClubPartition with _$ClubPartition {
 
 
     const factory ClubPartition({

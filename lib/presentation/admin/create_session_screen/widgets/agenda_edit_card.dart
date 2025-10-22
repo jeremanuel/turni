@@ -1,6 +1,6 @@
 import 'package:calendar_view/calendar_view.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_portal/flutter_portal.dart';
+import 'package:flutter_portal/flutter_portal.dart' hide Aligned;
 import 'package:intl/intl.dart';
 
 import '../../../../core/config/service_locator.dart';
@@ -26,7 +26,7 @@ class _AgendaEditCardState extends State<AgendaEditCard> {
   @override
   Widget build(BuildContext context) {
     return DropdownWidget(
-      aligned: const Aligned(follower: Alignment.topLeft, target: Alignment.topRight, offset: Offset(8,0), shiftToWithinBound:  AxisFlag(x: true,y: true )),
+      aligned: const Aligned(follower: Alignment.topLeft, target: Alignment.topRight, offset: Offset(8,0)),
       dropdownController: dropdownController,
       menuWidget: SessionFormDropdown(
         onSave: (initialTime, duration){

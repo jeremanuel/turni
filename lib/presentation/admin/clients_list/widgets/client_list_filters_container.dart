@@ -58,13 +58,14 @@ class _ClientListFiltersContainerState extends State<ClientListFiltersContainer>
       initialValue: clientsBloc.state.filters.toJson(),
       key: clientsBloc.filtersFormKey,
       onChanged: () => setState(() {}),
-      child: CallbackShortcuts(
-        bindings: {
+      child: Focus(
+        focusNode: _focusNode,
+        child: CallbackShortcuts(
+          bindings: {
           LogicalKeySet(LogicalKeyboardKey.enter): () => onSearch(),
           LogicalKeySet(LogicalKeyboardKey.escape): () => unFocus()
-        },
-        child: Focus(
-          focusNode: _focusNode,
+
+          },
           child: TapRegion(
             onTapInside: (event) => focus(),
             onTapOutside: (event) => unFocus(),
@@ -91,7 +92,7 @@ class _ClientListFiltersContainerState extends State<ClientListFiltersContainer>
                             spacing: 4,
                             children: [
                               Icon(Icons.filter_alt_outlined),
-                              Text("Filtros avanzados"),
+                              Text("Mas Filtros"),
                             ],
                           ),
                          
@@ -257,6 +258,8 @@ class _SearchBarFilterState extends State<_SearchBarFilter> {
                 _controller ??= TextEditingController(text: field.value);
               
                 return SearchBar(
+                  shape: WidgetStateProperty.all(RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8))),
                     controller: _controller,
                     autoFocus: true,
                     hintText: "ID, Nombres, Telefono, Email",

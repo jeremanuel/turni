@@ -9,6 +9,7 @@ import '../../presentation/admin/client_page/client_page.dart';
 import '../../presentation/admin/clients_list/bloc/clients_list_bloc.dart';
 import '../../presentation/admin/clients_list/clients_list_page.dart' deferred as list;
 import '../../presentation/admin/clients_list/list_utils/client_list_filters.dart';
+import '../../presentation/admin/payments_list/payments_list_page.dart';
 import '../../presentation/admin/states/scaffold_cubit/scaffold_cubit.dart';
 import '../utils/responsive_builder.dart';
 import 'service_locator.dart';
@@ -42,7 +43,7 @@ String? currentRoute;
 GoRouter buildGoRouter(RouterType routerType) {
   final goRouter =  GoRouter(
     
-    initialLocation: '/clients',
+    initialLocation: '/payments',
     refreshListenable: sl<AuthCubit>(),
     redirect: (context, state) {
       final authCubit = sl<AuthCubit>();
@@ -114,7 +115,8 @@ List<StatefulShellBranch> buildBranches(RouterType routerType) {
   }
 
   return [
-    StatefulShellBranch(routes: [
+    StatefulShellBranch(
+      routes: [
       GoRoute(
         path: '/dashboard',
         builder: (context, state) => Center(
@@ -226,8 +228,7 @@ List<StatefulShellBranch> buildBranches(RouterType routerType) {
               scaffoldCubit.setChild(
                 BlocProvider.value(
                   value: bloc,
-                  child: Clientpage(clientId: clientId, client: clientFromList, onUpdateClient: (p0) {
-              }),
+                  child: Clientpage(clientId: clientId, client: clientFromList, onUpdateClient: (p0) {}),
             ));
             }
 
@@ -286,9 +287,18 @@ List<StatefulShellBranch> buildBranches(RouterType routerType) {
               
             },);
           },
-        )
+        ),
 
     ]),
+    StatefulShellBranch(
+      routes: [
+        GoRoute(
+          path: AppRoutes.PAYMENTS_LIST.path,
+          name: AppRoutes.PAYMENTS_LIST.name,
+          builder: (context, state) => const PaymentsListPage(),
+        )
+      ]
+    ),
     StatefulShellBranch(routes: [
       GoRoute(
         path: '/profile',

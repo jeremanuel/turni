@@ -3,6 +3,7 @@ import 'package:trina_grid/trina_grid.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../../core/utils/date_functions.dart';
+import '../../../../../core/utils/either.dart';
 import '../../../../../domain/entities/payment/payment.dart';
 import '../../../../../domain/repositories/payment_repository.dart';
 
@@ -76,15 +77,15 @@ class _PaymentslistState extends State<Paymentslist> {
         fetch: (request) async {
           final page = request.page;
           final result = await widget.paymentRepository.getClientPayments(widget.clientId, page);
-          final pageResponse = result.whenOrNull(
-            left: (failure) => throw failure,
-            right: (value) => value,
-          );
+          final pageResponse = switch (result) {
+            Left(:final failure) => throw failure,
+            Right(:final value) => value,
+          };
           if (page == 1) {
-            widget.onPaymentsLoad?.call(pageResponse!.data.isNotEmpty ? pageResponse.data.first : null);
+            widget.onPaymentsLoad?.call(pageResponse.data.isNotEmpty ? pageResponse.data.first : null);
           }
           return TrinaLazyPaginationResponse(
-            totalRecords: pageResponse!.total,
+            totalRecords: pageResponse.total,
             totalPage: (pageResponse.total / stateManager.pageSize).ceil(),
             rows: pageResponse.data.map((payment) {
               return TrinaRow(cells: {

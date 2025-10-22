@@ -4,7 +4,7 @@ part 'client_list_filters.freezed.dart';
 part 'client_list_filters.g.dart';
 
 @freezed
-class ClientListFilters with _$ClientListFilters {
+sealed class ClientListFilters with _$ClientListFilters {
 
 
 

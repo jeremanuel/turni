@@ -6,7 +6,7 @@ part 'subscription_price_log.freezed.dart';
 part 'subscription_price_log.g.dart';
 
 @freezed
-class SubscriptionPriceLog with _$SubscriptionPriceLog {
+sealed class SubscriptionPriceLog with _$SubscriptionPriceLog {
 
   factory SubscriptionPriceLog({
     @JsonKey(name: "subscription_price_log_id")
