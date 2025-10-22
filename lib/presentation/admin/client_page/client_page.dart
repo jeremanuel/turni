@@ -59,56 +59,55 @@ class _ClientpageState extends State<Clientpage> {
 
     if(client == null) return const Center(child: Text("No pudo cargar los datos del cliente"));
 
-    return Portal(
-          child: ClientInherited(
-              (newClient) => setState(() {
-                client = newClient; widget.onUpdateClient(newClient);
-                context.read<ClientsListBloc>().refetchClients(); 
-                }),
-              client: client!,
-              child: Container(
-                color: colorScheme.surfaceContainer,
-                width: 700,
-                child: Builder(
-                  builder: (context) {
-        
-                    return ListView(
+    return ClientInherited(
+        (newClient) => setState(() {
+          client = newClient; widget.onUpdateClient(newClient);
+          context.read<ClientsListBloc>().refetchClients(); 
+          }),
+        client: client!,
+        child: Container(
+          color: colorScheme.surfaceContainer,
+          width: 700,
+          child: Builder(
+            builder: (context) {
+            
+              return ListView(
+                children: [
+                  BasicDataContainer(colorScheme: colorScheme, onToggleEditing: (c) => setState(() { isEditingMode = !isEditingMode;  }), isEditing: isEditingMode,),
+                  const SizedBox(height: 24),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        BasicDataContainer(colorScheme: colorScheme, onToggleEditing: (c) => setState(() { isEditingMode = !isEditingMode;  }), isEditing: isEditingMode,),
-                        const SizedBox(height: 24),
-                        const Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 20),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              SizedBox(height: 24),
-                              PaymentsContainer(),
-                              SubscriptionContainer(),
-                              SizedBox(height: 24),
-                              LabelsContainer(),
-                              SizedBox(height: 24)
-                      ],
-                    ),) ]);
-                  }
-                )
-              
-              ),
-            ),
-        );
+                        SizedBox(height: 24),
+                        PaymentsContainer(),
+                           SizedBox(height: 80),
+                        SubscriptionContainer(),
+                        SizedBox(height: 24),
+                        
+                        LabelsContainer(),
+                     
+                        SizedBox(height: 24)
+                ],
+              ),) ]);
+            }
+          )
+        
+        ),
+      );
   }
 
-  Portal buildNewClientMode(ColorScheme colorScheme) {
-    return Portal(
-      child: Container(
-            color: colorScheme.surfaceContainer,
-            width: 700,
-            child: Column(
-              children: [
-                BasicDataContainer(colorScheme: colorScheme, onToggleEditing: onNewClient, isEditing: isEditingMode,),
-                const Expanded(child: Center(child: Text("Guarde los datos basicos para poder cargar informacion avanzada")))
-              ],
-            )
-      ),
+  Container buildNewClientMode(ColorScheme colorScheme) {
+    return Container(
+          color: colorScheme.surfaceContainer,
+          width: 700,
+          child: Column(
+            children: [
+              BasicDataContainer(colorScheme: colorScheme, onToggleEditing: onNewClient, isEditing: isEditingMode,),
+              const Expanded(child: Center(child: Text("Guarde los datos basicos para poder cargar informacion avanzada")))
+            ],
+          )
     );
   }
 

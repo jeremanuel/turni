@@ -10,7 +10,7 @@ import '../../../../domain/entities/session.dart';
 part 'session_manager_event.freezed.dart';
 
 @freezed
-class SessionManagerEvent with _$SessionManagerEvent {
+sealed class SessionManagerEvent with _$SessionManagerEvent {
 
   factory SessionManagerEvent.changeDateEvent(DateTime newDate) = SessionChangeDateEvent;
 

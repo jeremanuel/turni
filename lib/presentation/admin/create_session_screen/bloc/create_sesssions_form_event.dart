@@ -1,7 +1,7 @@
 part of 'create_sesssions_form_bloc.dart';
 
 @freezed
-class CreateSesssionsFormEvent with _$CreateSesssionsFormEvent {
+sealed class CreateSesssionsFormEvent with _$CreateSesssionsFormEvent {
   const factory CreateSesssionsFormEvent.started() = _Started;
   const factory CreateSesssionsFormEvent.changeSelectionClubPartition(ClubPartition clubPartition, bool value) = ChangeSelectionClubPartition;
   const factory CreateSesssionsFormEvent.changeSelectionPhysicalPartition(PhysicalPartition physicalPartition, bool value) = ChangeSelectionPhysicalPartition;

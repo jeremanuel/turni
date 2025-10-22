@@ -7,7 +7,7 @@ part 'label.freezed.dart';
 part 'label.g.dart';
 
 @freezed
-class Label with _$Label {
+sealed class Label with _$Label {
 
   factory Label(
     @JsonKey(name: "label_id")

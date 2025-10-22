@@ -7,6 +7,7 @@ import '../../../../core/config/service_locator.dart';
 import '../../../../core/presentation/components/inputs/date_picker/date_picker.dart';
 import '../../../../core/presentation/components/inputs/snackbars/snackbars_functions.dart';
 import '../../../../core/utils/date_functions.dart';
+import '../../../../core/utils/either.dart';
 import '../../../../domain/entities/client.dart';
 import '../../../../domain/repositories/admin_repository.dart';
 import '../../../core/cubit/auth/auth_cubit.dart';
@@ -241,15 +242,13 @@ class _EditBasicDataContainerState extends State<EditBasicDataContainer> {
       "club_id":sl<AuthCubit>().getClubId()
     });
 
-    repositoryResult.when(
-      left: (failure) {
+    switch (repositoryResult) {
+      case Left():
         SnackbarsFunctions.showErrorsSnackbar(context, "Hubo un error al intentar guardar los datos del cliente");
-      }, 
-      right: (client) {
-        ClientInherited.of(context)?.updateClient(client);
-        widget.onToggleEditing(client);
-      },
-    );
+      case Right(:final value):
+        ClientInherited.of(context)?.updateClient(value);
+        widget.onToggleEditing(value);
+    }
 
     setState(() {
       isPostingData = false;

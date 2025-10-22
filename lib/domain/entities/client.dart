@@ -10,7 +10,7 @@ part 'client.freezed.dart';
 part 'client.g.dart';
 
 @freezed
-class Client with _$Client {
+sealed class Client with _$Client {
 
   factory Client({
     @JsonKey(name: "client_id", fromJson: ValueTransformers.fromJsonString, toJson: ValueTransformers.toJsonInt)
@@ -20,6 +20,8 @@ class Client with _$Client {
 
     @JsonKey(name: "user_id", fromJson: ValueTransformers.fromJsonString)
     String? userId,
+    @JsonKey(name: "club_id", fromJson: ValueTransformers.fromJsonInt)
+    int? clubId,
     Person? person,
     @JsonKey(name: "client_label", fromJson: Label.clientLabelToLabel)
     List<Label>? labels,

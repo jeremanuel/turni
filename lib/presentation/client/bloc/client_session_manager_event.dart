@@ -5,7 +5,7 @@ import '../../../domain/entities/club_type.dart';
 part 'client_session_manager_event.freezed.dart';
 
 @freezed
-class ClientSessionManagerEvent with _$ClientSessionManagerEvent {
+sealed class ClientSessionManagerEvent with _$ClientSessionManagerEvent {
   factory ClientSessionManagerEvent.loadSessions() = ClientSessionLoadEvent;
 
   factory ClientSessionManagerEvent.loadClubType(ClubType clubType) =

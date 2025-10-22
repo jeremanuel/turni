@@ -50,7 +50,7 @@ Color adjustColorBrightness(Color color, [double amount = 0.4, bool invert = fal
 
     final colorScheme = Theme.of(context).colorScheme;
 
-    return ThemeData.estimateBrightnessForColor(backgroundColor) == Brightness.dark
+    return ThemeData.estimateBrightnessForColor(backgroundColor) == Brightness.dark && Theme.of(context).brightness == Brightness.dark
         ? colorScheme.onSurface
         : colorScheme.onPrimary;
   }

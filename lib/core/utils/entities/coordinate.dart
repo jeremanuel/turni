@@ -4,7 +4,7 @@ part 'coordinate.freezed.dart';
 part 'coordinate.g.dart';
 
 @freezed
-class Coordinate with _$Coordinate {
+sealed class Coordinate with _$Coordinate {
   factory Coordinate({required double latitud, required double longitud}) =
       _Coordinate;
 

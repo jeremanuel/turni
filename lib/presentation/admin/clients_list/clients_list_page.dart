@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_portal/flutter_portal.dart';
 import 'package:go_router/go_router.dart';
 import 'package:trina_grid/trina_grid.dart';
 
@@ -9,9 +10,11 @@ import '../../../core/config/app_routes.dart';
 import '../../../core/presentation/components/custom_trina_grid/custom_trina_grid.dart';
 import '../../../core/presentation/components/inputs/label_chip.dart';
 import '../../../core/utils/responsive_builder.dart';
+import '../../../domain/entities/client.dart';
+import '../client_page/widgets/add_payment_button.dart';
 import 'bloc/clients_list_bloc.dart';
 import 'widgets/client_list_filters_container.dart';
-import 'widgets/client_list_header.dart';
+
 
 class ClientsList extends StatefulWidget {
   const ClientsList({super.key});
@@ -34,15 +37,6 @@ class _ClientsListState extends State<ClientsList> {
     super.dispose();
   }
 
-/* 
-        child: PaginatedTable<Client>(
-              columns: getColumns(),
-              dataSource: clientsBloc.state.dataSource,
-              onTap: (row, Client client) => context.goNamed(AppRoutes.CLIENT_ROUTE.name, extra: {"client":client, "bloc":context.read<ClientsListBloc>()}, pathParameters: {"clientId":client.clientId!}),
-            ),
-
- */
-
   @override
   Widget build(BuildContext context) {
     final clientsBloc = BlocProvider.of<ClientsListBloc>(context);
@@ -57,7 +51,6 @@ class _ClientsListState extends State<ClientsList> {
             createFooter: (stateManager) => TrinaLazyPagination(
               showTotalRows: false,
               enableGotoPage: false,
-              
               initialPageSize: 15,
               stateManager: stateManager,
               
@@ -76,7 +69,7 @@ class _ClientsListState extends State<ClientsList> {
                           "email": TrinaCell(value: e.person?.email ?? ''),
                           "labels": TrinaCell(renderer: (rendererContext) {
                             if(e.labels == null) return SizedBox();
-
+    
                             return ListView(
                               scrollDirection: Axis.horizontal,
                               children: [
@@ -87,9 +80,23 @@ class _ClientsListState extends State<ClientsList> {
                           'action': TrinaCell(
                             
                             renderer: (rendererContext) {
-                            return IconButton(
-                              onPressed: () => context.goNamed(AppRoutes.CLIENT_ROUTE.name, extra: {"client":e, "bloc":context.read<ClientsListBloc>()}, pathParameters: {"clientId":e.clientId!}),
-                              icon: Icon(Icons.edit, size: 16,),
+                            return Row(
+                              spacing: 4,
+                              children: [
+                                AddPaymentButton(
+                                  shortButton: true,
+                                  client: e, 
+                                  onPaymentCreated: (payment) {
+    
+                                    Future.delayed(const Duration(seconds: 3)).then((value) => clientsBloc.refetchClients());
+                                    
+                                  }
+                                  ),
+                                IconButton(
+                                onPressed: () => context.goNamed(AppRoutes.CLIENT_ROUTE.name, extra: {"client":e, "bloc":context.read<ClientsListBloc>()}, pathParameters: {"clientId":e.clientId!}),
+                                icon: Icon(Icons.edit, size: 16,),
+                              )
+                              ],
                             );
                           },)
                         }
@@ -126,7 +133,7 @@ class _ClientsListState extends State<ClientsList> {
       TrinaColumn(title: "Telefono", field: "phone", type: TrinaColumnType.text(), width: 300, enableEditingMode: false, enableContextMenu: false),
       TrinaColumn(title: "Email", field: "email", type: TrinaColumnType.text(), width: 400, enableEditingMode: false, enableContextMenu: false),
       TrinaColumn(title: "Etiquetas", field: "labels", type: TrinaColumnType.text(),  minWidth: 500, enableEditingMode: false, enableContextMenu: false),
-      TrinaColumn(title: "", field: "action", type: TrinaColumnType.boolean(), width: 80, enableDropToResize: false, )
+      TrinaColumn(title: "", field: "action", type: TrinaColumnType.boolean(), width: 115, enableDropToResize: false, frozen: TrinaColumnFrozen.end)
     ];
 
     return ResponsiveBuilder.isMobile(context) ? mobileColumns : desktopColumns;

@@ -7,6 +7,7 @@ import '../../../../core/config/service_locator.dart';
 import '../../../../core/presentation/components/inputs/label_chip.dart';
 import '../../../../core/presentation/components/inputs/dropdown_widget.dart';
 import '../../../../core/presentation/components/inputs/snackbars/snackbars_functions.dart';
+import '../../../../core/utils/either.dart';
 import '../../../../domain/entities/label.dart';
 import '../../../../domain/repositories/label_repository.dart';
 import '../../../core/cubit/auth/auth_cubit.dart';
@@ -89,16 +90,14 @@ class _AddLabelButtonState extends State<AddLabelButton> {
 
           final labelResponse = await _labelRepository.addLabelToClient(client.intClientId, label.toJson());
           
-          labelResponse.when(
-            left: (failure) => SnackbarsFunctions.showErrorsSnackbar(context, failure.message), 
-            right: (createdLabel) {
+          switch (labelResponse) {
+            case Left(:final failure):
+              SnackbarsFunctions.showErrorsSnackbar(context, failure.message);
+            case Right(:final value):
+               ClientInherited.of(context)!.updateClient(client.copyWith(labels: [...client.labels!, value]));
 
-               ClientInherited.of(context)!.updateClient(client.copyWith(labels: [...client.labels!, createdLabel]));
-
-               if(label.labelId == -1) sl<GlobalDataCubit>().addLabel(createdLabel);
-               
-            },
-          );
+               if(label.labelId == -1) sl<GlobalDataCubit>().addLabel(value);
+          }
 
           _dropdownController.hide!();
           
@@ -315,6 +314,8 @@ List<Color> labelColors = [
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
             child: SearchBar(
               autoFocus: true,
+              shape: WidgetStateProperty.all(RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8))),
               hintText: "Buscar Etiqueta",
               onChanged: (value) => setState(() {
                 search = value;
@@ -395,22 +396,9 @@ List<Color> labelColors = [
   Widget build(BuildContext context) {
     
     return SizedBox(
+      height: 300,
       child: !isCreatingNew ? buildList() : buildNewLabelForm().animate().moveX(),
-    )
-    .animate(onInit: (controller) => _animationController = controller, autoPlay: false)
-    .custom(
-      curve: Curves.ease,
-      begin: 500,
-      end: 350,
-      builder: (context, value, child) {
-        
-        return SizedBox(
-          width: 300,
-          height: value,
-          child: child,
-        );
-
-    });
+    );
   }
 }
 

@@ -4,6 +4,7 @@ import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:trina_grid/trina_grid.dart';
 
+import '../../../../core/utils/either.dart';
 import '../../../../domain/entities/client.dart';
 import '../../../../domain/entities/request/page_response.dart';
 import '../../../../domain/repositories/admin_repository.dart';
@@ -48,10 +49,10 @@ class ClientsListBloc extends Bloc<ClientsListEvent, ClientsListState> {
   Future<PageResponse<Client> > fetchClients (int page, String? sortKey, bool? isAscending) async {
     final response = await adminRepository.getClients(state.filters.search ?? '', page, sortKey, isAscending);
 
-    final decodedResponse = response.when(
-      right: (value) => value,
-      left: (failure) => null,
-    );
+    final decodedResponse = switch (response) {
+      Right(:final value) => value,
+      Left() => null,
+    };
 
     return decodedResponse!;
   }

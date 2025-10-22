@@ -24,6 +24,8 @@ class CustomTrinaGrid extends StatelessWidget {
 	Widget build(BuildContext context) {
 		final colorScheme = Theme.of(context).colorScheme;
 		return TrinaGrid(
+ 
+   
       noRowsWidget: const Center(
         child: Text("No hay registros"),
       ),
@@ -47,12 +49,12 @@ class CustomTrinaGrid extends StatelessWidget {
 					rowColor: colorScheme.surfaceContainer,
 					cellTextStyle: TextStyle(color: colorScheme.onSurface),
 					columnTextStyle: TextStyle(color: colorScheme.onSurface),
-					columnAscendingIcon: Icon(Icons.arrow_upward),
-					columnDescendingIcon: Icon(Icons.arrow_downward),
+					columnAscendingIcon: const Icon(Icons.arrow_upward),
+					columnDescendingIcon: const Icon(Icons.arrow_downward),
 					evenRowColor: colorScheme.surfaceContainerLow,
 					dragTargetColumnColor: colorScheme.primary,
 				),
-				columnSize: TrinaGridColumnSizeConfig(autoSizeMode: TrinaAutoSizeMode.scale),
+				columnSize: const TrinaGridColumnSizeConfig(autoSizeMode: TrinaAutoSizeMode.scale),
 			),
 			columns: columns,
 			rows: rows,

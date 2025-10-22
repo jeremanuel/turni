@@ -1,6 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 import '../../../core/utils/value_transformers.dart';
+import '../client.dart';
 import '../subscription/client_subscription.dart';
 import 'payment_method.dart';
 
@@ -8,13 +9,14 @@ part 'payment.freezed.dart';
 part 'payment.g.dart';
 
 @freezed
-class Payment with _$Payment {
+sealed class Payment with _$Payment {
 
   factory Payment({
     @JsonKey(name: "payment_id")
     int? paymentId,
     @JsonKey(name: "client_id")
     required int clientId,
+    Client? client,
     @JsonKey(name: "client_subscription_id")
     int? clientSubscriptionId,
     @JsonKey(fromJson: ValueTransformers.fromJsonDouble)

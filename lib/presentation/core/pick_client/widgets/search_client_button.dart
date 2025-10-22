@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/config/service_locator.dart';
 import '../../../../core/presentation/components/inputs/dropdown_widget.dart';
+import '../../../../core/utils/either.dart';
 import '../../../../domain/entities/client.dart';
 import '../../../../domain/repositories/admin_repository.dart';
 
@@ -25,6 +26,7 @@ class _SearchClientButtonState extends State<SearchClientButton> {
   Widget build(BuildContext context) {
     return DropdownWidget( 
     menuWidget: ClientListContainer(
+      onPressClose: () => controller.hide?.call(),
       onPickClient: widget.onPickClient,
     ), 
     dropdownController: controller,
@@ -42,11 +44,11 @@ class _SearchClientButtonState extends State<SearchClientButton> {
 class ClientListContainer extends StatefulWidget {
   const ClientListContainer({
     super.key, 
-    required this.onPickClient,
+    required this.onPickClient, required this.onPressClose,
   });
 
   final Function(Client) onPickClient;
-  
+  final Function() onPressClose;
 
   @override
   State<ClientListContainer> createState() => _ClientListContainerState();
@@ -59,7 +61,7 @@ class _ClientListContainerState extends State<ClientListContainer> {
   String? search;
   CancelableOperation? searchOperation;
   Timer? searchTimer;
-
+  
   
   @override
   Widget build(BuildContext context) {
@@ -75,7 +77,8 @@ class _ClientListContainerState extends State<ClientListContainer> {
                           filled: true,
                           fillColor: Theme.of(context).colorScheme.surface,
                           hintText: "Nombre, apellido, email o telefono",
-                          hintStyle: const TextStyle(fontSize: 13)                           
+                          hintStyle: const TextStyle(fontSize: 13),
+                          suffixIcon: IconButton(onPressed: () => widget.onPressClose.call(), icon: Icon(Icons.close))
             ),
             autofocus: true,
             onChanged: onChangedSearch,
@@ -153,10 +156,10 @@ class _ClientListContainerState extends State<ClientListContainer> {
   Future<List<Client>> getClients(String value) async {
     final response = await sl<AdminRepository>().getClients(search!);
 
-    final value = response.when(
-      left: (failure) => null, 
-      right: (value) => value,
-    );
+    final value = switch (response) {
+      Left() => null,
+      Right(:final value) => value,
+    };
 
     return value?.data ?? [];
   }

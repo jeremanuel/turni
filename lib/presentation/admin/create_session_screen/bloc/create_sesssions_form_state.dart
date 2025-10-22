@@ -1,7 +1,7 @@
 part of 'create_sesssions_form_bloc.dart';
 
 @freezed
-class CreateSesssionsFormState with _$CreateSesssionsFormState {
+sealed class CreateSesssionsFormState with _$CreateSesssionsFormState {
   const factory CreateSesssionsFormState({
     @Default([]) List<ClubPartition> selectedClubPartitions,
     @Default([]) List<PhysicalPartition> selectedPhysicalPartitions,

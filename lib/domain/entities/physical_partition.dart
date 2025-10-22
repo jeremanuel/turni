@@ -7,7 +7,7 @@ import 'club_partition.dart';
 part 'physical_partition.freezed.dart';
 part 'physical_partition.g.dart';
 @freezed
-class PhysicalPartition with _$PhysicalPartition {
+sealed class PhysicalPartition with _$PhysicalPartition {
 
   factory PhysicalPartition({
     @JsonKey(name: "partition_physical_id")

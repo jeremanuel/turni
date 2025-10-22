@@ -1,7 +1,7 @@
 part of 'clients_list_bloc.dart';
 
 @freezed
-class ClientsListState with _$ClientsListState {
+sealed class ClientsListState with _$ClientsListState {
 
   factory ClientsListState({
     

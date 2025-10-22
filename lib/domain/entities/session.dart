@@ -12,8 +12,7 @@ part 'session.freezed.dart';
 part 'session.g.dart';
 
 @freezed
-
-class Session with _$Session {
+sealed class Session with _$Session {
   factory Session({
     @JsonKey(name: "session_id") required int sessionId,
     @JsonKey(name: "created_at") required DateTime createdAt,
