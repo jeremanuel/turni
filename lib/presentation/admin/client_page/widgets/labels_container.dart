@@ -83,6 +83,7 @@ class _AddLabelButtonState extends State<AddLabelButton> {
   @override
   Widget build(BuildContext context) {
     return DropdownWidget(
+      menuHeight: 300,
       menuWidget: AddLabelContainer(
         onSelectLabel: (label) async {
           

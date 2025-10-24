@@ -18,14 +18,12 @@ import '../../infrastructure/api/repositories/session_repository_impl.dart';
 import '../../infrastructure/api/repositories/subscription_repository_impl.dart';
 import '../../presentation/admin/states/global_data/global_data_cubit.dart';
 import '../../presentation/admin/states/scaffold_cubit/scaffold_cubit.dart';
-import '../../presentation/client/bloc/client_session_manager_bloc.dart';
 import '../utils/dio_init.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../../domain/usercases/auth_user_cases.dart';
 import '../../infrastructure/api/providers/auth_provider.dart';
 import '../../infrastructure/api/repositories/auth_repository_impl.dart';
 import '../../presentation/core/cubit/auth/auth_cubit.dart';
-import '../../presentation/client/home_manager_screen/home/cubit/home_cubit.dart';
 
 import '../../presentation/admin/create_session_screen/bloc/create_sesssions_form_bloc.dart';
 import '../../presentation/admin/session_manager_screen/bloc/session_manager_bloc.dart';
@@ -71,9 +69,6 @@ class ServiceLocator {
 
     sl.registerLazySingleton<CreateSesssionsFormBloc>(() => CreateSesssionsFormBloc());
 
-    sl.registerLazySingleton<HomeCubit>(() => HomeCubit());
-    sl.registerLazySingleton<ClientSessionManagerBloc>(
-        () => ClientSessionManagerBloc());
 
     sl.registerLazySingleton<IARepository>(
       () => GeminiRepository(), 

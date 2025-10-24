@@ -2,7 +2,6 @@ import 'package:calendar_date_picker2/calendar_date_picker2.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-import '../../../../../presentation/client/session_manager_screen/session_feed/session_feed.dart';
 import '../../../../utils/types/time_interval.dart';
 import '../dropdown_widget.dart';
 
@@ -47,7 +46,7 @@ class _FilterChipIntervalDateState extends State<FilterChipIntervalDate> {
       final monthDate = DateTime(now.year, now.month - index);
       final startOfMonth = DateTime(monthDate.year, monthDate.month);
       final endOfMonth = DateTime(monthDate.year, monthDate.month + 1, 0);
-      final monthName = DateFormat.MMMM('es').format(monthDate).capitalize();
+      final monthName = DateFormat.MMMM('es').format(monthDate);
       return Suggestion(label: monthName, interval: TimeInterval(initialDate: startOfMonth, endDate: endOfMonth), type: SuggestionType.month);
     })
   ];

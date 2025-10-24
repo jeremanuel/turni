@@ -10,6 +10,7 @@ import '../../presentation/admin/clients_list/bloc/clients_list_bloc.dart';
 import '../../presentation/admin/clients_list/clients_list_page.dart' deferred as list;
 import '../../presentation/admin/clients_list/list_utils/client_list_filters.dart';
 import '../../presentation/admin/payments_list/payments_list_page.dart';
+import '../../presentation/admin/profile_manager/pages/club/club_profile_page.dart';
 import '../../presentation/admin/states/scaffold_cubit/scaffold_cubit.dart';
 import '../utils/responsive_builder.dart';
 import 'service_locator.dart';
@@ -18,7 +19,7 @@ import '../../presentation/auth/check_status_page.dart';
 import '../../presentation/auth/login_page.dart';
 import '../../presentation/core/cubit/auth/auth_cubit.dart';
 import '../../presentation/home_layout/widgets/custom_layout.dart';
-import '../../presentation/client/profile_manager_screen/profile/profile_page.dart';
+import '../../presentation/admin/profile_manager/profile_page.dart';
 
 import '../../presentation/admin/session_manager_screen/bloc/session_manager_bloc.dart';
 import '../../presentation/admin/session_manager_screen/bloc/session_manager_event.dart';
@@ -29,8 +30,6 @@ import '../../presentation/admin/session_manager_screen/session_manager_route.da
 import '../../presentation/admin/session_manager_screen/utils/session_manager_add_page_builder.dart';
 import '../../presentation/admin/session_manager_screen/utils/session_manager_reserve_page_builder.dart';
 import '../../presentation/admin/session_manager_screen/widgets/calendar_side_column.dart';
-import '../../presentation/client/home_manager_screen/home/home.dart';
-import '../../presentation/client/session_manager_screen/session_feed/session_feed.dart';
 import 'app_routes.dart';
 
 enum RouterType { clientRoute, adminRoute }
@@ -74,12 +73,7 @@ GoRouter buildGoRouter(RouterType routerType) {
         builder: (context, state) => AuthCheck(),
       ),
       GoRoute(path: '/login', builder: (context, state) => const LoginPage()),
-      if (routerType == RouterType.clientRoute)
-        GoRoute(
-          path: "/session_feed",
-          builder: (context, state) =>
-              SessionFeedPage(clubType: state.extra as ClubType),
-        ),
+ 
       StatefulShellRoute.indexedStack(
         branches: buildBranches(routerType),
         builder: (context, state, navigationShell) {
@@ -93,26 +87,7 @@ GoRouter buildGoRouter(RouterType routerType) {
 }
 
 List<StatefulShellBranch> buildBranches(RouterType routerType) {
-  if (routerType == RouterType.clientRoute) {
-    return [
-      StatefulShellBranch(routes: [
-        GoRoute(
-          path: '/home',
-          builder: (context, state) {
-            return HomePage();
-          },
-        ),
-      ]),
-      StatefulShellBranch(routes: [
-        GoRoute(
-          path: '/profile',
-          builder: (context, state) {
-            return const ProfilePage();
-          },
-        ),
-      ])
-    ];
-  }
+
 
   return [
     StatefulShellBranch(
@@ -299,14 +274,27 @@ List<StatefulShellBranch> buildBranches(RouterType routerType) {
         )
       ]
     ),
-    StatefulShellBranch(routes: [
-      GoRoute(
-        path: '/profile',
-        builder: (context, state) {
-          return const ProfilePage();
-        },
-      ),
-    ])
+    StatefulShellBranch(
+      routes: [
+        StatefulShellRoute.indexedStack(
+          builder: (context, state, navigationShell) => ProfilePage(child: navigationShell),
+          branches: [
+            StatefulShellBranch(routes: [
+              GoRoute(
+                path: '/profile/settings',
+                builder: (context, state) => ClubProfilePage(),
+              ),
+            ]),
+            StatefulShellBranch(routes: [
+              GoRoute(
+                path: '/profile/security',
+                builder: (context, state) => const Placeholder(key: Key('profile-security')),
+              ),
+            ]),
+          ],
+        ),
+      ],
+    )
   ];
 }
  String? setCurrentRoute(BuildContext context, GoRouterState state) {

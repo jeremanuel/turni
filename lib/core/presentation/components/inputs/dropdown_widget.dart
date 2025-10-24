@@ -23,8 +23,9 @@ class DropdownWidget extends StatefulWidget {
     required this.menuWidget,
     required this.dropdownController,
     this.aligned,
-    this.obscureBackground = false,
-    this.onClose,
+    this.obscureBackground = true,
+    this.onClose, 
+    this.menuHeight,
   });
 
   final Function()? onClose;
@@ -33,16 +34,19 @@ class DropdownWidget extends StatefulWidget {
   final DropdownController dropdownController;
   final Aligned? aligned;
   final bool obscureBackground;
+  final double? menuHeight;
 
   @override
   State<DropdownWidget> createState() => _DropdownWidgetState();
 }
 
 class _DropdownWidgetState extends State<DropdownWidget> {
+  double? _realMenuHeight;
   bool isVisible = false;
   late final OverlayPortalController _overlayController;
   final LayerLink _layerLink = LayerLink();
   final GlobalKey _childKey = GlobalKey();
+  final GlobalKey _menuKey = GlobalKey();
 
   @override
   void initState() {
@@ -155,6 +159,7 @@ class _DropdownWidgetState extends State<DropdownWidget> {
 
   Widget buildMenu(BuildContext context) {
     final menuWidget = SizedBox(
+      key: _menuKey,
       width: 300,
       child: Material(
         color: Theme.of(context).colorScheme.surfaceContainerHigh,
@@ -162,6 +167,19 @@ class _DropdownWidgetState extends State<DropdownWidget> {
         child: widget.menuWidget,
       ),
     );
+
+    // Recalcula el alto real del menú después del primer frame
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final menuRenderBox = _menuKey.currentContext?.findRenderObject() as RenderBox?;
+      if (menuRenderBox != null) {
+        final newHeight = menuRenderBox.size.height;
+        if (_realMenuHeight != newHeight) {
+          setState(() {
+            _realMenuHeight = newHeight;
+          });
+        }
+      }
+    });
 
     if (ResponsiveBuilder.isMobile(context)) {
       return Dialog(
@@ -173,11 +191,12 @@ class _DropdownWidgetState extends State<DropdownWidget> {
   }
 
   Offset _getDropdownOffset(BuildContext context, Offset customOffset) {
-    const menuWidth = 300.0;
-    const menuHeight = 48.0 * 6;
+  const menuWidth = 300.0;
+  // Usa el alto real si está disponible, si no usa el estimado
+  double menuHeight = _realMenuHeight ?? 48.0 * 6;
+   
     final screenSize = MediaQuery.of(context).size;
       RenderBox? renderBox = _childKey.currentContext?.findRenderObject() as RenderBox?;
-    final childHeight = renderBox?.size.height ?? 0;
     final targetPosition = renderBox?.localToGlobal(Offset.zero) ?? Offset.zero;
 
     double dx = customOffset.dx;
@@ -186,31 +205,19 @@ class _DropdownWidgetState extends State<DropdownWidget> {
     // Si el menú se sale por la derecha
     if (targetPosition.dx + dx + menuWidth > screenSize.width) {
       dx = screenSize.width - (targetPosition.dx + menuWidth) - 16;
-    }
-
-    print(targetPosition.dy);
-    print(dy);
-    print(menuHeight);
-    
+    }    
     // Si el menú se sale por abajo (no entra en Y)
-      final bottomOverflow = (targetPosition.dy + dy + menuHeight) - screenSize.height;
-      if (bottomOverflow > 0) {
-        // Si el overflow es menor a 32px, deja el menú abajo aunque sobresalga un poco
-        if (bottomOverflow < 32) {
-          // No lo muevas arriba, solo déjalo sobresalir
-          // Opcional: podrías ajustar dy para que sobresalga menos, pero lo dejamos abajo
-        } else {
-          // Coloca el menú justo por encima del child
-          dy = -bottomOverflow;
-          // Si el menú se sale por arriba de la pantalla, ajusta solo lo necesario para que entre
-          final espacioArriba = targetPosition.dy + dy;
-          if (espacioArriba < 0) {
-            // Mueve el menú hacia abajo lo justo para que entre, pero manteniéndolo pegado al child
-            dy -= espacioArriba;
-          }
-        }
+    final bottomOverflow = (targetPosition.dy + dy + menuHeight) - screenSize.height;
+    if (bottomOverflow > 0) {
+      // Coloca el menú justo por encima del child
+      dy = -menuHeight;
+      // Si el menú se sale por arriba de la pantalla, ajusta solo lo necesario para que entre
+      final espacioArriba = targetPosition.dy + dy;
+      if (espacioArriba < 0) {
+        dy -= espacioArriba;
       }
-      return Offset(dx, dy);
+    }
+    return Offset(dx, dy);
   }
 }
 

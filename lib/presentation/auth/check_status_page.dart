@@ -16,10 +16,10 @@ class AuthCheck extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-            child: TextButton(onPressed: () {
-              authCubit.checkAuthStatus();
-            }, child:  const CircularProgressIndicator()),
-        );
+    return const Scaffold(
+      body: Center(
+              child: CircularProgressIndicator(),
+          ),
+    );
   }
 }

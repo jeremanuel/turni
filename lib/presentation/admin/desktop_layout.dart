@@ -157,7 +157,7 @@ class SideBar extends StatelessWidget {
           NavigationRailDestination(
           padding: EdgeInsets.all(16),
           icon: Icon(Icons.build), 
-          label: Text("Perfil")
+          label: Text("Ajustes")
         )
     ];
   }
