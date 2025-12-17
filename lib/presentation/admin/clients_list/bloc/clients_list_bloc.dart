@@ -4,10 +4,10 @@ import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:trina_grid/trina_grid.dart';
 
-import '../../../../core/utils/either.dart';
-import '../../../../domain/entities/client.dart';
-import '../../../../domain/entities/request/page_response.dart';
-import '../../../../domain/repositories/admin_repository.dart';
+import '../../../../../core/utils/either.dart';
+import '../../../../../domain/entities/client.dart';
+import '../../../../../domain/entities/request/page_response.dart';
+import '../../../../../domain/repositories/admin_repository.dart';
 import '../list_utils/client_list_filters.dart';
 
 part 'clients_list_event.dart';

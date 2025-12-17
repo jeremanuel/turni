@@ -20,17 +20,25 @@ class Labelchip extends StatelessWidget {
     return Chip(
       onDeleted: onDelete,
       deleteIcon: const Icon(Icons.close),
-      label: Text(
-        label.value,
-        style: TextStyle(
-          color: _getContrastingTextColor(context, backgroundColor) ,
+      avatar: Container(
+        width: 12,
+        height: 12,
+        decoration: BoxDecoration(
+          color: backgroundColor,
+          borderRadius: BorderRadius.all(Radius.circular(2))
         ),
       ),
-      backgroundColor: backgroundColor,
+      label: Text(
+        label.value,
+        /* style: TextStyle(
+          color: _getContrastingTextColor(context, backgroundColor) ,
+        ),  */
+      ),
+      //backgroundColor: backgroundColor, 
       visualDensity: const VisualDensity(vertical: -4),
-      side: BorderSide(
-        color: borderColor
-      )
+       side: BorderSide(
+        color: borderColor.withOpacity(0.5),
+      )  
     );
   }
 

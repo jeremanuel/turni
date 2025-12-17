@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../../utils/responsive_builder.dart';
 
 class Aligned {
@@ -25,7 +26,8 @@ class DropdownWidget extends StatefulWidget {
     this.aligned,
     this.obscureBackground = true,
     this.onClose, 
-    this.menuHeight,
+    this.menuHeight,  
+    this.width = 300,
   });
 
   final Function()? onClose;
@@ -35,6 +37,7 @@ class DropdownWidget extends StatefulWidget {
   final Aligned? aligned;
   final bool obscureBackground;
   final double? menuHeight;
+  final double width;
 
   @override
   State<DropdownWidget> createState() => _DropdownWidgetState();
@@ -57,6 +60,11 @@ class _DropdownWidgetState extends State<DropdownWidget> {
 
   void initializeDropdowncontroller() {
     widget.dropdownController.hide = () {
+      if (ResponsiveBuilder.isMobile(context)) {
+        context.pop();
+        return;
+      }
+
       setState(() {
         isVisible = false;
         _overlayController.hide();
@@ -160,7 +168,7 @@ class _DropdownWidgetState extends State<DropdownWidget> {
   Widget buildMenu(BuildContext context) {
     final menuWidget = SizedBox(
       key: _menuKey,
-      width: 300,
+      width: widget.width,
       child: Material(
         color: Theme.of(context).colorScheme.surfaceContainerHigh,
         borderRadius: const BorderRadius.all(Radius.circular(8)),

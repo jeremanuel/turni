@@ -2,10 +2,10 @@ import 'package:turni/core/presentation/components/custom_trina_grid/custom_trin
 import 'package:trina_grid/trina_grid.dart';
 import 'package:flutter/material.dart';
 
-import '../../../../../core/utils/date_functions.dart';
-import '../../../../../core/utils/either.dart';
-import '../../../../../domain/entities/payment/payment.dart';
-import '../../../../../domain/repositories/payment_repository.dart';
+import '../../../../../../../core/utils/date_functions.dart';
+import '../../../../../../../core/utils/either.dart';
+import '../../../../../../../domain/entities/payment/payment.dart';
+import '../../../../../../../domain/repositories/payment_repository.dart';
 
 class Paymentslist extends StatefulWidget {
   final int clientId;

@@ -59,12 +59,22 @@ class _AddPaymentButtonState extends State<AddPaymentButton> {
         icon: const Icon(Icons.add_card_outlined), tooltip: "Registrar nuevo pago",
       );
     }
+
+    final colorscheme = Theme.of(context).colorScheme;
     
-    return TextButton(
+    return FilledButton(
+      style: ButtonStyle(
+        backgroundColor: WidgetStatePropertyAll(colorscheme.primaryContainer),
+        shape: WidgetStatePropertyAll(
+          RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(6.0),
+          ),
+        ),
+      ),
       onPressed:(){ 
         dropdownController.show!();
       }, 
-      child: const Text("Registrar nuevo pago")
+      child: Text("Registrar nuevo pago", style: TextStyle(color: colorscheme.onPrimaryContainer)),
     );
   }
 }
@@ -105,6 +115,8 @@ class _AddPaymentContainerState extends State<AddPaymentContainer> {
 
   @override
   Widget build(BuildContext context) {
+
+    final colorScheme = Theme.of(context).colorScheme;
 
     if(error != null){
       return SplashAnimation(
@@ -197,10 +209,19 @@ class _AddPaymentContainerState extends State<AddPaymentContainer> {
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
               TextButton(onPressed: widget.onCancel, child: const Text("Cancelar")),
-              TextButton(
+              FilledButton(
+                style:ButtonStyle(
+                  backgroundColor: WidgetStatePropertyAll(colorScheme.primaryContainer),
+                  shape: WidgetStatePropertyAll(
+                    RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(6.0),
+                    ),
+                  ),
+                ),
                 onPressed: createPayment, 
-                child: isCreatingPayment ? SizedBox(height: 24,width: 24, child: CircularProgressIndicator(color: Theme.of(context).colorScheme.onPrimary, strokeWidth: 2,)) : const Text("Crear Pago")
+                child: isCreatingPayment ? SizedBox(height: 24,width: 24, child: CircularProgressIndicator(color: Theme.of(context).colorScheme.onPrimary, strokeWidth: 2,)) :  Text("Crear Pago", style: TextStyle(color: colorScheme.onPrimaryContainer),)
               ),
+              SizedBox(width: 8,)
             ],
           ),
           const SizedBox(height: 16,)

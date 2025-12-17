@@ -8,9 +8,13 @@ part 'scaffold_cubit.freezed.dart';
 class ScaffoldCubit extends Cubit<ScaffoldCubitState> {
 
 
-  ScaffoldCubit() : super(const ScaffoldCubitState.initial(null));
+  ScaffoldCubit() : super(const ScaffoldCubitState.initial(null, null));
 
   void setChild(Widget child) {
     emit(state.copyWith(child:child));
+  }
+
+  void showSnackbar(String message) {
+    emit(state.copyWith(snackbarMessage: message));
   }
 }

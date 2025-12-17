@@ -5,6 +5,7 @@ import '../../domain/repositories/ia_repository.dart';
 import '../../domain/repositories/admin_repository.dart';
 import '../../domain/repositories/label_repository.dart';
 import '../../domain/repositories/payment_repository.dart';
+import '../../domain/repositories/routine_repository.dart';
 import '../../domain/repositories/session_repository.dart';
 import '../../domain/repositories/subscription_repository.dart';
 import '../../domain/usercases/session_user_cases.dart';
@@ -16,6 +17,7 @@ import '../../infrastructure/api/repositories/label_repository_impl.dart';
 import '../../infrastructure/api/repositories/payment_repository_impl.dart';
 import '../../infrastructure/api/repositories/session_repository_impl.dart';
 import '../../infrastructure/api/repositories/subscription_repository_impl.dart';
+import '../../infrastructure/mock/routine_repository_mock.dart';
 import '../../presentation/admin/states/global_data/global_data_cubit.dart';
 import '../../presentation/admin/states/scaffold_cubit/scaffold_cubit.dart';
 import '../utils/dio_init.dart';
@@ -68,6 +70,8 @@ class ServiceLocator {
     //sl.registerLazySingleton<FeedCubit>(() => FeedCubit());
 
     sl.registerLazySingleton<CreateSesssionsFormBloc>(() => CreateSesssionsFormBloc());
+
+    sl.registerLazySingleton<RoutineRepository>(() => RoutineRepositoryMock());
 
 
     sl.registerLazySingleton<IARepository>(

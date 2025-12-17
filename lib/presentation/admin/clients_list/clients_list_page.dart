@@ -6,7 +6,7 @@ import 'package:flutter_portal/flutter_portal.dart';
 import 'package:go_router/go_router.dart';
 import 'package:trina_grid/trina_grid.dart';
 
-import '../../../core/config/app_routes.dart';
+import '../../../core/config/router/app_routes.dart';
 import '../../../core/presentation/components/custom_trina_grid/custom_trina_grid.dart';
 import '../../../core/presentation/components/inputs/label_chip.dart';
 import '../../../core/utils/responsive_builder.dart';
@@ -80,6 +80,15 @@ class _ClientsListState extends State<ClientsList> {
                           'action': TrinaCell(
                             
                             renderer: (rendererContext) {
+                              
+                            final editClientIcon = IconButton(
+                                onPressed: () => context.goNamed(AppRoutes.CLIENT_ROUTE.name, extra: {"client":e, "bloc":context.read<ClientsListBloc>()}, pathParameters: {"clientId":e.clientId!}),
+                                icon: Icon(Icons.edit, size: 16,),
+                              );
+
+                            if(ResponsiveBuilder.isMobile(context)) {
+                              return editClientIcon;
+                            }
                             return Row(
                               spacing: 4,
                               children: [
@@ -92,10 +101,7 @@ class _ClientsListState extends State<ClientsList> {
                                     
                                   }
                                   ),
-                                IconButton(
-                                onPressed: () => context.goNamed(AppRoutes.CLIENT_ROUTE.name, extra: {"client":e, "bloc":context.read<ClientsListBloc>()}, pathParameters: {"clientId":e.clientId!}),
-                                icon: Icon(Icons.edit, size: 16,),
-                              )
+                                editClientIcon
                               ],
                             );
                           },)
@@ -112,7 +118,7 @@ class _ClientsListState extends State<ClientsList> {
 
     return Scaffold(
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => context.goNamed(AppRoutes.NEW_CLIENT_ROUTE.name, extra: context.read<ClientsListBloc>()),
+        onPressed: () => context.pushNamed(AppRoutes.NEW_CLIENT_ROUTE.name, extra: context.read<ClientsListBloc>()),
         label: ResponsiveBuilder.isDesktop(context)
             ? Row(spacing: 8, mainAxisSize: MainAxisSize.min, children: [Icon(Icons.person_add_alt_1_rounded), Text("Nuevo cliente")])
             : Icon(Icons.person_add_alt_1_rounded),
@@ -124,7 +130,7 @@ class _ClientsListState extends State<ClientsList> {
     final mobileColumns = [
       TrinaColumn(title: "Cliente", field: "name", type: TrinaColumnType.text(), enableEditingMode: false, enableContextMenu: false),
       TrinaColumn(title: "Telefono", field: "phone", type: TrinaColumnType.text(), width: 150, enableEditingMode: false, enableContextMenu: false),
-      TrinaColumn(title: "Etiquetas", field: "labels", type: TrinaColumnType.text(), width: 150, enableEditingMode: false),
+      TrinaColumn(title: "", field: "action", type: TrinaColumnType.boolean(), width: 115, enableDropToResize: false)
     ];
 
     final desktopColumns = [

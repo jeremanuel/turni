@@ -6,6 +6,8 @@ import '../entities/request/page_response.dart';
 
 abstract class AdminRepository {
     Future<RepositoryResponse<PageResponse<Client>>> getClients(String search, [int? page, String? sortKey, bool? isAscending]);
+
+    Future<RepositoryResponse<Client>> getClientById(int id);
     Future<List<GenericSearchItem>> genericSearch(String searchType, RangeDate rangeDate, int? clubPartitionId);
     Future<RepositoryResponse<Client>> createOrSaveClient(Map<String,dynamic> clientData);
 }

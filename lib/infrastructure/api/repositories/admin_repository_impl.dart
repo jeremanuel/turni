@@ -65,4 +65,10 @@ class AdminrepositroyImpl extends BaseRepository implements AdminRepository {
     });
 
   }
+  
+  @override
+  Future<RepositoryResponse<Client>> getClientById(int id) {
+    // TODO: implement getClientById
+    throw UnimplementedError();
+  }
 }

@@ -53,7 +53,7 @@ class _SubscriptionContainerState extends State<SubscriptionContainer> {
               itemCount: client.clientSubscriptions?.length ?? 0,
               scrollDirection: Axis.horizontal,
               itemBuilder: (context, index) {
-                return _SubscriptionCard(clientSubscription: client.clientSubscriptions![index]);
+                return SubscriptionCard(clientSubscription: client.clientSubscriptions![index]);
               },
               separatorBuilder: (context, index) => const SizedBox(width: 8)
             ),
@@ -64,20 +64,132 @@ class _SubscriptionContainerState extends State<SubscriptionContainer> {
   }
 }
 
-class _SubscriptionCard extends StatelessWidget {
-  const _SubscriptionCard({
+class SubscriptionCard extends StatelessWidget {
+  const SubscriptionCard({
+    super.key,
     required this.clientSubscription,
+    this.compact = false,
   });
 
   final ClientSubscription clientSubscription;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
     
     final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
+    if (compact) {
+      return Container(
+        decoration: BoxDecoration(
+      color: Theme.of(context).colorScheme.surfaceContainerHigh,
+      borderRadius: BorderRadius.circular(10),
+      border: Border.all(color: colorScheme.outline.withOpacity(0.5))
+    ),
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              spacing: 8,
+              children: [
+                  Container(
+                  width: 12,
+                  height: 12,
+                  decoration: BoxDecoration(
+                    color: Colors.green,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                Text("Subcription activa", style: textTheme.titleMedium,),
+                Spacer(),
+                     if (clientSubscription.isActive) ...[
+                  const SizedBox(width: 4),
+                  IconButton(
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                    icon: const Icon(Icons.cancel, size: 20),
+                    tooltip: "Cancelar suscripción",
+                    onPressed: () {
+                      showDialog(
+                        context: context,
+                        builder: (innerContext) {
+                          return AlertDialog(
+                            title: const Text("Cancelar subscripcion"),
+                            content: const Text("¿Estas seguro que deseas cancelar la subscripcion?"),
+                            actions: [
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.pop(innerContext);
+                                },
+                                child: const Text("No"),
+                              ),
+                              TextButton(
+                                onPressed: () async {
+                                  final client = ClientInherited.of(context)!.client;
+                                  
+                                  await sl<SubscriptionRepository>().unSubscribeClient(
+                                    clientSubscription.clientSubscriptionId,
+                                    client.intClientId,
+                                  );
+
+                                  ClientInherited.of(context)!.updateClient(
+                                    client.copyWith(
+                                      clientSubscriptions: client.clientSubscriptions!
+                                          .map((e) => e.clientSubscriptionId == clientSubscription.clientSubscriptionId
+                                              ? e.copyWith(endDate: DateTime.now())
+                                              : e)
+                                          .toList(),
+                                    ),
+                                  );
+                                  Navigator.pop(innerContext);
+                                },
+                                child: const Text("Si"),
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                    },
+                  ),
+                ],
+              ]
+            ),
+            SizedBox(height: 12,),
+            Row(
+              children: [
+                Icon(
+                  Icons.fitness_center_rounded,
+                  color: colorScheme.primary,
+                  size: 20,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  clientSubscription.subscription.name,
+                  style: textTheme.titleMedium
+                ),
+
+           
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Text("Creada"),
+                Text(" hace ${DateFunctions.differencePretty(clientSubscription.startDate)}"),
+              ],
+            ),
+            
+            
+          ],
+        ),
+      );
+    }
 
     return Container(
-    width: 200,
+    width: 240,
     height: 120,
     decoration: BoxDecoration(
       color: Theme.of(context).colorScheme.surfaceContainerHighest,
