@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import '../../../../core/config/service_locator.dart';
 import '../../../../core/utils/dio_init.dart';
 import '../../../../domain/entities/user.dart';
@@ -35,19 +36,24 @@ class AuthCubit extends Cubit<AuthState> with ChangeNotifier {
   }
 
   void checkAuthStatus() async {
-    final String token = await LocalStorage.read(LocalStorage.TOKEN_KEY) ?? 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxLCJpYXQiOjE3NTkwOTkzNDl9.ejA0baCaoZQA1z39yxMJJqyb0S8deiwOJ8vzyZdynPc';
+    final String? token = await LocalStorage.read(LocalStorage.TOKEN_KEY);
+
+    if (token == null) {
+      emit(const AuthNotLogged());
+      notifyListeners();
+      return;
+    }
+
     await DioInit.addTokenToInterceptor(sl<Dio>(), token);
 
     emit(const AuthIsLoading());
- 
+
     final user = await authUserCases.validateToken(token);
 
     emit(AuthLogged(userCredential: user));
 
     sl<GlobalDataCubit>();
 
-
-  
     notifyListeners();
   }
 
@@ -58,6 +64,7 @@ class AuthCubit extends Cubit<AuthState> with ChangeNotifier {
   }
 
   void signOutGoogle() async {
+    await GoogleSignIn.instance.signOut();
     emit(const AuthNotLogged());
     await authUserCases.logout();
     notifyListeners();
@@ -87,11 +94,11 @@ class AuthCubit extends Cubit<AuthState> with ChangeNotifier {
     return state.userCredential?.isAdmin ?? false;
   }
 
-  int getClubId(){
+  int getClubId() {
     return state.userCredential!.admin!.clubPartitions.first.club_id;
   }
 
-/*   void setInitialRoute(String? route){
+  /*   void setInitialRoute(String? route){
     state.initialRoute = route;
   } */
 }

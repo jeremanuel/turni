@@ -32,11 +32,15 @@ class BasicDataContainer extends StatelessWidget {
 
     final client = ClientInherited.of(context)?.client;
 
+    bool isMobile = ResponsiveBuilder.isMobile(context);
+
     return Container(
       decoration: BoxDecoration(
         color: colorScheme.surfaceContainerHigh,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: colorScheme.outline.withOpacity(0.5)),
+          borderRadius: isMobile ? BorderRadius.zero : BorderRadius.circular(10),
+                border: isMobile 
+                  ? Border.symmetric(horizontal: BorderSide(color: colorScheme.outline.withOpacity(0.5)))
+                  : Border.all(color: colorScheme.outline.withOpacity(0.5)),
       ),
       padding: const EdgeInsets.all(24),
       child: (isEditing || client == null) ? EditBasicDataContainer(client: client, onToggleEditing: onToggleEditing) : InfoBasicDataContainer(client: client, onToggleEditing: onToggleEditing),

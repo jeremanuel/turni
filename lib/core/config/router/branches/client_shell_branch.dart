@@ -83,9 +83,7 @@ StatefulShellBranch clientShellBranch() {
               state.pathParameters['clientId'] ?? '',
             );
 
-            return Clientpage(clientId: clientId!, client: clientFromList, onUpdateClient: (p0) {
-                
-              },);
+            return Clientpage(clientId: clientId!, client: clientFromList, onUpdateClient: (p0) {});
           },
           routes: [
             
@@ -95,7 +93,7 @@ StatefulShellBranch clientShellBranch() {
               path: '/:clientId/routine',
               name: AppRoutes.NEW_ROUTINE_ROUTE.name,
               redirect: (context, state) {
-                print("a");
+               
                 if(ResponsiveBuilder.isMobile(context)) return null;
 
                 scaffoldKey.currentState?.openEndDrawer();
@@ -136,7 +134,7 @@ StatefulShellBranch clientShellBranch() {
           path: AppRoutes.NEW_CLIENT_ROUTE.path,
           name: AppRoutes.NEW_CLIENT_ROUTE.name,
          
-          redirect: (context, state) {  
+/*           redirect: (context, state) {  
 
 
             if(ResponsiveBuilder.isMobile(context)) return null;
@@ -153,12 +151,8 @@ StatefulShellBranch clientShellBranch() {
               },)));
        
            return currentRoute ?? AppRoutes.CLIENTS_LIST_ROUTE.path;
-          },
+          }, */
           builder: (context, state){
-
-            if(ResponsiveBuilder.isDesktop(context)) {
-              return const SizedBox();
-            }
 
             return Clientpage(clientId: -1, createNewClient: true, onUpdateClient: (p0) {
               
