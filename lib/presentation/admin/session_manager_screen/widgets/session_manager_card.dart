@@ -15,7 +15,8 @@ class SessionManagerCard extends StatefulWidget {
     required this.physicalPartition,  
     this.onReserve, 
     this.onDelete, 
-    this.hasFocus = false
+    this.hasFocus = false, 
+    required this.height
   });
 
   final Session session;
@@ -23,6 +24,7 @@ class SessionManagerCard extends StatefulWidget {
   final Function? onReserve;
   final Function? onDelete;
   final bool hasFocus;
+  final double height;
 
   @override
   State<SessionManagerCard> createState() => _SessionManagerCardState();
@@ -35,7 +37,7 @@ class _SessionManagerCardState extends State<SessionManagerCard>  {
   @override
   Widget build(BuildContext context) {
 
-    if(widget.session.isReserved) return ReservedSessionCard(session: widget.session, hasFocus: widget.hasFocus,);
+    if(widget.session.isReserved) return ReservedSessionCard(session: widget.session, hasFocus: widget.hasFocus, height: widget.height,);
 
     return NotReservedSessionCard(session: widget.session, onReserve: widget.onReserve, onDelete: widget.onDelete, hasFocus: widget.hasFocus); 
 
@@ -47,7 +49,8 @@ class ReservedSessionCard extends StatelessWidget {
 
   final Session session;
   final bool hasFocus;
-  const ReservedSessionCard({super.key, required this.session, this.hasFocus = false});
+  final double height;
+  const ReservedSessionCard({super.key, required this.session, this.hasFocus = false, required this.height});
 
   getColor(context){
 
@@ -63,80 +66,115 @@ class ReservedSessionCard extends StatelessWidget {
     return hslColor.withLightness(newLightness).toColor();
   }
 
+  // Calcular porcentaje pagado
+  double _getPaymentPercentage() {
+    if (session.totalPrice <= 0) return 0;
+    return (session.totalPayedPrice / session.totalPrice).clamp(0, 1);
+  }
+
+  // Obtener color de barra según estado de pago
+
+
   @override
   Widget build(BuildContext context) {
+
+    final colorScheme = Theme.of(context).colorScheme;
+    final percentage = _getPaymentPercentage();
+    final progressColor = colorScheme.primary;
+
     return Ink(
         width: 190,
         decoration: BoxDecoration(
             color: getColor(context),
-            borderRadius: BorderRadius.circular(12)
+            borderRadius: BorderRadius.only(
+              topRight: Radius.circular(12),
+              bottomRight: Radius.circular(12),
+            ),
         ),
         child: InkWell(
           onTap: () {
             context.goNamed("SESSION_MANAGER_RESERVE", pathParameters: {"idSession":session.sessionId.toString()});
 
           },
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                color: Theme.of(context).colorScheme.primary,                  
-                width: 16,
-              ),
-              Expanded(
-                flex: 5,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric( horizontal: 4),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        spacing: 4,
-                        children: [
-                          const Icon(Icons.access_time, size: 18,),
-                          Text(
-                            "${DateFormat.jm().format(session.startTime)} - ${DateFormat.jm().format(session.endTime)}",
-                          ),
-                          const Spacer(),
-                          IconButton(
-                      icon: const Icon(Icons.close, size: 18,),
-                      onPressed: () {
-                        showDialog(
-                        context: context,
-                         builder: (dialogContext) {
-                          return const CloseSessionDialog(isReserved: true);
-                        },);
-                      },
-                    )
-                        ],
+          child: Tooltip(
+            message: '${(percentage * 100).toStringAsFixed(0)}% pagado • \$${session.totalPayedPrice.toStringAsFixed(0)} / \$${session.totalPrice.toStringAsFixed(0)}',
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Barra vertical de progreso
+                Stack(
+                  children: [
+                    Container(
+                      color: colorScheme.primaryContainer,
+                      width: 16,
+                    ),
+                    Positioned(
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      child: Container(
+                        color: progressColor,
+                        width: 16,
+                        height: (percentage * height).toDouble(), // Altura proporcionalmente a disponible
                       ),
-                      const Spacer(),                  
-                      Row(
-                        spacing: 4,
-                        children: [
-                          const Icon(Icons.person, size: 18),
-                          Expanded(child: Text(session.client!.person!.fullName, style: const TextStyle(overflow: TextOverflow.ellipsis, fontSize: 12),)),
-                          IconButton(
-                            onPressed: () {
-                            context.goNamed(AppRoutes.CLIENT_ROUTE.name, pathParameters: {"clientId":session.client!.clientId!});
-                            
-                          }, icon: const Icon(Icons.open_in_new_rounded, size: 18,))
-                        ],
-                      ),
-                
-                    ],
+                    ),
+                  ],
+                ),
+                Expanded(
+                  flex: 5,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric( horizontal: 4),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          spacing: 4,
+                          children: [
+                            const Icon(Icons.access_time, size: 18,),
+                            Text(
+                              "${DateFormat.jm().format(session.startTime)} - ${DateFormat.jm().format(session.endTime)}",
+                            ),
+                            const Spacer(),
+                            IconButton(
+                        icon: const Icon(Icons.close, size: 18,),
+                        onPressed: () {
+                          showDialog(
+                          context: context,
+                           builder: (dialogContext) {
+                            return const CloseSessionDialog(isReserved: true);
+                          },);
+                        },
+                      )
+                          ],
+                        ),
+                        const Spacer(),                  
+                        Row(
+                          spacing: 4,
+                          children: [
+                            const Icon(Icons.person, size: 18),
+                            Expanded(child: Text(session.client!.person!.fullName, style: const TextStyle(overflow: TextOverflow.ellipsis, fontSize: 12),)),
+                            IconButton(
+                              onPressed: () {
+                              context.goNamed(AppRoutes.CLIENT_ROUTE.name, pathParameters: {"clientId":session.client!.clientId!});
+                              
+                            }, icon: const Icon(Icons.open_in_new_rounded, size: 18,))
+                          ],
+                        ),
+                  
+                      ],
+                    ),
                   ),
                 ),
-              ),
-              if(session.physicalPartition?.clubPartition?.clubType != null)
-                ...[
-                  const Spacer(),
-                  Padding(
-                    padding: const EdgeInsets.all(8),
-                    child: Text("${session.physicalPartition!.clubPartition!.clubType!.name} | ${session.physicalPartition!.physicalIdentifier.toString()}"),
-                  )
-                ]
-            ],
+                if(session.physicalPartition?.clubPartition?.clubType != null)
+                  ...[
+                    const Spacer(),
+                    Padding(
+                      padding: const EdgeInsets.all(8),
+                      child: Text("${session.physicalPartition!.clubPartition!.clubType!.name} | ${session.physicalPartition!.physicalIdentifier.toString()}"),
+                    )
+                  ]
+              ],
+            ),
           ),
         ),
       );

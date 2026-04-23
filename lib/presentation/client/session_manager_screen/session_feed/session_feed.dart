@@ -31,7 +31,7 @@ class SessionFeedPage extends StatelessWidget {
     sessionManagerBloc.add(ClientSessionLoadEvent());
   }
 
-  void launchWppMessage(Session session) {
+/*   void launchWppMessage(Session session) {
     final user = authCubit.state.userCredential;
     final message = user!.templateMessage!;
     final templateMessage = TemplateMessage(link: message);
@@ -39,7 +39,7 @@ class SessionFeedPage extends StatelessWidget {
     templateMessage.populateLinkFromSession([session, user.client!.person]);
 
     launchUrl(templateMessage.getPopulatedLink());
-  }
+  } */
 
   @override
   Widget build(BuildContext context) {
@@ -194,7 +194,7 @@ class SessionFeedPage extends StatelessWidget {
       int index = entry.key;
       Session session = entry.value;
       return GestureDetector(
-        onTap: () => launchWppMessage(session),
+     
         child: Container(
           decoration: BoxDecoration(
             color: getBackgroundColor(index),

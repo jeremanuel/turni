@@ -156,6 +156,7 @@ class _GenericBrowserState extends State<GenericBrowser> {
       height: 100, 
       margin: const EdgeInsets.only(bottom: 8), 
       child: SessionManagerCard(
+        height: 100,
         session: session, 
         physicalPartition: 
         session.physicalPartition!, 

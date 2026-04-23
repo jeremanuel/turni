@@ -4,9 +4,74 @@ import '../../../core/utils/entities/coordinate.dart';
 import '../../../core/utils/entities/range_date.dart';
 import '../../../domain/entities/client.dart';
 import '../../../domain/entities/club_partition.dart';
+import '../../../domain/entities/extra.dart';
+import '../../../domain/entities/payment/payment.dart';
 import '../../../domain/entities/session.dart';
 
 class SessionProvider {
+  Future<Payment> addPaymentToSession(int sessionId, Payment payment) async {
+    final payload = payment.toJson()
+      ..remove('payment_id')
+      ..remove('payment_date');
+
+    payload['payment_method_id'] = payment.paymentMethod.paymentMethodId;
+
+    final response = await dioInstance.post(
+      "/admin/session/$sessionId/payment",
+      data: {"payment": payload},
+    );
+
+    return Payment.fromJson(response.data['payment']);
+  }
+
+  Future<Extra> addExtraToSession(int sessionId, Extra extra,
+      {bool paidExtra = false}) async {
+    final payload = {
+      'product_id': extra.productId,
+      'amount': extra.amount,
+      'payed': paidExtra,
+      if (extra.payment != null)
+        'payment_method_id': extra.payment!.paymentMethod.paymentMethodId,
+    };
+
+    final response = await dioInstance.post(
+      "/admin/session/$sessionId/extra",
+      data: {'extra': payload},
+    );
+
+    return Extra.fromJson(response.data['extra']);
+  }
+
+  Future<Extra> paySessionExtra(int sessionId, Extra extra) async {
+    final response = await dioInstance.post(
+      "/admin/session/$sessionId/extra/pay",
+      data: {
+        'extra': {
+          'extra_id': extra.extraId,
+        },
+        'payment': {
+          'amount': extra.amount,
+          'payment_method_id': 1,
+        }
+      },
+    );
+
+    return Extra.fromJson(response.data['extra']);
+  }
+
+  Future<bool> deleteSessionExtra(int sessionId, Extra extra) async {
+    final response = await dioInstance.delete(
+      "/admin/session/$sessionId/extra",
+      data: {
+        'extra': {
+          'extra_id': extra.extraId,
+        }
+      },
+    );
+
+    return response.data['success'] == true;
+  }
+
   final dioInstance = sl<Dio>();
 
   Future<List<Session>> getClientSessions(

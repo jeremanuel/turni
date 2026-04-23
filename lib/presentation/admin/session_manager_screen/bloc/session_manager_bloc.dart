@@ -81,9 +81,17 @@ print("test desde bloc:");
 
       final sessions = await _sessionUserCases.getSessions(state.currentDate); 
 
+      final selectedSessionId = state.selectedSession?.sessionId;
+      final newSelectedSession = selectedSessionId == null
+          ? null
+          : sessions.firstWhereOrNull(
+              (session) => session.sessionId == selectedSessionId,
+            );
+
       emit(
         state.copyWith(
           sessions: sessions,
+          selectedSession: newSelectedSession,
           isLoadingSessions: false
         )
       );
@@ -199,6 +207,33 @@ print("test desde bloc:");
         );
       return index != -1;
     });
+  }
+
+  void updateSessionInState(Session updatedSession) {
+    final sessionExists =
+        state.sessions.any((session) => session.sessionId == updatedSession.sessionId);
+
+    if (!sessionExists) return;
+
+    final updatedSessions = state.sessions
+        .map(
+          (session) => session.sessionId == updatedSession.sessionId
+              ? updatedSession
+              : session,
+        )
+        .toList();
+
+    final updatedSelectedSession =
+        state.selectedSession?.sessionId == updatedSession.sessionId
+            ? updatedSession
+            : state.selectedSession;
+
+    emit(
+      state.copyWith(
+        sessions: updatedSessions,
+        selectedSession: updatedSelectedSession,
+      ),
+    );
   }
 
 

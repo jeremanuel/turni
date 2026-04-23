@@ -210,7 +210,7 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
                     builder: (context, state) {
                       return Agenda(
                         sessions: state.sessions,
-                        buildCard: (session, physicalPartition) =>
+                        buildCard: (session, physicalPartition, height) =>
                             AgendaEditCard(session: session),
                         physicalPartitions: [
                           PhysicalPartition(

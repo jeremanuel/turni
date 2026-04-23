@@ -52,7 +52,8 @@ Page<dynamic> sessionManagerReservePageBuilder(
   }
 
   return NoTransitionPage(
-    child: BlocListener<SessionManagerBloc, SessionManagerState>(
+    child: BlocConsumer<SessionManagerBloc, SessionManagerState>(
+      buildWhen: (previous, current) => previous.sessions.firstWhereOrNull((element) => element.sessionId == idSession) != current.sessions.firstWhereOrNull((element) => element.sessionId == idSession),
     listenWhen: (previous, current) => previous.sessions.firstWhereOrNull((element) => element.sessionId == idSession) != current.sessions.firstWhereOrNull((element) => element.sessionId == idSession),
     listener: (context, state) {
       
@@ -64,10 +65,14 @@ Page<dynamic> sessionManagerReservePageBuilder(
 
       
     },
-    child: SessionInfo(
-        session: session,
-        clubPartition: selectedClubPartition,
+    builder: (context, state) {
+      final session = state.sessions.firstWhereOrNull((element) => element.sessionId == idSession);
+
+      return SessionInfo(
+        session: session!,
         physicalPartition: physicalPartition!,
-      ),
+        clubPartition: state.selectedClubPartition!,
+      );
+    },
   ));
 }

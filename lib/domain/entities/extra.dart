@@ -7,6 +7,8 @@ part 'extra.g.dart';
 @freezed
 class Extra with _$Extra {
   const factory Extra({
+    @JsonKey(name: "extra_id") int? extraId,
+    @JsonKey(name: "product_id") int? productId,
     required String name,
     required double amount,
     Payment? payment,
