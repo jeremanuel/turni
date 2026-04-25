@@ -3,6 +3,8 @@ import '../../core/utils/either.dart';
 import '../../core/utils/types/time_interval.dart';
 import '../entities/client.dart';
 import '../entities/club_partition.dart';
+import '../entities/extra.dart';
+import '../entities/payment/payment.dart';
 import '../entities/session.dart';
 import '../repositories/session_repository.dart';
 
@@ -33,6 +35,31 @@ class SessionUserCases {
 
   Future<Client?> reservateSession(Session session, Client client) async {
    return _sessionRepository.reservateSession(session.sessionId, client);
+  }
+
+  Future<Either<DomainError, Payment>> addPaymentToSession(
+      int sessionId, Payment payment) {
+    return _sessionRepository.addPaymentToSession(sessionId, payment);
+  }
+
+  Future<Either<DomainError, Extra>> addExtraToSession(
+    int sessionId,
+    Extra extra, {
+    bool paidExtra = false,
+  }) {
+    return _sessionRepository.addExtraToSession(
+      sessionId,
+      extra,
+      paidExtra: paidExtra,
+    );
+  }
+
+  Future<Either<DomainError, Extra>> paySessionExtra(int sessionId, Extra extra) {
+    return _sessionRepository.paySessionExtra(sessionId, extra);
+  }
+
+  Future<Either<DomainError, bool>> deleteSessionExtra(int sessionId, Extra extra) {
+    return _sessionRepository.deleteSessionExtra(sessionId, extra);
   }
 
   Future deleteSession(sessionId){

@@ -8,7 +8,7 @@
             "name": "turni",
             "request": "launch",
             "type": "dart",
-            "args": ["--web-port=1234"]
+            "args": ["--web-port=1234", "--web-experimental-hot-reload"]
         },
         {
             "name": "turni (profile mode)",

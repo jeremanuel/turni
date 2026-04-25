@@ -42,6 +42,11 @@ class DomainError implements Exception {
     }
   }
 
+  @override
+  String toString() {
+    return message;
+  }
+
 
 
 }

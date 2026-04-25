@@ -5,6 +5,7 @@ import '../../domain/repositories/ia_repository.dart';
 import '../../domain/repositories/admin_repository.dart';
 import '../../domain/repositories/label_repository.dart';
 import '../../domain/repositories/payment_repository.dart';
+import '../../domain/repositories/product_repository.dart';
 import '../../domain/repositories/session_repository.dart';
 import '../../domain/repositories/subscription_repository.dart';
 import '../../domain/usercases/session_user_cases.dart';
@@ -14,6 +15,7 @@ import '../../infrastructure/api/repositories/IA/gemini_repository.dart';
 import '../../infrastructure/api/repositories/admin_repository_impl.dart';
 import '../../infrastructure/api/repositories/label_repository_impl.dart';
 import '../../infrastructure/api/repositories/payment_repository_impl.dart';
+import '../../infrastructure/api/repositories/product_repository_impl.dart';
 import '../../infrastructure/api/repositories/session_repository_impl.dart';
 import '../../infrastructure/api/repositories/subscription_repository_impl.dart';
 import '../../presentation/admin/states/global_data/global_data_cubit.dart';
@@ -40,6 +42,8 @@ class ServiceLocator {
     
     sl.registerSingleton<PaymentRepository>(PaymentRepositoryImpl());
 
+    sl.registerSingleton<ProductRepository>(ProductRepositoryImpl());
+
     sl.registerSingleton<LabelRepository>(LabelRepositoryImpl());
 
     sl.registerSingleton<SubscriptionRepository>(SubscriptionRepositoryImpl());
@@ -61,7 +65,10 @@ class ServiceLocator {
     ); // Cubit singleton para manejo de la sesion.
 
     sl.registerLazySingleton<GlobalDataCubit>(() {
-      return GlobalDataCubit(sl<LabelRepository>());
+      return GlobalDataCubit(
+        sl<LabelRepository>(),
+        sl<ProductRepository>(),
+      );
     });
 
 

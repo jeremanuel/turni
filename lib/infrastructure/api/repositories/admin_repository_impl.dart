@@ -23,9 +23,9 @@ class AdminrepositroyImpl extends BaseRepository implements AdminRepository {
 
   @override
 
-  Future<Either<DomainError, PageResponse<Client>>> getClients(String search, [int? page, String? sortKey, bool? isAscending]) async {
+  Future<Either<DomainError, PageResponse<Client>>> getClients(String search, [int? page, String? sortKey, bool? isAscending, int? clientId]) async {
 
-    return safeCall(() => adminProvider.getClients(search, page));
+    return safeCall(() => adminProvider.getClients(search, page, clientId));
 
   }
 

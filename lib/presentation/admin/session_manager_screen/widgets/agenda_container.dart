@@ -94,6 +94,7 @@ class AgendaContainer extends StatelessWidget {
           previous.selectedClubPartition != current.selectedClubPartition ||
           previous.isLoadingSessions != current.isLoadingSessions || previous.selectedSession != current.selectedSession,
       builder: (context, state) {
+       
         if (state.isLoadingSessions) {
           return const Center(
             child: CircularProgressIndicator(),
@@ -107,10 +108,11 @@ class AgendaContainer extends StatelessWidget {
               state.currentDate.applied(const TimeOfDay(hour: 8, minute: 0)),
           lastDate:
               state.currentDate.applied(const TimeOfDay(hour: 22, minute: 0)),
-          buildCard: (session, physicalPartition) {
+          buildCard: (session, physicalPartition, height) {
             if(state.selectedSession == session){
             }
             return SessionManagerCard(
+              height:height,
              hasFocus: state.selectedSession == session, 
               session: session,
               physicalPartition: physicalPartition,

@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../core/config/app_routes.dart';
+import '../../../../core/config/router/app_routes.dart';
+import '../../../../domain/entities/client.dart';
 import '../bloc/clients_list_bloc.dart';
 
 class ClientListHeader extends StatelessWidget {
@@ -30,7 +31,12 @@ class ClientListHeader extends StatelessWidget {
           const Spacer(),
           FilledButton(
             onPressed: () {
-              context.goNamed(AppRoutes.NEW_CLIENT_ROUTE.name, extra: context.read<ClientsListBloc>());
+              context.goNamed(
+                AppRoutes.NEW_CLIENT_ROUTE.name,
+                  extra: {
+                  //'onClientCreated': (Client client) => context.read<ClientsListBloc?>()?.state.dataSource.loadPage(context.read<ClientsListBloc>().state.dataSource.currentPage)
+                }
+              );
             }, 
             child: const Row(
               spacing: 8,

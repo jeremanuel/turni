@@ -23,7 +23,6 @@ class SnackbarsFunctions {
     static void showSuccessSnackbar(BuildContext context, String error){
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-
           backgroundColor: Theme.of(context).colorScheme.primaryContainer,
           behavior: SnackBarBehavior.floating,
           content: Row(

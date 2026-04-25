@@ -3,7 +3,7 @@ import 'package:data_table_2/data_table_2.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../core/config/app_routes.dart';
+import '../../../../core/config/router/app_routes.dart';
 import '../../../../core/presentation/components/inputs/label_chip.dart';
 import '../../../../core/utils/responsive_builder.dart';
 import '../../../../domain/entities/client.dart';

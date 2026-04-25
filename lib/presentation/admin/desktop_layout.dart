@@ -41,13 +41,11 @@ class DesktopLayout extends StatelessWidget {
                 child: child,
               ),
             ),
-            const SizedBox(width: 20,),
-            
-            
-          ],
+          ]
+          ),
         ),
-      ),
-    );
+      );
+    
 
   }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_portal/flutter_portal.dart';
 import 'bloc/session_manager_bloc.dart';
 import 'bloc/session_manager_state.dart';
 import 'widgets/agenda_container.dart';
@@ -24,7 +25,7 @@ class SessionManagerDesktop extends StatelessWidget {
     );
   }
 
-  Padding buildDesktopManager(BuildContext context) {
+  Widget buildDesktopManager(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Row(

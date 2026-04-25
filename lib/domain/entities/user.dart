@@ -19,8 +19,7 @@ class User {
     this.token,
     this.client,
     this.admin,
-    this.userInterest,
-    this.templateMessage,
+    this.userInterest
   });
 
   @JsonKey(name: "user_id", fromJson: ValueTransformers.fromJsonString)
@@ -37,8 +36,7 @@ class User {
   @JsonKey(name: "user_interest")
   final List<UserInterest>? userInterest;
 
-  @JsonKey(name: "template_message")
-  final String? templateMessage;
+
   Coordinate? location;
 
   bool get isAdmin {

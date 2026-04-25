@@ -6,7 +6,7 @@ import 'package:flutter_portal/flutter_portal.dart';
 import 'package:go_router/go_router.dart';
 import 'package:trina_grid/trina_grid.dart';
 
-import '../../../core/config/app_routes.dart';
+import '../../../core/config/router/app_routes.dart';
 import '../../../core/presentation/components/custom_trina_grid/custom_trina_grid.dart';
 import '../../../core/presentation/components/inputs/label_chip.dart';
 import '../../../core/utils/responsive_builder.dart';
