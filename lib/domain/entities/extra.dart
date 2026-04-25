@@ -5,7 +5,7 @@ part 'extra.freezed.dart';
 part 'extra.g.dart';
 
 @freezed
-class Extra with _$Extra {
+abstract class Extra with _$Extra {
   const factory Extra({
     @JsonKey(name: "extra_id") int? extraId,
     @JsonKey(name: "product_id") int? productId,

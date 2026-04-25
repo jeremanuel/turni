@@ -55,3 +55,19 @@ app.*.map.json
 
 # FVM Version Cache
 .fvm/
+pubspec.lock
+.vscode/settings.json
+ios/Runner/GeneratedPluginRegistrant.h
+ios/Runner/GeneratedPluginRegistrant.m
+linux/flutter/generated_plugin_registrant.cc
+linux/flutter/generated_plugin_registrant.h
+linux/flutter/generated_plugins.cmake
+linux/flutter/ephemeral/.plugin_symlinks/flutter_localization
+linux/flutter/ephemeral/.plugin_symlinks/flutter_secure_storage_linux
+linux/flutter/ephemeral/.plugin_symlinks/geolocator_linux
+linux/flutter/ephemeral/.plugin_symlinks/package_info_plus
+linux/flutter/ephemeral/.plugin_symlinks/url_launcher_linux
+macos/Flutter/GeneratedPluginRegistrant.swift
+windows/flutter/generated_plugin_registrant.cc
+windows/flutter/generated_plugin_registrant.h
+windows/flutter/generated_plugins.cmake

@@ -8,7 +8,7 @@ import '../../../../domain/entities/session.dart';
 part 'session_manager_state.freezed.dart';
 
 @freezed
-class SessionManagerState with _$SessionManagerState{
+sealed class SessionManagerState with _$SessionManagerState{
 
   factory SessionManagerState({
     required DateTime currentDate,

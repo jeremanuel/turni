@@ -98,7 +98,10 @@ class _GenericBrowserState extends State<GenericBrowser> {
  
     return result.expand((genericItemSearch){
 
-      final newDate = genericItemSearch.whenOrNull(session: (session) => session.startTime);
+      final newDate = switch (genericItemSearch) {
+        GenericSearchSession(:final session) => session.startTime,
+        _ => null,
+      };
       
       bool buildDate = false;
 
@@ -107,7 +110,10 @@ class _GenericBrowserState extends State<GenericBrowser> {
         currentDate = newDate;
       }
 
-      final widget = genericItemSearch.when(session: buildSession, client: buildClient);
+      final widget = switch (genericItemSearch) {
+        GenericSearchSession(:final session) => buildSession(session),
+        GenericSearchClient(:final client) => buildClient(client),
+      };
 
       return [ 
 

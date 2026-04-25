@@ -34,8 +34,7 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-    _router = buildGoRouter(
-    );
+    _router = buildGoRouter();
   }
   @override
   Widget build(BuildContext context) {
@@ -62,4 +61,5 @@ class _MyAppState extends State<MyApp> {
       },
     );
   }
+
 }

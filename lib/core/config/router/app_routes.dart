@@ -10,6 +10,8 @@ class AppRoutes {
 
   static const NEW_CLIENT_ROUTE = RouteDefinition("NEW_CLIENT", '/client');
 
+  static const PAYMENTS_LIST = RouteDefinition("PAYMENTS", '/payments');
+
 
 }
 

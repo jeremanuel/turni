@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../../core/utils/either.dart';
 import '../../../../../core/utils/responsive_builder.dart';
 import '../../../../../core/utils/types/time_interval.dart';
 import '../../../../../domain/entities/club_partition.dart';

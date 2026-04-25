@@ -7,7 +7,7 @@ part 'client_subscription.freezed.dart';
 part 'client_subscription.g.dart';
 
 @freezed
-class ClientSubscription with _$ClientSubscription {
+sealed class ClientSubscription with _$ClientSubscription {
 
   factory ClientSubscription({
     @JsonKey(name: "client_subscription_id")

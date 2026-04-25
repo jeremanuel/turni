@@ -4,7 +4,7 @@ part 'payment_method.freezed.dart';
 part 'payment_method.g.dart';
 
 @freezed
-class PaymentMethod with _$PaymentMethod {
+sealed class PaymentMethod with _$PaymentMethod {
 
   
 

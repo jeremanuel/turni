@@ -53,6 +53,7 @@ class _AddSubscriptionButtonState extends State<AddSubscriptionButton> {
     final clubPartitions =  sl<AuthCubit>().state.userCredential?.admin?.clubPartitions;
 
     return DropdownWidget(
+      menuHeight: 200,
       menuWidget: AddSubscriptionContainer(clubPartitions: clubPartitions, client: widget.client),
       dropdownController: dropdownController,
       child: buildButton(context, widget.client)

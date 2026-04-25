@@ -145,13 +145,13 @@ print("test desde bloc:");
         _sessionUserCases.getClubPartitions()
       ]);
 
-      final result = getSessionsResult.whenOrNull(
-        left: (failure){
+      final result = switch (getSessionsResult) {
+        Left(:final failure) => () {
           emit(state.copyWith(error: failure));
           return null;
-        },
-        right: (value) => value,
-      );
+        }(),
+        Right(:final value) => value,
+      };
     
       if(result == null){ // Si falla, se cargan los Turnos con normalidad.
         add(SessionLoadEvent());

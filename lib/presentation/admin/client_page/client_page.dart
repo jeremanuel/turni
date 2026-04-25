@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_portal/flutter_portal.dart';
+import 'package:trina_grid/trina_grid.dart';
 import '../../../core/config/service_locator.dart';
 import '../../../core/utils/domain_error.dart';
+import '../../../core/utils/either.dart';
 import '../../../domain/entities/client.dart';
 import '../../../domain/entities/payment/payment.dart';
 import '../../../domain/repositories/admin_repository.dart';
@@ -143,22 +145,20 @@ class _ClientpageState extends State<Clientpage> {
         );
   }
 
-  Portal buildNewClientMode(ColorScheme colorScheme) {
-    return Portal(
-      child: Container(
-            color: colorScheme.surfaceContainer,
-            width: 700,
-            child: Column(
-              children: [
-                BasicDataContainer(colorScheme: colorScheme, onToggleEditing: onNewClient, isEditing: isEditingMode,),
-                const Expanded(child: Center(child: Text("Guarde los datos basicos para poder cargar informacion avanzada")))
-              ],
-            )
-      ),
+  Container buildNewClientMode(ColorScheme colorScheme) {
+    return Container(
+          color: colorScheme.surfaceContainer,
+          width: 700,
+          child: Column(
+            children: [
+              BasicDataContainer(colorScheme: colorScheme, onToggleEditing: onNewClient, isEditing: isEditingMode,),
+              const Expanded(child: Center(child: Text("Guarde los datos basicos para poder cargar informacion avanzada")))
+            ],
+          )
     );
   }
 
-  onNewClient(c){ 
+  void onNewClient(Client c){ 
     
     setState(() { 
       client = c; isEditingMode = false;
@@ -179,10 +179,11 @@ class _PaymentsContainerState extends State<PaymentsContainer> {
 
   String? alertMessage;
   String? infoMessage;
-  PaymentsDataSource? paymentDataSource;
+  PaymentRepository? paymentRepository;
+  TrinaGridStateManager? stateManager;
 
 
-  setAlertBasedOnLastPayment(Payment? payment){
+  void setAlertBasedOnLastPayment(Payment? payment){
     final now = DateTime.now();
 
     if(payment == null) return;
@@ -213,11 +214,7 @@ class _PaymentsContainerState extends State<PaymentsContainer> {
   @override
   void initState() {
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-      paymentDataSource = PaymentsDataSource(
-        int.parse(ClientInherited.of(context)!.client.clientId!),
-        setAlertBasedOnLastPayment,
-        paymentRepository: sl<PaymentRepository>()
-      );
+      paymentRepository = sl<PaymentRepository>();
       setState(() {});
     });
     super.initState();
@@ -226,7 +223,7 @@ class _PaymentsContainerState extends State<PaymentsContainer> {
   @override
   Widget build(BuildContext context) {
 
-    if(paymentDataSource == null) return const SizedBox();
+    if(paymentRepository == null) return const SizedBox();
 
     final textTheme = Theme.of(context).textTheme;
     final client = ClientInherited.of(context)!.client;
@@ -251,12 +248,25 @@ class _PaymentsContainerState extends State<PaymentsContainer> {
             const SizedBox(width: 8,),
             AddPaymentButton(
               client: client, 
-              onPaymentCreated: (p0) => paymentDataSource!.refreshDatasource()              
+              onPaymentCreated: (p0){
+                stateManager!.setFilter((element) => true);
+              }             
             )
           ],
         ),
         const SizedBox(height: 16),
-        SizedBox(height: 360, child: Paymentslist(clientId: int.parse(client.clientId!), onPaymentsLoad: setAlertBasedOnLastPayment, paymentDataSource: paymentDataSource!,)),
+        SizedBox(
+          height: 360,
+          child: Paymentslist(
+            clientId: int.parse(client.clientId!), 
+            onPaymentsLoad: setAlertBasedOnLastPayment, 
+            paymentRepository: paymentRepository!, 
+            onLoaded: (event) => setState(() {
+              stateManager = event.stateManager;
+             
+            }),
+          )
+        ),
       ],
     );
   }

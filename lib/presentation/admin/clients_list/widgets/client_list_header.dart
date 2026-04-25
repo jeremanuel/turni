@@ -34,7 +34,7 @@ class ClientListHeader extends StatelessWidget {
               context.goNamed(
                 AppRoutes.NEW_CLIENT_ROUTE.name,
                   extra: {
-                  'onClientCreated': (Client client) => context.read<ClientsListBloc?>()?.state.dataSource.loadPage(context.read<ClientsListBloc>().state.dataSource.currentPage)
+                  //'onClientCreated': (Client client) => context.read<ClientsListBloc?>()?.state.dataSource.loadPage(context.read<ClientsListBloc>().state.dataSource.currentPage)
                 }
               );
             }, 

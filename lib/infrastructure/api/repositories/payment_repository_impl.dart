@@ -5,6 +5,7 @@ import '../../../core/utils/domain_error.dart';
 import '../../../core/utils/either.dart';
 import '../../../domain/entities/payment/payment.dart';
 import '../../../domain/entities/request/page_response.dart';
+import '../../../domain/entities/request/payment/payment_list_response.dart';
 import '../../../domain/repositories/payment_repository.dart';
 import 'base/base_repository.dart';
 
@@ -35,6 +36,27 @@ class PaymentRepositoryImpl extends BaseRepository implements PaymentRepository 
 
     });
 
+  }
+
+  @override
+  Future<Either<DomainError, PaymentListResponse>> getPayments(int page, {DateTime? fechaDesde, DateTime? fechaHasta}) {
+    return safeCall<PaymentListResponse>(() async {
+      final queryParams = <String, dynamic>{
+        'page': page,
+      };
+      
+      if (fechaDesde != null) {
+        queryParams['fechaDesde'] = fechaDesde.toIso8601String();
+      }
+      
+      if (fechaHasta != null) {
+        queryParams['fechaHasta'] = fechaHasta.toIso8601String();
+      }
+
+      final response = await dioInstance.get("/payments", queryParameters: queryParams);
+
+      return PaymentListResponse.fromJson(response.data);
+    });
   }
 }
   

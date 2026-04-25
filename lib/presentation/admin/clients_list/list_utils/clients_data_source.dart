@@ -1,6 +1,7 @@
 import 'package:data_table_2/data_table_2.dart';
 import 'package:flutter/material.dart';
 
+import '../../../../core/utils/either.dart';
 import '../../../../domain/entities/client.dart';
 import '../../../../domain/repositories/admin_repository.dart';
 import 'client_list_filters.dart';
@@ -25,12 +26,10 @@ class ClientsDataSource extends AsyncDataTableSource{
     final result = await _adminRepository.getClients(filters.search ?? '', page);
     
     
-    final pageInfo = result.when(
-      left: (error) {
-        throw Exception(error.message);
-      },
-      right: (pageInfo) => pageInfo
-    );
+    final pageInfo = switch (result) {
+      Left(:final failure) => throw Exception(failure.message),
+      Right(:final value) => value,
+    };
 
     clients = pageInfo.data;
     final rows = pageInfo.data.map((client) => ClientsDataRow(context, client)).toList();

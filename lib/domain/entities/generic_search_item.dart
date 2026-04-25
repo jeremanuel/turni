@@ -7,7 +7,7 @@ part 'generic_search_item.freezed.dart';
 part 'generic_search_item.g.dart';
 
 @freezed
-class GenericSearchItem with _$GenericSearchItem {
+sealed class GenericSearchItem with _$GenericSearchItem {
 
 
   const factory GenericSearchItem.session(Session session) = GenericSearchSession;

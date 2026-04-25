@@ -20,44 +20,32 @@ class DesktopLayout extends StatelessWidget {
     return Scaffold(
       key: scaffoldKey,
       
-      drawer: const Drawer(
-        child: Text("Drawer"),
-      ),
+    
       endDrawer: BlocBuilder<ScaffoldCubit, ScaffoldCubitState>(
         bloc: sl<ScaffoldCubit>(),
-        builder: (context, state) {
-        return state.child!;
-      }),
-      body:  Scaffold(
-        body: Portal(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            child: Row(
-              children: [
-                           
-                const SizedBox(width: 20,),
-                SideBar(child: child),
-                const SizedBox(width: 20,),
-                
-                Expanded(
-                  child: Material(
-                    elevation: 25,
-                    color: Theme.of(context2).colorScheme.surfaceContainer,
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: child,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 20,),
-                
-                
-              ],
+        builder: (context, state) => state.child!
+        ),
+      body:  Padding(
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        child: Row(
+          children: [
+                       
+            const SizedBox(width: 20,),
+            SideBar(child: child),
+            const SizedBox(width: 20,),
+            
+            Expanded(
+              child: Material(
+                elevation: 25,
+                color: Theme.of(context2).colorScheme.surfaceContainer,
+                child: child,
+              ),
             ),
+          ]
           ),
         ),
-      ),
-    );
+      );
+    
 
   }
 }
@@ -100,7 +88,7 @@ class SideBar extends StatelessWidget {
         padding: const EdgeInsets.all(32),
         child: SvgPicture.asset(
                 "assets/img/logotype_white.svg",
-                semanticsLabel: 'Logo de la app de Turni',
+                semanticsLabel: 'Logo de Turni',
                 height: 25,
                 colorFilter:  ColorFilter.mode(Theme.of(context).colorScheme.onSurface, BlendMode.srcIn)
               ),
@@ -159,10 +147,15 @@ class SideBar extends StatelessWidget {
           icon: Icon(Icons.person), 
           label: Text("Clientes")
         ),
+        NavigationRailDestination(
+          padding: EdgeInsets.all(16),
+          icon: Icon(Icons.attach_money), 
+          label: Text("Pagos")
+        ),
           NavigationRailDestination(
           padding: EdgeInsets.all(16),
           icon: Icon(Icons.build), 
-          label: Text("Perfil")
+          label: Text("Ajustes")
         )
     ];
   }

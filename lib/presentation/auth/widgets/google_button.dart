@@ -13,7 +13,7 @@ class GoogleButton extends StatefulWidget {
 }
 
 class _GoogleRenderButtonState extends State<GoogleButton> {
-  final GoogleSignIn _googleSignIn = GoogleSignIn(
+/*   final GoogleSignIn _googleSignIn = GoogleSignIn(
     clientId:
         "458036544256-k5tqgq5mahdlcildhipsilshvs8cebcq.apps.googleusercontent.com",
     scopes: [
@@ -21,7 +21,7 @@ class _GoogleRenderButtonState extends State<GoogleButton> {
       "https://www.googleapis.com/auth/userinfo.email"
     ],
     
-  );
+  ); */
 
   @override
   void initState() {
@@ -30,14 +30,14 @@ class _GoogleRenderButtonState extends State<GoogleButton> {
 
   void handleLogin() async {
     try {
-      GoogleSignInAccount? signIn = await _googleSignIn.signIn();
+/*       GoogleSignInAccount? signIn = await _googleSignIn.signIn();
 
       sl<AuthCubit>().googleCallback(GoogleSignInUserData(
           id: signIn!.id,
           email: signIn.email,
           displayName: signIn.displayName,
           photoUrl: signIn.photoUrl));
-    } catch (error) {
+ */    } catch (error) {
       sl<AuthCubit>().emitError(error.toString());
     }
   }

@@ -13,12 +13,12 @@ class PickClient extends StatefulWidget {
     super.key,
     this.onPressNew, 
     this.onBackToSelection, 
-    this.onSelect,
     required this.name, 
     this.validator, 
     this.isRequired = false, 
     this.initialValue, 
-    this.readOnly = false
+    this.readOnly = false,
+    this.onChange
   });  
   
   /// Invocado cuando se preciona en "Nuevo" cliente.
@@ -26,7 +26,7 @@ class PickClient extends StatefulWidget {
   /// Invocado al volver a la etapa inicial del componente.
   final Function()? onBackToSelection;
   /// Invocado al seleccionar un cliente existente desde la etapa inicial.
-  final Function()? onSelect;
+  final Function(Client?)? onChange;
   final String name;
   final String? Function(Client?)? validator;
   final bool isRequired;
@@ -51,6 +51,7 @@ class _PickClientState extends State<PickClient> {
  
     return FormBuilderField<Client?>(
       initialValue: widget.initialValue,
+      onChanged: (value) => widget.onChange?.call(value),
       validator: (value) {
 
         if(newMode && value == null){

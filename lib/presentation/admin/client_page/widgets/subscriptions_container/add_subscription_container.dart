@@ -6,6 +6,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import '../../../../../core/config/service_locator.dart';
 import '../../../../../core/presentation/components/inputs/animation/splash_animation.dart';
 import '../../../../../core/utils/domain_error.dart';
+import '../../../../../core/utils/either.dart';
 import '../../../../../domain/entities/client.dart';
 import '../../../../../domain/entities/club_partition.dart';
 import '../../../../../domain/entities/subscription/client_subscription.dart';
@@ -23,7 +24,7 @@ class AddSubscriptionContainer extends StatefulWidget {
 
   final List<ClubPartition>? clubPartitions;
   final Client client;
-
+  
   @override
   State<AddSubscriptionContainer> createState() => _AddSubscriptionContainerState();
 }
@@ -68,14 +69,14 @@ class _AddSubscriptionContainerState extends State<AddSubscriptionContainer> {
     return SizedBox(
     height: 200,
     child: ListView(
-      children: widget.clubPartitions!.expand((clubPartition){
-        return [
-          ListTile(title: Text("Nueva subscripcion", style: Theme.of(context).textTheme.titleLarge)),
-          Divider(
+      children: [
+        ListTile(title: Text("Nueva subscripcion", style: Theme.of(context).textTheme.titleLarge)),
+        Divider(
             height: 1,
             color: Theme.of(context).colorScheme.onSurface,
           ), 
-          ...clubPartition.subscriptions!.map((subscription){
+        ...widget.clubPartitions!.expand((clubPartition){
+        return clubPartition.subscriptions!.map((subscription){
             return ListTile(
               trailing: Text("\$${subscription.getCurrentPrice()!.price}", style: Theme.of(context).textTheme.bodyLarge),
               subtitle: Text(clubPartition.clubType!.name),
@@ -86,10 +87,9 @@ class _AddSubscriptionContainerState extends State<AddSubscriptionContainer> {
                 });
               },
             );
-          })
-        ];
+          }).toList();
       },
-    ).toList(),
+    )]
   ),
   );
   }
@@ -152,10 +152,10 @@ class _AddSubscriptionContainerState extends State<AddSubscriptionContainer> {
                         "created_by_admin":sl<AuthCubit>().state.userCredential!.admin!.adminId
                       }, int.parse(widget.client.clientId!));
 
-                      final result = response.when(
-                        left: (failure) => failure,
-                        right: (value) => value,
-                      );
+                      final result = switch (response) {
+                        Left(:final failure) => failure,
+                        Right(:final value) => value,
+                      };
 
                       if(result is DomainError){
                         return setState(() {
