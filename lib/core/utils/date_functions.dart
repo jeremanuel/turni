@@ -31,6 +31,11 @@ class DateFunctions {
     return DateFormat.yMd().format(date);
   }
 
+  static String formatTimeToHourMinute(DateTime date, {bool useUtc = false}) {
+    final target = useUtc ? date.toUtc() : date;
+    return DateFormat.Hm().format(target);
+  }
+
   static DateTime? tryParseDate(String? value){
     if(value == null) return null;
 

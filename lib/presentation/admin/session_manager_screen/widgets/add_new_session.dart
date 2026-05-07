@@ -1,4 +1,3 @@
-
 import 'package:calendar_view/calendar_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -6,6 +5,8 @@ import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_portal/flutter_portal.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/config/router/app_routes.dart';
+import '../../../../core/utils/physical_partition_naming.dart';
 import '../../../../core/utils/responsive_builder.dart';
 import '../../../../core/utils/types/time_interval.dart';
 import '../../../../domain/entities/club_partition.dart';
@@ -18,28 +19,43 @@ import '../bloc/session_manager_event.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class AddNewSession extends StatefulWidget {
-  AddNewSession(
-      {super.key,
-      required BuildContext context,
-      required int idPhysicalPartition,
-      required this.selectedTimeInterval})
-      : clubPartition = _findPhysicalPartition(context, idPhysicalPartition) {
+  AddNewSession({
+    super.key,
+    required BuildContext context,
+    required int idPhysicalPartition,
+    required this.selectedTimeInterval,
+  }) : clubPartition = _findPhysicalPartition(context, idPhysicalPartition) {
+    physicalPartition = clubPartition.physicalPartitions!.firstWhere(
+      (element) => element.partitionPhysicalId == idPhysicalPartition,
+    );
 
-        physicalPartition = clubPartition.physicalPartitions!.firstWhere(
-          (element) => element.partitionPhysicalId == idPhysicalPartition,
-        );
+    final defaultDurationMinutes =
+        physicalPartition.defaultSessionDuration ??
+        physicalPartition.durationInMinutes;
+    duration = defaultDurationMinutes != null
+        ? Duration(minutes: defaultDurationMinutes)
+        : selectedTimeInterval.getDuration();
 
-        duration = physicalPartition.durationInMinutes != null ? Duration(minutes: physicalPartition.durationInMinutes!) : selectedTimeInterval.getDuration();
-  } 
+    defaultPrice =
+        physicalPartition.defaultSessionPrice ??
+        _findFallbackDefaultPrice(context, idPhysicalPartition) ??
+        0;
+  }
 
   late final PhysicalPartition physicalPartition;
   final ClubPartition clubPartition;
   final TimeInterval selectedTimeInterval;
   late final Duration? duration;
+  late final double defaultPrice;
   final GlobalKey<FormBuilderState> _formKey = GlobalKey<FormBuilderState>();
 
-  static ClubPartition _findPhysicalPartition(BuildContext context, int idPhysicalPartition) {
-    return context.read<SessionManagerBloc>().state.clubPartitions.firstWhere((element) {
+  static ClubPartition _findPhysicalPartition(
+    BuildContext context,
+    int idPhysicalPartition,
+  ) {
+    return context.read<SessionManagerBloc>().state.clubPartitions.firstWhere((
+      element,
+    ) {
       final index = element.physicalPartitions!.indexWhere(
         (element) => element.partitionPhysicalId == idPhysicalPartition,
       );
@@ -48,12 +64,35 @@ class AddNewSession extends StatefulWidget {
     });
   }
 
+  static double? _findFallbackDefaultPrice(
+    BuildContext context,
+    int idPhysicalPartition,
+  ) {
+    final sessions = context.read<SessionManagerBloc>().state.sessions;
+
+    for (final session in sessions) {
+      if (session.partitionPhysicalId == idPhysicalPartition &&
+          session.price > 0) {
+        return session.price;
+      }
+    }
+
+    return null;
+  }
+
+  String get defaultPriceAsText {
+    if (defaultPrice <= 0) return '';
+    if (defaultPrice == defaultPrice.roundToDouble()) {
+      return defaultPrice.toInt().toString();
+    }
+    return defaultPrice.toStringAsFixed(2);
+  }
+
   @override
   State<AddNewSession> createState() => _AddNewSessionState();
 }
 
 class _AddNewSessionState extends State<AddNewSession> {
-
   bool isValid = true;
 
   @override
@@ -62,14 +101,15 @@ class _AddNewSessionState extends State<AddNewSession> {
       child: FormBuilder(
         autovalidateMode: AutovalidateMode.onUserInteraction,
         key: widget._formKey,
-        onChanged: (){
-          
+        onChanged: () {
           setState(() {
-            isValid = widget._formKey.currentState!.validate(focusOnInvalid: false);
+            isValid = widget._formKey.currentState!.validate(
+              focusOnInvalid: false,
+            );
           });
         },
         child: Column(
-          children: [          
+          children: [
             Expanded(
               child: SingleChildScrollView(
                 child: Column(
@@ -80,13 +120,16 @@ class _AddNewSessionState extends State<AddNewSession> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         InputChip(
-                          label: Text(widget.clubPartition.clubType!.name)
+                          label: Text(widget.clubPartition.clubType!.name),
                         ),
-                        const SizedBox(
-                          width: 8,
-                        ),
+                        const SizedBox(width: 8),
                         InputChip(
-                            label: Text("Cancha ${widget.physicalPartition.physicalIdentifier}")
+                          label: Text(
+                            PhysicalPartitionNaming.labelFromPhysicalPartition(
+                              widget.physicalPartition,
+                              fallbackClubPartition: widget.clubPartition,
+                            ),
+                          ),
                         ),
                       ],
                     ),
@@ -97,12 +140,16 @@ class _AddNewSessionState extends State<AddNewSession> {
                       name: "client",
                       onPressNew: () {
                         setState(() {
-                          isValid = widget._formKey.currentState!.validate(focusOnInvalid: false);
+                          isValid = widget._formKey.currentState!.validate(
+                            focusOnInvalid: false,
+                          );
                         });
                       },
                       onBackToSelection: () {
                         setState(() {
-                          isValid = widget._formKey.currentState!.validate(focusOnInvalid: false);
+                          isValid = widget._formKey.currentState!.validate(
+                            focusOnInvalid: false,
+                          );
                         });
                       },
                     ),
@@ -113,8 +160,16 @@ class _AddNewSessionState extends State<AddNewSession> {
                     const SizedBox(height: 16),
                     CustomTimePicker(
                       name: "initialTime",
-                      initialHours: widget.selectedTimeInterval.initialDate!.hour.toString(),
-                      initialMinutes: widget.selectedTimeInterval.initialDate!.minute.toString(),
+                      initialHours: widget
+                          .selectedTimeInterval
+                          .initialDate!
+                          .hour
+                          .toString(),
+                      initialMinutes: widget
+                          .selectedTimeInterval
+                          .initialDate!
+                          .minute
+                          .toString(),
                     ),
                     const SizedBox(height: 16),
                     const Text("Duracion"),
@@ -123,8 +178,9 @@ class _AddNewSessionState extends State<AddNewSession> {
                       name: "duration",
                       initialHours: widget.duration?.inHours.toString(),
                       initialMinutes:
-                          (widget.duration!.inMinutes - widget.duration!.inHours * 60).toString(),
-                      
+                          (widget.duration!.inMinutes -
+                                  widget.duration!.inHours * 60)
+                              .toString(),
                     ),
                     const SizedBox(height: 16),
                     const Divider(),
@@ -133,58 +189,92 @@ class _AddNewSessionState extends State<AddNewSession> {
                       width: 220,
                       child: FormBuilderTextField(
                         name: "price",
+                        initialValue: widget.defaultPriceAsText,
                         decoration: InputDecoration(
                           prefix: const Text("\$"),
                           border: const OutlineInputBorder(),
                           filled: true,
                           fillColor: Theme.of(context).colorScheme.surface,
-                          labelText: "Precio",                                        
+                          labelText: "Precio",
                         ),
                         inputFormatters: [
-                          FilteringTextInputFormatter.digitsOnly
+                          FilteringTextInputFormatter.digitsOnly,
                         ],
                       ),
-                    )
-                    
+                    ),
                   ],
                 ),
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.only(top:16),
-              child: FilledButton(
-                onPressed: isValid ? (){
-      
-                  final sessionManagerBloc = context.read<SessionManagerBloc>();
-      
-                  final currentDate = sessionManagerBloc.state.currentDate;
-      
-                  final values = widget._formKey.currentState?.instantValue;
-           
-                  TimeOfDay duration = values!['duration'];
-      
-                  final newSession = Session(
-                    sessionId: -1,
-                    createdAt: DateTime.now(),
-                    startTime: currentDate.applied(values['initialTime']), 
-                    duration: duration.getTotalMinutes,
-                    price: values['price'] != null ? double.parse(values['price']) : 0, 
-                    partitionPhysicalId: widget.physicalPartition.partitionPhysicalId,
-                    clientId: values['client']?.clientId != null ? int.tryParse(values['client'].clientId) : null,
-                    client: values['client'] != null && values['client'].clientId == null ? values['client'] : null
+            Row(
+              children: [
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 16),
+                    child: FilledButton(
+                      style: TextButton.styleFrom(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 10,
+                        ),
+                      ),
+                      onPressed: isValid
+                          ? () {
+                              final sessionManagerBloc = context
+                                  .read<SessionManagerBloc>();
 
-                  );
+                              final currentDate =
+                                  sessionManagerBloc.state.currentDate;
 
-      
-                sessionManagerBloc.add(
-                    SaveSessionEvent(newSession)
-                ); 
-      
-                context.go("/session_manager");
-           } : null,
-                child: const Text("Crear Turno")
-              ),
-            )
+                              final values =
+                                  widget._formKey.currentState?.instantValue;
+
+                              TimeOfDay duration = values!['duration'];
+
+                              final newSession = Session(
+                                sessionId: -1,
+                                createdAt: DateTime.now(),
+                                startTime: currentDate.applied(
+                                  values['initialTime'],
+                                ),
+                                duration: duration.getTotalMinutes,
+                                price:
+                                    (values['price'] != null &&
+                                        values['price']
+                                            .toString()
+                                            .trim()
+                                            .isNotEmpty)
+                                    ? double.parse(values['price'])
+                                    : widget.defaultPrice,
+                                partitionPhysicalId: widget
+                                    .physicalPartition
+                                    .partitionPhysicalId,
+                                clientId: values['client']?.clientId != null
+                                    ? int.tryParse(values['client'].clientId)
+                                    : null,
+                                client:
+                                    values['client'] != null &&
+                                        values['client'].clientId == null
+                                    ? values['client']
+                                    : null,
+                              );
+
+                              sessionManagerBloc.add(
+                                SaveSessionEvent(newSession),
+                              );
+
+                              context.go(AppRoutes.SESSION_MANAGER_ROUTE.path);
+                            }
+                          : null,
+                      child: const Text("Crear Turno"),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ],
         ),
       ),
@@ -200,23 +290,24 @@ class _AddNewSessionState extends State<AddNewSession> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Text("Nuevo Turno", style: TextStyle(fontSize: 16),),
-              Text("${widget.selectedTimeInterval.getInitialTextString()} | ${widget.selectedTimeInterval.toStringTime()}", style: const TextStyle(fontSize: 16),),
+              const Text("Nuevo Turno", style: TextStyle(fontSize: 16)),
+              Text(
+                "${widget.selectedTimeInterval.getInitialTextString()} | ${widget.selectedTimeInterval.toStringTime()}",
+                style: const TextStyle(fontSize: 16),
+              ),
             ],
           ),
         ),
         SizedBox(
           height: 64,
           child: IconButton(
-            onPressed: (){
-              context.go("/session_manager");
-            }, 
-            icon: const Icon(Icons.arrow_back)
+            onPressed: () {
+              context.go(AppRoutes.SESSION_MANAGER_ROUTE.path);
+            },
+            icon: const Icon(Icons.arrow_back),
           ),
         ),
-        
       ],
     );
   }
 }
-

@@ -15,15 +15,27 @@ class MobileLayout extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final router = GoRouter.of(context);
+    final routeName = router.state.topRoute?.name ?? router.state.name;
 
-    final usesScaffold = AppRoutes.routesMap[router.state.name]!.usesScaffold;
+    final routeDefinition =
+        AppRoutes.routesMap[routeName] ?? AppRoutes.routesMap[router.state.name];
+    final usesScaffold = routeDefinition?.usesScaffold ?? true;
+    final mobileAppBar = routeDefinition?.mobileAppBar;
 
     if(!usesScaffold) return child;
     
     return Scaffold(
-      appBar: AppBar(
       
-        
+      appBar: AppBar(
+        leading: mobileAppBar?.backToPath != null
+            ? IconButton(
+                onPressed: () {
+                  context.go(mobileAppBar!.backToPath!);
+                },
+                icon: const Icon(Icons.arrow_back),
+              )
+            : null,
+        title: mobileAppBar != null ? Text(mobileAppBar.title) : null,
       ),
       drawer: CustomDrawer(),
       body: child,

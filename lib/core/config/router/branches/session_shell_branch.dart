@@ -36,28 +36,29 @@ StatefulShellBranch sessionShellBranch() {
             },
           ),
           GoRoute(
-            path: '/session_manager/reserve/:idSession',
-            name: "SESSION_MANAGER_RESERVE",
+            path: AppRoutes.SESSION_MANAGER_RESERVE_ROUTE.path,
+            name: AppRoutes.SESSION_MANAGER_RESERVE_ROUTE.name,
             redirect: setCurrentRoute,  
             pageBuilder: sessionManagerReservePageBuilder,
 
           ),
           GoRoute(
-            path: '/session_manager/edit',
+            path: AppRoutes.SESSION_MANAGER_EDIT_ROUTE.path,
+            name: AppRoutes.SESSION_MANAGER_EDIT_ROUTE.name,
             redirect: setCurrentRoute,
             pageBuilder: (context, state) {
               return const NoTransitionPage(child: Text("Editar turno"));
             },
           ),
           GoRoute(
-            path: '/session_manager/add/:idPhysicalPartition',
-            name: "SESSION_MANAGER_ADD",
+            path: AppRoutes.SESSION_MANAGER_ADD_ROUTE.path,
+            name: AppRoutes.SESSION_MANAGER_ADD_ROUTE.name,
             redirect: setCurrentRoute,
             pageBuilder: sessionManagerAddPageBuilder,
           ),
           GoRoute(
-            path: '/add_sessions',
-            name: "ADD_SESSIONS_MASIVE",
+            path: AppRoutes.ADD_SESSIONS_MASSIVE_ROUTE.path,
+            name: AppRoutes.ADD_SESSIONS_MASSIVE_ROUTE.name,
             redirect: setCurrentRoute,
             builder: (context, state) => const CreateSessionScreen(),
           )

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../../core/config/router/app_routes.dart';
 import '../bloc/session_manager_bloc.dart';
 import '../bloc/session_manager_event.dart';
 import '../bloc/session_manager_state.dart';
@@ -41,7 +42,7 @@ class CalendarSideColumn extends StatelessWidget {
               height: 36,
               child: FilledButton(
                   onPressed: () {
-                    context.go('/add_sessions');
+                    context.go(AppRoutes.ADD_SESSIONS_MASSIVE_ROUTE.path);
                   }, 
                   child: const Text("Agregar Turnos")),
             ),

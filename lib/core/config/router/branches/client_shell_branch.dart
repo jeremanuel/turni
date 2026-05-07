@@ -78,19 +78,20 @@ StatefulShellBranch clientShellBranch() {
 
             final extraMap = state.extra as Map?;
             final clientFromList = extraMap?['client'] as Client?;
+            final onUpdateClient = extraMap?['onUpdateClient'] as Function(Client)?;
 
             final clientId = int.tryParse(
               state.pathParameters['clientId'] ?? '',
             );
 
-            return Clientpage(clientId: clientId!, client: clientFromList, onUpdateClient: (p0) {});
+            return Clientpage(clientId: clientId!, client: clientFromList, onUpdateClient: onUpdateClient ?? (p0) {});
           },
           routes: [
             
           ]
           ),
           GoRoute(
-              path: '/:clientId/routine',
+              path: AppRoutes.NEW_ROUTINE_ROUTE.path,
               name: AppRoutes.NEW_ROUTINE_ROUTE.name,
               redirect: (context, state) {
                
@@ -154,9 +155,12 @@ StatefulShellBranch clientShellBranch() {
           }, */
           builder: (context, state){
 
-            return Clientpage(clientId: -1, createNewClient: true, onUpdateClient: (p0) {
-              
-            },);
+            final extraMap = state.extra as Map?;
+            final onUpdateClient = extraMap?['onClientCreated'] as Function(Client)?;
+
+
+
+            return Clientpage(clientId: -1, createNewClient: true, onUpdateClient: onUpdateClient);
           },
         ),
 

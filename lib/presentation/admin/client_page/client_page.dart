@@ -4,11 +4,12 @@ import 'package:go_router/go_router.dart';
 import 'package:trina_grid/trina_grid.dart';
 import '../../../core/config/router/app_routes.dart';
 import '../../../core/config/service_locator.dart';
-import '../../../core/utils/date_functions.dart';
+import '../../../core/utils/domain_error.dart';
+import '../../../core/utils/either.dart';
 import '../../../core/utils/responsive_builder.dart';
 import '../../../domain/entities/client.dart';
 import '../../../domain/entities/payment/payment.dart';
-import '../../../domain/entities/subscription/client_subscription.dart';
+import '../../../domain/repositories/admin_repository.dart';
 import '../../../domain/repositories/payment_repository.dart';
 import '../client_feature/wrapper_client_provider.dart';
 import 'widgets/add_payment_button.dart';
@@ -33,7 +34,7 @@ class Clientpage extends StatefulWidget {
   final int clientId;
   final Client? client;
   final bool createNewClient;
-  final Function(Client) onUpdateClient;
+  final Function(Client)? onUpdateClient;
 
   @override
   State<Clientpage> createState() => _ClientpageState();
@@ -51,7 +52,9 @@ class _ClientpageState extends State<Clientpage> {
 
   void _onUpdateClient(Client newClient) {
     setState(() {
-      widget.onUpdateClient(newClient);
+      if (widget.onUpdateClient != null) {
+        widget.onUpdateClient!(newClient);
+      }
       // context.read<ClientsListBloc>().refetchClients();  TODO: Parametrizar
     });
   }
@@ -360,10 +363,16 @@ class _ClientpageState extends State<Clientpage> {
   }
 
   void onNewClient(Client c) {
+
+    if(widget.onUpdateClient != null) {
+      widget.onUpdateClient!(c);
+      return;
+    }
+
     setState(() {
       isEditingMode = false;
-
       context.goNamed(AppRoutes.CLIENT_ROUTE.name, extra: {"client":c, }, pathParameters: {"clientId":c.clientId!});
+     
       //ClientInherited.of(context)!.updateClient(c);
     });
 

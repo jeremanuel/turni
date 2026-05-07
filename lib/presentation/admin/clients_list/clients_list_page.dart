@@ -82,7 +82,7 @@ class _ClientsListState extends State<ClientsList> {
                             renderer: (rendererContext) {
                               
                             final editClientIcon = IconButton(
-                                onPressed: () => context.goNamed(AppRoutes.CLIENT_ROUTE.name, extra: {"client":e, "bloc":context.read<ClientsListBloc>()}, pathParameters: {"clientId":e.clientId!}),
+                                onPressed: () => context.goNamed(AppRoutes.CLIENT_ROUTE.name, extra: {"client":e, "bloc":context.read<ClientsListBloc>(), "onUpdateClient": (Client updated) { clientsBloc.refetchClients(); }}, pathParameters: {"clientId":e.clientId!}),
                                 icon: Icon(Icons.edit, size: 16,),
                               );
 
@@ -118,7 +118,7 @@ class _ClientsListState extends State<ClientsList> {
 
     return Scaffold(
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => context.pushNamed(AppRoutes.NEW_CLIENT_ROUTE.name, extra: context.read<ClientsListBloc>()),
+        onPressed: () => context.pushNamed(AppRoutes.NEW_CLIENT_ROUTE.name),
         label: ResponsiveBuilder.isDesktop(context)
             ? Row(spacing: 8, mainAxisSize: MainAxisSize.min, children: [Icon(Icons.person_add_alt_1_rounded), Text("Nuevo cliente")])
             : Icon(Icons.person_add_alt_1_rounded),

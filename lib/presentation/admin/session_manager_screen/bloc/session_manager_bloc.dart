@@ -20,6 +20,7 @@ class SessionManagerBloc extends Bloc<SessionManagerEvent, SessionManagerState> 
   
 
   SessionManagerBloc(int? sessionId, this._sessionUserCases) : super(SessionManagerState(currentDate: DateTime.now(), sessions: [], clubPartitions: [], isFirstLoad: true,)) {
+      print("test desde bloc:");
 
 
     on<SessionChangeDateEvent>((event, emit) async {
@@ -71,7 +72,7 @@ class SessionManagerBloc extends Bloc<SessionManagerEvent, SessionManagerState> 
     });
 
     on<ReloadSessionsEvent>((event, emit) async {
-
+print("test desde bloc:");
       emit(
         state.copyWith(
           isLoadingSessions: true,
@@ -80,9 +81,17 @@ class SessionManagerBloc extends Bloc<SessionManagerEvent, SessionManagerState> 
 
       final sessions = await _sessionUserCases.getSessions(state.currentDate); 
 
+      final selectedSessionId = state.selectedSession?.sessionId;
+      final newSelectedSession = selectedSessionId == null
+          ? null
+          : sessions.firstWhereOrNull(
+              (session) => session.sessionId == selectedSessionId,
+            );
+
       emit(
         state.copyWith(
           sessions: sessions,
+          selectedSession: newSelectedSession,
           isLoadingSessions: false
         )
       );
@@ -93,6 +102,7 @@ class SessionManagerBloc extends Bloc<SessionManagerEvent, SessionManagerState> 
     on<SaveSessionEvent>((event, emit) async {
 
       final session = await _sessionUserCases.saveSession(event.session);
+     
 
       emit(
         state.copyWith(
@@ -166,11 +176,20 @@ class SessionManagerBloc extends Bloc<SessionManagerEvent, SessionManagerState> 
     });
 
     
-    on<DeleteSession>((event, emit) {
-      _sessionUserCases.deleteSession(event.sessionId);
+    on<DeleteSession>((event, emit) async {
+      final deleted = await _sessionUserCases.deleteSession(event.sessionId);
+      if (!deleted) {
+        return;
+      }
+
       emit(
         state.copyWith(
-          sessions: state.sessions.where((element) => element.sessionId != event.sessionId,).toList()
+          sessions: state.sessions
+              .where((element) => element.sessionId != event.sessionId)
+              .toList(),
+          selectedSession: state.selectedSession?.sessionId == event.sessionId
+              ? null
+              : state.selectedSession,
         )
       );
     });
@@ -179,6 +198,7 @@ class SessionManagerBloc extends Bloc<SessionManagerEvent, SessionManagerState> 
       emit(state.copyWith(selectedSession: event.session));
     });
     
+
     if(sessionId == null) add(SessionLoadEvent());
 
     if(sessionId != null) add(LoadFromSessionIdEvent(sessionId, true));
@@ -196,6 +216,61 @@ class SessionManagerBloc extends Bloc<SessionManagerEvent, SessionManagerState> 
         );
       return index != -1;
     });
+  }
+
+  void updateSessionInState(Session updatedSession) {
+    final sessionExists =
+        state.sessions.any((session) => session.sessionId == updatedSession.sessionId);
+
+    if (!sessionExists) return;
+
+    final updatedSessions = state.sessions
+        .map(
+          (session) => session.sessionId == updatedSession.sessionId
+              ? updatedSession
+              : session,
+        )
+        .toList();
+
+    final updatedSelectedSession =
+        state.selectedSession?.sessionId == updatedSession.sessionId
+            ? updatedSession
+            : state.selectedSession;
+
+    emit(
+      state.copyWith(
+        sessions: updatedSessions,
+        selectedSession: updatedSelectedSession,
+      ),
+    );
+  }
+
+  Future<bool> cancelSessionReservation(int sessionId) async {
+    final cancelled = await _sessionUserCases.cancelSessionReservation(sessionId);
+
+    if (!cancelled) {
+      return false;
+    }
+
+    final updatedSessions = state.sessions
+        .map((session) => session.sessionId == sessionId
+            ? session.copyWith(client: null, clientId: null)
+            : session)
+        .toList();
+
+    final updatedSelectedSession =
+        state.selectedSession?.sessionId == sessionId
+            ? state.selectedSession?.copyWith(client: null, clientId: null)
+            : state.selectedSession;
+
+    emit(
+      state.copyWith(
+        sessions: updatedSessions,
+        selectedSession: updatedSelectedSession,
+      ),
+    );
+
+    return true;
   }
 
 

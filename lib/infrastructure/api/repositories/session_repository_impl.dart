@@ -5,6 +5,9 @@ import '../../../core/utils/domain_error.dart';
 import '../../../core/utils/either.dart';
 import '../../../domain/entities/client.dart';
 import '../../../domain/entities/club_partition.dart';
+import '../../../domain/entities/create_sessions_result.dart';
+import '../../../domain/entities/extra.dart';
+import '../../../domain/entities/payment/payment.dart';
 import '../../../domain/entities/session.dart';
 import '../../../domain/repositories/session_repository.dart';
 import '../providers/session_provider.dart';
@@ -23,12 +26,12 @@ class SessionRepositoryImplementation extends BaseRepository implements SessionR
   }
 
   @override
-  Future<List<Session>> getSessions(DateTime date) {
+  Future<List<Session>> getSessions(DateTime date, {int? clubPartitionId}) {
     return sessionProvider.getSessionsByAdmin(date);
   }
 
   @override
-  createSessions(List<Session> sessions, List<int> physicalPartitions,
+  Future<CreateSessionsResult> createSessions(List<Session> sessions, List<int> physicalPartitions,
       List<DateTime> dates) {
     return sessionProvider.createSessions(sessions, physicalPartitions, dates);
   }
@@ -57,18 +60,59 @@ class SessionRepositoryImplementation extends BaseRepository implements SessionR
     });
 
   }
+
+  @override
+  Future<Either<DomainError, Payment>> addPaymentToSession(
+      int sessionId, Payment payment) {
+    return safeCall<Payment>(
+      () => sessionProvider.addPaymentToSession(sessionId, payment),
+    );
+  }
+
+  @override
+  Future<Either<DomainError, Extra>> addExtraToSession(
+    int sessionId,
+    Extra extra, {
+    bool paidExtra = false,
+  }) {
+    return safeCall<Extra>(
+      () => sessionProvider.addExtraToSession(
+        sessionId,
+        extra,
+        paidExtra: paidExtra,
+      ),
+    );
+  }
+
+  @override
+  Future<Either<DomainError, Extra>> paySessionExtra(int sessionId, Extra extra) {
+    return safeCall<Extra>(() => sessionProvider.paySessionExtra(sessionId, extra));
+  }
+
+  @override
+  Future<Either<DomainError, bool>> deleteSessionExtra(
+      int sessionId, Extra extra) {
+    return safeCall<bool>(() => sessionProvider.deleteSessionExtra(sessionId, extra));
+  }
   
 
   
   @override
-  Future deleteSession(int sessionId) async {
+  Future<bool> deleteSession(int sessionId) async {
     try {
-      await dioInstance.delete("/admin/session/$sessionId");
-      
-      return true;
+      return await sessionProvider.deleteSession(sessionId);
 
     } catch (error) {
 
+      return false;
+    }
+  }
+
+  @override
+  Future<bool> cancelSessionReservation(int sessionId) async {
+    try {
+      return await sessionProvider.cancelSessionReservation(sessionId);
+    } catch (error) {
       return false;
     }
   }

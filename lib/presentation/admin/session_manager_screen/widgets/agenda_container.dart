@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/utils/responsive_builder.dart';
+import '../../../../core/utils/physical_partition_naming.dart';
 import '../../../../domain/entities/club_partition.dart';
 import '../../../core/agenda/agenda.dart';
 import '../bloc/session_manager_bloc.dart';
@@ -94,6 +95,7 @@ class AgendaContainer extends StatelessWidget {
           previous.selectedClubPartition != current.selectedClubPartition ||
           previous.isLoadingSessions != current.isLoadingSessions || previous.selectedSession != current.selectedSession,
       builder: (context, state) {
+       
         if (state.isLoadingSessions) {
           return const Center(
             child: CircularProgressIndicator(),
@@ -107,10 +109,11 @@ class AgendaContainer extends StatelessWidget {
               state.currentDate.applied(const TimeOfDay(hour: 8, minute: 0)),
           lastDate:
               state.currentDate.applied(const TimeOfDay(hour: 22, minute: 0)),
-          buildCard: (session, physicalPartition) {
+          buildCard: (session, physicalPartition, height) {
             if(state.selectedSession == session){
             }
             return SessionManagerCard(
+              height:height,
              hasFocus: state.selectedSession == session, 
               session: session,
               physicalPartition: physicalPartition,
@@ -119,6 +122,11 @@ class AgendaContainer extends StatelessWidget {
               },
             );
           },
+              partitionLabelBuilder: (physicalPartition) =>
+                  PhysicalPartitionNaming.labelFromPhysicalPartition(
+                physicalPartition,
+                fallbackClubPartition: state.selectedClubPartition,
+              ),
           sessions: state.sessions,
           physicalPartitions:
               state.selectedClubPartition?.physicalPartitions ?? [],

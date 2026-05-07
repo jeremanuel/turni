@@ -28,26 +28,28 @@ String? currentRoute;
 GoRouter buildGoRouter(RouterType routerType) {
   final goRouter =  GoRouter(
     navigatorKey: rootNavigatorKey,
-    initialLocation: '/clients',
+    initialLocation: AppRoutes.CLIENTS_LIST_ROUTE.path,
     refreshListenable: sl<AuthCubit>(),
     redirect: (context, state) {
       final authCubit = sl<AuthCubit>();
       if (authCubit.getLoadingStatus()) {
-        if (state.matchedLocation != "/") {
+        if (state.matchedLocation != AppRoutes.ROOT_ROUTE.path) {
           authCubit.initialRoute = state.uri.toString();
         }
 
-        return '/';
+        return AppRoutes.ROOT_ROUTE.path;
       }
 
-      if (authCubit.state.userCredential == null) return '/login';
+      if (authCubit.state.userCredential == null) return AppRoutes.LOGIN_ROUTE.path;
 
-      if (state.matchedLocation == "/" || state.matchedLocation == "/login") {
+      if (state.matchedLocation == AppRoutes.ROOT_ROUTE.path || state.matchedLocation == AppRoutes.LOGIN_ROUTE.path) {
         if (authCubit.initialRoute != null) {
           return authCubit.initialRoute;
         }
 
-        return routerType == RouterType.adminRoute ? '/dashboard' : '/feed';
+        return routerType == RouterType.adminRoute
+            ? AppRoutes.DASHBOARD_ROUTE.path
+            : AppRoutes.FEED_ROUTE.path;
       }
       
       return null;
@@ -55,10 +57,15 @@ GoRouter buildGoRouter(RouterType routerType) {
     routes: [
       /// Estas dos rutas son comunes a ambos tipos de usuario.
       GoRoute(
-        path: '/',
+        path: AppRoutes.ROOT_ROUTE.path,
+        name: AppRoutes.ROOT_ROUTE.name,
         builder: (context, state) => AuthCheck(),
       ),
-      GoRoute(path: '/login', builder: (context, state) => const LoginPage()),
+      GoRoute(
+        path: AppRoutes.LOGIN_ROUTE.path,
+        name: AppRoutes.LOGIN_ROUTE.name,
+        builder: (context, state) => const LoginPage(),
+      ),
       StatefulShellRoute.indexedStack(
         branches: buildBranches(routerType),
         builder: (context, state, navigationShell) {
@@ -79,7 +86,8 @@ List<StatefulShellBranch> buildBranches(RouterType routerType) {
       routes: [
         
       GoRoute(
-        path: '/dashboard',
+        path: AppRoutes.DASHBOARD_ROUTE.path,
+        name: AppRoutes.DASHBOARD_ROUTE.name,
         builder: (context, state) => Center(
           child: FilledButton(onPressed: () {}, child: const Text("data")),
         ),

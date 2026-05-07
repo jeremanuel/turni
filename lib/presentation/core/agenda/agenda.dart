@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import '../../../core/config/router/app_routes.dart';
 import '../../../core/utils/types/time_interval.dart';
 import '../../../domain/entities/physical_partition.dart';
 import '../../../domain/entities/session.dart';
@@ -11,23 +12,27 @@ import '../../../domain/entities/session.dart';
 class Agenda extends StatelessWidget {
   Agenda(
       {super.key,
-      required this.sessions,
+      required List<Session> sessions,
       required this.buildCard,
       this.heightPerMinute = 2,
       required this.physicalPartitions,
+      required this.partitionLabelBuilder,
       required this.fromDate,
       required this.lastDate,
-      this.columnWidth = 300
+      this.columnWidth = 300,
       
-      })  {
+      
+      }) : sessions = [...sessions]
+          ..sort((a, b) => a.startTime.compareTo(b.startTime)) {
     horariosDisponibles = generateDates(fromDate, lastDate);
     scrollControllers = generateScrollControllers();
     initializeScrollControllerListeners();
   }
 
   final List<Session> sessions;
-  final Widget Function(Session, PhysicalPartition) buildCard;
+  final Widget Function(Session, PhysicalPartition, double) buildCard;
   final List<PhysicalPartition> physicalPartitions;
+  final String Function(PhysicalPartition) partitionLabelBuilder;
   final double heightPerMinute;
   final DateTime fromDate;
   final DateTime lastDate;
@@ -115,9 +120,9 @@ class Agenda extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-
+    
         final remainingSpace = calculateRemainingSpace(constraints);
-
+    
         return Padding(
           padding: const EdgeInsets.only(top: 16),
           child: ScrollConfiguration(
@@ -197,10 +202,13 @@ class Agenda extends StatelessWidget {
       children: [
         buildHeaders(context),
         Expanded(
-          child: Row(
-            children: physicalPartitions
-                .map((el) => buildPartitionColumn(el, context))
-                .toList(),
+          child: Material(
+            type: MaterialType.transparency,
+            child: Row(
+              children: physicalPartitions
+                  .map((el) => buildPartitionColumn(el, context))
+                  .toList(),
+            ),
           ),
         ),
       ],
@@ -327,7 +335,9 @@ class Agenda extends StatelessWidget {
         ),
            
         child: Center(
-          child: Text("Cancha ${physicalPartition.physicalIdentifier!.toString()}")
+          child: Text(
+              partitionLabelBuilder(physicalPartition),
+          )
         )),
     );
   }
@@ -439,9 +449,11 @@ class Agenda extends StatelessWidget {
                     height: duration * heightPerMinute.toDouble() -
                         heightPerMinute *
                             4, // Le resto 4 unidades de tiempo por el padding que se aplica luego de 2 arriba y abajo.
-                    child: buildCard(currentSession, physicalPartition)
+                    child: buildCard(currentSession, physicalPartition, duration * heightPerMinute.toDouble() -
+                        heightPerMinute *
+                            4)
                 ),
-
+  
                 if (index == currentPhysicalPartitionSessions.length - 1)
                   BlankSpace(
                     canHover: physicalPartition.durationInMinutes != null,
@@ -528,30 +540,27 @@ class _BlankSpaceState extends State<BlankSpace> {
           isHovered = false;
         });
       },      
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () {
-            context.goNamed(
-              "SESSION_MANAGER_ADD",
-              pathParameters:{
-                "idPhysicalPartition":widget.physicalPartition!.partitionPhysicalId.toString()
-              },
-              queryParameters: {
-                "start": dateFormat.format(widget.blankSpaceTimeInterval!.initialDate!),
-                'end':dateFormat.format(widget.blankSpaceTimeInterval!.endDate!)
-              },
-            );
-          },
-          child: SizedBox(
-            height: widget.height.toDouble(),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 2),
-              child: Center(
-                child: isHovered ? childHovered : childNotHovered,
-              ),
-            )                       
-          ),
+      child: InkWell(
+        onTap: () {
+          context.goNamed(
+            AppRoutes.SESSION_MANAGER_ADD_ROUTE.name,
+            pathParameters:{
+              "idPhysicalPartition":widget.physicalPartition!.partitionPhysicalId.toString()
+            },
+            queryParameters: {
+              "start": dateFormat.format(widget.blankSpaceTimeInterval!.initialDate!),
+              'end':dateFormat.format(widget.blankSpaceTimeInterval!.endDate!)
+            },
+          );
+        },
+        child: SizedBox(
+          height: widget.height.toDouble(),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 2),
+            child: Center(
+              child: isHovered ? childHovered : childNotHovered,
+            ),
+          )                       
         ),
       ));
   }

@@ -12,7 +12,7 @@ import 'package:go_router/go_router.dart';
 
 
 /// Widget que Crea la instancia de BLOC con blocprovider.
-class SessionManagerRoute extends StatelessWidget {
+class SessionManagerRoute extends StatefulWidget {
 
   final int? sessionId;
   final Widget child;
@@ -21,9 +21,27 @@ class SessionManagerRoute extends StatelessWidget {
   const SessionManagerRoute({super.key, this.sessionId, required this.child, this.routeName});
 
   @override
+  State<SessionManagerRoute> createState() => _SessionManagerRouteState();
+}
+
+class _SessionManagerRouteState extends State<SessionManagerRoute> {
+
+  late SessionManagerBloc sessionManagerBloc;
+
+
+  @override
+  void initState() {
+
+    sessionManagerBloc = sl<SessionManagerBloc>(param1: widget.sessionId);
+    super.initState();
+  }
+
+
+
+  @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => sl<SessionManagerBloc>(param1: sessionId),
+    return BlocProvider.value(
+      value: sessionManagerBloc,
       child: BlocConsumer<SessionManagerBloc, SessionManagerState>(
         listenWhen: (previous, current) => previous.error != current.error && current.error != null,
         listener: (context, state) {
@@ -49,8 +67,8 @@ class SessionManagerRoute extends StatelessWidget {
         buildWhen: (previous, current) => previous.isFirstLoad != current.isFirstLoad,
         builder: (context, sessionManagerState) {
 
-          if(routeName == "ADD_SESSIONS_MASIVE"){
-            return child;
+          if(widget.routeName == AppRoutes.ADD_SESSIONS_MASSIVE_ROUTE.name){
+            return widget.child;
           }
 
           if (sessionManagerState.isFirstLoad) {
@@ -61,12 +79,12 @@ class SessionManagerRoute extends StatelessWidget {
 
           if (ResponsiveBuilder.isDesktop(context)) {
             return SessionManagerDesktop(
-              sideChild: child,
-              sessionId: sessionId,
+              sideChild: widget.child,
+              sessionId: widget.sessionId,
             );
           }
 
-          if (routeName == "SESSION_MANAGER") {
+          if (widget.routeName == AppRoutes.SESSION_MANAGER_ROUTE.name) {
             return const Padding(
               padding: EdgeInsets.all(16.0),
               child: AgendaContainer(),
@@ -75,7 +93,7 @@ class SessionManagerRoute extends StatelessWidget {
 
           return Padding(
             padding: const EdgeInsets.all(16),
-            child: child,
+            child: widget.child,
           );
         }
       ),

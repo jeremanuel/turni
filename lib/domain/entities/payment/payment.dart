@@ -16,7 +16,7 @@ sealed class Payment with _$Payment {
     int? paymentId,
     @JsonKey(name: "client_id")
     required int clientId,
-    Client? client,
+    // Client? client,
     @JsonKey(name: "client_subscription_id")
     int? clientSubscriptionId,
     @JsonKey(fromJson: ValueTransformers.fromJsonDouble)
@@ -29,8 +29,23 @@ sealed class Payment with _$Payment {
     @JsonKey(name: "created_by_admin")  
     required int createdByAdmin,
     @JsonKey(name: "client_subscription")  
-    ClientSubscription? clientSubscription
+    ClientSubscription? clientSubscription,
+    bool? isExtra
   }) = _Payment;
+
+  Payment._();
+
+  factory Payment.fromExtra({
+    required double amount,
+    required PaymentMethod method,
+    
+  }) => Payment(
+    createdByAdmin: 1, // Assuming the admin ID is 1 for simplicity
+    clientId: -1,
+    amount: amount,
+    paymentMethod: method,
+    paymentDate: DateTime.now(),
+  );
 
   factory Payment.fromJson(Map<String, dynamic> json) => _$PaymentFromJson(json);
 }

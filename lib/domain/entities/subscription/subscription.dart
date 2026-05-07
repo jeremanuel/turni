@@ -17,6 +17,8 @@ sealed class Subscription with _$Subscription {
     required String name,
     @JsonKey(name: "subscription_id")
     required int subscriptionId,
+    @JsonKey(name: "subscription_type")
+    String? subscriptionType,
     @JsonKey(fromJson: Subscription.fromJsonSubscriptionsPriceLog, name: "subscription_price_log")
     List<SubscriptionPriceLog>? subscriptionsPriceLog
     

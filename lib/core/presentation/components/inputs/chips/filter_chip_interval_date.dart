@@ -54,15 +54,58 @@ class _FilterChipIntervalDateState extends State<FilterChipIntervalDate> {
 
   @override
   void initState() {
-    interval = widget.initialValue;
+    _syncFromWidget();
 
-    if(widget.initialSuggestion != null && widget.initialSuggestion! < suggestions.length) {
-      selectedInterval = suggestions[widget.initialSuggestion!].interval;
-      interval = selectedInterval;
-      selectedSuggestion = suggestions[widget.initialSuggestion!].label;
-    }
-   
     super.initState();
+  }
+
+  @override
+  void didUpdateWidget(covariant FilterChipIntervalDate oldWidget) {
+    final suggestionChanged = oldWidget.initialSuggestion != widget.initialSuggestion;
+    final intervalChanged = oldWidget.initialValue?.initialDate != widget.initialValue?.initialDate ||
+        oldWidget.initialValue?.endDate != widget.initialValue?.endDate;
+
+    if (suggestionChanged || intervalChanged) {
+      _syncFromWidget();
+      setState(() {});
+    }
+
+    super.didUpdateWidget(oldWidget);
+  }
+
+  void _syncFromWidget() {
+    if (widget.initialSuggestion != null &&
+        widget.initialSuggestion! < suggestions.length) {
+      final suggestion = suggestions[widget.initialSuggestion!];
+      selectedInterval = TimeInterval(
+        initialDate: suggestion.interval.initialDate,
+        endDate: suggestion.interval.endDate,
+      );
+      interval = TimeInterval(
+        initialDate: suggestion.interval.initialDate,
+        endDate: suggestion.interval.endDate,
+      );
+      selectedSuggestion = suggestion.label;
+      return;
+    }
+
+    if (widget.initialValue?.initialDate != null ||
+        widget.initialValue?.endDate != null) {
+      selectedInterval = TimeInterval(
+        initialDate: widget.initialValue?.initialDate,
+        endDate: widget.initialValue?.endDate,
+      );
+      interval = TimeInterval(
+        initialDate: widget.initialValue?.initialDate,
+        endDate: widget.initialValue?.endDate,
+      );
+      selectedSuggestion = null;
+      return;
+    }
+
+    selectedInterval = null;
+    interval = null;
+    selectedSuggestion = null;
   }
 
   @override
@@ -105,11 +148,17 @@ class _FilterChipIntervalDateState extends State<FilterChipIntervalDate> {
       final separator = selectedInterval?.initialDate != null && selectedInterval?.endDate != null ? '-' : '';
 
       return Row(
+        mainAxisSize: MainAxisSize.min,
         spacing: 8,
         children: [
           Icon(Icons.calendar_month_outlined, color: Theme.of(context).colorScheme.onSurfaceVariant, size: 20,),
           if(selectedSuggestion != null) Text(selectedSuggestion!),
-          const VerticalDivider(),
+          if (selectedSuggestion != null)
+            Container(
+              width: 1,
+              height: 14,
+              color: Theme.of(context).colorScheme.outlineVariant,
+            ),
           Text("${selectedInterval!.getInitialTextString()} $separator ${selectedInterval!.getEndTextString()}"),
           
           Icon(Icons.arrow_drop_down_outlined, color: Theme.of(context).colorScheme.onSurfaceVariant,),
@@ -118,7 +167,22 @@ class _FilterChipIntervalDateState extends State<FilterChipIntervalDate> {
     }
 
     
-    return const Text("Seleccione una fecha de pago");
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      spacing: 8,
+      children: [
+        Icon(
+          Icons.calendar_month_outlined,
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
+          size: 20,
+        ),
+        Text(widget.label ?? "Seleccionar fecha"),
+        Icon(
+          Icons.arrow_drop_down_outlined,
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
+        ),
+      ],
+    );
     
   }
 

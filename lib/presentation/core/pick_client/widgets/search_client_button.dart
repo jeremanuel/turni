@@ -44,7 +44,7 @@ class _SearchClientButtonState extends State<SearchClientButton> {
 class ClientListContainer extends StatefulWidget {
   const ClientListContainer({
     super.key, 
-    required this.onPickClient, required this.onPressClose,
+    required this.onPickClient, required this.onPressClose, 
   });
 
   final Function(Client) onPickClient;

@@ -8,13 +8,12 @@ sealed class CreateSesssionsFormState with _$CreateSesssionsFormState {
     TimeInterval? interval,
     @Default([]) List<Session> sessions,
 
-    @Default(false) bool savedSessions
+    @Default(false) bool savedSessions,
 
+    /// Turnos descartados en la última carga masiva (superposición u otro motivo).
+    @Default([]) List<SkippedSession> skippedSessions,
 
+    /// Cuántos turnos se crearon exitosamente en la última carga masiva.
+    @Default(0) int createdCount,
   }) = _CreateSessionManagerState;
-
-
-
 }
-
-

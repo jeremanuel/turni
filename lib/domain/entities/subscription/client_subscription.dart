@@ -16,6 +16,14 @@ sealed class ClientSubscription with _$ClientSubscription {
     required DateTime startDate,
     @JsonKey(name: "end_date", fromJson: ValueTransformers.fromJsonDateTimeLocaleNullable)
     DateTime? endDate,
+    @JsonKey(name: "day_of_week")
+    int? dayOfWeek,
+    @JsonKey(name: "session_time", fromJson: ValueTransformers.fromJsonDateTimeLocaleNullable)
+    DateTime? sessionTime,
+    @JsonKey(name: "session_duration")
+    int? sessionDuration,
+    @JsonKey(name: "partition_physical_id")
+    int? partitionPhysicalId,
     required Subscription subscription
   }) = _ClientSubscription;
 

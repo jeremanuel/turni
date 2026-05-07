@@ -4,7 +4,7 @@ part 'exercise.freezed.dart';
 part 'exercise.g.dart';
 
 @freezed
-sealed class Exercise with _$Exercise {
+abstract  class Exercise with _$Exercise {
 
   factory Exercise({
     required int id,
