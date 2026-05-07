@@ -1,5 +1,6 @@
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
@@ -7,6 +8,9 @@ import '../../../../core/config/router/app_routes.dart';
 import '../../../../core/presentation/components/inputs/dropdown_widget.dart';
 import '../../../../domain/entities/physical_partition.dart';
 import '../../../../domain/entities/session.dart';
+import '../bloc/session_manager_bloc.dart';
+import '../bloc/session_manager_event.dart';
+import 'close_session_dialog.dart';
 
 class SessionManagerCard extends StatefulWidget {
   const SessionManagerCard({
@@ -52,13 +56,21 @@ class ReservedSessionCard extends StatelessWidget {
   final double height;
   const ReservedSessionCard({super.key, required this.session, this.hasFocus = false, required this.height});
 
+  bool get isFixedReservedSession => session.clubTypeName == "FIXED_SESSION";
+
   getColor(context){
 
-    final color = Theme.of(context).colorScheme.surfaceContainerHigh;
+    final colorScheme = Theme.of(context).colorScheme;
+    final baseColor = isFixedReservedSession
+        ? Color.alphaBlend(
+            colorScheme.secondary.withValues(alpha: 0.08),
+            colorScheme.surfaceContainerHigh,
+          )
+        : colorScheme.surfaceContainerHigh;
     
-    if(!hasFocus) return color;
+    if(!hasFocus) return baseColor;
 
-    HSLColor hslColor = HSLColor.fromColor(color);
+    HSLColor hslColor = HSLColor.fromColor(baseColor);
 
     double newLightness = (hslColor.lightness + 0.1).clamp(0.0, 1.0);
   
@@ -80,7 +92,8 @@ class ReservedSessionCard extends StatelessWidget {
 
     final colorScheme = Theme.of(context).colorScheme;
     final percentage = _getPaymentPercentage();
-    final progressColor = colorScheme.primary;
+    final progressColor = isFixedReservedSession ? colorScheme.secondary : colorScheme.primary;
+    final progressBackgroundColor = isFixedReservedSession ? colorScheme.secondaryContainer : colorScheme.primaryContainer;
 
     return Ink(
         width: 190,
@@ -93,8 +106,7 @@ class ReservedSessionCard extends StatelessWidget {
         ),
         child: InkWell(
           onTap: () {
-            context.goNamed("SESSION_MANAGER_RESERVE", pathParameters: {"idSession":session.sessionId.toString()});
-
+            context.goNamed(AppRoutes.SESSION_MANAGER_RESERVE_ROUTE.name, pathParameters: {"idSession":session.sessionId.toString()});
           },
           child: Tooltip(
             message: '${(percentage * 100).toStringAsFixed(0)}% pagado • \$${session.totalPayedPrice.toStringAsFixed(0)} / \$${session.totalPrice.toStringAsFixed(0)}',
@@ -105,7 +117,7 @@ class ReservedSessionCard extends StatelessWidget {
                 Stack(
                   children: [
                     Container(
-                      color: colorScheme.primaryContainer,
+                      color: progressBackgroundColor,
                       width: 16,
                     ),
                     Positioned(
@@ -134,19 +146,43 @@ class ReservedSessionCard extends StatelessWidget {
                             Text(
                               "${DateFormat.jm().format(session.startTime)} - ${DateFormat.jm().format(session.endTime)}",
                             ),
+                          
                             const Spacer(),
                             IconButton(
                         icon: const Icon(Icons.close, size: 18,),
-                        onPressed: () {
-                          showDialog(
-                          context: context,
-                           builder: (dialogContext) {
-                            return const CloseSessionDialog(isReserved: true);
-                          },);
+                        onPressed: () async {
+                          final action = await showCloseSessionDialog(
+                            context,
+                            isReserved: true,
+                          );
+
+                          if (!context.mounted || action == null) {
+                            return;
+                          }
+
+                          if (action == CloseSessionAction.cancelReservation) {
+                            await context
+                                .read<SessionManagerBloc>()
+                                .cancelSessionReservation(session.sessionId);
+                            return;
+                          }
+
+                          context
+                              .read<SessionManagerBloc>()
+                              .add(DeleteSession(session.sessionId));
                         },
                       )
                           ],
                         ),
+                          if (isFixedReservedSession)
+                              Tooltip(
+                                message: 'Turno fijo',
+                                child: Icon(
+                                  Icons.event_repeat,
+                                  size: 16,
+                                  color: colorScheme.secondary,
+                                ),
+                              ),
                         const Spacer(),                  
                         Row(
                           spacing: 4,
@@ -182,100 +218,6 @@ class ReservedSessionCard extends StatelessWidget {
 
 
 }
-
-class CloseSessionDialog extends StatefulWidget {
-  const CloseSessionDialog({
-    super.key, 
-    required this.isReserved,
-  });
-
-  final bool isReserved;
-
-  @override
-  State<CloseSessionDialog> createState() => _CloseSessionDialogState();
-}
-
-class _CloseSessionDialogState extends State<CloseSessionDialog> {
-
-  int? opcionSeleccionada;
-
-  @override
-  void initState() {
-    if(!widget.isReserved){
-      opcionSeleccionada = 1;
-    }
-    super.initState();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-
-    final textTheme = Theme.of(context).textTheme;
-
-    return Dialog(
-      child: SizedBox(
-        height: 350,
-        width: 400,
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            spacing: 4,
-            children: [
-            Text("Cerrar Turno", style: textTheme.headlineSmall),
-            Text("Seleccione la accion a realizar", style: textTheme.labelLarge),
-            const SizedBox(height: 16),
-    
-             RadioListTile(
-              
-              value: 0, 
-              groupValue: opcionSeleccionada, 
-              onChanged: widget.isReserved ? (a){
-                setState(() {
-                  opcionSeleccionada = a as int;
-                });
-              } : null, 
-              title: const Text("Cancelar Reserva"),
-              subtitle: const Text("El turno quedara disponible para otros clientes"),
-              ),
-             const Divider(height: 1,),
-             RadioListTile(
-              value: 1, 
-              groupValue: opcionSeleccionada, 
-              onChanged: (a){
-                setState(() {
-                  opcionSeleccionada = a;
-                });
-              }, 
-              title: const Text("Eliminar Turno"),
-              subtitle: const Text("El turno sera eliminado de la agenda y no podra ser reservado"),
-              ),
-            const Spacer(),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [                                      
-                TextButton(
-                  onPressed: (){  
-                    //Navigator.pop(dialogContext);
-                  }, 
-                  child: const Text("Cancelar")
-                ),
-                TextButton(
-                  onPressed: opcionSeleccionada == null ? null : (){  
-                    //Navigator.pop(dialogContext);
-                  },
-                  child: const Text("Aceptar")
-                )
-              ],
-            )                                  
-            ],
-          ),
-        )),
-                      );
-  }
-}
-
-
 class NotReservedSessionCard extends StatelessWidget {
 
   final Session session;
@@ -318,7 +260,7 @@ class NotReservedSessionCard extends StatelessWidget {
         child: InkWell(
           onTap: () {
             onReserve?.call();
-            context.goNamed("SESSION_MANAGER_RESERVE", pathParameters: {"idSession":session.sessionId.toString()});
+            context.goNamed(AppRoutes.SESSION_MANAGER_RESERVE_ROUTE.name, pathParameters: {"idSession":session.sessionId.toString()});
           },
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -360,12 +302,19 @@ class NotReservedSessionCard extends StatelessWidget {
                     const  Spacer()],
                     IconButton(
                       icon: const Icon(Icons.close, size: 18,),
-                      onPressed: () {
-                        showDialog(
-                        context: context,
-                         builder: (dialogContext) {
-                          return const CloseSessionDialog(isReserved: false);
-                        },);
+                      onPressed: () async {
+                        final action = await showCloseSessionDialog(
+                          context,
+                          isReserved: false,
+                        );
+
+                        if (!context.mounted || action != CloseSessionAction.deleteSession) {
+                          return;
+                        }
+
+                        context
+                            .read<SessionManagerBloc>()
+                            .add(DeleteSession(session.sessionId));
                       },
                     ),
            

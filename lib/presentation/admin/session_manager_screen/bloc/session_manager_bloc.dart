@@ -176,11 +176,20 @@ print("test desde bloc:");
     });
 
     
-    on<DeleteSession>((event, emit) {
-      _sessionUserCases.deleteSession(event.sessionId);
+    on<DeleteSession>((event, emit) async {
+      final deleted = await _sessionUserCases.deleteSession(event.sessionId);
+      if (!deleted) {
+        return;
+      }
+
       emit(
         state.copyWith(
-          sessions: state.sessions.where((element) => element.sessionId != event.sessionId,).toList()
+          sessions: state.sessions
+              .where((element) => element.sessionId != event.sessionId)
+              .toList(),
+          selectedSession: state.selectedSession?.sessionId == event.sessionId
+              ? null
+              : state.selectedSession,
         )
       );
     });
@@ -234,6 +243,34 @@ print("test desde bloc:");
         selectedSession: updatedSelectedSession,
       ),
     );
+  }
+
+  Future<bool> cancelSessionReservation(int sessionId) async {
+    final cancelled = await _sessionUserCases.cancelSessionReservation(sessionId);
+
+    if (!cancelled) {
+      return false;
+    }
+
+    final updatedSessions = state.sessions
+        .map((session) => session.sessionId == sessionId
+            ? session.copyWith(client: null, clientId: null)
+            : session)
+        .toList();
+
+    final updatedSelectedSession =
+        state.selectedSession?.sessionId == sessionId
+            ? state.selectedSession?.copyWith(client: null, clientId: null)
+            : state.selectedSession;
+
+    emit(
+      state.copyWith(
+        sessions: updatedSessions,
+        selectedSession: updatedSelectedSession,
+      ),
+    );
+
+    return true;
   }
 
 

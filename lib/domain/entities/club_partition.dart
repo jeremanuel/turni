@@ -19,6 +19,7 @@ sealed class ClubPartition with _$ClubPartition {
       @JsonKey(fromJson: ValueTransformers.fromJsonInt)
       required int club_type_id,
       String? phone,
+      @JsonKey(name: 'physical_partition_name') String? physicalPartitionName,
 
       // Relations
       @JsonKey(name: "partition_physical")

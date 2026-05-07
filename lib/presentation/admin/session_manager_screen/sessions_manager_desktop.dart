@@ -39,7 +39,9 @@ class SessionManagerDesktop extends StatelessWidget {
           const SizedBox(
             width: 16,
           ),
-          SizedBox(width: 300, child: sideChild)
+          Container(
+            padding: const EdgeInsets.only(bottom: 16),
+            width: 300, child: sideChild)
         ],
       ),
     );

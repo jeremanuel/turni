@@ -3,10 +3,10 @@ import 'dart:math';
 import '../../core/utils/domain_error.dart';
 import '../../core/utils/either.dart';
 import '../../domain/entities/payment/payment.dart';
+import '../../domain/entities/payment/payment_list_item.dart';
 import '../../domain/entities/payment/payment_method.dart';
 import '../../domain/entities/request/page_response.dart';
-import '../../domain/entities/request/payment/payment_list_extra_data.dart';
-import '../../domain/entities/request/payment/payment_list_response.dart';
+import '../../domain/entities/request/payment/payment_list_page_response.dart';
 import '../../domain/repositories/payment_repository.dart';
 
 class PaymentRepositoryMock implements PaymentRepository {
@@ -201,7 +201,7 @@ class PaymentRepositoryMock implements PaymentRepository {
   }
 
   @override
-  Future<Either<DomainError, PaymentListResponse>> getPayments(int page, {DateTime? fechaDesde, DateTime? fechaHasta}) async {
+  Future<Either<DomainError, PaymentListPageResponse>> getPayments(int page, {DateTime? fechaDesde, DateTime? fechaHasta}) async {
     // Simular delay de red
     await Future.delayed(const Duration(milliseconds: 600));
 
@@ -226,12 +226,26 @@ class PaymentRepositoryMock implements PaymentRepository {
       
       // Calcular el total de los pagos filtrados
       final totalAmount = filteredPayments.fold<double>(0, (sum, payment) => sum + payment.amount);
+
+      final items = filteredPayments.map((payment) {
+        return PaymentListItem(
+          paymentId: payment.paymentId ?? 0,
+          clientId: payment.clientId,
+          clientName: 'Cliente #${payment.clientId}',
+          paymentDate: payment.paymentDate,
+          amount: payment.amount,
+          paymentMethodName: payment.paymentMethod.name,
+          subscriptionName: null,
+          observation: payment.observation,
+          sessionId: null,
+          type: PaymentListItemType.payment,
+        );
+      }).toList();
       
-      return Right(PaymentListResponse(
-        payments: filteredPayments,
-        extraData: PaymentListExtraData(
-          totalAmount: totalAmount
-        ),
+      return Right(PaymentListPageResponse(
+        items: items,
+        totalCount: items.length,
+        totalAmount: totalAmount,
       ));
       
     } catch (e) {

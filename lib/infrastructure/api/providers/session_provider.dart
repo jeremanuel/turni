@@ -4,6 +4,7 @@ import '../../../core/utils/entities/coordinate.dart';
 import '../../../core/utils/entities/range_date.dart';
 import '../../../domain/entities/client.dart';
 import '../../../domain/entities/club_partition.dart';
+import '../../../domain/entities/create_sessions_result.dart';
 import '../../../domain/entities/extra.dart';
 import '../../../domain/entities/payment/payment.dart';
 import '../../../domain/entities/session.dart';
@@ -72,6 +73,19 @@ class SessionProvider {
     return response.data['success'] == true;
   }
 
+  Future<bool> deleteSession(int sessionId) async {
+    final response = await dioInstance.delete("/admin/session/$sessionId");
+    return response.statusCode == 200;
+  }
+
+  Future<bool> cancelSessionReservation(int sessionId) async {
+    final response = await dioInstance.post(
+      "/admin/session/$sessionId/cancel_reservation",
+    );
+
+    return response.statusCode == 200;
+  }
+
   final dioInstance = sl<Dio>();
 
   Future<List<Session>> getClientSessions(
@@ -116,25 +130,29 @@ class SessionProvider {
     final response = await dioInstance.get("/admin/club_partitions");
 
     return (response.data as List)
-        .map((session) => ClubPartition.fromJson(session))
+        .map((session) {
+          final normalizedSession = Map<String, dynamic>.from(session as Map);
+
+          normalizedSession['physical_partition_name'] ??=
+              normalizedSession['partition_physical_name'] ??
+              normalizedSession['physical_partition_label'] ??
+              normalizedSession['partition_name'];
+
+          return ClubPartition.fromJson(normalizedSession);
+        })
         .toList();
   }
 
-  createSessions(List<Session> sessions, List<int> physicalPartitions,
+  Future<CreateSessionsResult> createSessions(List<Session> sessions, List<int> physicalPartitions,
       List<DateTime> dates) async {
-    try {
-      final body = {
-        "sessions": sessions,
-        "physical_partitions": physicalPartitions,
-        "dates": dates.map((el) => el.toString()).toList()
-      };
+    final body = {
+      "sessions": sessions,
+      "physical_partitions": physicalPartitions,
+      "dates": dates.map((el) => el.toString()).toList()
+    };
 
-      final response = await dioInstance.post("/admin/sessions", data: body);
-
-      return response.data;
-    } catch (e) {
-      return false;
-    }
+    final response = await dioInstance.post("/admin/sessions", data: body);
+    return CreateSessionsResult.fromJson(response.data as Map<String, dynamic>);
   }
 
   Future<Session> saveSession(Session session) async {

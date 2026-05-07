@@ -65,4 +65,9 @@ class AdminrepositroyImpl extends BaseRepository implements AdminRepository {
     });
 
   }
+  
+  @override
+  Future<RepositoryResponse<Client>> getClientById(int id) {
+    return safeCall(() => adminProvider.getClientById(id));
+  }
 }

@@ -67,7 +67,7 @@ class _SessionManagerRouteState extends State<SessionManagerRoute> {
         buildWhen: (previous, current) => previous.isFirstLoad != current.isFirstLoad,
         builder: (context, sessionManagerState) {
 
-          if(widget.routeName == "ADD_SESSIONS_MASIVE"){
+          if(widget.routeName == AppRoutes.ADD_SESSIONS_MASSIVE_ROUTE.name){
             return widget.child;
           }
 
@@ -84,7 +84,7 @@ class _SessionManagerRouteState extends State<SessionManagerRoute> {
             );
           }
 
-          if (widget.routeName == "SESSION_MANAGER") {
+          if (widget.routeName == AppRoutes.SESSION_MANAGER_ROUTE.name) {
             return const Padding(
               padding: EdgeInsets.all(16.0),
               child: AgendaContainer(),

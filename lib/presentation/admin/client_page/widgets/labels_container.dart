@@ -30,12 +30,16 @@ class LabelsContainer extends StatelessWidget {
 
  
     final textTheme = Theme.of(context).textTheme;
+    final colorScheme = Theme.of(context).colorScheme;
 
     final client = ClientInherited.of(context)!.client;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
+    return Container(
+      
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
         Row(
           spacing: 4,
           children: [
@@ -61,6 +65,7 @@ class LabelsContainer extends StatelessWidget {
           ],
         )
       ],
+      ),
     );
     
   }
@@ -290,11 +295,21 @@ List<Color> labelColors = [
                     },
                     child: const Text("Cancelar")
                   ),
-                  FilledButton(onPressed:(_textfieldKey.currentState?.isValid ?? false) ? (){
+                  FilledButton(
+                    
+                    style: ButtonStyle(
+                      backgroundColor: WidgetStatePropertyAll(Theme.of(context).colorScheme.primaryContainer),
+                      shape: WidgetStatePropertyAll(
+                        RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8.0),
+                        ),
+                      ),
+                    ),
+                    onPressed:(_textfieldKey.currentState?.isValid ?? false) ? (){
                     widget.onSelectLabel(
                       Label(-1, labelName, pickedColor, sl<AuthCubit>().getClubId())
                     );
-                  } : null, child: const Text("Crear")),
+                  } : null, child:  Text("Crear", style: TextStyle(color: Theme.of(context).colorScheme.onPrimaryContainer),)),
                   const SizedBox(width: 8,)
                 ],
               ),
@@ -397,7 +412,7 @@ List<Color> labelColors = [
   Widget build(BuildContext context) {
     
     return SizedBox(
-      height: 300,
+      height: 360,
       child: !isCreatingNew ? buildList() : buildNewLabelForm().animate().moveX(),
     );
   }

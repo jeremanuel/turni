@@ -1,61 +1,117 @@
+// ignore_for_file: constant_identifier_names
+
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import '../../../presentation/home_layout/widgets/custom_layout.dart';
-import '../../../presentation/core/cubit/auth/auth_cubit.dart';
+import '../../../presentation/admin/payments_list/payments_list_page.dart';
+import 'branches/client_shell_branch.dart';
+import 'branches/profile_shell_branch.dart';
 import '../service_locator.dart';
-import 'dashboard_routes.dart';
-import '../session_manager_routes.dart';
-import 'clients_routes.dart';
-import 'profile_routes.dart';
+
+import '../../../presentation/auth/check_status_page.dart';
+import '../../../presentation/auth/login_page.dart';
+import '../../../presentation/core/cubit/auth/auth_cubit.dart';
+import '../../../presentation/home_layout/widgets/custom_layout.dart';
+
+import 'app_routes.dart';
+import 'branches/session_shell_branch.dart';
+import 'dialog_page.dart';
+
+enum RouterType { clientRoute, adminRoute }
+
+enum ClientRoutes { session_feed }
 
 GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
 final GlobalKey customLayoutKey = GlobalKey();
-
-GoRouter buildGoRouter() {
-  return GoRouter(
-    initialLocation: "/session_manager",
+final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>();
+String? currentRoute;
+GoRouter buildGoRouter(RouterType routerType) {
+  final goRouter =  GoRouter(
+    navigatorKey: rootNavigatorKey,
+    initialLocation: AppRoutes.CLIENTS_LIST_ROUTE.path,
     refreshListenable: sl<AuthCubit>(),
     redirect: (context, state) {
       final authCubit = sl<AuthCubit>();
-
-      
       if (authCubit.getLoadingStatus()) {
-        if (state.matchedLocation != "/") {
+        if (state.matchedLocation != AppRoutes.ROOT_ROUTE.path) {
           authCubit.initialRoute = state.uri.toString();
         }
-        return '/';
+
+        return AppRoutes.ROOT_ROUTE.path;
       }
-      if (authCubit.state.userCredential == null) return '/login';
-      if (state.matchedLocation == "/" || state.matchedLocation == "/login") {
+
+      if (authCubit.state.userCredential == null) return AppRoutes.LOGIN_ROUTE.path;
+
+      if (state.matchedLocation == AppRoutes.ROOT_ROUTE.path || state.matchedLocation == AppRoutes.LOGIN_ROUTE.path) {
         if (authCubit.initialRoute != null) {
           return authCubit.initialRoute;
         }
-        return '/dashboard';
+
+        return routerType == RouterType.adminRoute
+            ? AppRoutes.DASHBOARD_ROUTE.path
+            : AppRoutes.FEED_ROUTE.path;
       }
+      
       return null;
     },
     routes: [
-      ...dashboardRoutes(),
-      StatefulShellRoute.indexedStack(
-        branches: [
-          StatefulShellBranch(routes: [
-            GoRoute(
-              path: "/dashboard",
-              builder: (context, state) => SizedBox(),
-            )
-          ]),
-          ...sessionManagerBranches(),
-          ...clientsBranches(scaffoldKey),
-          ...profileBranches(),
-        ],
-        builder: (context, state, navigationShell) {
-          return CustomLayout(
-            scaffoldKey: scaffoldKey,
-            key: customLayoutKey,
-            child: navigationShell,
-          );
-        },
+      /// Estas dos rutas son comunes a ambos tipos de usuario.
+      GoRoute(
+        path: AppRoutes.ROOT_ROUTE.path,
+        name: AppRoutes.ROOT_ROUTE.name,
+        builder: (context, state) => AuthCheck(),
       ),
+      GoRoute(
+        path: AppRoutes.LOGIN_ROUTE.path,
+        name: AppRoutes.LOGIN_ROUTE.name,
+        builder: (context, state) => const LoginPage(),
+      ),
+      StatefulShellRoute.indexedStack(
+        branches: buildBranches(routerType),
+        builder: (context, state, navigationShell) {
+          return CustomLayout(scaffoldKey: scaffoldKey, key: customLayoutKey,child: navigationShell);
+        },
+      )
     ],
   );
+
+  return goRouter;
 }
+
+List<StatefulShellBranch> buildBranches(RouterType routerType) {
+
+
+  return [
+    StatefulShellBranch(
+      routes: [
+        
+      GoRoute(
+        path: AppRoutes.DASHBOARD_ROUTE.path,
+        name: AppRoutes.DASHBOARD_ROUTE.name,
+        builder: (context, state) => Center(
+          child: FilledButton(onPressed: () {}, child: const Text("data")),
+        ),
+      )
+    ]),
+    sessionShellBranch(),
+    clientShellBranch(),
+    StatefulShellBranch(
+      routes: [
+        GoRoute(
+          path: AppRoutes.PAYMENTS_LIST.path,
+          name: AppRoutes.PAYMENTS_LIST.name,
+          builder: (context, state) => const PaymentsListPage(),
+
+        ),
+         
+      ]
+    ),
+    
+    profileShellBranch()
+  ];
+}
+ String? setCurrentRoute(BuildContext context, GoRouterState state) {
+  currentRoute = state.fullPath;
+  return null;
+}
+

@@ -12,10 +12,11 @@ class AuthRepositoryImpl extends AuthRepository {
   @override
   Future<User> login(User user) async {
     final reqData = GoogleUserRequest(
-        id: user.socialId!,
-        displayName: user.person.name,
-        email: user.person.email!,
-        photoUrl: user.picture);
+      id: user.socialId!,
+      displayName: user.person.fullName,
+      email: user.person.email!,
+      photoUrl: user.picture,
+    );
 
     return authProvider.login(reqData);
   }

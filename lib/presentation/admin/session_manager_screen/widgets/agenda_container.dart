@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/utils/responsive_builder.dart';
+import '../../../../core/utils/physical_partition_naming.dart';
 import '../../../../domain/entities/club_partition.dart';
 import '../../../core/agenda/agenda.dart';
 import '../bloc/session_manager_bloc.dart';
@@ -121,6 +122,11 @@ class AgendaContainer extends StatelessWidget {
               },
             );
           },
+              partitionLabelBuilder: (physicalPartition) =>
+                  PhysicalPartitionNaming.labelFromPhysicalPartition(
+                physicalPartition,
+                fallbackClubPartition: state.selectedClubPartition,
+              ),
           sessions: state.sessions,
           physicalPartitions:
               state.selectedClubPartition?.physicalPartitions ?? [],

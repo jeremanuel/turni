@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import '../../../core/config/router/app_routes.dart';
 import '../../../core/utils/types/time_interval.dart';
 import '../../../domain/entities/physical_partition.dart';
 import '../../../domain/entities/session.dart';
@@ -11,15 +12,18 @@ import '../../../domain/entities/session.dart';
 class Agenda extends StatelessWidget {
   Agenda(
       {super.key,
-      required this.sessions,
+      required List<Session> sessions,
       required this.buildCard,
       this.heightPerMinute = 2,
       required this.physicalPartitions,
+      required this.partitionLabelBuilder,
       required this.fromDate,
       required this.lastDate,
-      this.columnWidth = 300
+      this.columnWidth = 300,
       
-      })  {
+      
+      }) : sessions = [...sessions]
+          ..sort((a, b) => a.startTime.compareTo(b.startTime)) {
     horariosDisponibles = generateDates(fromDate, lastDate);
     scrollControllers = generateScrollControllers();
     initializeScrollControllerListeners();
@@ -28,6 +32,7 @@ class Agenda extends StatelessWidget {
   final List<Session> sessions;
   final Widget Function(Session, PhysicalPartition, double) buildCard;
   final List<PhysicalPartition> physicalPartitions;
+  final String Function(PhysicalPartition) partitionLabelBuilder;
   final double heightPerMinute;
   final DateTime fromDate;
   final DateTime lastDate;
@@ -330,7 +335,9 @@ class Agenda extends StatelessWidget {
         ),
            
         child: Center(
-          child: Text("Cancha ${physicalPartition.physicalIdentifier!.toString()}")
+          child: Text(
+              partitionLabelBuilder(physicalPartition),
+          )
         )),
     );
   }
@@ -536,7 +543,7 @@ class _BlankSpaceState extends State<BlankSpace> {
       child: InkWell(
         onTap: () {
           context.goNamed(
-            "SESSION_MANAGER_ADD",
+            AppRoutes.SESSION_MANAGER_ADD_ROUTE.name,
             pathParameters:{
               "idPhysicalPartition":widget.physicalPartition!.partitionPhysicalId.toString()
             },

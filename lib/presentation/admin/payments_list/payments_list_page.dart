@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_portal/flutter_portal.dart';
+import 'package:go_router/go_router.dart';
 import 'package:trina_grid/trina_grid.dart';
 
+import '../../../core/config/router/app_routes.dart';
 import '../../../core/config/service_locator.dart';
 import '../../../core/presentation/components/custom_trina_grid/custom_trina_grid.dart';
 import '../../../domain/repositories/payment_repository.dart';
-import '../../../infrastructure/mock/payment_repository_mock.dart';
 import 'cubit/payments_list_cubit.dart';
 import 'widgets/payments_list_header.dart';
 
@@ -77,6 +77,40 @@ class PaymentsListPage extends StatelessWidget {
                         enableContextMenu: false,
                         enableDropToResize: false,
                         enableEditingMode: false
+                      ),
+                      TrinaColumn(
+                        title: 'Turno',
+                        field: 'turno',
+                        type: TrinaColumnType.text(),
+                        width: 90,
+                        enableContextMenu: false,
+                        enableDropToResize: false,
+                        enableEditingMode: false,
+                        renderer: (rendererContext) {
+                          final sessionId = rendererContext.cell.value as int?;
+
+                          if (sessionId == null) {
+                            return Text('-');
+                          }
+
+                          return MouseRegion(
+                            cursor: SystemMouseCursors.click,
+                            child: GestureDetector(
+                              onTap: () => context.goNamed(
+                                AppRoutes.SESSION_MANAGER_RESERVE_ROUTE.name,
+                                pathParameters: {'idSession': sessionId.toString()},
+                              ),
+                              child: Text(
+                                '#$sessionId',
+                                style: TextStyle(
+                                  color: Theme.of(context).colorScheme.primary,
+                                  decoration: TextDecoration.underline,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          );
+                        },
                       ),
                       TrinaColumn(
                         title: 'Monto',

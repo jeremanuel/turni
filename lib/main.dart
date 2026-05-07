@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
 
+import 'core/config/app_theme.dart';
 import 'core/config/router/app_router.dart';
 import 'core/config/environment.dart';
 import 'core/config/service_locator.dart';
@@ -34,7 +35,7 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-    _router = buildGoRouter();
+    _router = buildGoRouter(RouterType.adminRoute);
   }
   @override
   Widget build(BuildContext context) {
@@ -51,12 +52,8 @@ class _MyAppState extends State<MyApp> {
           routerConfig: _router,
           debugShowCheckedModeBanner: false,
           title: 'Turni',
-          theme: ThemeData(
-            colorScheme: ColorScheme.fromSeed(
-                seedColor: const Color(0xff672bea),
-                brightness: Brightness.dark),
-            useMaterial3: true,
-          ),
+          theme: AppTheme.darkTheme,
+          darkTheme: AppTheme.darkTheme,
         );
       },
     );

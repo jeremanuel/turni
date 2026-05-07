@@ -3,6 +3,7 @@ import '../../core/utils/either.dart';
 import '../../core/utils/types/time_interval.dart';
 import '../entities/client.dart';
 import '../entities/club_partition.dart';
+import '../entities/create_sessions_result.dart';
 import '../entities/extra.dart';
 import '../entities/payment/payment.dart';
 import '../entities/session.dart';
@@ -25,7 +26,7 @@ class SessionUserCases {
   Future<List<ClubPartition>> getClubPartitions() async {
     return _sessionRepository.getPhysicalPartitions();
   }
-  createSessions(List<Session> sessions, List<int> physicalPartitions, TimeInterval interval) async {
+  Future<CreateSessionsResult> createSessions(List<Session> sessions, List<int> physicalPartitions, TimeInterval interval) async {
    return _sessionRepository.createSessions(sessions, physicalPartitions, interval.generateDateRange());
   }
 
@@ -62,8 +63,12 @@ class SessionUserCases {
     return _sessionRepository.deleteSessionExtra(sessionId, extra);
   }
 
-  Future deleteSession(sessionId){
+  Future<bool> deleteSession(int sessionId){
     return _sessionRepository.deleteSession(sessionId);
+  }
+
+  Future<bool> cancelSessionReservation(int sessionId) {
+    return _sessionRepository.cancelSessionReservation(sessionId);
   }
 
 

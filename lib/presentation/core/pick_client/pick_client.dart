@@ -124,34 +124,46 @@ class _PickClientState extends State<PickClient> {
   Row buildInitialState() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceAround,
+      spacing: 8,
       children: [
-        SearchClientButton(
-          onPickClient: (client) {
-
-            fieldKey.currentState?.didChange(client);
-
-          },
+        Expanded(
+          child: SearchClientButton(
+            onPickClient: (client) {
+          
+              fieldKey.currentState?.didChange(client);
+          
+            },
+          ),
         ),
-        OutlinedButton.icon(
-          icon: const Icon(Icons.add),
-          label: const Text("Crear"),
-          onPressed: () {
-            
-            context.pushNamed(
-              AppRoutes.NEW_CLIENT_ROUTE.name,
-              extra: {
-                'onClientCreated': (Client client) {
-                  context.pop();
-                  fieldKey.currentState?.didChange(client);
+        Expanded(
+          child: OutlinedButton.icon(
+            style:TextButton.styleFrom(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 14, vertical: 10),
+                      ),
+            icon: const Icon(Icons.add),
+            label: const Text("Crear"),
+            onPressed: () {
+              
+              context.pushNamed(
+                AppRoutes.NEW_CLIENT_ROUTE.name,
+                extra: {
+                  'onClientCreated': (Client client) {
+                    context.pop();
+                    fieldKey.currentState?.didChange(client);
+                  }
                 }
-              }
-            );
-
-            WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-              widget.onPressNew?.call();
-            });
-            
-          }
+              );
+          
+              WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+                widget.onPressNew?.call();
+              });
+              
+            }
+          ),
         )
       ],
     );

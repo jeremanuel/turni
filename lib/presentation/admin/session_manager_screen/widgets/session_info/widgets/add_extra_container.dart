@@ -211,9 +211,7 @@ class _AddExtraContainerState extends State<AddExtraContainer> {
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: const Text("Cancelar")),
+          
               TextButton(
                   onPressed: isValidExtra() ? createExtra : null,
                   child: const Text("Agregar")),

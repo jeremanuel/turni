@@ -43,18 +43,42 @@ class User {
     return admin != null;
   }
 
-  factory User.fromGoogleSignInUserData(GoogleSignInUserData userData) => User(
-        socialId: userData.id,
-        picture: userData.photoUrl,
-        client: Client(
-          person: Person(
-            
-            name: userData.displayName!.split(' ')[0],
-            lastName: userData.displayName!.split(' ')[1],
-            email: userData.email,
-          ),
+  factory User.fromGoogleSignInUserData(GoogleSignInUserData userData) {
+    final nameParts = _splitDisplayName(userData.displayName);
+    final fallbackName = userData.email.split('@').first;
+
+    return User(
+      socialId: userData.id,
+      picture: userData.photoUrl,
+      client: Client(
+        person: Person(
+          name: nameParts.firstName.isEmpty
+              ? fallbackName
+              : nameParts.firstName,
+          lastName: nameParts.lastName,
+          email: userData.email,
         ),
-      );
+      ),
+    );
+  }
+
+  static ({String firstName, String lastName}) _splitDisplayName(
+    String? displayName,
+  ) {
+    final normalized = (displayName ?? '').trim();
+
+    if (normalized.isEmpty) {
+      return (firstName: '', lastName: '');
+    }
+
+    final parts = normalized.split(RegExp(r'\s+'));
+
+    if (parts.length == 1) {
+      return (firstName: parts.first, lastName: '');
+    }
+
+    return (firstName: parts.first, lastName: parts.sublist(1).join(' '));
+  }
 
   Map<String, dynamic> toJson() => _$UserToJson(this);
   factory User.fromJson(Map<String, dynamic> json) => _$UserFromJson(json);

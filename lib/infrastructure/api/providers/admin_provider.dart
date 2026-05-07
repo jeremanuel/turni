@@ -16,5 +16,12 @@ class AdminProvider {
 
   }
 
+  Future<Client> getClientById(int id) async {
+
+    final response = await dioInstance.get("/admin/clients/$id");
+
+    return Client.fromJson(response.data);
+
+  }
 
 }

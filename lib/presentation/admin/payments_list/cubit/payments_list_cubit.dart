@@ -9,7 +9,7 @@ import 'package:trina_grid/trina_grid.dart';
 
 import '../../../../core/utils/data_source.dart';
 import '../../../../core/utils/either.dart';
-import '../../../../domain/entities/payment/payment.dart';
+import '../../../../domain/entities/payment/payment_list_item.dart';
 import '../../../../domain/repositories/payment_repository.dart';
 
 part 'payments_list_state.dart';
@@ -32,15 +32,16 @@ class PaymentsListCubit extends Cubit<PaymentsListState> {
     refresh();
   }
 
-  TrinaRow _paymentToRow(Payment payment) {
+  TrinaRow _paymentToRow(PaymentListItem payment) {
     return TrinaRow(
       cells: {
-        'id': TrinaCell(value: payment.paymentId?.toString() ?? 'N/A'),
-        'cliente': TrinaCell(value: '${payment.client!.person!.name} ${payment.client!.person!.lastName}'),
+        'id': TrinaCell(value: payment.paymentId.toString()),
+        'cliente': TrinaCell(value: payment.clientName),
         'fecha': TrinaCell(value: _formatDate(payment.paymentDate)),
         'monto': TrinaCell(value: _formatAmount(payment.amount)),
-        'metodo': TrinaCell(value: payment.paymentMethod.name),
-        'subscripcion': TrinaCell(value: payment.clientSubscription?.subscription.name ?? 'Sin suscripción'),
+        'metodo': TrinaCell(value: payment.paymentMethodName),
+        'subscripcion': TrinaCell(value: payment.subscriptionName ?? 'Sin suscripcion'),
+        'turno': TrinaCell(value: payment.sessionId),
       }
     );
   }
@@ -80,34 +81,34 @@ class PaymentsListCubit extends Cubit<PaymentsListState> {
       
       switch (result) {
         case Right(:final value):
-          final totalPages = (value.extraData!.totalCount! / 25).ceil();
+          final totalPages = (value.totalCount / 25).ceil();
           emit(state.copyWith(
             payments: DataSource(
               status: DataSourceStatus.loaded,
-              data: value.payments,
+              data: value.items,
             ),
             totalPages: totalPages,
             currentPage: state.currentPage + 1,
-            totalItems: value.extraData!.totalCount!,
+            totalItems: value.totalCount,
           ));
 
           trinaGridStateManager.columns.last.footerRenderer = (rend) => Container(
             alignment: Alignment.center,
             decoration: BoxDecoration(
-              
               borderRadius: BorderRadius.circular(4),
               border: Border.all(
                 width: 2,
-                color: themeData!.colorScheme.primary
-              )
+                color: themeData!.colorScheme.primary,
+              ),
             ),
-            child: Text("${_formatAmount(value.extraData!.totalAmount!)}"));
+            child: Text(_formatAmount(value.totalAmount)),
+          );
 
    
         
           return TrinaInfinityScrollRowsResponse(
             isLast: (state.currentPage - 1) >= totalPages,
-            rows: value.payments!.map(_paymentToRow).toList(),
+            rows: value.items.map(_paymentToRow).toList(),
           );
 
         case Left(:final failure):

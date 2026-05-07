@@ -206,9 +206,7 @@ class _AddPaymentContainerState extends State<AddPaymentContainer> {
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              TextButton(
-                  onPressed: () => Navigator.maybePop(context),
-                  child: const Text("Cancelar")),
+              
               TextButton(
                   onPressed: isValidPayment() ? createPayment : null,
                   child: const Text("Pagar")),

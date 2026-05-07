@@ -1,9 +1,9 @@
 import 'package:data_table_2/data_table_2.dart';
 import 'package:flutter/material.dart';
 
-import '../../../../core/utils/either.dart';
-import '../../../../domain/entities/client.dart';
-import '../../../../domain/repositories/admin_repository.dart';
+import '../../../../../core/utils/either.dart';
+import '../../../../../domain/entities/client.dart';
+import '../../../../../domain/repositories/admin_repository.dart';
 import 'client_list_filters.dart';
 import 'clients_data_row.dart';
 

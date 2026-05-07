@@ -32,7 +32,17 @@ class _AddSubscriptionButtonState extends State<AddSubscriptionButton> {
             );
       }
     
-    return TextButton(
+    final colorscheme = Theme.of(context).colorScheme;
+
+    return FilledButton(
+      style: ButtonStyle(
+        backgroundColor: WidgetStatePropertyAll(colorscheme.primary),
+        shape: WidgetStatePropertyAll(
+          RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8.0),
+          ),
+        ),
+      ),
       onPressed:() => onPressAddSubscription(context, client), 
       child: const Text("Agregar subscripcion")
     );

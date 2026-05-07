@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../../core/config/router/app_routes.dart';
 import '../../../../../core/utils/either.dart';
+import '../../../../../core/utils/physical_partition_naming.dart';
 import '../../../../../core/utils/responsive_builder.dart';
 import '../../../../../core/utils/types/time_interval.dart';
 import '../../../../../domain/entities/club_partition.dart';
@@ -16,6 +18,7 @@ import '../../../../core/pick_client/pick_client.dart';
 import '../../bloc/session_manager_bloc.dart';
 import '../../bloc/session_manager_event.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../close_session_dialog.dart';
 
 import 'widgets/activity_container.dart';
 import 'widgets/payment_container.dart';
@@ -83,8 +86,10 @@ class _SessionInfoState extends State<SessionInfo> {
                 padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
                 child: Column(
                   children: [
-                    buildHeader(context),
-                    SizedBox(height: headerSpacing),
+                    if (!isMobile) ...[
+                      buildHeader(context),
+                      SizedBox(height: headerSpacing),
+                    ],
                     Wrap(
                       runSpacing: isMobile ? 6 : 8,
                       spacing: isMobile ? 6 : 8,
@@ -139,7 +144,11 @@ class _SessionInfoState extends State<SessionInfo> {
                                     .colorScheme
                                     .onSurfaceVariant),
                             label: Text(
-                                "Cancha ${widget.physicalPartition.physicalIdentifier}")),
+                              PhysicalPartitionNaming.labelFromPhysicalPartition(
+                                widget.physicalPartition,
+                                fallbackClubPartition: widget.clubPartition,
+                              ),
+                            )),
                         Chip(
                             visualDensity: isMobile
                                 ? const VisualDensity(
@@ -323,33 +332,72 @@ class _SessionInfoState extends State<SessionInfo> {
           Padding(
             padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              spacing: 8,
               children: [
-                TextButton(
-                    onPressed: () {},
-                    child: Text(widget.session.isReserved
-                        ? "Cancelar Reserva"
-                        : "Eliminar Turno")),
+                Expanded(
+                  child: TextButton(
+                      onPressed: () async {
+                        final action = await showCloseSessionDialog(
+                          context,
+                          isReserved: widget.session.isReserved,
+                        );
+
+                        if (!context.mounted || action == null) {
+                          return;
+                        }
+
+                        final sessionManagerBloc =
+                            context.read<SessionManagerBloc>();
+
+                        if (action == CloseSessionAction.cancelReservation) {
+                          final cancelled = await sessionManagerBloc
+                              .cancelSessionReservation(widget.session.sessionId);
+
+                          if (cancelled && context.mounted) {
+                            context.go(AppRoutes.SESSION_MANAGER_ROUTE.path);
+                          }
+
+                          return;
+                        }
+
+                        sessionManagerBloc
+                            .add(DeleteSession(widget.session.sessionId));
+                        context.go(AppRoutes.SESSION_MANAGER_ROUTE.path);
+                      },
+                      child: Text(widget.session.isReserved
+                          ? "Cancelar Reserva"
+                          : "Eliminar Turno")),
+                ),
                 if (!widget.session.isReserved)
-                  FilledButton(
-                      onPressed: isValid
-                          ? () {
-                              final sessionManagerBloc =
-                                  context.read<SessionManagerBloc>();
-
-                              final client = _formKey
-                                  .currentState!.fields['client']?.value;
-
-                              sessionManagerBloc
-                                  .add(ReserveEvent(widget.session, client));
-
-                              context.go("/session_manager");
-                            }
-                          : null,
-                      child: const Text("Reservar Turno")),
+                  Expanded(
+                    child: FilledButton(
+                                style:TextButton.styleFrom(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 14, vertical: 10),
+                      ),
+                        onPressed: isValid
+                            ? () {
+                                final sessionManagerBloc =
+                                    context.read<SessionManagerBloc>();
+                    
+                                final client = _formKey
+                                    .currentState!.fields['client']?.value;
+                    
+                                sessionManagerBloc
+                                    .add(ReserveEvent(widget.session, client));
+                    
+                                context.go(AppRoutes.SESSION_MANAGER_ROUTE.path);
+                              }
+                            : null,
+                        child: const Text("Reservar Turno")),
+                  ),
               ],
             ),
-          )
+          ),
+          SizedBox(height: 24,)
         ],
       ),
     );
@@ -378,7 +426,7 @@ class _SessionInfoState extends State<SessionInfo> {
           height: 64,
           child: IconButton(
               onPressed: () {
-                context.go("/session_manager");
+                context.go(AppRoutes.SESSION_MANAGER_ROUTE.path);
               },
               icon: const Icon(Icons.arrow_back)),
         )

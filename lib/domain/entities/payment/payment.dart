@@ -16,7 +16,7 @@ sealed class Payment with _$Payment {
     int? paymentId,
     @JsonKey(name: "client_id")
     required int clientId,
-    Client? client,
+    // Client? client,
     @JsonKey(name: "client_subscription_id")
     int? clientSubscriptionId,
     @JsonKey(fromJson: ValueTransformers.fromJsonDouble)
