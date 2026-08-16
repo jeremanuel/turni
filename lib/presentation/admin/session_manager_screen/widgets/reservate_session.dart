@@ -35,7 +35,7 @@ class _ReservateSessionState extends State<ReservateSession> {
   @override
   Widget build(BuildContext context) {
 
-    if(widget.session.isReserved){
+    if(!widget.session.isFree){
       return Center(child: Text("No se puede reservar un turno ya reservado"),);
     }
 

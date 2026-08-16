@@ -15,8 +15,40 @@ class AuthProvider {
   }
 
   Future<User?> validateToken(String token) async {
-    final response = await dioInstance.post("/user/authenticate");
+    try {
+      final response = await dioInstance.post("/user/authenticate");
 
-    return User.fromJson(response.data);
+      return User.fromJson(response.data);
+    } catch (error) {
+      return null;
+    }
+  }
+
+  Future<bool> registerDeviceToken(String token, String platform) async {
+    try {
+      await dioInstance.post(
+        "/user/device-token",
+        data: {"token": token, "platform": platform},
+      );
+
+      return true;
+    } catch (error) {
+      print('error registrando device token: $error');
+      return false;
+    }
+  }
+
+  Future<bool> unregisterDeviceToken(String token) async {
+    try {
+      await dioInstance.delete(
+        "/user/device-token",
+        data: {"token": token},
+      );
+
+      return true;
+    } catch (error) {
+      print('error dando de baja device token: $error');
+      return false;
+    }
   }
 }

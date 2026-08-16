@@ -4,6 +4,7 @@ import '../../core/utils/types/time_interval.dart';
 import '../entities/client.dart';
 import '../entities/club_partition.dart';
 import '../entities/session.dart';
+import '../entities/session_status.dart';
 import '../repositories/session_repository.dart';
 
 class SessionUserCases {
@@ -39,5 +40,12 @@ class SessionUserCases {
     return _sessionRepository.deleteSession(sessionId);
   }
 
+  Future<Either<DomainError, SessionStatus>> acceptSessionRequest(int sessionId) {
+    return _sessionRepository.acceptSessionRequest(sessionId);
+  }
+
+  Future<Either<DomainError, SessionStatus>> rejectSessionRequest(int sessionId) {
+    return _sessionRepository.rejectSessionRequest(sessionId);
+  }
 
 }

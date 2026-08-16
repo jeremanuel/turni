@@ -14,11 +14,20 @@ class DioInit {
   }
 
   static addTokenToInterceptor(Dio dio, String token) {
+    // Si ya había un interceptor de un login/checkAuthStatus anterior (por
+    // ejemplo uno con un token viejo/inválido), hay que sacarlo antes de
+    // agregar el nuevo. Si no, ambos quedan apilados y como el header se
+    // setea con `putIfAbsent`, el primero que corre (el viejo) gana siempre
+    // — el token nuevo nunca llega a pisarlo y todo request autenticado
+    // sale con credenciales viejas hasta recargar la página.
+    if (_authInterceptor != null) {
+      dio.interceptors.remove(_authInterceptor);
+    }
+
     _authInterceptor = InterceptorsWrapper(
       onRequest: (RequestOptions requestOptions,
           RequestInterceptorHandler handler) async {
-        requestOptions.headers
-            .putIfAbsent('Authorization', () => 'Bearer $token');
+        requestOptions.headers['Authorization'] = 'Bearer $token';
         handler.next(requestOptions);
       },
     );

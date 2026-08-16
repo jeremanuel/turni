@@ -41,6 +41,11 @@ mixin _$Session {
   String? get clubName => throw _privateConstructorUsedError;
   @JsonKey(name: "club_type_name")
   String? get clubTypeName => throw _privateConstructorUsedError;
+  @JsonKey(
+      name: "status",
+      fromJson: SessionStatusTransformers.fromJson,
+      toJson: SessionStatusTransformers.toJson)
+  SessionStatus? get status => throw _privateConstructorUsedError;
   @JsonKey(includeIfNull: false)
   Client? get client => throw _privateConstructorUsedError;
   @JsonKey(name: "partition_physical", includeIfNull: false)
@@ -71,6 +76,11 @@ abstract class $SessionCopyWith<$Res> {
       @JsonKey(name: "partition_physical_id") int partitionPhysicalId,
       @JsonKey(name: "club_name") String? clubName,
       @JsonKey(name: "club_type_name") String? clubTypeName,
+      @JsonKey(
+          name: "status",
+          fromJson: SessionStatusTransformers.fromJson,
+          toJson: SessionStatusTransformers.toJson)
+      SessionStatus? status,
       @JsonKey(includeIfNull: false) Client? client,
       @JsonKey(name: "partition_physical", includeIfNull: false)
       PhysicalPartition? physicalPartition});
@@ -102,6 +112,7 @@ class _$SessionCopyWithImpl<$Res, $Val extends Session>
     Object? partitionPhysicalId = null,
     Object? clubName = freezed,
     Object? clubTypeName = freezed,
+    Object? status = freezed,
     Object? client = freezed,
     Object? physicalPartition = freezed,
   }) {
@@ -146,6 +157,10 @@ class _$SessionCopyWithImpl<$Res, $Val extends Session>
           ? _value.clubTypeName
           : clubTypeName // ignore: cast_nullable_to_non_nullable
               as String?,
+      status: freezed == status
+          ? _value.status
+          : status // ignore: cast_nullable_to_non_nullable
+              as SessionStatus?,
       client: freezed == client
           ? _value.client
           : client // ignore: cast_nullable_to_non_nullable
@@ -203,6 +218,11 @@ abstract class _$$SessionImplCopyWith<$Res> implements $SessionCopyWith<$Res> {
       @JsonKey(name: "partition_physical_id") int partitionPhysicalId,
       @JsonKey(name: "club_name") String? clubName,
       @JsonKey(name: "club_type_name") String? clubTypeName,
+      @JsonKey(
+          name: "status",
+          fromJson: SessionStatusTransformers.fromJson,
+          toJson: SessionStatusTransformers.toJson)
+      SessionStatus? status,
       @JsonKey(includeIfNull: false) Client? client,
       @JsonKey(name: "partition_physical", includeIfNull: false)
       PhysicalPartition? physicalPartition});
@@ -234,6 +254,7 @@ class __$$SessionImplCopyWithImpl<$Res>
     Object? partitionPhysicalId = null,
     Object? clubName = freezed,
     Object? clubTypeName = freezed,
+    Object? status = freezed,
     Object? client = freezed,
     Object? physicalPartition = freezed,
   }) {
@@ -278,6 +299,10 @@ class __$$SessionImplCopyWithImpl<$Res>
           ? _value.clubTypeName
           : clubTypeName // ignore: cast_nullable_to_non_nullable
               as String?,
+      status: freezed == status
+          ? _value.status
+          : status // ignore: cast_nullable_to_non_nullable
+              as SessionStatus?,
       client: freezed == client
           ? _value.client
           : client // ignore: cast_nullable_to_non_nullable
@@ -307,6 +332,11 @@ class _$SessionImpl extends _Session {
       @JsonKey(name: "partition_physical_id") required this.partitionPhysicalId,
       @JsonKey(name: "club_name") this.clubName,
       @JsonKey(name: "club_type_name") this.clubTypeName,
+      @JsonKey(
+          name: "status",
+          fromJson: SessionStatusTransformers.fromJson,
+          toJson: SessionStatusTransformers.toJson)
+      this.status,
       @JsonKey(includeIfNull: false) this.client,
       @JsonKey(name: "partition_physical", includeIfNull: false)
       this.physicalPartition})
@@ -347,6 +377,12 @@ class _$SessionImpl extends _Session {
   @JsonKey(name: "club_type_name")
   final String? clubTypeName;
   @override
+  @JsonKey(
+      name: "status",
+      fromJson: SessionStatusTransformers.fromJson,
+      toJson: SessionStatusTransformers.toJson)
+  final SessionStatus? status;
+  @override
   @JsonKey(includeIfNull: false)
   final Client? client;
   @override
@@ -355,7 +391,7 @@ class _$SessionImpl extends _Session {
 
   @override
   String toString() {
-    return 'Session(sessionId: $sessionId, createdAt: $createdAt, startTime: $startTime, duration: $duration, clientId: $clientId, price: $price, adminCreatorId: $adminCreatorId, partitionPhysicalId: $partitionPhysicalId, clubName: $clubName, clubTypeName: $clubTypeName, client: $client, physicalPartition: $physicalPartition)';
+    return 'Session(sessionId: $sessionId, createdAt: $createdAt, startTime: $startTime, duration: $duration, clientId: $clientId, price: $price, adminCreatorId: $adminCreatorId, partitionPhysicalId: $partitionPhysicalId, clubName: $clubName, clubTypeName: $clubTypeName, status: $status, client: $client, physicalPartition: $physicalPartition)';
   }
 
   @override
@@ -382,6 +418,7 @@ class _$SessionImpl extends _Session {
                 other.clubName == clubName) &&
             (identical(other.clubTypeName, clubTypeName) ||
                 other.clubTypeName == clubTypeName) &&
+            (identical(other.status, status) || other.status == status) &&
             (identical(other.client, client) || other.client == client) &&
             (identical(other.physicalPartition, physicalPartition) ||
                 other.physicalPartition == physicalPartition));
@@ -401,6 +438,7 @@ class _$SessionImpl extends _Session {
       partitionPhysicalId,
       clubName,
       clubTypeName,
+      status,
       client,
       physicalPartition);
 
@@ -435,6 +473,11 @@ abstract class _Session extends Session {
       required final int partitionPhysicalId,
       @JsonKey(name: "club_name") final String? clubName,
       @JsonKey(name: "club_type_name") final String? clubTypeName,
+      @JsonKey(
+          name: "status",
+          fromJson: SessionStatusTransformers.fromJson,
+          toJson: SessionStatusTransformers.toJson)
+      final SessionStatus? status,
       @JsonKey(includeIfNull: false) final Client? client,
       @JsonKey(name: "partition_physical", includeIfNull: false)
       final PhysicalPartition? physicalPartition}) = _$SessionImpl;
@@ -473,6 +516,12 @@ abstract class _Session extends Session {
   @override
   @JsonKey(name: "club_type_name")
   String? get clubTypeName;
+  @override
+  @JsonKey(
+      name: "status",
+      fromJson: SessionStatusTransformers.fromJson,
+      toJson: SessionStatusTransformers.toJson)
+  SessionStatus? get status;
   @override
   @JsonKey(includeIfNull: false)
   Client? get client;

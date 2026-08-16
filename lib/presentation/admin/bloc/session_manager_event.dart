@@ -30,7 +30,8 @@ class SessionManagerEvent with _$SessionManagerEvent {
 
   factory SessionManagerEvent.setSelectedSession(Session? session) = SetSelectedSession;
 
-  
+  factory SessionManagerEvent.acceptSessionRequest(int sessionId) = AcceptSessionRequest;
 
+  factory SessionManagerEvent.rejectSessionRequest(int sessionId) = RejectSessionRequest;
 
 }

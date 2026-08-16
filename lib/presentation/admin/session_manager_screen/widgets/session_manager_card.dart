@@ -39,10 +39,201 @@ class _SessionManagerCardState extends State<SessionManagerCard>  {
   @override
   Widget build(BuildContext context) {
 
-    if(widget.session.isReserved) return ReservedSessionCard(session: widget.session, hasFocus: widget.hasFocus,);
+    if(widget.session.isPending) return PendingSessionCard(session: widget.session, hasFocus: widget.hasFocus,);
 
-    return NotReservedSessionCard(session: widget.session, onReserve: widget.onReserve, onDelete: widget.onDelete, hasFocus: widget.hasFocus); 
+    if(widget.session.isConfirmed) return ReservedSessionCard(session: widget.session, hasFocus: widget.hasFocus,);
 
+    return NotReservedSessionCard(session: widget.session, onReserve: widget.onReserve, onDelete: widget.onDelete, hasFocus: widget.hasFocus);
+
+  }
+}
+
+
+class PendingSessionCard extends StatelessWidget {
+
+  final Session session;
+  final bool hasFocus;
+  const PendingSessionCard({super.key, required this.session, this.hasFocus = false});
+
+  getColor(context){
+
+    final color = Theme.of(context).colorScheme.secondaryContainer;
+
+    if(!hasFocus) return color;
+
+    HSLColor hslColor = HSLColor.fromColor(color);
+
+    double newLightness = (hslColor.lightness + 0.1).clamp(0.0, 1.0);
+
+    // Devolver el nuevo color en formato RGB
+    return hslColor.withLightness(newLightness).toColor();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // El alto de esta card lo fija `Agenda` en función de la duración del
+    // turno (duration * heightPerMinute) — para turnos cortos no alcanza
+    // para mostrar toda la info más dos botones de acción sin que se
+    // recorten. En vez de apostar a que ambos entren siempre, tocar la card
+    // abre un diálogo con las acciones (Aceptar/Rechazar) — funciona sin
+    // importar cuán chica sea la card.
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: () => _showActions(context),
+        child: Container(
+            width: 190,
+            decoration: BoxDecoration(
+                color: getColor(context),
+                borderRadius: BorderRadius.circular(12)),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  color: Theme.of(context).colorScheme.secondary,
+                  width: 16,
+                ),
+                Expanded(
+                  flex: 5,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 4),
+                    // Defensivo: turnos muy cortos igual podrían no alcanzar
+                    // para estas 3 líneas de info. Con scroll, en el peor
+                    // caso queda un pequeño scroll en vez de un overflow.
+                    child: SingleChildScrollView(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Row(
+                            children: [
+                              const Icon(Icons.hourglass_top, size: 16),
+                              const SizedBox(width: 4,),
+                              Expanded(
+                                child: Text(
+                                  "${DateFormat.jm().format(session.startTime)} - ${DateFormat.jm().format(session.endTime)}",
+                                  style: const TextStyle(fontSize: 12),
+                                ),
+                              ),
+                            ],
+                          ),
+                          Text(
+                            "Pendiente de aprobación",
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontStyle: FontStyle.italic,
+                              color: Theme.of(context).colorScheme.onSecondaryContainer,
+                            ),
+                          ),
+                          if(session.client?.person != null)
+                            Row(
+                              children: [
+                                const Icon(Icons.person, size: 16),
+                                Expanded(child: Text(session.client!.person!.fullName, style: const TextStyle(overflow: TextOverflow.ellipsis, fontSize: 12),)),
+                              ],
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+      ),
+    );
+  }
+
+  void _showActions(BuildContext context) {
+    final sessionManagerBloc = context.read<SessionManagerBloc>();
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return Dialog(
+          child: SizedBox(
+            height: 190,
+            width: 220,
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                children: [
+                  Text(
+                    "${DateFormat.jm().format(session.startTime)} - ${DateFormat.jm().format(session.endTime)}"
+                    "${session.client?.person != null ? '\n${session.client!.person!.fullName}' : ''}",
+                    textAlign: TextAlign.center,
+                  ),
+                  const Spacer(),
+                  SizedBox(
+                    width: double.infinity,
+                    child: FilledButton(
+                      onPressed: (){
+                        sessionManagerBloc.add(AcceptSessionRequest(session.sessionId));
+                        Navigator.pop(dialogContext);
+                      },
+                      child: const Text("Aceptar")
+                    ),
+                  ),
+                  const SizedBox(height: 8,),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton(
+                      onPressed: (){
+                        Navigator.pop(dialogContext);
+                        _confirmReject(context);
+                      },
+                      child: const Text("Rechazar")
+                    ),
+                  ),
+                ],
+              ),
+            )),
+        );
+      },
+    );
+  }
+
+  void _confirmReject(BuildContext context) {
+    final sessionManagerBloc = context.read<SessionManagerBloc>();
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return  Dialog(
+          child: SizedBox(
+            height: 170,
+            width: 220,
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                children: [
+                  const Text("Seguro que desea rechazar esta solicitud de turno?", textAlign: TextAlign.center,),
+                  const Spacer(),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      FilledButton(
+                        onPressed: (){
+                          sessionManagerBloc.add(RejectSessionRequest(session.sessionId));
+                          Navigator.pop(dialogContext);
+                        },
+                        child: const Text("Rechazar")
+                      ),
+                      OutlinedButton(
+                        onPressed: (){
+                          Navigator.pop(dialogContext);
+                        },
+                        child: const Text("Cancelar")
+                      )
+                    ],
+                  )
+                ],
+              ),
+            )),
+        );
+      },
+    );
   }
 }
 

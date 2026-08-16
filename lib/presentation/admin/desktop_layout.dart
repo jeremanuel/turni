@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 import 'package:turni/core/config/service_locator.dart';
 import 'package:turni/presentation/core/cubit/auth/auth_cubit.dart';
 
+import '../../core/config/app_routes.dart';
+
 class DesktopLayout extends StatelessWidget {
 
   final StatefulNavigationShell child;
@@ -75,11 +77,15 @@ class SideBar extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.end,
           children:[
+            if(sl<AuthCubit>().isAdmin())
+              IconButton(onPressed: (){
+                context.push(AppRoutes.ADMIN_SETTINGS_ROUTE['path']!);
+              }, icon: const Icon(Icons.settings)),
             IconButton(onPressed: (){
               sl<AuthCubit>().signOutGoogle();
             }, icon: const Icon(Icons.logout)),
             const SizedBox(height: 40,)
-          ] 
+          ]
         ),
       ) ,
       onDestinationSelected: (index) => child.goBranch(index),

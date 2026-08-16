@@ -28,4 +28,15 @@ class AuthUserCases {
 
     return loggedUser;
   }
+
+  /// No-op silencioso ante cualquier falla (p. ej. sin Firebase real
+  /// configurado todavía) — nunca debe bloquear el login.
+  Future<bool> registerDeviceToken(String token, String platform) {
+    return authRepository.registerDeviceToken(token, platform);
+  }
+
+  /// No-op silencioso ante cualquier falla — nunca debe bloquear el logout.
+  Future<bool> unregisterDeviceToken(String token) {
+    return authRepository.unregisterDeviceToken(token);
+  }
 }

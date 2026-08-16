@@ -20,6 +20,7 @@ import '../../presentation/admin/session_manager_screen/session_manager_route.da
 import '../../presentation/admin/session_manager_screen/utils/session_manager_add_page_builder.dart';
 import '../../presentation/admin/session_manager_screen/utils/session_manager_reserve_page_builder.dart';
 import '../../presentation/admin/session_manager_screen/widgets/calendar_side_column.dart';
+import '../../presentation/admin/settings_screen/admin_settings_page.dart';
 import '../../presentation/client/home_manager_screen/home/home.dart';
 import '../../presentation/client/session_manager_screen/session_feed/session_feed.dart';
 import 'app_routes.dart';
@@ -28,8 +29,15 @@ enum RouterType { clientRoute, adminRoute }
 
 enum ClientRoutes { session_feed }
 
+/// Referencia global al último `GoRouter` construido por [buildGoRouter].
+///
+/// Se usa para navegar desde fuera del árbol de widgets (por ejemplo, al
+/// tocar una notificación push) sin necesitar un `BuildContext` — ver
+/// `lib/core/services/push_notification_service.dart`.
+GoRouter? rootRouter;
+
 GoRouter buildGoRouter(RouterType routerType) {
-  return GoRouter(
+  final router = GoRouter(
     initialLocation: '/',
     refreshListenable: sl<AuthCubit>(),
     redirect: (context, state) {
@@ -68,6 +76,12 @@ GoRouter buildGoRouter(RouterType routerType) {
           builder: (context, state) =>
               SessionFeedPage(clubType: state.extra as ClubType),
         ),
+      if (routerType == RouterType.adminRoute)
+        GoRoute(
+          path: AppRoutes.ADMIN_SETTINGS_ROUTE['path']!,
+          name: AppRoutes.ADMIN_SETTINGS_ROUTE['name']!,
+          builder: (context, state) => const AdminSettingsPage(),
+        ),
       StatefulShellRoute.indexedStack(
         branches: buildBranches(routerType),
         builder: (context, state, navigationShell) =>
@@ -75,6 +89,10 @@ GoRouter buildGoRouter(RouterType routerType) {
       )
     ],
   );
+
+  rootRouter = router;
+
+  return router;
 }
 
 List<StatefulShellBranch> buildBranches(RouterType routerType) {

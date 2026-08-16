@@ -31,6 +31,7 @@ class AgendaContainer extends StatelessWidget {
               const SizedBox(
                 height: 8,
               ),
+              buildPendingBadge(state, context),
               if (ResponsiveBuilder.isMobile(context))
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 8),
@@ -126,6 +127,32 @@ class AgendaContainer extends StatelessWidget {
       },
     );
   }
+
+    /// Badge con la cantidad de solicitudes de turno pendientes de
+    /// aprobación, entre las sesiones actualmente cargadas (fecha/club
+    /// seleccionados). No hace polling en tiempo real (ver
+    /// PLAN_SOLICITUD_TURNO.md, Fase 0, decisión de producto #1) — se
+    /// recalcula solo cuando cambia `state.sessions`, ej. al cambiar de
+    /// fecha o tras aceptar/rechazar una solicitud.
+    Widget buildPendingBadge(SessionManagerState state, BuildContext context) {
+      final pendingCount = state.sessions.where((session) => session.isPending).length;
+
+      if(pendingCount == 0) return const SizedBox.shrink();
+
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 8),
+        child: Align(
+          alignment: Alignment.centerLeft,
+          child: Chip(
+            avatar: const Icon(Icons.hourglass_top, size: 18),
+            label: Text(pendingCount == 1
+                ? "1 solicitud pendiente"
+                : "$pendingCount solicitudes pendientes"),
+            backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
+          ),
+        ),
+      );
+    }
 
     FilterChip buildChip(ClubPartition e, BuildContext context, SessionManagerState state) =>
       FilterChip(

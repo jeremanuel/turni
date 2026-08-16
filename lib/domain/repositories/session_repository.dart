@@ -6,6 +6,7 @@ import '../../core/utils/types/time_interval.dart';
 import '../entities/client.dart';
 import '../entities/club_partition.dart';
 import '../entities/session.dart';
+import '../entities/session_status.dart';
 
 abstract class SessionRepository {
   Future<List<Session>> getSessions(DateTime date);
@@ -22,4 +23,8 @@ abstract class SessionRepository {
   Future<Client?> reservateSession(int sessionId, Client client);
 
   Future deleteSession(int sessionId);
+
+  Future<Either<DomainError, SessionStatus>> acceptSessionRequest(int sessionId);
+
+  Future<Either<DomainError, SessionStatus>> rejectSessionRequest(int sessionId);
 }

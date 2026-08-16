@@ -18,7 +18,13 @@ class SessionManagerState with _$SessionManagerState{
     ClubPartition? selectedClubPartition, 
     @Default(false) isFirstLoad,
     @Default(false) isLoadingSessions,
-    DomainError? error
+    DomainError? error,
+    /// Error de la última acción de aceptar/rechazar una solicitud de turno
+    /// (ej. 409 `STALE_STATUS`). Separado de [error] a propósito: ese otro
+    /// campo dispara una navegación de vuelta a la agenda general (ver
+    /// `session_manager_route.dart`), que no tiene sentido acá — la acción
+    /// ya ocurre estando parado en la agenda.
+    DomainError? actionError,
   }) = _SessionManagerState;
 }
 

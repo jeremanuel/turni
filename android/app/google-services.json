@@ -1,0 +1,68 @@
+{
+  "project_info": {
+    "project_number": "458036544256",
+    "project_id": "turnibeta",
+    "storage_bucket": "turnibeta.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:458036544256:android:d5f368e93377c31c71a9e5",
+        "android_client_info": {
+          "package_name": "com.turni.admin"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "458036544256-k5tqgq5mahdlcildhipsilshvs8cebcq.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBfWUAsf4lRn3jrad594wqDO2Nes0CoWRg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "458036544256-k5tqgq5mahdlcildhipsilshvs8cebcq.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:458036544256:android:0a208f8a11511d1171a9e5",
+        "android_client_info": {
+          "package_name": "com.turni.cliente"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "458036544256-k5tqgq5mahdlcildhipsilshvs8cebcq.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBfWUAsf4lRn3jrad594wqDO2Nes0CoWRg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "458036544256-k5tqgq5mahdlcildhipsilshvs8cebcq.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

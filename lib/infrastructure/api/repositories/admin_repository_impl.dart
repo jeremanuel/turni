@@ -2,14 +2,17 @@ import 'package:dio/dio.dart';
 import 'package:intl/intl.dart';
 
 import '../../../core/config/service_locator.dart';
+import '../../../core/utils/domain_error.dart';
+import '../../../core/utils/either.dart';
 import '../../../core/utils/entities/range_date.dart';
 import '../../../domain/entities/client.dart';
 import '../../../domain/entities/generic_search_item.dart';
 import '../../../domain/entities/session.dart';
 import '../../../domain/repositories/admin_repository.dart';
 import '../providers/admin_provider.dart';
+import 'base/base_repository.dart';
 
-class AdminrepositroyImpl extends AdminRepository {
+class AdminrepositroyImpl extends BaseRepository implements AdminRepository {
 
   final dioInstance = sl<Dio>();
   final AdminProvider adminProvider;
@@ -19,6 +22,26 @@ class AdminrepositroyImpl extends AdminRepository {
 
     return adminProvider.getClients(search);
 
+  }
+
+  @override
+  Future<Either<DomainError, int>> getPendingRequestTtlMinutes() {
+    return safeCall<int>(() async {
+      final response = await dioInstance.get("/admin/settings");
+
+      return (response.data['pending_request_ttl_minutes'] as num).toInt();
+    });
+  }
+
+  @override
+  Future<Either<DomainError, int>> updatePendingRequestTtlMinutes(int minutes) {
+    return safeCall<int>(() async {
+      final response = await dioInstance.put("/admin/settings", data: {
+        "pending_request_ttl_minutes": minutes,
+      });
+
+      return (response.data['pending_request_ttl_minutes'] as num).toInt();
+    });
   }
 
   @override
