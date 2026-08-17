@@ -45,6 +45,15 @@ migrate_working_dir/
 *.ipr
 *.iws
 
+# Plataforma escaffoldeada localmente al correr `flutter run`/`flutter pub
+# get` en distintas máquinas de dev — específica de cada entorno, no del
+# proyecto.
+**/ios/Flutter/ephemeral/
+**/macos/Flutter/ephemeral/
+**/linux/flutter/ephemeral/
+**/windows/flutter/ephemeral/
+.fvm/
+
 # Symbolication related
 app.*.symbols
 

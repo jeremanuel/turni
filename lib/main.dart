@@ -9,7 +9,17 @@ import 'package:turni/core/config/app_router.dart';
 import 'package:turni/core/config/environment.dart';
 import 'package:turni/core/config/service_locator.dart';
 import 'package:turni/core/services/push_notification_service.dart';
+import 'package:turni/infrastructure/localstorage/provider/local_storage.dart';
 import 'package:turni/presentation/core/cubit/auth/auth_cubit.dart';
+
+// Token de un admin real de dev, impreso por `npm run seed:dev` en
+// turni_mono_be (bloque "--dart-define flag (para arrancar la app admin
+// logueada, turni)"). Si se pasa por --dart-define, se precarga en
+// LocalStorage antes de que AuthCheck.checkAuthStatus() (llamado en el primer
+// frame, ver check_status_page.dart) lo lea — deja la app ya logueada como
+// ese admin, sin pasar por Google Sign-In. Vacío por default: no afecta el
+// arranque normal.
+const _devAdminToken = String.fromEnvironment('DEV_ADMIN_TOKEN');
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -17,6 +27,10 @@ void main() async {
   await Environment.initEnvironment();
   ServiceLocator.initializeDependencies();
   await initializeDateFormatting('es');
+
+  if (_devAdminToken.isNotEmpty) {
+    await LocalStorage.save(LocalStorage.TOKEN_KEY, _devAdminToken);
+  }
 
   Intl.defaultLocale = 'es';
   //usePathUrlStrategy();
