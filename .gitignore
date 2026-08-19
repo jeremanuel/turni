@@ -57,6 +57,12 @@ app.*.map.json
 .fvm/
 pubspec.lock
 .vscode/settings.json
+
+# Token de dev para arrancar la app ya logueada como admin (ver
+# --dart-define-from-file en README/launch.json). Se obtiene con
+# `npm run seed:dev` en turni_mono_be o pegándolo a mano; nunca es secreto de
+# verdad (SECRET_KEY de dev), pero es específico de cada entorno local.
+dev_define.json
 ios/Runner/GeneratedPluginRegistrant.h
 ios/Runner/GeneratedPluginRegistrant.m
 linux/flutter/generated_plugin_registrant.cc

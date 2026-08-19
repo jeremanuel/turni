@@ -79,9 +79,17 @@ dev_dependencies:
   json_serializable: ^6.8.0
   build_runner: ^2.4.12
   freezed: ^3.2.3
-  
-  
-  
+
+# build_daemon/build_runner todavía no relajaron su constraint para permitir
+# frontend_server_client 4.x, que es la primera versión que sabe arrancar
+# desde el snapshot AOT (lo único que ya distribuyen los SDKs de Dart
+# modernos). Sin esto, `build_runner build` falla con "Could not find a
+# command named ...frontend_server.dart.snapshot" (no existe ese archivo,
+# solo frontend_server_aot.dart.snapshot). Sacar este override si algún día
+# build_daemon sube su cota superior.
+dependency_overrides:
+  frontend_server_client: ^4.0.0
+
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 
