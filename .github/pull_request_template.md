@@ -1,28 +1,22 @@
-## Descripción
+<!-- TL;DR: una a tres líneas, en lenguaje simple, qué cambia y por qué. Para alguien que solo lee esto y sigue de largo. -->
 
-Por favor, proporciona una descripción concisa de los cambios introducidos por este PR.
+## Problema
 
-## Capturas de pantalla (si es aplicable)
+<!-- Qué necesidad o problema motiva este cambio (bug, funcionalidad faltante, deuda técnica). -->
 
-Adjunta capturas de pantalla o GIFs que muestren los cambios si es necesario.
+## Solución
 
-## Comprobación
+<!-- Cómo se resolvió: el enfoque, decisiones técnicas relevantes, trade-offs. Podés referenciar archivos clave o adjuntar capturas/GIFs si es un cambio visual. -->
 
-Antes de enviar este PR, por favor, asegúrate de que has realizado las siguientes comprobaciones:
+## Dependencias / relacionados
 
-- [ ] Me he asignado como responsable del PR.
-- [ ] He añadido etiquetas si es necesario.
-- [ ] He probado este código en mi entorno local.
-- [ ] He agregado documentación si es necesario.
-- [ ] He agregado test unitarios.
+<!-- Si este PR depende de, o se relaciona con, otro PR (de este repo o de otro repo del ecosistema Turni, ej. turni_mono_be), linkealo acá en ambas direcciones. Borrar esta sección si no aplica. -->
 
-## Tema del PR
+## Test plan
 
-Escribe aquí el tema del PR, por ejemplo: "Arreglar el error de ortografía en el archivo README".
-
-## Notas adicionales
-
-Escribe aquí cualquier información adicional relevante para revisar este PR.
+<!-- Qué se verificó de verdad (tests, build, prueba manual) y qué falta verificar. Usar checkboxes. -->
+- [ ] Probé este código en mi entorno local.
+- [ ] Agregué tests unitarios si correspondía.
 
 ## Merge Strategy
 
@@ -30,5 +24,4 @@ Escribe aquí cualquier información adicional relevante para revisar este PR.
 |--------|--------|--------|
 | Feature | Develop | Squash&Merge |
 | Release | Master | Merge Commit |
-| Hotfix | Master | Squash&Merge | 
-
+| Hotfix | Master | Squash&Merge |
