@@ -26,7 +26,11 @@ class CreateSesssionsFormBloc
             SessionUserCases(
               SessionRepositoryImplementation(sessionProvider: SessionProvider()),
             ),
-        super(const _CreateSessionManagerState()) {
+        // El intervalo inicial se calcula a mano porque el preset por
+        // defecto (DatePreset.week) necesita DateTime.now() — @Default no
+        // admite eso, y si no lo seteamos acá el chip arranca marcado pero
+        // el intervalo queda null (0 días) hasta que el usuario lo reselecciona.
+        super(_CreateSessionManagerState(interval: DatePreset.week.toInterval())) {
     on<ChangeSelectionClubPartition>((
       ChangeSelectionClubPartition event,
       emit,
@@ -198,6 +202,10 @@ class CreateSesssionsFormBloc
       )..remove(event.session);
       current[event.partitionPhysicalId] = list;
       emit(state.copyWith(courtExtraSessions: current));
+    });
+
+    on<ResetForm>((event, emit) {
+      emit(_CreateSessionManagerState(interval: DatePreset.week.toInterval()));
     });
   }
 }
