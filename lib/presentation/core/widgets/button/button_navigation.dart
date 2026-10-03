@@ -23,7 +23,7 @@ class ButtonNavigation extends StatelessWidget {
       onPressed: onPressed,
       style: ButtonStyle(
         alignment: Alignment.center,
-        shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+        shape: WidgetStateProperty.all<RoundedRectangleBorder>(
           const RoundedRectangleBorder(
             borderRadius: BorderRadius.all(Radius.circular(10)),
           ),

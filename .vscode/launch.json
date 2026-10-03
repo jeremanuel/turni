@@ -8,7 +8,17 @@
             "name": "turni",
             "request": "launch",
             "type": "dart",
-            "args": ["--web-port=1234"]
+            "args": ["--web-port=1234", "--web-experimental-hot-reload"]
+        },
+        {
+            "name": "turni (dev admin logueado)",
+            "request": "launch",
+            "type": "dart",
+            "args": [
+                "--web-port=1234",
+                "--web-experimental-hot-reload",
+                "--dart-define-from-file=dev_define.json"
+            ]
         },
         {
             "name": "turni (profile mode)",

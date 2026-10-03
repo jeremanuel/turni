@@ -26,4 +26,45 @@ class DateFunctions {
     return DateFormat.MMMd().format(date);
 
   }
+
+  static String formatDateToDefaultFormat(DateTime date){
+    return DateFormat.yMd().format(date);
+  }
+
+  static String formatTimeToHourMinute(DateTime date, {bool useUtc = false}) {
+    final target = useUtc ? date.toUtc() : date;
+    return DateFormat.Hm().format(target);
+  }
+
+  static DateTime? tryParseDate(String? value){
+    if(value == null) return null;
+
+    return DateFormat.yMd().tryParse(value);
+  }
+
+  static String differenceInYears(DateTime date){
+    return (DateTime.now().difference(date).inDays / 365).floor().toString();
+  }
+
+  static String differencePretty(DateTime date){  
+    final now = DateTime.now();
+    final difference = now.difference(date);
+
+    if(difference.inDays >= 365){
+      final years = (difference.inDays / 365).floor();
+      return '$years año${years > 1 ? 's' : ''}';
+    } else if(difference.inDays >= 30){
+      final months = (difference.inDays / 30).floor();
+      return '$months mes${months > 1 ? 'es' : ''}';
+    } else if(difference.inDays >= 1){
+      return '${difference.inDays} día${difference.inDays > 1 ? 's' : ''}';
+    } else if(difference.inHours >= 1){
+      return '${difference.inHours} hora${difference.inHours > 1 ? 's' : ''}';
+    } else if(difference.inMinutes >= 1){
+      return '${difference.inMinutes} minuto${difference.inMinutes > 1 ? 's' : ''}';
+    } else {
+      return 'unos segundos';
+    }
+  }
+
 }

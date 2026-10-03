@@ -60,8 +60,9 @@ import 'package:flutter/foundation.dart';
 
 import '../../domain/repositories/auth_repository.dart';
 import '../../infrastructure/localstorage/provider/local_storage.dart';
-import '../config/app_router.dart';
-import '../config/app_routes.dart';
+import 'package:go_router/go_router.dart';
+
+import '../config/router/app_routes.dart';
 import '../config/service_locator.dart';
 
 /// Config del proyecto Firebase `turnibeta`, app Web "com.turni.admin".
@@ -251,7 +252,9 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 /// el `type`/`session_id` del payload de la notificación.
 void navigateToMainAgenda() {
   try {
-    rootRouter?.go(AppRoutes.SESSION_MANAGER_ROUTE['path']!);
+    if (!sl.isRegistered<GoRouter>()) return;
+
+    sl<GoRouter>().go(AppRoutes.SESSION_MANAGER_ROUTE.path);
   } catch (error) {
     print('PushNotificationService: error navegando desde push: $error');
   }

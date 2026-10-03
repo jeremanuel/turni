@@ -1,0 +1,66 @@
+import 'package:flutter/material.dart';
+
+import '../../../../domain/entities/label.dart';
+
+class Labelchip extends StatelessWidget {
+
+  final Label label;
+  final VoidCallback? onDelete;
+  const Labelchip(this.label, {super.key, this.onDelete});
+
+  @override
+  Widget build(BuildContext context) {
+
+    final labelColor = label.color ?? Theme.of(context).colorScheme.primaryContainer;
+
+    final backgroundColor = adjustColorBrightness(labelColor);
+
+    final borderColor = labelColor;
+
+    return Chip(
+      onDeleted: onDelete,
+      deleteIcon: const Icon(Icons.close),
+      avatar: Container(
+        width: 12,
+        height: 12,
+        decoration: BoxDecoration(
+          color: backgroundColor,
+          borderRadius: BorderRadius.all(Radius.circular(2))
+        ),
+      ),
+      label: Text(
+        label.value,
+        /* style: TextStyle(
+          color: _getContrastingTextColor(context, backgroundColor) ,
+        ),  */
+      ),
+      //backgroundColor: backgroundColor, 
+      visualDensity: const VisualDensity(vertical: -4),
+       side: BorderSide(
+        color: borderColor.withOpacity(0.5),
+      )  
+    );
+  }
+
+Color adjustColorBrightness(Color color, [double amount = 0.4, bool invert = false]) {
+  final hsl = HSLColor.fromColor(color);
+  
+  // Si el color es oscuro (luminosidad < 0.5), aclararlo; si es brillante, oscurecerlo
+  final adjustedLightness = hsl.lightness < 0.5
+      ? (hsl.lightness + amount).clamp(0.0, 1.0)  // Aclara
+      : (hsl.lightness - amount).clamp(0.0, 1.0); // Oscurece
+
+  return hsl.withLightness(adjustedLightness).toColor();
+}
+
+
+  Color _getContrastingTextColor(context, Color backgroundColor) {
+
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return ThemeData.estimateBrightnessForColor(backgroundColor) == Brightness.dark && Theme.of(context).brightness == Brightness.dark
+        ? colorScheme.onSurface
+        : colorScheme.onPrimary;
+  }
+
+}

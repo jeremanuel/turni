@@ -1,11 +1,10 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-import '../../../core/utils/responsive_builder.dart';
+import '../../../core/config/router/app_routes.dart';
 import '../../../core/utils/types/time_interval.dart';
 import '../../../domain/entities/physical_partition.dart';
 import '../../../domain/entities/session.dart';
@@ -13,29 +12,44 @@ import '../../../domain/entities/session.dart';
 class Agenda extends StatelessWidget {
   Agenda(
       {super.key,
-      required this.sessions,
+      required List<Session> sessions,
       required this.buildCard,
       this.heightPerMinute = 2,
       required this.physicalPartitions,
+      required this.partitionLabelBuilder,
       required this.fromDate,
       required this.lastDate,
-      this.columnWidth = 300
-      
-      })  {
+      this.columnWidth = 300,
+      this.onBlankSpaceTap,
+      this.partitionSubtitleBuilder,
+
+      }) : sessions = [...sessions]
+          ..sort((a, b) => a.startTime.compareTo(b.startTime)) {
     horariosDisponibles = generateDates(fromDate, lastDate);
     scrollControllers = generateScrollControllers();
     initializeScrollControllerListeners();
   }
 
   final List<Session> sessions;
-  final Widget Function(Session, PhysicalPartition) buildCard;
+  final Widget Function(Session, PhysicalPartition, double) buildCard;
   final List<PhysicalPartition> physicalPartitions;
+  final String Function(PhysicalPartition) partitionLabelBuilder;
   final double heightPerMinute;
   final DateTime fromDate;
   final DateTime lastDate;
   final double columnWidth;
   final double hoursWidth = 64;
-  
+
+  /// Si se pasa, se usa en vez de la navegacion default a
+  /// SESSION_MANAGER_ADD_ROUTE cuando se toca un espacio vacio — para
+  /// reusar esta misma grilla en pantallas donde "agregar" no debe navegar
+  /// afuera (ej. el paso "Canchas" de la carga masiva).
+  final void Function(PhysicalPartition, TimeInterval)? onBlankSpaceTap;
+
+  /// Segunda linea opcional en el header de cada columna (ej. capacidad de
+  /// jugadores) — null mantiene el header de una sola linea de siempre.
+  final String Function(PhysicalPartition)? partitionSubtitleBuilder;
+
   late final List<ScrollController> scrollControllers;
   
   final ScrollController horizontalColumnesScrollController = ScrollController();
@@ -117,9 +131,9 @@ class Agenda extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-
+    
         final remainingSpace = calculateRemainingSpace(constraints);
-
+    
         return Padding(
           padding: const EdgeInsets.only(top: 16),
           child: ScrollConfiguration(
@@ -188,6 +202,7 @@ class Agenda extends StatelessWidget {
                 minHeightToHover: 0,
                 physicalPartition: physicalPartition,
                 blankSpaceTimeInterval: TimeInterval(initialDate: horariosDisponibles.first, endDate: horariosDisponibles.last),
+                onTap: onBlankSpaceTap,
               );
             },                                    
         );
@@ -199,10 +214,13 @@ class Agenda extends StatelessWidget {
       children: [
         buildHeaders(context),
         Expanded(
-          child: Row(
-            children: physicalPartitions
-                .map((el) => buildPartitionColumn(el, context))
-                .toList(),
+          child: Material(
+            type: MaterialType.transparency,
+            child: Row(
+              children: physicalPartitions
+                  .map((el) => buildPartitionColumn(el, context))
+                  .toList(),
+            ),
           ),
         ),
       ],
@@ -318,18 +336,36 @@ class Agenda extends StatelessWidget {
   }
 
   Widget buildPartitionHeader(PhysicalPartition physicalPartition, context) {
+    final subtitle = partitionSubtitleBuilder?.call(physicalPartition);
     return Padding(
       padding: const EdgeInsets.all(8),
       child:Container(
         width: columnWidth- 16,
         height: 40 - 16,
         decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.primaryContainer.withOpacity(0.5),
+              color: Theme.of(context).colorScheme.primaryContainer.withValues(alpha:0.5),
               borderRadius: BorderRadius.circular(4),
         ),
-           
+
         child: Center(
-          child: Text("Cancha ${physicalPartition.physicalIdentifier!.toString()}")
+          child: subtitle == null
+              ? Text(partitionLabelBuilder(physicalPartition))
+              : Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      partitionLabelBuilder(physicalPartition),
+                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    Text(
+                      subtitle,
+                      style: const TextStyle(fontSize: 10),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
         )),
     );
   }
@@ -428,32 +464,36 @@ class Agenda extends StatelessWidget {
                 if(offsetPrevio > 0)
                   BlankSpace(
                     canHover: physicalPartition.durationInMinutes != null,
-                    height: offsetPrevio, 
-                    minHeightToHover: (physicalPartition.durationInMinutes ?? 0) * heightPerMinute, 
+                    height: offsetPrevio,
+                    minHeightToHover: (physicalPartition.durationInMinutes ?? 0) * heightPerMinute,
                     physicalPartition: physicalPartition,
                     blankSpaceTimeInterval: TimeInterval(
                       initialDate: previousBlankSpaceStartTime,
                       endDate: currentSession.startTime
                     ),
+                    onTap: onBlankSpaceTap,
                   ),
 
                 SizedBox(
                     height: duration * heightPerMinute.toDouble() -
                         heightPerMinute *
                             4, // Le resto 4 unidades de tiempo por el padding que se aplica luego de 2 arriba y abajo.
-                    child: buildCard(currentSession, physicalPartition)
+                    child: buildCard(currentSession, physicalPartition, duration * heightPerMinute.toDouble() -
+                        heightPerMinute *
+                            4)
                 ),
-
+  
                 if (index == currentPhysicalPartitionSessions.length - 1)
                   BlankSpace(
                     canHover: physicalPartition.durationInMinutes != null,
                     height: offsetFinal.toDouble(),
-                    minHeightToHover: (physicalPartition.durationInMinutes ?? 0) * heightPerMinute, 
+                    minHeightToHover: (physicalPartition.durationInMinutes ?? 0) * heightPerMinute,
                     physicalPartition: physicalPartition,
                     blankSpaceTimeInterval: TimeInterval(
                       initialDate: currentSession.endTime,
                       endDate: horariosDisponibles.last
                     ),
+                    onTap: onBlankSpaceTap,
                   ),
               ],
             ),
@@ -478,12 +518,13 @@ class Agenda extends StatelessWidget {
 class BlankSpace extends StatefulWidget {
     
     const BlankSpace({
-    super.key, 
+    super.key,
     required this.canHover,
     required this.height,
     required this.minHeightToHover,
-    this.blankSpaceTimeInterval, 
-    this.physicalPartition
+    this.blankSpaceTimeInterval,
+    this.physicalPartition,
+    this.onTap,
   });
 
 
@@ -492,6 +533,7 @@ class BlankSpace extends StatefulWidget {
   final double minHeightToHover;
   final TimeInterval? blankSpaceTimeInterval;
   final PhysicalPartition? physicalPartition;
+  final void Function(PhysicalPartition, TimeInterval)? onTap;
 
 
   @override
@@ -530,30 +572,31 @@ class _BlankSpaceState extends State<BlankSpace> {
           isHovered = false;
         });
       },      
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () {
-            context.goNamed(
-              "SESSION_MANAGER_ADD",
-              pathParameters:{
-                "idPhysicalPartition":widget.physicalPartition!.partitionPhysicalId.toString()
-              },
-              queryParameters: {
-                "start": dateFormat.format(widget.blankSpaceTimeInterval!.initialDate!),
-                'end':dateFormat.format(widget.blankSpaceTimeInterval!.endDate!)
-              },
-            );
-          },
-          child: SizedBox(
-            height: widget.height.toDouble(),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 2),
-              child: Center(
-                child: isHovered ? childHovered : childNotHovered,
-              ),
-            )                       
-          ),
+      child: InkWell(
+        onTap: () {
+          if (widget.onTap != null) {
+            widget.onTap!(widget.physicalPartition!, widget.blankSpaceTimeInterval!);
+            return;
+          }
+          context.goNamed(
+            AppRoutes.SESSION_MANAGER_ADD_ROUTE.name,
+            pathParameters:{
+              "idPhysicalPartition":widget.physicalPartition!.partitionPhysicalId.toString()
+            },
+            queryParameters: {
+              "start": dateFormat.format(widget.blankSpaceTimeInterval!.initialDate!),
+              'end':dateFormat.format(widget.blankSpaceTimeInterval!.endDate!)
+            },
+          );
+        },
+        child: SizedBox(
+          height: widget.height.toDouble(),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 2),
+            child: Center(
+              child: isHovered ? childHovered : childNotHovered,
+            ),
+          )                       
         ),
       ));
   }

@@ -1,6 +1,4 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 
 import '../../../../domain/entities/session.dart';
@@ -89,9 +87,9 @@ class _SessionFormDropdownState extends State<SessionFormDropdown> {
             const Spacer(),
             Row(
               children: [
-                Expanded(child: OutlinedButton(onPressed: widget.onCancel, child: Text("Cancelar"))),
-                SizedBox(width: 16,),
-                Expanded(child: FilledButton(onPressed: onPressedSave(), child: Text("Guardar")))
+                Expanded(child: OutlinedButton(onPressed: widget.onCancel, child: const Text("Cancelar"))),
+                const SizedBox(width: 16,),
+                Expanded(child: FilledButton(onPressed: onPressedSave(), child: const Text("Guardar")))
               ],
             )
           ],

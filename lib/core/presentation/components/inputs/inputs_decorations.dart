@@ -17,7 +17,7 @@ Map<String, dynamic> getInputOptions({
   required String? suffixText,
   required String? errorText,
   Function()? onTrailIconTap,
-  required Set<MaterialState> currentStates,
+  required Set<WidgetState> currentStates,
   MouseCursor cursor = SystemMouseCursors.text,
 }) {
   InputDecoration getInputDecoration(
@@ -116,8 +116,8 @@ Map<String, dynamic> getInputOptions({
     switch (style) {
       case (InputStyle.filled):
         return getInputDecoration(
-          border: MaterialStateUnderlineInputBorder.resolveWith(
-              (Set<MaterialState> states) {
+          border: WidgetStateInputBorder.resolveWith(
+              (Set<WidgetState> states) {
             double width = 1.0;
             // Color color = AppTheme.colors(context).onSurfaceVariant;
           
@@ -132,8 +132,6 @@ Map<String, dynamic> getInputOptions({
             // }
             return UnderlineInputBorder(
               borderSide: BorderSide(
-                // color: color,
-                color: Colors.black,
                 width: width,
               ),
             );
@@ -151,8 +149,8 @@ Map<String, dynamic> getInputOptions({
 
       case (InputStyle.outlined):
         return getInputDecoration(
-          border: MaterialStateOutlineInputBorder.resolveWith(
-              (Set<MaterialState> states) {
+          border: WidgetStateInputBorder.resolveWith(
+              (Set<WidgetState> states) {
             double width = 1.0;
             // Color color = AppTheme.colors(context).onSurfaceVariant;
 
@@ -167,8 +165,6 @@ Map<String, dynamic> getInputOptions({
             // }
             return OutlineInputBorder(
               borderSide: BorderSide(
-                // color: color,
-                color: Colors.black,
                 width: width,
               ),
             );
@@ -185,16 +181,16 @@ Map<String, dynamic> getInputOptions({
 /// Se lo debe asignar al texto de error del input.
 String? setError( 
   String? value,
-  Set<MaterialState> states,  
+  Set<WidgetState> states,  
   String? Function(String?)? validator,
 ){
   String? error;
   if( validator != null && validator(value) != null ){
-    states.add(MaterialState.error);
+    states.add(WidgetState.error);
     error = validator(value);
   }
   else{
-    states.remove(MaterialState.error);
+    states.remove(WidgetState.error);
   }
   return error;
 }
@@ -202,24 +198,24 @@ String? setError(
 /// [supportingErrorContainer] Genera el contenedor de error o soporte para los inputs
 Widget supportingErrorContainer( 
   BuildContext context,
-  Set<MaterialState> states,
+  Set<WidgetState> states,
   String? errorText,
   String? supportingText,
 ){
-  return ( supportingText == null && states.contains(MaterialState.disabled) )
+  return ( supportingText == null && states.contains(WidgetState.disabled) )
     ? const SizedBox()
-    :(supportingText != null || states.contains(MaterialState.error))
+    :(supportingText != null || states.contains(WidgetState.error))
       ? Container(
         padding: const EdgeInsets.only(left: 16,),
         child: Text(
-          ( states.contains(MaterialState.disabled) ) 
-            ? supportingText! : ( states.contains(MaterialState.error) ) ? errorText! : supportingText!,
+          ( states.contains(WidgetState.disabled) ) 
+            ? supportingText! : ( states.contains(WidgetState.error) ) ? errorText! : supportingText!,
             // style: BodyTextStyleSmall(
             style: TextStyle(
-            color: (states.contains(MaterialState.disabled))
+            color: (states.contains(WidgetState.disabled))
                 // ? AppTheme.colors(context).onSurface.withOpacity(0.38)
-                ? Colors.black.withOpacity(0.38)
-                : (states.contains(MaterialState.error))
+                ? Colors.black.withValues(alpha:0.38)
+                : (states.contains(WidgetState.error))
                     // ? AppTheme.colors(context).error
                     // : AppTheme.colors(context).onSurfaceVariant,
                     ? Colors.red

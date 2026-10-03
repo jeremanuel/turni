@@ -1,27 +1,24 @@
-import 'dart:async';
 
-import 'package:async/async.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
+import 'package:go_router/go_router.dart';
 
-import '../../../core/config/service_locator.dart';
-import '../../../core/presentation/components/inputs/dropdown_widget.dart';
+import '../../../core/config/router/app_routes.dart';
 import '../../../domain/entities/client.dart';
-import '../../../domain/entities/person.dart';
-import '../../../domain/repositories/admin_repository.dart';
 import 'widgets/new_client_form.dart';
 import 'widgets/search_client_button.dart';
 
 class PickClient extends StatefulWidget {
   const PickClient({
-  super.key,
-  this.onPressNew, 
-  this.onBackToSelection, 
-  this.onSelect,
-  required this.name, 
-  this.validator, 
-  this.isRequired = false
+    super.key,
+    this.onPressNew, 
+    this.onBackToSelection, 
+    required this.name, 
+    this.validator, 
+    this.isRequired = false, 
+    this.initialValue, 
+    this.readOnly = false,
+    this.onChange
   });  
   
   /// Invocado cuando se preciona en "Nuevo" cliente.
@@ -29,16 +26,18 @@ class PickClient extends StatefulWidget {
   /// Invocado al volver a la etapa inicial del componente.
   final Function()? onBackToSelection;
   /// Invocado al seleccionar un cliente existente desde la etapa inicial.
-  final Function()? onSelect;
+  final Function(Client?)? onChange;
   final String name;
   final String? Function(Client?)? validator;
   final bool isRequired;
+  final Client? initialValue;
+  final bool readOnly;
+
   @override
   State<PickClient> createState() => _PickClientState();
 }
 
 class _PickClientState extends State<PickClient> {
-  final SearchController _searchController = SearchController();
   bool newMode = false;
   
   final GlobalKey<FormFieldState<Client?>> fieldKey = GlobalKey<FormFieldState<Client?>>();
@@ -47,8 +46,12 @@ class _PickClientState extends State<PickClient> {
   
   @override
   Widget build(BuildContext context) {
+
+    final textTheme = Theme.of(context).textTheme;
  
     return FormBuilderField<Client?>(
+      initialValue: widget.initialValue,
+      onChanged: (value) => widget.onChange?.call(value),
       validator: (value) {
 
         if(newMode && value == null){
@@ -65,9 +68,9 @@ class _PickClientState extends State<PickClient> {
       key: fieldKey,
       builder: (field) {
 
-      final children = [
-          if(!newMode)
-          const Text("Cliente"),
+      final children = <Widget>[
+          
+          if(!widget.readOnly) Text("Cliente", style: textTheme.titleMedium),
 
           if(newMode) Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -91,7 +94,7 @@ class _PickClientState extends State<PickClient> {
               
           ]),
 
-          const SizedBox(height: 16),
+          if(!widget.readOnly) const SizedBox(height: 16),
       ];
       
       if (field.value == null && !newMode) {
@@ -121,53 +124,77 @@ class _PickClientState extends State<PickClient> {
   Row buildInitialState() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceAround,
+      spacing: 8,
       children: [
-        SearchClientButton(
-          onPickClient: (client) {
-
-            fieldKey.currentState?.didChange(client);
-
-          },
+        Expanded(
+          child: SearchClientButton(
+            onPickClient: (client) {
+          
+              fieldKey.currentState?.didChange(client);
+          
+            },
+          ),
         ),
-        OutlinedButton.icon(
-          icon: const Icon(Icons.add),
-          label: const Text("Crear"),
-          onPressed: () {
-            setState(() {
-              newMode = true;
-            });
-
-            WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-              widget.onPressNew?.call();
-            });
-            
-          }
+        Expanded(
+          child: OutlinedButton.icon(
+            style:TextButton.styleFrom(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 14, vertical: 10),
+                      ),
+            icon: const Icon(Icons.add),
+            label: const Text("Crear"),
+            onPressed: () {
+              
+              context.pushNamed(
+                AppRoutes.NEW_CLIENT_ROUTE.name,
+                extra: {
+                  'onClientCreated': (Client client) {
+                    context.pop();
+                    fieldKey.currentState?.didChange(client);
+                  }
+                }
+              );
+          
+              WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+                widget.onPressNew?.call();
+              });
+              
+            }
+          ),
         )
       ],
     );
   }
 
-  ListTile buildPickedClientInfo() {
+  Widget buildPickedClientInfo() {
     final client = fieldKey.currentState!.value;
 
-    return ListTile(  
-      leading: CircleAvatar(
-          child: Text(client!.person!.fullName.characters.first)
-        ),
-      trailing: IconButton(
-          onPressed: () {
-            fieldKey.currentState?.didChange(null);
-          },
-          icon: const Icon(Icons.close)
-        ),
-      subtitle: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if(client.person!.hasEmail()) Text(client.person!.email!, overflow: TextOverflow.ellipsis,),
-                    if(client.person!.hasPhone()) Text(client.person!.phone!, overflow: TextOverflow.ellipsis)
-                  ],
-                ),
-      title: Text(client.person!.fullName),
+    return InkWell(
+      onTap: () {
+        context.goNamed(AppRoutes.CLIENT_ROUTE.name,  pathParameters: {"clientId":client.clientId!});
+      },
+      child: ListTile(  
+        leading: CircleAvatar(
+            child: Text(client!.person!.fullName.characters.first)
+          ),
+        trailing: widget.readOnly ? null : IconButton(
+            onPressed: () {
+              fieldKey.currentState?.didChange(null);
+            },
+            icon: const Icon(Icons.close)
+          ),
+        subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if(client.person!.hasEmail()) Text(client.person!.email!, overflow: TextOverflow.ellipsis,),
+                      if(client.person!.hasPhone()) Text(client.person!.phone!, overflow: TextOverflow.ellipsis)
+                    ],
+                  ),
+        title: Text(client.person!.fullName),
+      ),
     );
   }
 

@@ -1,17 +1,13 @@
-import 'dart:math';
 
-import '../../../core/utils/entities/coordinate.dart';
-import '../../../core/utils/entities/range_date.dart';
 import '../../../domain/entities/club_partition.dart';
 import '../../../domain/entities/club_type.dart';
 import '../../../domain/entities/physical_partition.dart';
 import '../../../domain/entities/session.dart';
-import '../../../domain/repositories/session_repository.dart';
 
 class SessionRepositoryTest  {
-  @override
+  
   Future<List<ClubPartition>> getPhysicalPartitions() async {
-    // TODO: implement getPhysicalPartitions
+    
     return [
       ClubPartition(
         club_partition_id: 1,
@@ -137,9 +133,9 @@ class SessionRepositoryTest  {
     ];
   }
 
-  @override
+  
   Future<List<Session>> getSessions(DateTime date) async {
-    await Future.delayed(Duration(seconds: 1));
+    await Future.delayed(const Duration(seconds: 1));
     return [
      /*  if (Random().nextBool())
         Session(1, DateTime.now(), DateTime(2024, 3, 12, 10), "01:30", null,
@@ -192,9 +188,6 @@ class SessionRepositoryTest  {
     ];
   }
 
-  @override
-  Future<List<Session>> getClientSessions(int clubTypeId, Coordinate coordinate, RangeDate rangeDate) {
-    // TODO: implement getClientSessions
-    throw UnimplementedError();
-  }
+  
+
 }

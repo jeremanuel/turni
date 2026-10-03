@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/utils/responsive_builder.dart';
+import '../../../../core/utils/physical_partition_naming.dart';
 import '../../../../domain/entities/club_partition.dart';
 import '../../../core/agenda/agenda.dart';
-import '../../bloc/session_manager_bloc.dart';
-import '../../bloc/session_manager_event.dart';
-import '../../bloc/session_manager_state.dart';
+import '../bloc/session_manager_bloc.dart';
+import '../bloc/session_manager_event.dart';
+import '../bloc/session_manager_state.dart';
 import '../../browser/browser.dart';
 import '../../browser/browser_options.dart';
 import 'session_manager_card.dart';
@@ -31,7 +32,6 @@ class AgendaContainer extends StatelessWidget {
               const SizedBox(
                 height: 8,
               ),
-              buildPendingBadge(state, context),
               if (ResponsiveBuilder.isMobile(context))
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 8),
@@ -77,7 +77,7 @@ class AgendaContainer extends StatelessWidget {
                             color: Theme.of(context)
                                 .colorScheme
                                 .shadow
-                                .withOpacity(0.1))
+                                .withValues(alpha:0.1))
                       ],
                       color: Theme.of(context).colorScheme.surface,
                     ),
@@ -95,6 +95,7 @@ class AgendaContainer extends StatelessWidget {
           previous.selectedClubPartition != current.selectedClubPartition ||
           previous.isLoadingSessions != current.isLoadingSessions || previous.selectedSession != current.selectedSession,
       builder: (context, state) {
+       
         if (state.isLoadingSessions) {
           return const Center(
             child: CircularProgressIndicator(),
@@ -108,10 +109,11 @@ class AgendaContainer extends StatelessWidget {
               state.currentDate.applied(const TimeOfDay(hour: 8, minute: 0)),
           lastDate:
               state.currentDate.applied(const TimeOfDay(hour: 22, minute: 0)),
-          buildCard: (session, physicalPartition) {
+          buildCard: (session, physicalPartition, height) {
             if(state.selectedSession == session){
             }
             return SessionManagerCard(
+              height:height,
              hasFocus: state.selectedSession == session, 
               session: session,
               physicalPartition: physicalPartition,
@@ -120,6 +122,11 @@ class AgendaContainer extends StatelessWidget {
               },
             );
           },
+              partitionLabelBuilder: (physicalPartition) =>
+                  PhysicalPartitionNaming.labelFromPhysicalPartition(
+                physicalPartition,
+                fallbackClubPartition: state.selectedClubPartition,
+              ),
           sessions: state.sessions,
           physicalPartitions:
               state.selectedClubPartition?.physicalPartitions ?? [],
@@ -127,32 +134,6 @@ class AgendaContainer extends StatelessWidget {
       },
     );
   }
-
-    /// Badge con la cantidad de solicitudes de turno pendientes de
-    /// aprobación, entre las sesiones actualmente cargadas (fecha/club
-    /// seleccionados). No hace polling en tiempo real (ver
-    /// PLAN_SOLICITUD_TURNO.md, Fase 0, decisión de producto #1) — se
-    /// recalcula solo cuando cambia `state.sessions`, ej. al cambiar de
-    /// fecha o tras aceptar/rechazar una solicitud.
-    Widget buildPendingBadge(SessionManagerState state, BuildContext context) {
-      final pendingCount = state.sessions.where((session) => session.isPending).length;
-
-      if(pendingCount == 0) return const SizedBox.shrink();
-
-      return Padding(
-        padding: const EdgeInsets.only(bottom: 8),
-        child: Align(
-          alignment: Alignment.centerLeft,
-          child: Chip(
-            avatar: const Icon(Icons.hourglass_top, size: 18),
-            label: Text(pendingCount == 1
-                ? "1 solicitud pendiente"
-                : "$pendingCount solicitudes pendientes"),
-            backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
-          ),
-        ),
-      );
-    }
 
     FilterChip buildChip(ClubPartition e, BuildContext context, SessionManagerState state) =>
       FilterChip(

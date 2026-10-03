@@ -1,6 +1,6 @@
 import 'package:calendar_view/calendar_view.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_portal/flutter_portal.dart';
+import 'package:flutter_portal/flutter_portal.dart' hide Aligned;
 import 'package:intl/intl.dart';
 
 import '../../../../core/config/service_locator.dart';
@@ -26,7 +26,7 @@ class _AgendaEditCardState extends State<AgendaEditCard> {
   @override
   Widget build(BuildContext context) {
     return DropdownWidget(
-      aligned: const Aligned(follower: Alignment.topLeft, target: Alignment.topRight, offset: Offset(8,0), shiftToWithinBound:  AxisFlag(x: true,y: true )),
+      aligned: const Aligned(follower: Alignment.topLeft, target: Alignment.topRight, offset: Offset(8,0)),
       dropdownController: dropdownController,
       menuWidget: SessionFormDropdown(
         onSave: (initialTime, duration){
@@ -46,7 +46,7 @@ class _AgendaEditCardState extends State<AgendaEditCard> {
     return Container(
             width: 190,
             decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surfaceVariant,
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
                 borderRadius: BorderRadius.circular(12)
                 ),
             child: Row(
@@ -59,23 +59,28 @@ class _AgendaEditCardState extends State<AgendaEditCard> {
                 const SizedBox(
                   width: 4,
                 ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          const Icon(Icons.access_time),
-                          Text(
-                            "${DateFormat.jm().format(widget.session.startTime)} - ${DateFormat.jm().format(widget.session.endTime)}",
-                          ),
-                        ],
-                      ),                     
-                    ],
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            const Icon(Icons.access_time),
+                            Expanded(
+                              child: Text(
+                                "${DateFormat.jm().format(widget.session.startTime)} - ${DateFormat.jm().format(widget.session.endTime)}",
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-                const Spacer(),
                 Padding(
                   padding: const EdgeInsets.only(bottom: 8, right: 8),
                   child: Column(

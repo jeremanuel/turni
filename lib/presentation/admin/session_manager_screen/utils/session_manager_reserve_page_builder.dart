@@ -2,11 +2,11 @@ import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../core/config/app_routes.dart';
-import '../../bloc/session_manager_bloc.dart';
-import '../../bloc/session_manager_event.dart';
-import '../../bloc/session_manager_state.dart';
-import '../widgets/reservate_session.dart';
+import '../../../../core/config/router/app_routes.dart';
+import '../bloc/session_manager_bloc.dart';
+import '../bloc/session_manager_event.dart';
+import '../bloc/session_manager_state.dart';
+import '../widgets/session_info/session_info.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 /// Metodo utilizado en el pagebuilder de la ruta.
@@ -23,6 +23,7 @@ Page<dynamic> sessionManagerReservePageBuilder(
       .state
       .sessions
       .firstWhereOrNull((element) => element.sessionId == idSession);
+
 
   final sessionManagerbloc = context.read<SessionManagerBloc>();
 
@@ -51,22 +52,27 @@ Page<dynamic> sessionManagerReservePageBuilder(
   }
 
   return NoTransitionPage(
-    child: BlocListener<SessionManagerBloc, SessionManagerState>(
+    child: BlocConsumer<SessionManagerBloc, SessionManagerState>(
+      buildWhen: (previous, current) => previous.sessions.firstWhereOrNull((element) => element.sessionId == idSession) != current.sessions.firstWhereOrNull((element) => element.sessionId == idSession),
     listenWhen: (previous, current) => previous.sessions.firstWhereOrNull((element) => element.sessionId == idSession) != current.sessions.firstWhereOrNull((element) => element.sessionId == idSession),
     listener: (context, state) {
       
       final session = state.sessions.firstWhereOrNull((element) => element.sessionId == idSession);
       
       if(session == null){
-        context.goNamed(AppRoutes.SESSION_MANAGER_ROUTE['name']!);
+        context.goNamed(AppRoutes.SESSION_MANAGER_ROUTE.name);
       }
 
       
     },
-    child: ReservateSession(
-        session: session,
-        clubPartition: selectedClubPartition!,
+    builder: (context, state) {
+      final session = state.sessions.firstWhereOrNull((element) => element.sessionId == idSession);
+
+      return SessionInfo(
+        session: session!,
         physicalPartition: physicalPartition!,
-      ),
+        clubPartition: state.selectedClubPartition!,
+      );
+    },
   ));
 }

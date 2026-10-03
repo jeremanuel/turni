@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../core/config/service_locator.dart';
-import '../../../core/utils/responsive_builder.dart';
-import '../bloc/session_manager_bloc.dart';
-import '../bloc/session_manager_state.dart';
+import 'package:flutter_portal/flutter_portal.dart';
+import 'bloc/session_manager_bloc.dart';
+import 'bloc/session_manager_state.dart';
 import 'widgets/agenda_container.dart';
 
 class SessionManagerDesktop extends StatelessWidget {
@@ -26,7 +25,7 @@ class SessionManagerDesktop extends StatelessWidget {
     );
   }
 
-  Padding buildDesktopManager(BuildContext context) {
+  Widget buildDesktopManager(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Row(
@@ -40,7 +39,9 @@ class SessionManagerDesktop extends StatelessWidget {
           const SizedBox(
             width: 16,
           ),
-          SizedBox(width: 300, child: sideChild)
+          Container(
+            padding: const EdgeInsets.only(bottom: 16),
+            width: 300, child: sideChild)
         ],
       ),
     );

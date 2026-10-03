@@ -1,4 +1,4 @@
-import 'package:turni/domain/entities/user.dart';
+import '../entities/user.dart';
 
 abstract class AuthRepository {
   Future<User> login(User user);

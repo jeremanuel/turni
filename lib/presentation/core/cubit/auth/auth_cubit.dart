@@ -6,12 +6,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
-import 'package:turni/core/config/service_locator.dart';
-import 'package:turni/core/utils/dio_init.dart';
-import 'package:turni/domain/entities/user.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import '../../../../core/config/service_locator.dart';
+import '../../../../core/utils/dio_init.dart';
+import '../../../../domain/entities/user.dart';
 import 'package:google_sign_in_platform_interface/google_sign_in_platform_interface.dart';
-import 'package:turni/domain/usercases/auth_user_cases.dart';
-import 'package:turni/infrastructure/localstorage/provider/local_storage.dart';
+import '../../../../domain/usercases/auth_user_cases.dart';
+import '../../../../infrastructure/localstorage/provider/local_storage.dart';
+
+import '../../../admin/states/global_data/global_data_cubit.dart';
 
 import '../../../../core/services/push_notification_service.dart';
 import '../../../../core/utils/entities/coordinate.dart';
@@ -99,6 +102,8 @@ class AuthCubit extends Cubit<AuthState> with ChangeNotifier {
 
         emit(AuthLogged(userCredential: user));
 
+        sl<GlobalDataCubit>();
+
         _registerPushToken();
       } else {
         authUserCases.logout();
@@ -114,11 +119,13 @@ class AuthCubit extends Cubit<AuthState> with ChangeNotifier {
 
   Future signInGoogle() async {
     emit(const AuthLogged());
+    sl<GlobalDataCubit>();
     _notifyRouter();
   }
 
   void signOutGoogle() async {
     await _unregisterPushToken();
+    await GoogleSignIn.instance.signOut();
 
     emit(const AuthNotLogged());
     await authUserCases.logout();
@@ -141,6 +148,8 @@ class AuthCubit extends Cubit<AuthState> with ChangeNotifier {
     }
 
     emit(AuthLogged(userCredential: completeUser));
+
+    sl<GlobalDataCubit>();
 
     _notifyRouter();
 
@@ -192,7 +201,11 @@ class AuthCubit extends Cubit<AuthState> with ChangeNotifier {
     return state.userCredential?.isAdmin ?? false;
   }
 
-/*   void setInitialRoute(String? route){
+  int getClubId() {
+    return state.userCredential!.admin!.clubPartitions.first.club_id;
+  }
+
+  /*   void setInitialRoute(String? route){
     state.initialRoute = route;
   } */
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 
 import '../../../../utils/responsive_builder.dart';
@@ -46,7 +47,7 @@ class CustomTextField extends StatefulWidget {
   final String? initialValue;
 
   /// [compact] Si esta en true el textfield se muestra mas pequeño.
-  late bool compact; //Esta seguramente se maneje internamente respecto al dispositivo. Por ahora asi como esta.
+  late final bool compact; //Esta seguramente se maneje internamente respecto al dispositivo. Por ahora asi como esta.
 
   /// [variableWidth] Si esta en true el ancho del textfield se adapta al contenido. Si es false toma un ancho fijo.
   final bool variableWidth;
@@ -79,7 +80,7 @@ class CustomTextField extends StatefulWidget {
   final bool inputAlignRight;
 
 
-  final inputFormatter;
+  final List<TextInputFormatter>? inputFormatter;
   @override
   State<CustomTextField> createState() => _CustomTextFieldState();
 }
@@ -105,7 +106,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
 
   late Color Function() cursorColor;
 
-  late Set<MaterialState> states = (widget.enabled) ? <MaterialState>{} : <MaterialState>{MaterialState.disabled};
+  late Set<WidgetState> states = (widget.enabled) ? <WidgetState>{} : <WidgetState>{WidgetState.disabled};
 
   late double? width;
 
@@ -117,10 +118,10 @@ class _CustomTextFieldState extends State<CustomTextField> {
 
   @override
   Widget build(BuildContext context) {
-    if (widget.enabled && states.contains(MaterialState.disabled)) {
-      states.remove(MaterialState.disabled);
-    } else if( !widget.enabled && !states.contains(MaterialState.disabled) ){
-      states.add(MaterialState.disabled);
+    if (widget.enabled && states.contains(WidgetState.disabled)) {
+      states.remove(WidgetState.disabled);
+    } else if( !widget.enabled && !states.contains(WidgetState.disabled) ){
+      states.add(WidgetState.disabled);
     }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

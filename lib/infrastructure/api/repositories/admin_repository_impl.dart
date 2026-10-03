@@ -5,8 +5,10 @@ import '../../../core/config/service_locator.dart';
 import '../../../core/utils/domain_error.dart';
 import '../../../core/utils/either.dart';
 import '../../../core/utils/entities/range_date.dart';
+import '../../../core/utils/repository_response.dart';
 import '../../../domain/entities/client.dart';
 import '../../../domain/entities/generic_search_item.dart';
+import '../../../domain/entities/request/page_response.dart';
 import '../../../domain/entities/session.dart';
 import '../../../domain/repositories/admin_repository.dart';
 import '../providers/admin_provider.dart';
@@ -18,9 +20,11 @@ class AdminrepositroyImpl extends BaseRepository implements AdminRepository {
   final AdminProvider adminProvider;
 
   AdminrepositroyImpl({required this.adminProvider});
-  Future<List<Client>> getClients(String search) async {
 
-    return adminProvider.getClients(search);
+  @override
+  Future<Either<DomainError, PageResponse<Client>>> getClients(String search, [int? page, String? sortKey, bool? isAscending, int? clientId]) async {
+
+    return safeCall(() => adminProvider.getClients(search, page, clientId));
 
   }
 
@@ -50,8 +54,8 @@ class AdminrepositroyImpl extends BaseRepository implements AdminRepository {
     DateFormat dateFormat = DateFormat("yyyy-MM-dd HH:mm:ss");
 
     final queryParameters = {
-      "searchType":searchType, 
-      "to":dateFormat.format(rangeDate.to!,), 
+      "searchType":searchType,
+      "to":dateFormat.format(rangeDate.to!,),
       "from": dateFormat.format(rangeDate.from!),
       "club_partition_id":clubPartitionId
     };
@@ -61,12 +65,28 @@ class AdminrepositroyImpl extends BaseRepository implements AdminRepository {
     List rawClients = result.data['clients'];
 
     List rawSessions = result.data['sessions'];
-    
+
     final clientsResult = rawClients.map((rawClient) => GenericSearchItem.client(Client.fromJson(rawClient)),);
     final sessionsResult = rawSessions.map((rawSession) => GenericSearchItem.session(Session.fromJson(rawSession)),);
 
-    
+
     return [...clientsResult, ...sessionsResult];
 
+  }
+
+  @override
+  Future<RepositoryResponse<Client>> createOrSaveClient(Map<String, dynamic> clientData) {
+    return safeCall(() async {
+      final result = await dioInstance.post("/admin/saveClient", data: {"clientData": clientData});
+
+      return Client.fromJson(result.data['client']);
+
+    });
+
+  }
+
+  @override
+  Future<RepositoryResponse<Client>> getClientById(int id) {
+    return safeCall(() => adminProvider.getClientById(id));
   }
 }

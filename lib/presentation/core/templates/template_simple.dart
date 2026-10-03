@@ -4,10 +4,11 @@ import 'package:flutter_form_builder/flutter_form_builder.dart';
 import '../../../core/presentation/components/inputs/text_fields/custom_text_field.dart';
 
 class TemplateSimple extends StatelessWidget {
+  const TemplateSimple({super.key});
+
   @override
   Widget build(BuildContext context) {
-    return Container(
-      child: Row(
+    return Row(
         children: [
           Column(
             children: [
@@ -17,13 +18,12 @@ class TemplateSimple extends StatelessWidget {
           ),
           Container()
         ],
-      ),
-    );
+      );
   }
 
   _turnsGenerator(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(10),
+      padding: const EdgeInsets.all(10),
       height: 300,
       width: 300,
       decoration: BoxDecoration(
@@ -34,36 +34,34 @@ class TemplateSimple extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              child: CustomTextField(
+            CustomTextField(
                 context,
                 labelText: 'Inicio - Fin',
               ),
-            ),
-            SizedBox(
+            const SizedBox(
               height: 10,
             ),
             ElevatedButton(
-              child: Icon(Icons.add),
+              child: const Icon(Icons.add),
               onPressed: () {},
             ),
-            Spacer(),
-            Container(
+            const Spacer(),
+            SizedBox(
               width: 100,
               child: CustomTextField(context, labelText: 'Precio'),
             ),
-            SizedBox(
+            const SizedBox(
               height: 10,
             ),
             Row(
               children: [
-                Container(
+                SizedBox(
                   width: 100,
                   child: CustomTextField(context, labelText: 'Duración'),
                 ),
-                Spacer(),
+                const Spacer(),
                 ElevatedButton(
-                  child: Text('Generar'),
+                  child: const Text('Generar'),
                   onPressed: () {},
                 ),
               ],
@@ -76,7 +74,7 @@ class TemplateSimple extends StatelessWidget {
 
   _turnCreator(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(10),
+      padding: const EdgeInsets.all(10),
       height: 300,
       width: 300,
       decoration: BoxDecoration(
@@ -88,19 +86,19 @@ class TemplateSimple extends StatelessWidget {
           children: [
             Row(
               children: [
-                Container(
+                SizedBox(
                   width: 100,
                   child: CustomTextField(context, labelText: 'Inicio'),
                 ),
-                Spacer(),
-                Container(
+                const Spacer(),
+                SizedBox(
                   width: 100,
                   child: CustomTextField(context, labelText: 'Fin'),
                 ),
               ],
             ),
-            Row(
-              children: [],
+            const Row(
+              
             )
           ],
         ),

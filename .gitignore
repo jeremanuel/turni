@@ -45,6 +45,14 @@ migrate_working_dir/
 *.ipr
 *.iws
 
+# Plataforma escaffoldeada localmente al correr `flutter run`/`flutter pub
+# get` en distintas máquinas de dev — específica de cada entorno, no del
+# proyecto.
+**/ios/Flutter/ephemeral/
+**/macos/Flutter/ephemeral/
+**/linux/flutter/ephemeral/
+**/windows/flutter/ephemeral/
+
 # Symbolication related
 app.*.symbols
 
@@ -52,3 +60,28 @@ app.*.symbols
 app.*.map.json
 
 # Android Studio will place build artifacts here
+
+# FVM Version Cache
+.fvm/
+pubspec.lock
+.vscode/settings.json
+
+# Token de dev para arrancar la app ya logueada como admin (ver
+# --dart-define-from-file en README/launch.json). Se obtiene con
+# `npm run seed:dev` en turni_mono_be o pegándolo a mano; nunca es secreto de
+# verdad (SECRET_KEY de dev), pero es específico de cada entorno local.
+dev_define.json
+ios/Runner/GeneratedPluginRegistrant.h
+ios/Runner/GeneratedPluginRegistrant.m
+linux/flutter/generated_plugin_registrant.cc
+linux/flutter/generated_plugin_registrant.h
+linux/flutter/generated_plugins.cmake
+linux/flutter/ephemeral/.plugin_symlinks/flutter_localization
+linux/flutter/ephemeral/.plugin_symlinks/flutter_secure_storage_linux
+linux/flutter/ephemeral/.plugin_symlinks/geolocator_linux
+linux/flutter/ephemeral/.plugin_symlinks/package_info_plus
+linux/flutter/ephemeral/.plugin_symlinks/url_launcher_linux
+macos/Flutter/GeneratedPluginRegistrant.swift
+windows/flutter/generated_plugin_registrant.cc
+windows/flutter/generated_plugin_registrant.h
+windows/flutter/generated_plugins.cmake

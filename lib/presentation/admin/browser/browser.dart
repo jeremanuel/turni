@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -12,7 +14,7 @@ import '../../../domain/entities/generic_search_item.dart';
 import '../../../domain/entities/session.dart';
 import '../../../domain/repositories/ia_repository.dart';
 import '../../../domain/repositories/admin_repository.dart';
-import '../bloc/session_manager_bloc.dart';
+import '../session_manager_screen/bloc/session_manager_bloc.dart';
 import '../session_manager_screen/widgets/session_manager_card.dart';
 import 'browser_options.dart';
 
@@ -96,7 +98,10 @@ class _GenericBrowserState extends State<GenericBrowser> {
  
     return result.expand((genericItemSearch){
 
-      final newDate = genericItemSearch.whenOrNull(session: (session) => session.startTime);
+      final newDate = switch (genericItemSearch) {
+        GenericSearchSession(:final session) => session.startTime,
+        _ => null,
+      };
       
       bool buildDate = false;
 
@@ -105,7 +110,10 @@ class _GenericBrowserState extends State<GenericBrowser> {
         currentDate = newDate;
       }
 
-      final widget = genericItemSearch.when(session: buildSession, client: buildClient);
+      final widget = switch (genericItemSearch) {
+        GenericSearchSession(:final session) => buildSession(session),
+        GenericSearchClient(:final client) => buildClient(client),
+      };
 
       return [ 
 
@@ -154,6 +162,7 @@ class _GenericBrowserState extends State<GenericBrowser> {
       height: 100, 
       margin: const EdgeInsets.only(bottom: 8), 
       child: SessionManagerCard(
+        height: 100,
         session: session, 
         physicalPartition: 
         session.physicalPartition!, 
