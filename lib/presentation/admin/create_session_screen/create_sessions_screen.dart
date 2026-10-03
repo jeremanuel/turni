@@ -14,14 +14,17 @@ import '../../../core/utils/types/time_interval.dart';
 import '../../../domain/entities/club_partition.dart';
 import '../../../domain/entities/create_sessions_result.dart';
 import '../../../domain/entities/physical_partition.dart';
+import '../../../domain/entities/session.dart';
 import '../../../domain/use_case/session_template/generate_preset_sessions_use_case.dart';
 import '../../core/agenda/agenda.dart';
 import '../session_manager_screen/bloc/session_manager_bloc.dart';
 import '../session_manager_screen/bloc/session_manager_event.dart';
 import 'bloc/create_sesssions_form_bloc.dart';
+import 'bloc/date_preset.dart';
 
 import 'widgets/add_session_button.dart';
 import 'widgets/agenda_edit_card.dart';
+import 'widgets/rework_styles.dart';
 
 class CreateSessionScreen extends StatefulWidget {
   const CreateSessionScreen({super.key});
@@ -40,22 +43,10 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
   static const int _customDurationOption = -1;
 
   static const _steps = [
-    _WizardStep(
-      title: '1. Plantilla de turnos',
-      subtitle: 'Define los horarios base que se van a repetir.',
-    ),
-    _WizardStep(
-      title: '2. Modalidades y particiones',
-      subtitle: 'Selecciona donde se van a crear los turnos.',
-    ),
-    _WizardStep(
-      title: '3. Rango de fechas',
-      subtitle: 'Define desde cuando y hasta cuando aplica la carga.',
-    ),
-    _WizardStep(
-      title: '4. Confirmacion',
-      subtitle: 'Revisa todo antes de crear los turnos.',
-    ),
+    _WizardStep(label: 'Horarios', title: 'Horarios', subtitle: 'Definí los bloques base que se van a repetir cada día.'),
+    _WizardStep(label: 'Canchas', title: 'Modalidades y canchas', subtitle: 'Elegí dónde se van a crear los turnos.'),
+    _WizardStep(label: 'Fechas', title: 'Rango de fechas', subtitle: 'Elegí el período en el que se repite la plantilla.'),
+    _WizardStep(label: 'Confirmar', title: 'Confirmación', subtitle: 'Revisá el total antes de crear los turnos.'),
   ];
 
   static const int _firstWizardStep = 0;
@@ -73,9 +64,25 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
     return BlocListener<CreateSesssionsFormBloc, CreateSesssionsFormState>(
       bloc: formBloc,
       listenWhen: (previous, current) =>
-          previous.savedSessions != current.savedSessions &&
-          current.savedSessions,
+          previous.isSubmitting != current.isSubmitting ||
+          (previous.savedSessions != current.savedSessions && current.savedSessions),
       listener: (context, state) async {
+        if (state.isSubmitting) {
+          showDialog<void>(
+            context: context,
+            barrierDismissible: false,
+            builder: (_) => const _SavingDialog(),
+          );
+          return;
+        }
+
+        // isSubmitting volvio a false: si el dialogo de carga esta abierto, cerrarlo.
+        if (Navigator.of(context).canPop()) {
+          Navigator.of(context).pop();
+        }
+
+        if (!state.savedSessions) return;
+
         final action = await _showBulkCreationResultDialog(context, state);
 
         if (!context.mounted) return;
@@ -98,53 +105,24 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
         child: BlocBuilder<CreateSesssionsFormBloc, CreateSesssionsFormState>(
           bloc: formBloc,
           builder: (context, state) {
-            final width = MediaQuery.sizeOf(context).width;
-            final isWide = width >= 1200;
-            final isDesktop = width >= 1024;
-
-            final content = isWide
-                ? Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        child: _buildSessionsPreviewPanel(context, state),
-                      ),
-                      const SizedBox(width: 16),
-                      SizedBox(
-                        width: 430,
-                        child: _buildWizardPanel(context, state),
-                      ),
-                    ],
-                  )
-                : Column(
-                    children: [
-                      Expanded(child: _buildWizardPanel(context, state)),
-                      const SizedBox(height: 12),
-                      SizedBox(
-                        height: 320,
-                        child: _buildSessionsPreviewPanel(context, state),
-                      ),
-                    ],
-                  );
-
-            return Padding(
-              padding: const EdgeInsets.all(12),
-              child: isDesktop
-                  ? Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        OutlinedButton.icon(
-                          onPressed: () {
-                            context.go(AppRoutes.SESSION_MANAGER_ROUTE.path);
-                          },
-                          icon: const Icon(Icons.arrow_back),
-                          label: const Text('Volver a gestor de turnos'),
-                        ),
-                        const SizedBox(height: 12),
-                        Expanded(child: content),
-                      ],
-                    )
-                  : content,
+            return ClipRRect(
+              borderRadius: BorderRadius.circular(RW.cardRadius),
+              child: Container(
+                color: RW.card,
+                child: Column(
+                  children: [
+                    _buildTopBar(context),
+                    _StepTrackerBar(
+                      steps: _steps,
+                      currentStep: _currentStep,
+                      maxReachable: _maxReachableStep(state),
+                      onStepTap: (index) => setState(() => _currentStep = index),
+                    ),
+                    const Divider(height: 1, color: RW.divider),
+                    Expanded(child: _buildWorkArea(context, state)),
+                  ],
+                ),
+              ),
             );
           },
         ),
@@ -152,85 +130,138 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
     );
   }
 
+  Widget _buildTopBar(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(28, 22, 28, 0),
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: OutlinedButton.icon(
+          onPressed: () => context.go(AppRoutes.SESSION_MANAGER_ROUTE.path),
+          style: OutlinedButton.styleFrom(
+            foregroundColor: RW.onSurfaceVariant,
+            side: const BorderSide(color: RW.outlineVariant),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(RW.buttonRadius)),
+            textStyle: RW.tStepLabel,
+          ),
+          icon: const Icon(Icons.arrow_back, size: 18),
+          label: const Text('Volver a gestor de turnos'),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildWorkArea(BuildContext context, CreateSesssionsFormState state) {
+    final width = MediaQuery.sizeOf(context).width;
+    final isWide = width >= 1000;
+
+    final left = _buildSessionsPreviewPanel(context, state);
+    final right = _buildWizardPanel(context, state);
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(28, 22, 28, 22),
+      child: isWide
+          ? Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(flex: 6, child: left),
+                const SizedBox(width: 20),
+                SizedBox(width: RW.rightPanelWidth, child: right),
+              ],
+            )
+          : Column(
+              children: [
+                Expanded(child: left),
+                const SizedBox(height: 16),
+                SizedBox(height: 420, child: right),
+              ],
+            ),
+    );
+  }
+
+  int _maxReachableStep(CreateSesssionsFormState state) {
+    var max = 0;
+    if (state.sessions.isNotEmpty) max = 1;
+    if (max >= 1 && state.selectedPhysicalPartitions.isNotEmpty) max = 2;
+    if (max >= 2 && state.interval?.initialDate != null) max = 3;
+    return max;
+  }
+
   Widget _buildWizardPanel(
     BuildContext context,
     CreateSesssionsFormState state,
   ) {
     final current = _steps[_currentStep];
-    return Card(
+    return Container(
+      decoration: BoxDecoration(
+        color: RW.panel,
+        borderRadius: BorderRadius.circular(RW.panelRadius),
+      ),
       clipBehavior: Clip.antiAlias,
       child: Column(
         children: [
           Container(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
-            color: Theme.of(context).colorScheme.surfaceContainerHighest,
+            width: double.infinity,
+            padding: const EdgeInsets.fromLTRB(20, 18, 20, 14),
+            decoration: const BoxDecoration(
+              border: Border(bottom: BorderSide(color: RW.surfaceHigh)),
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Creacion guiada de turnos',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  current.title,
-                  style: Theme.of(context).textTheme.titleSmall,
-                ),
-                Text(current.subtitle),
-                const SizedBox(height: 12),
-                LinearProgressIndicator(
-                  value: (_currentStep + 1) / _steps.length,
-                ),
+                Text(current.title, style: RW.tPanelTitle),
+                const SizedBox(height: 4),
+                Text(current.subtitle, style: RW.tPanelSubtitle),
               ],
             ),
           ),
           Expanded(
-            child: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 250),
-              child: KeyedSubtree(
-                key: ValueKey(_currentStep),
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 250),
+                child: KeyedSubtree(
+                  key: ValueKey(_currentStep),
                   child: _buildStepContent(context, state),
                 ),
               ),
             ),
           ),
-          const Divider(height: 1),
-          Padding(
-            padding: const EdgeInsets.all(16),
+          Container(
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+            decoration: const BoxDecoration(
+              border: Border(top: BorderSide(color: RW.surfaceHigh)),
+            ),
             child: Row(
               children: [
-                OutlinedButton.icon(
-                  onPressed: _currentStep == 0
+                _RWOutlinedButton(
+                  label: 'Atrás',
+                  icon: Icons.arrow_back,
+                  onPressed: _currentStep == 0 || state.isSubmitting
                       ? null
                       : () => setState(() {
                           _currentStep -= 1;
                         }),
-                  icon: const Icon(Icons.arrow_back),
-                  label: const Text('Atras'),
                 ),
-                SizedBox(width: 16),
+                const SizedBox(width: 12),
                 if (_currentStep < _steps.length - 1)
                   Expanded(
-                    child: FilledButton.icon(
+                    child: _RWFilledButton(
+                      label: 'Continuar',
+                      icon: Icons.arrow_forward,
                       onPressed: () => _onContinuePressed(context, state),
-                      icon: const Icon(Icons.arrow_forward),
-                      label: const Text('Continuar'),
                     ),
                   ),
                 if (_currentStep == _steps.length - 1)
                   Expanded(
-                    child: FilledButton.icon(
-                      onPressed: _isReadyToCreate(state)
+                    child: _RWFilledButton(
+                      label: state.isSubmitting ? 'Creando turnos...' : 'Crear turnos',
+                      icon: state.isSubmitting ? null : Icons.check_circle_outline,
+                      loading: state.isSubmitting,
+                      onPressed: _isReadyToCreate(state) && !state.isSubmitting
                           ? () => sl<CreateSesssionsFormBloc>().add(
                               const CreateSessions(),
                             )
                           : null,
-                      icon: const Icon(Icons.check_circle_outline),
-                      label: const Text('Crear turnos'),
                     ),
                   ),
               ],
@@ -264,184 +295,83 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
     CreateSesssionsFormState state,
   ) {
     final hasSessions = state.sessions.isNotEmpty;
-    final colorScheme = Theme.of(context).colorScheme;
 
     return ListView(
       children: [
         Container(
           width: double.infinity,
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: colorScheme.surfaceContainerHighest,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: colorScheme.outlineVariant),
+            color: hasSessions ? RW.primaryContainer.withValues(alpha: 0.3) : RW.surfaceHigh,
+            borderRadius: BorderRadius.circular(RW.columnRadius),
+            border: Border.all(color: hasSessions ? RW.primaryContainer : RW.outlineVariant),
           ),
           child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                height: 40,
-                width: 40,
-                decoration: BoxDecoration(
-                  color: colorScheme.primaryContainer,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(
-                  Icons.schedule_outlined,
-                  color: colorScheme.onPrimaryContainer,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Arma tu plantilla base',
-                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Puedes crear horarios manualmente o completar bloques rapidos para la manana y la tarde.',
-                      style: Theme.of(context).textTheme.bodySmall,
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 12),
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            color: colorScheme.surface,
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: colorScheme.outlineVariant),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Carga rapida por franja',
-                style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  _buildPresetFillChip(
-                    context,
-                    icon: Icons.wb_sunny_outlined,
-                    title: 'Completar toda la manana',
-                    start: const TimeOfDay(hour: 8, minute: 30),
-                    end: const TimeOfDay(hour: 13, minute: 0),
-                    label: 'manana',
-                    selectedDuration: _selectedMorningDuration,
-                    onDurationSelected: (value) {
-                      setState(() {
-                        _selectedMorningDuration = value;
-                      });
-                    },
-                  ),
-                  _buildPresetFillChip(
-                    context,
-                    icon: Icons.wb_twilight_outlined,
-                    title: 'Completar toda la tarde',
-                    start: const TimeOfDay(hour: 14, minute: 0),
-                    end: const TimeOfDay(hour: 22, minute: 30),
-                    label: 'tarde',
-                    selectedDuration: _selectedAfternoonDuration,
-                    onDurationSelected: (value) {
-                      setState(() {
-                        _selectedAfternoonDuration = value;
-                      });
-                    },
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 12),
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            color: colorScheme.surface,
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: colorScheme.outlineVariant),
-          ),
-          child: Row(
-            children: [
-              Container(
-                height: 36,
-                width: 36,
-                decoration: BoxDecoration(
-                  color: colorScheme.tertiaryContainer,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(
-                  Icons.add,
-                  color: colorScheme.onTertiaryContainer,
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  'Agregar horario manual',
-                  style: Theme.of(context).textTheme.labelLarge,
-                ),
-              ),
-              const AddSessionButton(),
-            ],
-          ),
-        ),
-        const SizedBox(height: 12),
-        AnimatedContainer(
-          duration: const Duration(milliseconds: 180),
-          width: double.infinity,
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            color: hasSessions
-                ? colorScheme.primaryContainer.withValues(alpha: 0.5)
-                : colorScheme.surfaceContainer,
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(
-              color: hasSessions
-                  ? colorScheme.primary.withValues(alpha: 0.45)
-                  : colorScheme.outlineVariant,
-            ),
-          ),
-          child: Row(
-            children: [
-              Icon(
-                hasSessions ? Icons.check_circle_outline : Icons.info_outline,
-                color: hasSessions
-                    ? colorScheme.primary
-                    : colorScheme.onSurfaceVariant,
+                hasSessions ? '✓' : 'ⓘ',
+                style: TextStyle(fontSize: 16, color: hasSessions ? RW.primary : RW.muted),
               ),
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
                   hasSessions
-                      ? '${state.sessions.length} horario(s) cargado(s) en la plantilla.'
-                      : 'Todavia no hay horarios en la plantilla.',
+                      ? '${state.sessions.length} horario(s) cargados en la plantilla.'
+                      : 'Todavía no hay horarios en la plantilla.',
+                  style: RW.tBody,
                 ),
               ),
             ],
           ),
         ),
-        const SizedBox(height: 10),
-        Text(
-          'Tip: puedes editar o eliminar cada bloque desde la vista previa de la agenda.',
-          style: Theme.of(context).textTheme.bodySmall,
+        const SizedBox(height: 16),
+        Text('Carga rápida por franja', style: RW.tLabel),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            _buildPresetFillChip(
+              context,
+              title: 'Completar mañana',
+              start: const TimeOfDay(hour: 8, minute: 30),
+              end: const TimeOfDay(hour: 13, minute: 0),
+              label: 'mañana',
+              dotColor: RW.accent90min,
+              selectedDuration: _selectedMorningDuration,
+              onDurationSelected: (value) {
+                setState(() {
+                  _selectedMorningDuration = value;
+                });
+              },
+            ),
+            _buildPresetFillChip(
+              context,
+              title: 'Completar tarde',
+              start: const TimeOfDay(hour: 14, minute: 0),
+              end: const TimeOfDay(hour: 22, minute: 30),
+              label: 'tarde',
+              dotColor: RW.accent60min,
+              selectedDuration: _selectedAfternoonDuration,
+              onDurationSelected: (value) {
+                setState(() {
+                  _selectedAfternoonDuration = value;
+                });
+              },
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                'El timeline de la izquierda es editable: clic en una hora libre agrega un turno de 60 min ahí mismo, clic en un turno lo edita o lo borra.',
+                style: RW.tSmall,
+              ),
+            ),
+            const AddSessionButton(),
+          ],
         ),
       ],
     );
@@ -481,17 +411,16 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
 
     return ListView(
       children: [
-        const Text('Modalidades'),
+        Text('Modalidades', style: RW.tLabel),
         const SizedBox(height: 10),
         Wrap(
           spacing: 8,
           runSpacing: 8,
           children: clubPartitions
               .map(
-                (partition) => FilterChip(
+                (partition) => _RWChip(
                   selected: state.selectedClubPartitions.contains(partition),
-                  label: Text(partition.clubType?.name ?? 'Modalidad'),
-                  showCheckmark: false,
+                  label: partition.clubType?.name ?? 'Modalidad',
                   onSelected: (value) => formBloc.add(
                     ChangeSelectionClubPartition(partition, value),
                   ),
@@ -500,11 +429,12 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
               .toList(),
         ),
         const SizedBox(height: 18),
-        Text(pluralPartitionLabel),
+        Text(pluralPartitionLabel, style: RW.tLabel),
         const SizedBox(height: 10),
         if (physicalPartitions.isEmpty)
           Text(
-            'Selecciona al menos una modalidad para habilitar ${pluralPartitionLabel.toLowerCase()}.',
+            'Seleccioná al menos una modalidad para habilitar ${pluralPartitionLabel.toLowerCase()}.',
+            style: RW.tSmall,
           ),
         if (physicalPartitions.isNotEmpty)
           Wrap(
@@ -512,24 +442,24 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
             runSpacing: 8,
             children: physicalPartitions
                 .map(
-                  (physicalPartition) => FilterChip(
+                  (physicalPartition) => _RWChip(
                     key: ValueKey(physicalPartition.partitionPhysicalId),
                     selected: state.selectedPhysicalPartitions.contains(
                       physicalPartition,
                     ),
-                    label: Text(
-                      PhysicalPartitionNaming.labelFromIdentifier(
-                        physicalIdentifier: physicalPartition.physicalIdentifier,
-                        partitionPhysicalId:
+                    label: PhysicalPartitionNaming.labelFromIdentifier(
+                      physicalIdentifier: physicalPartition.physicalIdentifier,
+                      partitionPhysicalId:
+                          physicalPartition.partitionPhysicalId,
+                      clubPartition: _resolveClubPartitionForPhysicalPartition(
+                            state.selectedClubPartitions,
                             physicalPartition.partitionPhysicalId,
-                        clubPartition: _resolveClubPartitionForPhysicalPartition(
-                              state.selectedClubPartitions,
-                              physicalPartition.partitionPhysicalId,
-                            ) ??
-                            defaultClubPartition,
-                      ),
+                          ) ??
+                          defaultClubPartition,
                     ),
-                    showCheckmark: false,
+                    helper: physicalPartition.minPlayers > 0
+                        ? '${physicalPartition.minPlayers}–${physicalPartition.maxPlayers ?? physicalPartition.minPlayers} jug.'
+                        : null,
                     onSelected: (value) => formBloc.add(
                       ChangeSelectionPhysicalPartition(
                         physicalPartition,
@@ -543,7 +473,12 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
         const SizedBox(height: 18),
         Text(
           'Seleccionadas: ${state.selectedPhysicalPartitions.length} ${state.selectedPhysicalPartitions.length == 1 ? singularPartitionLabel.toLowerCase() : pluralPartitionLabel.toLowerCase()}',
-          style: Theme.of(context).textTheme.bodySmall,
+          style: RW.tSmall,
+        ),
+        const SizedBox(height: 10),
+        Text(
+          'La plantilla repetida en cada cancha — ajustá cada una por separado en la vista previa: clic en una hora libre de esa columna agrega un turno solo ahí, clic en la × lo quita solo de esa cancha.',
+          style: RW.tSmall,
         ),
       ],
     );
@@ -553,86 +488,42 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
     BuildContext context,
     CreateSesssionsFormState state,
   ) {
-    final initialDate = state.interval?.initialDate;
-    final endDate = state.interval?.endDate;
-    final hasSelection = initialDate != null || endDate != null;
-    final summary = initialDate == null
-        ? 'Aun no seleccionaste una fecha.'
-        : endDate == null
-        ? DateFormat('dd/MM/yyyy').format(initialDate)
-        : '${DateFormat('dd/MM/yyyy').format(initialDate)} - ${DateFormat('dd/MM/yyyy').format(endDate)}';
-
     return ListView(
       children: [
-        Text(
-          'Selecciona el periodo de creacion',
-          style: Theme.of(
-            context,
-          ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
-        ),
-        const SizedBox(height: 6),
-        Text(
-          'Puedes elegir un solo dia o un rango completo.',
-          style: Theme.of(context).textTheme.bodySmall,
-        ),
-        const SizedBox(height: 12),
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surface,
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(
-              color: Theme.of(context).colorScheme.outlineVariant,
+        for (final preset in DatePreset.values)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: _RWSelectableTile(
+              label: preset.label,
+              selected: state.datePreset == preset,
+              onTap: () => sl<CreateSesssionsFormBloc>().add(
+                ChangeDatePreset(preset),
+              ),
             ),
           ),
-          child: Wrap(
-            children: [
-              FilterChipIntervalDate(
-                initialValue: state.interval,
-                label: 'Periodo de carga',
-                onApply: (interval) => sl<CreateSesssionsFormBloc>().add(
-                  ChangeSelectionInitialDate(interval),
+        if (state.datePreset == DatePreset.custom) ...[
+          const SizedBox(height: 8),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: RW.surface,
+              borderRadius: BorderRadius.circular(RW.surfaceRadius),
+              border: Border.all(color: RW.outlineVariant),
+            ),
+            child: Wrap(
+              children: [
+                FilterChipIntervalDate(
+                  initialValue: state.interval,
+                  label: 'Rango personalizado',
+                  onApply: (interval) => sl<CreateSesssionsFormBloc>().add(
+                    ChangeSelectionInitialDate(interval),
+                  ),
                 ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 12),
-        AnimatedContainer(
-          duration: const Duration(milliseconds: 180),
-          width: double.infinity,
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            color: hasSelection
-                ? Theme.of(context)
-                    .colorScheme
-                    .primaryContainer
-                    .withValues(alpha: 0.5)
-                : Theme.of(context).colorScheme.surfaceContainer,
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(
-              color: hasSelection
-                  ? Theme.of(context)
-                      .colorScheme
-                      .primary
-                      .withValues(alpha: 0.45)
-                  : Theme.of(context).colorScheme.outlineVariant,
+              ],
             ),
           ),
-          child: Row(
-            children: [
-              Icon(
-                hasSelection ? Icons.event_available : Icons.event_note,
-                color: hasSelection
-                    ? Theme.of(context).colorScheme.primary
-                    : Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
-              const SizedBox(width: 10),
-              Expanded(child: Text(summary)),
-            ],
-          ),
-        ),
+        ],
       ],
     );
   }
@@ -641,187 +532,364 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
     BuildContext context,
     CreateSesssionsFormState state,
   ) {
-    final initialDate = state.interval?.initialDate;
-    final endDate = state.interval?.endDate;
-
-    final int daysCount = initialDate == null
-        ? 0
-        : (endDate == null ? 1 : endDate.difference(initialDate).inDays + 1);
-    final int templateCount = state.sessions.length;
-    final int partitionsCount = state.selectedPhysicalPartitions.length;
-    final int totalSessions = templateCount * partitionsCount * daysCount;
-    final bool canEstimate =
-        templateCount > 0 && partitionsCount > 0 && daysCount > 0;
-
-    final colorScheme = Theme.of(context).colorScheme;
+    final templateCount = state.sessions.length;
+    final partitionsCount = state.selectedPhysicalPartitions.length;
 
     return ListView(
       children: [
         _SummaryTile(
           title: 'Horarios plantilla',
           value: '$templateCount',
-          helper: 'Bloques horarios configurados',
         ),
         const SizedBox(height: 10),
         _SummaryTile(
           title:
               '${PhysicalPartitionNaming.pluralFromClubPartition(_defaultClubPartitionFromState(context, state))} seleccionadas',
           value: '$partitionsCount',
-          helper: 'Donde se van a crear los turnos',
         ),
         const SizedBox(height: 10),
         _SummaryTile(
           title: 'Rango de carga',
-          value: initialDate == null
-              ? 'Sin fecha'
-              : endDate == null
-              ? DateFormat('dd/MM/yyyy').format(initialDate)
-              : '${DateFormat('dd/MM/yyyy').format(initialDate)} - ${DateFormat('dd/MM/yyyy').format(endDate)}',
-          helper: daysCount == 0
-              ? 'Periodo que se usara para crear turnos'
-              : daysCount == 1
-              ? '1 dia seleccionado'
-              : '$daysCount dias seleccionados',
+          value: state.datePreset.label,
         ),
-        const SizedBox(height: 14),
-        AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          width: double.infinity,
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: canEstimate
-                ? colorScheme.primaryContainer.withValues(alpha: 0.55)
-                : colorScheme.surfaceContainerHighest,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: canEstimate
-                  ? colorScheme.primary.withValues(alpha: 0.5)
-                  : colorScheme.outlineVariant,
-            ),
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: canEstimate
-                      ? colorScheme.primary
-                      : colorScheme.surfaceContainerHigh,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(
-                  Icons.layers_outlined,
-                  color: canEstimate
-                      ? colorScheme.onPrimary
-                      : colorScheme.onSurfaceVariant,
-                  size: 20,
-                ),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Total de turnos a crear',
-                      style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                        color: canEstimate
-                            ? colorScheme.onPrimaryContainer
-                            : colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    canEstimate
-                        ? Text(
-                            '$totalSessions turnos',
-                            style: Theme.of(
-                              context,
-                            ).textTheme.bodyMedium?.copyWith(
-                              fontWeight: FontWeight.w700,
-                              color: colorScheme.onPrimaryContainer,
-                            ),
-                          )
-                        : Text(
-                            'Completa los pasos anteriores para ver el estimado.',
-                            style: Theme.of(context).textTheme.bodySmall,
-                          ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 16),
         Text(
-          'Puedes volver atras para ajustar cualquier paso antes de confirmar.',
-          style: Theme.of(context).textTheme.bodySmall,
+          'Podés volver atrás para ajustar cualquier paso antes de confirmar.',
+          style: RW.tSmall,
         ),
       ],
     );
+  }
+
+  int? _daysCount(CreateSesssionsFormState state) {
+    final initialDate = state.interval?.initialDate;
+    final endDate = state.interval?.endDate;
+    if (initialDate == null) return null;
+    if (endDate == null) return 1;
+    return endDate.difference(initialDate).inDays + 1;
   }
 
   Widget _buildSessionsPreviewPanel(
     BuildContext context,
     CreateSesssionsFormState state,
   ) {
-    return Card(
-      clipBehavior: Clip.antiAlias,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildPreviewHeader(state),
+        const SizedBox(height: 14),
+        Expanded(child: _buildPreviewBody(context, state)),
+      ],
+    );
+  }
+
+  Widget _buildPreviewHeader(CreateSesssionsFormState state) {
+    switch (_currentStep) {
+      case 0:
+        return const _PreviewHeader(
+          title: 'Plantilla del día',
+          subtitle: 'Hacé clic en una hora libre para agregar un turno. Hacé clic en un turno para editarlo.',
+          legend: [
+            _LegendDot(color: RW.accent30min, label: '30 min'),
+            _LegendDot(color: RW.accent60min, label: '60 min'),
+            _LegendDot(color: RW.accent90min, label: '90+ min'),
+          ],
+        );
+      case 1:
+        return const _PreviewHeader(
+          title: 'Cómo se reparte entre canchas',
+          subtitle: 'La plantilla repetida en cada cancha — clic en una hora libre de esa columna agrega un turno solo ahí.',
+          legend: [
+            _LegendDot(color: RW.accent60min, label: 'de la plantilla'),
+            _LegendDot(color: RW.accentExtra, label: 'agregado en esta cancha'),
+          ],
+        );
+      case 2:
+        return const _PreviewHeader(
+          title: 'Días que incluye la carga',
+          subtitle: 'La plantilla se va a repetir en cada uno de estos días.',
+        );
+      default:
+        return const _PreviewHeader(
+          title: 'Muestra de lo que se va a crear',
+          subtitle: 'Revisá antes de confirmar — podés volver a cualquier paso.',
+        );
+    }
+  }
+
+  Widget _buildPreviewBody(BuildContext context, CreateSesssionsFormState state) {
+    switch (_currentStep) {
+      case 0:
+        return _buildTemplatePreview(state);
+      case 1:
+        return _buildCourtsPreview(state);
+      case 2:
+        return _buildDaysPreview(state);
+      default:
+        return _buildConfirmationPreview(state);
+    }
+  }
+
+  Widget _buildTemplatePreview(CreateSesssionsFormState state) {
+    return _RWSurfaceBox(
+      child: Agenda(
+        sessions: state.sessions,
+        buildCard: (session, physicalPartition, height) =>
+            AgendaEditCard(session: session),
+        partitionLabelBuilder: (physicalPartition) =>
+            PhysicalPartitionNaming.labelFromPhysicalPartition(
+          physicalPartition,
+        ),
+        physicalPartitions: [
+          PhysicalPartition(
+            partitionPhysicalId: 1,
+            clubPartitionId: 1,
+            minPlayers: 1,
+            maxPlayers: 1,
+            physicalIdentifier: 1,
+            isCover: 'true',
+            description: '',
+          ),
+        ],
+        fromDate: DateTime.now().applied(
+          TimeOfDay(hour: RW.firstHour, minute: 0),
+        ),
+        lastDate: DateTime.now().applied(
+          TimeOfDay(hour: RW.lastHour, minute: 0),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCourtsPreview(CreateSesssionsFormState state) {
+    if (state.selectedPhysicalPartitions.isEmpty) {
+      return _RWEmptyBox(message: 'Seleccioná al menos una cancha para previsualizarla aquí.');
+    }
+
+    final today = DateTime.now();
+    final previewSessions = <Session>[];
+    final meta = <Session, ({Session original, bool isExtra})>{};
+
+    for (final p in state.selectedPhysicalPartitions) {
+      final removed = state.courtRemovedSessions[p.partitionPhysicalId] ?? const <Session>[];
+      for (final s in state.sessions) {
+        if (removed.contains(s)) continue;
+        final preview = _toPreviewSession(s, p, today);
+        previewSessions.add(preview);
+        meta[preview] = (original: s, isExtra: false);
+      }
+      for (final s in state.courtExtraSessions[p.partitionPhysicalId] ?? const <Session>[]) {
+        final preview = _toPreviewSession(s, p, today);
+        previewSessions.add(preview);
+        meta[preview] = (original: s, isExtra: true);
+      }
+    }
+
+    return _RWSurfaceBox(
+      child: Agenda(
+        sessions: previewSessions,
+        physicalPartitions: state.selectedPhysicalPartitions,
+        columnWidth: RW.courtColumnWidth + 50,
+        partitionLabelBuilder: (p) => _courtColumnLabel(state, p),
+        fromDate: today.applied(TimeOfDay(hour: RW.firstHour, minute: 0)),
+        lastDate: today.applied(TimeOfDay(hour: RW.lastHour, minute: 0)),
+        onBlankSpaceTap: (partition, interval) {
+          final startTime = interval.initialDate!;
+          final newSession = Session.fromDates(
+            DateTime(today.year, today.month, today.day, startTime.hour, 0),
+            const TimeOfDay(hour: 1, minute: 0),
+          ).copyWith(partitionPhysicalId: partition.partitionPhysicalId);
+          sl<CreateSesssionsFormBloc>().add(
+            AddExtraSessionToPartition(partition.partitionPhysicalId, newSession),
+          );
+        },
+        buildCard: (session, partition, height) {
+          final info = meta[session];
+          final isExtra = info?.isExtra ?? false;
+          return _PartitionSessionCard(
+            session: session,
+            isExtra: isExtra,
+            onRemove: info == null
+                ? null
+                : () {
+                    final bloc = sl<CreateSesssionsFormBloc>();
+                    if (isExtra) {
+                      bloc.add(RemoveExtraSessionFromPartition(partition.partitionPhysicalId, info.original));
+                    } else {
+                      bloc.add(RemoveSessionFromPartition(partition.partitionPhysicalId, info.original));
+                    }
+                  },
+          );
+        },
+      ),
+    );
+  }
+
+  /// Label de columna para el preview de "Canchas" — antepone la modalidad
+  /// (ej. "Pádel") a la cancha ("cancha 1") para distinguir columnas cuando
+  /// hay varias modalidades seleccionadas a la vez, ej. "Pádel cancha 1".
+  String _courtColumnLabel(CreateSesssionsFormState state, PhysicalPartition p) {
+    final clubPartition = _resolveClubPartitionForPhysicalPartition(
+      state.selectedClubPartitions,
+      p.partitionPhysicalId,
+    );
+    final unitLabel = PhysicalPartitionNaming.labelFromIdentifier(
+      physicalIdentifier: p.physicalIdentifier,
+      partitionPhysicalId: p.partitionPhysicalId,
+      clubPartition: clubPartition,
+    );
+    final modality = clubPartition?.clubType?.name;
+    if (modality == null || modality.isEmpty) return unitLabel;
+    return '$modality ${unitLabel.toLowerCase()}';
+  }
+
+  Session _toPreviewSession(Session s, PhysicalPartition p, DateTime today) {
+    return s.copyWith(
+      partitionPhysicalId: p.partitionPhysicalId,
+      price: p.defaultSessionPrice ?? s.price,
+      startTime: DateTime(today.year, today.month, today.day, s.startTime.hour, s.startTime.minute),
+    );
+  }
+
+  Widget _buildDaysPreview(CreateSesssionsFormState state) {
+    if (state.datePreset == DatePreset.custom && state.interval?.initialDate == null) {
+      return _RWEmptyBox(message: 'Elegí fechas específicas desde "Rango personalizado", a la derecha.');
+    }
+
+    final dates = state.interval?.generateDateRange() ?? const <DateTime>[];
+    final daysCount = dates.length;
+    final preview = dates.take(14).toList();
+    final extra = daysCount - preview.length;
+
+    return SingleChildScrollView(
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            width: double.infinity,
-            color: Theme.of(context).colorScheme.surfaceContainer,
-            child: Text(
-              'Vista previa de agenda',
-              style: Theme.of(
-                context,
-              ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
+            padding: const EdgeInsets.all(18),
+            decoration: BoxDecoration(
+              color: RW.surface,
+              borderRadius: BorderRadius.circular(RW.surfaceRadius),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('$daysCount día(s)', style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: RW.primary)),
+                const SizedBox(height: 2),
+                Text('van a tener esta plantilla cargada', style: RW.tSubtitle),
+              ],
             ),
           ),
-          Expanded(
-            child: Container(
-              decoration: BoxDecoration(
-                boxShadow: [
-                  BoxShadow(
-                    blurRadius: 5,
-                    spreadRadius: 3,
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.shadow.withValues(alpha: 0.08),
+          const SizedBox(height: 14),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final d in preview)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: RW.surfaceHigh,
+                    borderRadius: BorderRadius.circular(RW.chipRadius),
+                    border: Border.all(color: RW.primaryContainer),
                   ),
-                ],
-                color: Theme.of(context).colorScheme.surface,
-              ),
-              child: Agenda(
-                sessions: state.sessions,
-                buildCard: (session, physicalPartition, height) =>
-                    AgendaEditCard(session: session),
-                partitionLabelBuilder: (physicalPartition) =>
-                    PhysicalPartitionNaming.labelFromPhysicalPartition(
-                  physicalPartition,
+                  child: Text(DateFormat('EEE dd/MM', 'es').format(d), style: const TextStyle(fontSize: 12, color: RW.onPrimaryContainer)),
                 ),
-                physicalPartitions: [
-                  PhysicalPartition(
-                    partitionPhysicalId: 1,
-                    clubPartitionId: 1,
-                    minPlayers: 1,
-                    maxPlayers: 1,
-                    physicalIdentifier: 1,
-                    isCover: 'true',
-                    description: '',
+              if (extra > 0)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: RW.panel,
+                    borderRadius: BorderRadius.circular(RW.chipRadius),
                   ),
-                ],
-                fromDate: DateTime.now().applied(
-                  const TimeOfDay(hour: 8, minute: 30),
+                  child: Text('+$extra más', style: RW.tSubtitle),
                 ),
-                lastDate: DateTime.now().applied(
-                  const TimeOfDay(hour: 22, minute: 30),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildConfirmationPreview(CreateSesssionsFormState state) {
+    final daysCount = _daysCount(state);
+    final perDayTotal = state.selectedPhysicalPartitions.fold<int>(
+      0,
+      (sum, p) => sum + state.effectiveSessionsForPartition(p.partitionPhysicalId).length,
+    );
+    final canEstimate = perDayTotal > 0 && daysCount != null && daysCount > 0;
+    final total = canEstimate ? perDayTotal * daysCount : null;
+
+    final dayLabels = state.interval?.generateDateRange() ?? const <DateTime>[];
+    final sampleDays = dayLabels.take(3).toList();
+
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(18),
+            decoration: BoxDecoration(
+              color: canEstimate ? RW.primaryContainer.withValues(alpha: 0.35) : RW.surface,
+              borderRadius: BorderRadius.circular(RW.surfaceRadius),
+              border: Border.all(color: canEstimate ? RW.primaryContainer : RW.surfaceHigh),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: canEstimate ? RW.primaryContainer : RW.panel,
+                    borderRadius: BorderRadius.circular(RW.columnRadius),
+                  ),
+                  child: Icon(Icons.layers_outlined, color: canEstimate ? RW.onPrimaryContainer : RW.mutedMore),
                 ),
-              ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Total de turnos a crear', style: RW.tBody),
+                      const SizedBox(height: 2),
+                      if (canEstimate)
+                        Text('$total turnos', style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: RW.onPrimaryContainer))
+                      else
+                        Text('Completá los pasos anteriores para ver el estimado.', style: RW.tSmall),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ),
+          if (sampleDays.isNotEmpty) ...[
+            const SizedBox(height: 14),
+            for (final day in sampleDays)
+              Container(
+                margin: const EdgeInsets.only(bottom: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                decoration: BoxDecoration(
+                  color: RW.surface,
+                  borderRadius: BorderRadius.circular(RW.columnRadius),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '${DateFormat('EEE dd/MM', 'es').format(day)} — $perDayTotal turno(s) en ${state.selectedPhysicalPartitions.length} cancha(s)',
+                      style: RW.tLabel,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      state.sessions.map((s) => DateFormat.Hm().format(s.startTime)).join(' · '),
+                      style: RW.tSmall,
+                    ),
+                  ],
+                ),
+              ),
+            if (dayLabels.length > sampleDays.length)
+              Text('y ${dayLabels.length - sampleDays.length} día(s) más con la misma plantilla…', style: RW.tSmall),
+          ],
         ],
       ),
     );
@@ -929,111 +997,87 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
       context,
       state,
     );
+    final hasIncidents = skipped.isNotEmpty;
 
     return showDialog<_BulkCreationDialogAction>(
       context: context,
       barrierDismissible: false,
       builder: (dialogContext) {
-        final colorScheme = Theme.of(dialogContext).colorScheme;
-        final textTheme = Theme.of(dialogContext).textTheme;
-        final hasIncidents = skipped.isNotEmpty;
-
-        return AlertDialog(
+        return Dialog(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-          titlePadding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
-          contentPadding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
-          actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-          title: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: hasIncidents
-                      ? colorScheme.tertiaryContainer
-                      : colorScheme.primaryContainer,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(
-                  hasIncidents ? Icons.info_outline : Icons.check_circle_outline,
-                  color: hasIncidents
-                      ? colorScheme.onTertiaryContainer
-                      : colorScheme.onPrimaryContainer,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      hasIncidents
-                          ? 'Carga completada con incidencias'
-                          : 'Carga completada',
-                      style: textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w700,
+          backgroundColor: RW.card,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 460, maxHeight: 620),
+            child: Padding(
+              padding: const EdgeInsets.all(28),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: hasIncidents ? RW.errorContainer : RW.primaryContainer,
+                          borderRadius: BorderRadius.circular(RW.columnRadius),
+                        ),
+                        child: Center(
+                          child: Text(
+                            hasIncidents ? 'ⓘ' : '✓',
+                            style: TextStyle(color: hasIncidents ? RW.onErrorContainer : RW.onPrimaryContainer, fontSize: 18),
+                          ),
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      hasIncidents
-                          ? 'Algunos turnos no se pudieron crear y requieren revision.'
-                          : 'Todos los turnos se crearon correctamente.',
-                      style: textTheme.bodySmall?.copyWith(
-                        color: colorScheme.onSurfaceVariant,
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              hasIncidents ? 'Carga completada con incidencias' : 'Carga completada',
+                              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: RW.onSurface),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              hasIncidents
+                                  ? 'Algunos turnos no se pudieron crear y requieren revisión.'
+                                  : 'Todos los turnos se crearon correctamente.',
+                              style: RW.tSubtitle,
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          content: SizedBox(
-            width: 300,
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxHeight: 520),
-              child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Wrap(
-                      spacing: 10,
-                      runSpacing: 10,
-                      children: [
-                        _ResultMetricCard(
-                          icon: Icons.playlist_add_check_circle_outlined,
+                    ],
+                  ),
+                  const SizedBox(height: 18),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _ResultMetricCard(
                           label: 'Creados',
                           value: '${state.createdCount}',
-                          accentColor: colorScheme.primary,
-                        ),
-                        _ResultMetricCard(
-                          icon: Icons.error_outline,
-                          label: 'No creados',
-                          value: '${skipped.length}',
-                          accentColor: hasIncidents
-                              ? colorScheme.error
-                              : colorScheme.outline,
-                        ),
-                      ],
-                    ),
-                    if (skipped.isNotEmpty) ...[
-                      const SizedBox(height: 14),
-                      Text(
-                        'Turnos no creados:',
-                        style: textTheme.labelLarge?.copyWith(
-                          fontWeight: FontWeight.w700,
+                          accentColor: RW.primary,
                         ),
                       ),
-                      const SizedBox(height: 10),
-                      Container(
-                        decoration: BoxDecoration(
-                          color: colorScheme.surfaceContainerLowest,
-                          borderRadius: BorderRadius.circular(14),
-                          border: Border.all(color: colorScheme.outlineVariant),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: _ResultMetricCard(
+                          label: 'No creados',
+                          value: '${skipped.length}',
+                          accentColor: hasIncidents ? RW.error : RW.mutedMore,
                         ),
-                        padding: const EdgeInsets.all(10),
+                      ),
+                    ],
+                  ),
+                  if (skipped.isNotEmpty) ...[
+                    const SizedBox(height: 18),
+                    Text('Turnos no creados:', style: RW.tLabel),
+                    const SizedBox(height: 8),
+                    Flexible(
+                      child: SingleChildScrollView(
                         child: Column(
                           children: previewItems
                               .map(
@@ -1046,38 +1090,39 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
                               .toList(),
                         ),
                       ),
-                      if (hiddenCount > 0)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 10),
-                          child: Text(
-                            'Mostrando ${previewItems.length} de ${skipped.length}. Quedaron $hiddenCount turno(s) adicionales con incidencia.',
-                            style: textTheme.bodySmall?.copyWith(
-                              color: colorScheme.onSurfaceVariant,
-                            ),
-                          ),
+                    ),
+                    if (hiddenCount > 0)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4),
+                        child: Text(
+                          'Mostrando ${previewItems.length} de ${skipped.length}. Quedaron $hiddenCount turno(s) adicionales con incidencia.',
+                          style: RW.tSmall,
                         ),
-                    ],
+                      ),
                   ],
-                ),
+                  const SizedBox(height: 18),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _RWOutlinedButton(
+                          label: 'Volver al gestor',
+                          onPressed: () => Navigator.of(dialogContext).pop(_BulkCreationDialogAction.backToCalendar),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: _RWFilledButton(
+                          label: 'Intentar de nuevo',
+                          icon: Icons.refresh,
+                          onPressed: () => Navigator.of(dialogContext).pop(_BulkCreationDialogAction.retryCreation),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
           ),
-          actions: [
-        
-            TextButton.icon(
-              onPressed: () => Navigator.of(dialogContext).pop(
-                _BulkCreationDialogAction.backToCalendar,
-              ),
-              label: const Text('Volver al calendario'),
-            ),
-            FilledButton.icon(
-              onPressed: () => Navigator.of(dialogContext).pop(
-                _BulkCreationDialogAction.retryCreation,
-              ),
-              icon: const Icon(Icons.refresh),
-              label: const Text('Intentar crear de nuevo'),
-            ),
-          ],
         );
       },
     );
@@ -1123,11 +1168,11 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
 
   Widget _buildPresetFillChip(
     BuildContext context, {
-    required IconData icon,
     required String title,
     required TimeOfDay start,
     required TimeOfDay end,
     required String label,
+    required Color dotColor,
     required int? selectedDuration,
     required ValueChanged<int> onDurationSelected,
   }) {
@@ -1171,57 +1216,29 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
           ),
         ),
       ],
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(999),
-          color: selectedDuration != null
-              ? Theme.of(context).colorScheme.primaryContainer
-              : Theme.of(context).colorScheme.surfaceContainerHigh,
-          border: Border.all(
-            color: selectedDuration != null
-                ? Theme.of(context).colorScheme.primary
-                : Theme.of(context).colorScheme.outlineVariant,
-          ),
+          borderRadius: BorderRadius.circular(RW.chipRadius),
+          color: selectedDuration != null ? RW.surfaceHigh : RW.panel,
+          border: Border.all(color: RW.outlineVariant),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              icon,
-              size: 18,
-              color: selectedDuration != null
-                  ? Theme.of(context).colorScheme.onPrimaryContainer
-                  : Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
+            Container(width: 10, height: 10, decoration: BoxDecoration(color: dotColor, shape: BoxShape.circle)),
             const SizedBox(width: 8),
-            Text(
-              title,
-              style: Theme.of(
-                context,
-              ).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w600),
-            ),
+            Text(title, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: RW.onSurface)),
             if (selectedDuration != null) ...[
               const SizedBox(width: 8),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(99),
-                  color: Theme.of(context).colorScheme.surface,
-                ),
-                child: Text(
-                  _formatDurationLabel(selectedDuration),
-                  style: Theme.of(context).textTheme.labelSmall,
-                ),
+                decoration: BoxDecoration(borderRadius: BorderRadius.circular(99), color: RW.surface),
+                child: Text(_formatDurationLabel(selectedDuration), style: RW.tSmall),
               ),
             ],
             const SizedBox(width: 4),
-            Icon(
-              Icons.keyboard_arrow_down,
-              size: 18,
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
+            const Icon(Icons.keyboard_arrow_down, size: 18, color: RW.muted),
           ],
         ),
       ),
@@ -1369,39 +1386,388 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
 enum _BulkCreationDialogAction { backToCalendar, retryCreation }
 
 class _WizardStep {
-  const _WizardStep({required this.title, required this.subtitle});
+  const _WizardStep({required this.label, required this.title, required this.subtitle});
 
+  final String label;
   final String title;
   final String subtitle;
 }
 
-class _SummaryTile extends StatelessWidget {
-  const _SummaryTile({
-    required this.title,
-    required this.value,
-    required this.helper,
+/// Barra de pasos clickeable que abarca toda la pantalla (reemplaza al
+/// titulo+barra de progreso que antes vivian solo dentro de la tarjeta
+/// derecha) — asi queda claro que izquierda y derecha responden al mismo paso.
+class _StepTrackerBar extends StatelessWidget {
+  const _StepTrackerBar({
+    required this.steps,
+    required this.currentStep,
+    required this.maxReachable,
+    required this.onStepTap,
   });
 
+  final List<_WizardStep> steps;
+  final int currentStep;
+  final int maxReachable;
+  final ValueChanged<int> onStepTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(28, 22, 28, 18),
+      child: Row(
+        children: [
+          for (var i = 0; i < steps.length; i++) ...[
+            _buildStep(i),
+            if (i < steps.length - 1)
+              Expanded(
+                child: Container(
+                  height: 1,
+                  margin: const EdgeInsets.symmetric(horizontal: 14),
+                  color: i < currentStep ? RW.primaryContainer : RW.surfaceHigh,
+                ),
+              ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStep(int index) {
+    final isCurrent = index == currentStep;
+    final isDone = index < currentStep;
+    final isLocked = index > maxReachable;
+
+    final circleBg = isCurrent ? RW.primary : isDone ? RW.primaryContainer : isLocked ? RW.card : RW.surfaceHigh;
+    final circleColor = isCurrent ? RW.onPrimary : isDone ? RW.onPrimaryContainer : isLocked ? RW.outlineVariant : RW.onSurfaceVariant;
+    final labelColor = isCurrent ? RW.onSurface : isLocked ? RW.outlineVariant : RW.onSurfaceVariant;
+
+    return InkWell(
+      onTap: isLocked ? null : () => onStepTap(index),
+      borderRadius: BorderRadius.circular(999),
+      child: Opacity(
+        opacity: isLocked ? 0.55 : 1,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 30,
+              height: 30,
+              decoration: BoxDecoration(color: circleBg, shape: BoxShape.circle),
+              alignment: Alignment.center,
+              child: isDone
+                  ? Text('✓', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: circleColor))
+                  : Text('${index + 1}', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: circleColor)),
+            ),
+            const SizedBox(width: 10),
+            Text(
+              steps[index].label,
+              style: TextStyle(fontSize: 13, fontWeight: isCurrent ? FontWeight.w700 : FontWeight.w500, color: labelColor),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _PreviewHeader extends StatelessWidget {
+  const _PreviewHeader({required this.title, required this.subtitle, this.legend = const []});
+
   final String title;
-  final String value;
-  final String helper;
+  final String subtitle;
+  final List<_LegendDot> legend;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(title, style: RW.tTitle),
+        const SizedBox(height: 2),
+        Text(subtitle, style: RW.tSubtitle),
+        if (legend.isNotEmpty) ...[
+          const SizedBox(height: 8),
+          Wrap(spacing: 14, children: legend),
+        ],
+      ],
+    );
+  }
+}
+
+class _LegendDot extends StatelessWidget {
+  const _LegendDot({required this.color, required this.label});
+
+  final Color color;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(width: 8, height: 8, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
+        const SizedBox(width: 5),
+        Text(label, style: RW.tSmall),
+      ],
+    );
+  }
+}
+
+class _RWSurfaceBox extends StatelessWidget {
+  const _RWSurfaceBox({required this.child});
+
+  final Widget child;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(12),
+        color: RW.surface,
+        borderRadius: BorderRadius.circular(RW.surfaceRadius),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: child,
+    );
+  }
+}
+
+class _RWEmptyBox extends StatelessWidget {
+  const _RWEmptyBox({required this.message});
+
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: RW.surface,
+        borderRadius: BorderRadius.circular(RW.surfaceRadius),
+        border: Border.all(color: RW.outlineVariant, style: BorderStyle.solid),
+      ),
+      alignment: Alignment.center,
+      padding: const EdgeInsets.all(24),
+      child: Text(message, style: RW.tSubtitle, textAlign: TextAlign.center),
+    );
+  }
+}
+
+/// Card de un turno en la vista previa por cancha (paso "Canchas") — muestra
+/// precio (de la cancha, no de la plantilla) y permite quitarlo solo de esa
+/// cancha. Distingue visualmente si viene de la plantilla o fue agregado
+/// solo en esta cancha (ver leyenda del header).
+class _PartitionSessionCard extends StatelessWidget {
+  const _PartitionSessionCard({
+    required this.session,
+    required this.isExtra,
+    required this.onRemove,
+  });
+
+  final Session session;
+  final bool isExtra;
+  final VoidCallback? onRemove;
+
+  @override
+  Widget build(BuildContext context) {
+    final end = session.endTime as DateTime;
+    final label = '${DateFormat.Hm().format(session.startTime)}–${DateFormat.Hm().format(end)}'
+        ' · \$${session.price.toStringAsFixed(0)}';
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 4),
+      decoration: BoxDecoration(
+        color: RW.panel,
+        borderRadius: BorderRadius.circular(RW.blockRadiusSmall),
+        border: Border(left: BorderSide(color: isExtra ? RW.accentExtra : RW.accent60min, width: 3)),
+      ),
+      padding: const EdgeInsets.fromLTRB(8, 4, 4, 4),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              label,
+              style: const TextStyle(fontSize: 10, color: RW.onSurface),
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
+            ),
+          ),
+          if (onRemove != null)
+            InkWell(
+              onTap: onRemove,
+              borderRadius: BorderRadius.circular(999),
+              child: const Padding(
+                padding: EdgeInsets.all(2),
+                child: Text('×', style: TextStyle(fontSize: 12, color: RW.onSurface)),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _RWChip extends StatelessWidget {
+  const _RWChip({super.key, required this.selected, required this.label, this.helper, required this.onSelected});
+
+  final bool selected;
+  final String label;
+  final String? helper;
+  final ValueChanged<bool> onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: () => onSelected(!selected),
+      borderRadius: BorderRadius.circular(RW.chipRadius),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: selected ? RW.primaryContainer : RW.panel,
+          borderRadius: BorderRadius.circular(RW.chipRadius),
+          border: Border.all(color: selected ? RW.primaryContainer : RW.outlineVariant),
+        ),
+        child: Text(
+          helper == null ? label : '$label · $helper',
+          style: TextStyle(fontSize: 12, color: selected ? RW.onPrimaryContainer : RW.onSurfaceVariant),
+        ),
+      ),
+    );
+  }
+}
+
+class _RWSelectableTile extends StatelessWidget {
+  const _RWSelectableTile({required this.label, required this.selected, required this.onTap});
+
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(RW.columnRadius),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        decoration: BoxDecoration(
+          color: selected ? RW.primaryContainer : RW.surface,
+          borderRadius: BorderRadius.circular(RW.columnRadius),
+          border: Border.all(color: selected ? RW.primaryContainer : RW.surfaceHigh),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(label, style: TextStyle(fontSize: 13, color: selected ? RW.onPrimaryContainer : RW.onSurfaceVariant)),
+            if (selected) const Text('✓', style: TextStyle(color: RW.onPrimaryContainer)),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _RWOutlinedButton extends StatelessWidget {
+  const _RWOutlinedButton({required this.label, this.icon, required this.onPressed});
+
+  final String label;
+  final IconData? icon;
+  final VoidCallback? onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final disabled = onPressed == null;
+    return OutlinedButton.icon(
+      onPressed: onPressed,
+      style: OutlinedButton.styleFrom(
+        foregroundColor: disabled ? RW.outlineVariant : RW.onSurfaceVariant,
+        side: BorderSide(color: RW.outlineVariant),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(RW.buttonRadius)),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        textStyle: RW.tButton,
+      ),
+      icon: icon == null ? const SizedBox.shrink() : Icon(icon, size: 16),
+      label: Text(label),
+    );
+  }
+}
+
+class _RWFilledButton extends StatelessWidget {
+  const _RWFilledButton({required this.label, this.icon, this.loading = false, required this.onPressed});
+
+  final String label;
+  final IconData? icon;
+  final bool loading;
+  final VoidCallback? onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final disabled = onPressed == null;
+    return FilledButton.icon(
+      onPressed: onPressed,
+      style: FilledButton.styleFrom(
+        backgroundColor: disabled ? RW.surfaceHigh : RW.primary,
+        foregroundColor: disabled ? RW.mutedMore : RW.onPrimary,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(RW.buttonRadius)),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        textStyle: RW.tButton,
+      ),
+      icon: loading
+          ? SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: disabled ? RW.mutedMore : RW.onPrimary))
+          : (icon == null ? const SizedBox.shrink() : Icon(icon, size: 16)),
+      label: Text(label),
+    );
+  }
+}
+
+class _SavingDialog extends StatelessWidget {
+  const _SavingDialog();
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      backgroundColor: RW.card,
+      child: Padding(
+        padding: const EdgeInsets.all(36),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(
+              width: 40,
+              height: 40,
+              child: CircularProgressIndicator(strokeWidth: 4, color: RW.primary),
+            ),
+            const SizedBox(height: 18),
+            const Text('Creando turnos…', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: RW.onSurface)),
+            const SizedBox(height: 6),
+            Text('Validando superposiciones con turnos existentes.', style: RW.tSubtitle, textAlign: TextAlign.center),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SummaryTile extends StatelessWidget {
+  const _SummaryTile({required this.title, required this.value});
+
+  final String title;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: RW.surface,
+        borderRadius: BorderRadius.circular(RW.columnRadius),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title, style: Theme.of(context).textTheme.labelLarge),
-          const SizedBox(height: 4),
-          Text(value, style: Theme.of(context).textTheme.titleMedium),
-          const SizedBox(height: 4),
-          Text(helper, style: Theme.of(context).textTheme.bodySmall),
+          Text(title, style: RW.tSmall),
+          const SizedBox(height: 2),
+          Text(value, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: RW.onSurface)),
         ],
       ),
     );
@@ -1419,24 +1785,20 @@ class _SkippedSessionTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
     final date = DateFormat('dd/MM/yyyy').format(item.startTime);
-    final details = item.reason.label;
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.all(12),
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: colorScheme.outlineVariant),
+        color: RW.surface,
+        borderRadius: BorderRadius.circular(RW.columnRadius),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Wrap(
-            spacing: 8,
+            spacing: 6,
             runSpacing: 6,
             children: [
               _MetaPill(text: date),
@@ -1444,13 +1806,8 @@ class _SkippedSessionTile extends StatelessWidget {
               _MetaPill(text: physicalPartitionDisplayLabel ?? '-'),
             ],
           ),
-          const SizedBox(height: 8),
-          Text(
-            details,
-            style: textTheme.bodySmall?.copyWith(
-              color: colorScheme.onSurfaceVariant,
-            ),
-          ),
+          const SizedBox(height: 6),
+          Text(item.reason.label, style: const TextStyle(fontSize: 11, color: RW.error)),
         ],
       ),
     );
@@ -1459,47 +1816,29 @@ class _SkippedSessionTile extends StatelessWidget {
 
 class _ResultMetricCard extends StatelessWidget {
   const _ResultMetricCard({
-    required this.icon,
     required this.label,
     required this.value,
     required this.accentColor,
   });
 
-  final IconData icon;
   final String label;
   final String value;
   final Color accentColor;
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
     return Container(
-      constraints: const BoxConstraints(minWidth: 150),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: colorScheme.outlineVariant),
+        color: RW.surface,
+        borderRadius: BorderRadius.circular(RW.columnRadius),
       ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, size: 18, color: accentColor),
-          const SizedBox(width: 8),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(label, style: Theme.of(context).textTheme.labelSmall),
-              Text(
-                value,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ],
-          ),
+          Text(label, style: RW.tSmall),
+          const SizedBox(height: 2),
+          Text(value, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: accentColor)),
         ],
       ),
     );
@@ -1513,15 +1852,13 @@ class _MetaPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(99),
+        color: RW.panel,
+        borderRadius: BorderRadius.circular(RW.chipRadius),
       ),
-      child: Text(text, style: Theme.of(context).textTheme.labelSmall),
+      child: Text(text, style: const TextStyle(fontSize: 10, color: RW.onSurfaceVariant)),
     );
   }
 }

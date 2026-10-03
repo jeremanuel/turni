@@ -5,7 +5,6 @@ class SymbolString {
     switch (symbol) {
       case Symbol.admiration:
         return '%21';
-
     }
   }
 }

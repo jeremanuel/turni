@@ -197,7 +197,39 @@ print("test desde bloc:");
     on<SetSelectedSession>((event, emit) {
       emit(state.copyWith(selectedSession: event.session));
     });
-    
+
+    on<AcceptSessionRequest>((event, emit) async {
+      final result = await _sessionUserCases.acceptSessionRequest(event.sessionId);
+
+      final actionError = result.whenOrNull(left: (failure) => failure);
+
+      // Se refresca la lista tanto si tuvo éxito (para reflejar CONFIRMED)
+      // como si falló por STALE_STATUS (para reflejar el estado real que
+      // ganó la carrera, ej. otro admin ya la resolvió).
+      final sessions = await _sessionUserCases.getSessions(state.currentDate);
+
+      emit(
+        state.copyWith(
+          sessions: sessions,
+          actionError: actionError,
+        )
+      );
+    });
+
+    on<RejectSessionRequest>((event, emit) async {
+      final result = await _sessionUserCases.rejectSessionRequest(event.sessionId);
+
+      final actionError = result.whenOrNull(left: (failure) => failure);
+
+      final sessions = await _sessionUserCases.getSessions(state.currentDate);
+
+      emit(
+        state.copyWith(
+          sessions: sessions,
+          actionError: actionError,
+        )
+      );
+    });
 
     if(sessionId == null) add(SessionLoadEvent());
 

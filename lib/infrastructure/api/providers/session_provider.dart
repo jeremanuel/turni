@@ -148,7 +148,12 @@ class SessionProvider {
     final body = {
       "sessions": sessions,
       "physical_partitions": physicalPartitions,
-      "dates": dates.map((el) => el.toString()).toList()
+      // .toUtc().toIso8601String() en vez de .toString(): este último no
+      // agrega offset ("2026-01-01 00:00:00.000"), y el backend
+      // (CreateSessions.ts) lo interpreta tal cual sin saber a qué zona
+      // horaria corresponde. Mismo motivo que el toJson de Session.startTime
+      // (ver ValueTransformers.toJsonDateTimeUtc).
+      "dates": dates.map((el) => el.toUtc().toIso8601String()).toList()
     };
 
     final response = await dioInstance.post("/admin/sessions", data: body);
@@ -165,26 +170,44 @@ class SessionProvider {
 
       return Session.fromJson(response.data);
 
-    } catch (e) {      
-      return Session.fromJson({});      
+    } catch (e) {
+      return Session.fromJson({});
     }
   }
 
   Future<Client?> reservateSession(int sessionId, Client client) async {
 
-  try { 
+  try {
 
 
       final response = await dioInstance.post("/admin/reserve/$sessionId", data: {"client": client.toJson()});
-      
+
       return Client.fromJson(response.data['client']);
 
-    } catch (e) {      
+    } catch (e) {
       print(e);
     }
   return null;
 
   }
 
-  
+  /// Acepta una solicitud de turno PENDING. A diferencia de otros métodos de
+  /// este provider, deja que el `DioException` se propague en vez de
+  /// atraparlo acá — el repository (`SessionRepositoryImplementation`) es
+  /// quien lo traduce a un `DomainError` explícito, porque necesita
+  /// distinguir el 409 `STALE_STATUS` para mostrar un mensaje claro.
+  Future<Map<String, dynamic>> acceptSession(int sessionId) async {
+    final response = await dioInstance.post("/admin/sessions/$sessionId/accept");
+
+    return response.data as Map<String, dynamic>;
+  }
+
+  /// Rechaza una solicitud de turno PENDING (libera el slot). Mismo
+  /// comportamiento que [acceptSession] respecto a errores.
+  Future<Map<String, dynamic>> rejectSession(int sessionId) async {
+    final response = await dioInstance.post("/admin/sessions/$sessionId/reject");
+
+    return response.data as Map<String, dynamic>;
+  }
+
 }

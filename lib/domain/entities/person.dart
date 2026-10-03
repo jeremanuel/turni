@@ -26,8 +26,6 @@ class Person {
   final DateTime? birdDate;
   final String? observation;
 
-  
-
   factory Person.fromJson(Map<String, dynamic> json) => _$PersonFromJson(json);
 
 

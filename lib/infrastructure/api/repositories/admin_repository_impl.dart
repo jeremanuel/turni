@@ -22,11 +22,30 @@ class AdminrepositroyImpl extends BaseRepository implements AdminRepository {
   AdminrepositroyImpl({required this.adminProvider});
 
   @override
-
   Future<Either<DomainError, PageResponse<Client>>> getClients(String search, [int? page, String? sortKey, bool? isAscending, int? clientId]) async {
 
     return safeCall(() => adminProvider.getClients(search, page, clientId));
 
+  }
+
+  @override
+  Future<Either<DomainError, int>> getPendingRequestTtlMinutes() {
+    return safeCall<int>(() async {
+      final response = await dioInstance.get("/admin/settings");
+
+      return (response.data['pending_request_ttl_minutes'] as num).toInt();
+    });
+  }
+
+  @override
+  Future<Either<DomainError, int>> updatePendingRequestTtlMinutes(int minutes) {
+    return safeCall<int>(() async {
+      final response = await dioInstance.put("/admin/settings", data: {
+        "pending_request_ttl_minutes": minutes,
+      });
+
+      return (response.data['pending_request_ttl_minutes'] as num).toInt();
+    });
   }
 
   @override
@@ -35,8 +54,8 @@ class AdminrepositroyImpl extends BaseRepository implements AdminRepository {
     DateFormat dateFormat = DateFormat("yyyy-MM-dd HH:mm:ss");
 
     final queryParameters = {
-      "searchType":searchType, 
-      "to":dateFormat.format(rangeDate.to!,), 
+      "searchType":searchType,
+      "to":dateFormat.format(rangeDate.to!,),
       "from": dateFormat.format(rangeDate.from!),
       "club_partition_id":clubPartitionId
     };
@@ -46,15 +65,15 @@ class AdminrepositroyImpl extends BaseRepository implements AdminRepository {
     List rawClients = result.data['clients'];
 
     List rawSessions = result.data['sessions'];
-    
+
     final clientsResult = rawClients.map((rawClient) => GenericSearchItem.client(Client.fromJson(rawClient)),);
     final sessionsResult = rawSessions.map((rawSession) => GenericSearchItem.session(Session.fromJson(rawSession)),);
 
-    
+
     return [...clientsResult, ...sessionsResult];
 
   }
-  
+
   @override
   Future<RepositoryResponse<Client>> createOrSaveClient(Map<String, dynamic> clientData) {
     return safeCall(() async {
@@ -65,7 +84,7 @@ class AdminrepositroyImpl extends BaseRepository implements AdminRepository {
     });
 
   }
-  
+
   @override
   Future<RepositoryResponse<Client>> getClientById(int id) {
     return safeCall(() => adminProvider.getClientById(id));

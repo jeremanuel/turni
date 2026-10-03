@@ -8,6 +8,7 @@ import '../../../../presentation/admin/session_manager_screen/widgets/calendar_s
 import '../../../../presentation/admin/session_manager_screen/utils/session_manager_add_page_builder.dart';
 import '../../../../presentation/admin/session_manager_screen/utils/session_manager_reserve_page_builder.dart';
 import '../../../../presentation/admin/create_session_screen/create_sessions_screen.dart';
+import '../../../../presentation/admin/settings_screen/admin_settings_page.dart';
 import '../app_router.dart';
 import '../app_routes.dart';
 
@@ -61,7 +62,8 @@ StatefulShellBranch sessionShellBranch() {
             name: AppRoutes.ADD_SESSIONS_MASSIVE_ROUTE.name,
             redirect: setCurrentRoute,
             builder: (context, state) => const CreateSessionScreen(),
-          )
+          ),
+          
         ],
       ),
     ]);

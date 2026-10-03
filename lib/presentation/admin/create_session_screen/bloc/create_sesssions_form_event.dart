@@ -11,7 +11,8 @@ sealed class CreateSesssionsFormEvent with _$CreateSesssionsFormEvent {
   const factory CreateSesssionsFormEvent.editSession(Session oldSession, Session newSession) = EditSession;
   const factory CreateSesssionsFormEvent.seleteSession(Session session) = DeleteSession;
   const factory CreateSesssionsFormEvent.createSessions() = CreateSessions;
-
-
-
+  const factory CreateSesssionsFormEvent.changeDatePreset(DatePreset preset) = ChangeDatePreset;
+  const factory CreateSesssionsFormEvent.removeSessionFromPartition(int partitionPhysicalId, Session session) = RemoveSessionFromPartition;
+  const factory CreateSesssionsFormEvent.addExtraSessionToPartition(int partitionPhysicalId, Session session) = AddExtraSessionToPartition;
+  const factory CreateSesssionsFormEvent.removeExtraSessionFromPartition(int partitionPhysicalId, Session session) = RemoveExtraSessionFromPartition;
 }

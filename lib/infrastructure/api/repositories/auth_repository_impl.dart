@@ -35,4 +35,14 @@ class AuthRepositoryImpl extends AuthRepository {
   Future removeToken() {
     return LocalStorage.remove(LocalStorage.TOKEN_KEY);
   }
+
+  @override
+  Future<bool> registerDeviceToken(String token, String platform) {
+    return authProvider.registerDeviceToken(token, platform);
+  }
+
+  @override
+  Future<bool> unregisterDeviceToken(String token) {
+    return authProvider.unregisterDeviceToken(token);
+  }
 }

@@ -6,6 +6,7 @@ import '../entities/create_sessions_result.dart';
 import '../entities/extra.dart';
 import '../entities/payment/payment.dart';
 import '../entities/session.dart';
+import '../entities/session_status.dart';
 
 abstract class SessionRepository {
   Future<List<Session>> getSessions(DateTime date);
@@ -35,4 +36,8 @@ abstract class SessionRepository {
     Future<bool> deleteSession(int sessionId);
 
     Future<bool> cancelSessionReservation(int sessionId);
+
+  Future<Either<DomainError, SessionStatus>> acceptSessionRequest(int sessionId);
+
+  Future<Either<DomainError, SessionStatus>> rejectSessionRequest(int sessionId);
 }

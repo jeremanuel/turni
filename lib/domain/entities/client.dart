@@ -1,4 +1,4 @@
-
+import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 import '../../core/utils/value_transformers.dart';
@@ -29,7 +29,7 @@ sealed class Client with _$Client {
     List<ClientSubscription>? clientSubscriptions
 
   }) = _Client;
-  
+
 
   Client._();
 
@@ -37,6 +37,5 @@ sealed class Client with _$Client {
 
   factory Client.fromJson(Map<String, dynamic> json) => _$ClientFromJson(json);
 
-  
 }
 

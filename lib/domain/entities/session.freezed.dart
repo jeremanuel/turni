@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$Session {
 
-@JsonKey(name: "session_id") int get sessionId;@JsonKey(name: "created_at") DateTime get createdAt;@JsonKey(name: "start_time", fromJson: ValueTransformers.fromJsonDateTimeLocale) DateTime get startTime;@JsonKey(defaultValue: 90) int get duration;@JsonKey(name: "client_id") int? get clientId;@JsonKey(fromJson: ValueTransformers.fromJsonDouble) double get price;@JsonKey(name: "admin_creator_id") int? get adminCreatorId;@JsonKey(name: "partition_physical_id") int get partitionPhysicalId;@JsonKey(name: "club_name") String? get clubName;@JsonKey(name: "club_type_name") String? get clubTypeName;@JsonKey(includeIfNull: false) Client? get client;@JsonKey(includeIfNull: false) List<Payment>? get payments;@JsonKey(includeIfNull: false) List<Extra>? get extras;@JsonKey(name: "partition_physical", includeIfNull: false) PhysicalPartition? get physicalPartition;
+@JsonKey(name: "session_id") int get sessionId;@JsonKey(name: "created_at") DateTime get createdAt;@JsonKey(name: "start_time", fromJson: ValueTransformers.fromJsonDateTimeLocale, toJson: ValueTransformers.toJsonDateTimeUtc) DateTime get startTime;@JsonKey(defaultValue: 90) int get duration;@JsonKey(name: "client_id") int? get clientId;@JsonKey(fromJson: ValueTransformers.fromJsonDouble) double get price;@JsonKey(name: "admin_creator_id") int? get adminCreatorId;@JsonKey(name: "partition_physical_id") int get partitionPhysicalId;@JsonKey(name: "club_name") String? get clubName;@JsonKey(name: "club_type_name") String? get clubTypeName;@JsonKey(name: "status", fromJson: SessionStatusTransformers.fromJson, toJson: SessionStatusTransformers.toJson) SessionStatus? get status;@JsonKey(includeIfNull: false) Client? get client;@JsonKey(includeIfNull: false) List<Payment>? get payments;@JsonKey(includeIfNull: false) List<Extra>? get extras;@JsonKey(name: "partition_physical", includeIfNull: false) PhysicalPartition? get physicalPartition;
 /// Create a copy of Session
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $SessionCopyWith<Session> get copyWith => _$SessionCopyWithImpl<Session>(this as
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Session&&(identical(other.sessionId, sessionId) || other.sessionId == sessionId)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.startTime, startTime) || other.startTime == startTime)&&(identical(other.duration, duration) || other.duration == duration)&&(identical(other.clientId, clientId) || other.clientId == clientId)&&(identical(other.price, price) || other.price == price)&&(identical(other.adminCreatorId, adminCreatorId) || other.adminCreatorId == adminCreatorId)&&(identical(other.partitionPhysicalId, partitionPhysicalId) || other.partitionPhysicalId == partitionPhysicalId)&&(identical(other.clubName, clubName) || other.clubName == clubName)&&(identical(other.clubTypeName, clubTypeName) || other.clubTypeName == clubTypeName)&&(identical(other.client, client) || other.client == client)&&const DeepCollectionEquality().equals(other.payments, payments)&&const DeepCollectionEquality().equals(other.extras, extras)&&(identical(other.physicalPartition, physicalPartition) || other.physicalPartition == physicalPartition));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Session&&(identical(other.sessionId, sessionId) || other.sessionId == sessionId)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.startTime, startTime) || other.startTime == startTime)&&(identical(other.duration, duration) || other.duration == duration)&&(identical(other.clientId, clientId) || other.clientId == clientId)&&(identical(other.price, price) || other.price == price)&&(identical(other.adminCreatorId, adminCreatorId) || other.adminCreatorId == adminCreatorId)&&(identical(other.partitionPhysicalId, partitionPhysicalId) || other.partitionPhysicalId == partitionPhysicalId)&&(identical(other.clubName, clubName) || other.clubName == clubName)&&(identical(other.clubTypeName, clubTypeName) || other.clubTypeName == clubTypeName)&&(identical(other.status, status) || other.status == status)&&(identical(other.client, client) || other.client == client)&&const DeepCollectionEquality().equals(other.payments, payments)&&const DeepCollectionEquality().equals(other.extras, extras)&&(identical(other.physicalPartition, physicalPartition) || other.physicalPartition == physicalPartition));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,sessionId,createdAt,startTime,duration,clientId,price,adminCreatorId,partitionPhysicalId,clubName,clubTypeName,client,const DeepCollectionEquality().hash(payments),const DeepCollectionEquality().hash(extras),physicalPartition);
+int get hashCode => Object.hash(runtimeType,sessionId,createdAt,startTime,duration,clientId,price,adminCreatorId,partitionPhysicalId,clubName,clubTypeName,status,client,const DeepCollectionEquality().hash(payments),const DeepCollectionEquality().hash(extras),physicalPartition);
 
 @override
 String toString() {
-  return 'Session(sessionId: $sessionId, createdAt: $createdAt, startTime: $startTime, duration: $duration, clientId: $clientId, price: $price, adminCreatorId: $adminCreatorId, partitionPhysicalId: $partitionPhysicalId, clubName: $clubName, clubTypeName: $clubTypeName, client: $client, payments: $payments, extras: $extras, physicalPartition: $physicalPartition)';
+  return 'Session(sessionId: $sessionId, createdAt: $createdAt, startTime: $startTime, duration: $duration, clientId: $clientId, price: $price, adminCreatorId: $adminCreatorId, partitionPhysicalId: $partitionPhysicalId, clubName: $clubName, clubTypeName: $clubTypeName, status: $status, client: $client, payments: $payments, extras: $extras, physicalPartition: $physicalPartition)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $SessionCopyWith<$Res>  {
   factory $SessionCopyWith(Session value, $Res Function(Session) _then) = _$SessionCopyWithImpl;
 @useResult
 $Res call({
-@JsonKey(name: "session_id") int sessionId,@JsonKey(name: "created_at") DateTime createdAt,@JsonKey(name: "start_time", fromJson: ValueTransformers.fromJsonDateTimeLocale) DateTime startTime,@JsonKey(defaultValue: 90) int duration,@JsonKey(name: "client_id") int? clientId,@JsonKey(fromJson: ValueTransformers.fromJsonDouble) double price,@JsonKey(name: "admin_creator_id") int? adminCreatorId,@JsonKey(name: "partition_physical_id") int partitionPhysicalId,@JsonKey(name: "club_name") String? clubName,@JsonKey(name: "club_type_name") String? clubTypeName,@JsonKey(includeIfNull: false) Client? client,@JsonKey(includeIfNull: false) List<Payment>? payments,@JsonKey(includeIfNull: false) List<Extra>? extras,@JsonKey(name: "partition_physical", includeIfNull: false) PhysicalPartition? physicalPartition
+@JsonKey(name: "session_id") int sessionId,@JsonKey(name: "created_at") DateTime createdAt,@JsonKey(name: "start_time", fromJson: ValueTransformers.fromJsonDateTimeLocale, toJson: ValueTransformers.toJsonDateTimeUtc) DateTime startTime,@JsonKey(defaultValue: 90) int duration,@JsonKey(name: "client_id") int? clientId,@JsonKey(fromJson: ValueTransformers.fromJsonDouble) double price,@JsonKey(name: "admin_creator_id") int? adminCreatorId,@JsonKey(name: "partition_physical_id") int partitionPhysicalId,@JsonKey(name: "club_name") String? clubName,@JsonKey(name: "club_type_name") String? clubTypeName,@JsonKey(name: "status", fromJson: SessionStatusTransformers.fromJson, toJson: SessionStatusTransformers.toJson) SessionStatus? status,@JsonKey(includeIfNull: false) Client? client,@JsonKey(includeIfNull: false) List<Payment>? payments,@JsonKey(includeIfNull: false) List<Extra>? extras,@JsonKey(name: "partition_physical", includeIfNull: false) PhysicalPartition? physicalPartition
 });
 
 
@@ -65,7 +65,7 @@ class _$SessionCopyWithImpl<$Res>
 
 /// Create a copy of Session
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? sessionId = null,Object? createdAt = null,Object? startTime = null,Object? duration = null,Object? clientId = freezed,Object? price = null,Object? adminCreatorId = freezed,Object? partitionPhysicalId = null,Object? clubName = freezed,Object? clubTypeName = freezed,Object? client = freezed,Object? payments = freezed,Object? extras = freezed,Object? physicalPartition = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? sessionId = null,Object? createdAt = null,Object? startTime = null,Object? duration = null,Object? clientId = freezed,Object? price = null,Object? adminCreatorId = freezed,Object? partitionPhysicalId = null,Object? clubName = freezed,Object? clubTypeName = freezed,Object? status = freezed,Object? client = freezed,Object? payments = freezed,Object? extras = freezed,Object? physicalPartition = freezed,}) {
   return _then(_self.copyWith(
 sessionId: null == sessionId ? _self.sessionId : sessionId // ignore: cast_nullable_to_non_nullable
 as int,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
@@ -77,7 +77,8 @@ as double,adminCreatorId: freezed == adminCreatorId ? _self.adminCreatorId : adm
 as int?,partitionPhysicalId: null == partitionPhysicalId ? _self.partitionPhysicalId : partitionPhysicalId // ignore: cast_nullable_to_non_nullable
 as int,clubName: freezed == clubName ? _self.clubName : clubName // ignore: cast_nullable_to_non_nullable
 as String?,clubTypeName: freezed == clubTypeName ? _self.clubTypeName : clubTypeName // ignore: cast_nullable_to_non_nullable
-as String?,client: freezed == client ? _self.client : client // ignore: cast_nullable_to_non_nullable
+as String?,status: freezed == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
+as SessionStatus?,client: freezed == client ? _self.client : client // ignore: cast_nullable_to_non_nullable
 as Client?,payments: freezed == payments ? _self.payments : payments // ignore: cast_nullable_to_non_nullable
 as List<Payment>?,extras: freezed == extras ? _self.extras : extras // ignore: cast_nullable_to_non_nullable
 as List<Extra>?,physicalPartition: freezed == physicalPartition ? _self.physicalPartition : physicalPartition // ignore: cast_nullable_to_non_nullable
@@ -187,10 +188,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@JsonKey(name: "session_id")  int sessionId, @JsonKey(name: "created_at")  DateTime createdAt, @JsonKey(name: "start_time", fromJson: ValueTransformers.fromJsonDateTimeLocale)  DateTime startTime, @JsonKey(defaultValue: 90)  int duration, @JsonKey(name: "client_id")  int? clientId, @JsonKey(fromJson: ValueTransformers.fromJsonDouble)  double price, @JsonKey(name: "admin_creator_id")  int? adminCreatorId, @JsonKey(name: "partition_physical_id")  int partitionPhysicalId, @JsonKey(name: "club_name")  String? clubName, @JsonKey(name: "club_type_name")  String? clubTypeName, @JsonKey(includeIfNull: false)  Client? client, @JsonKey(includeIfNull: false)  List<Payment>? payments, @JsonKey(includeIfNull: false)  List<Extra>? extras, @JsonKey(name: "partition_physical", includeIfNull: false)  PhysicalPartition? physicalPartition)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@JsonKey(name: "session_id")  int sessionId, @JsonKey(name: "created_at")  DateTime createdAt, @JsonKey(name: "start_time", fromJson: ValueTransformers.fromJsonDateTimeLocale, toJson: ValueTransformers.toJsonDateTimeUtc)  DateTime startTime, @JsonKey(defaultValue: 90)  int duration, @JsonKey(name: "client_id")  int? clientId, @JsonKey(fromJson: ValueTransformers.fromJsonDouble)  double price, @JsonKey(name: "admin_creator_id")  int? adminCreatorId, @JsonKey(name: "partition_physical_id")  int partitionPhysicalId, @JsonKey(name: "club_name")  String? clubName, @JsonKey(name: "club_type_name")  String? clubTypeName, @JsonKey(name: "status", fromJson: SessionStatusTransformers.fromJson, toJson: SessionStatusTransformers.toJson)  SessionStatus? status, @JsonKey(includeIfNull: false)  Client? client, @JsonKey(includeIfNull: false)  List<Payment>? payments, @JsonKey(includeIfNull: false)  List<Extra>? extras, @JsonKey(name: "partition_physical", includeIfNull: false)  PhysicalPartition? physicalPartition)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Session() when $default != null:
-return $default(_that.sessionId,_that.createdAt,_that.startTime,_that.duration,_that.clientId,_that.price,_that.adminCreatorId,_that.partitionPhysicalId,_that.clubName,_that.clubTypeName,_that.client,_that.payments,_that.extras,_that.physicalPartition);case _:
+return $default(_that.sessionId,_that.createdAt,_that.startTime,_that.duration,_that.clientId,_that.price,_that.adminCreatorId,_that.partitionPhysicalId,_that.clubName,_that.clubTypeName,_that.status,_that.client,_that.payments,_that.extras,_that.physicalPartition);case _:
   return orElse();
 
 }
@@ -208,10 +209,10 @@ return $default(_that.sessionId,_that.createdAt,_that.startTime,_that.duration,_
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(name: "session_id")  int sessionId, @JsonKey(name: "created_at")  DateTime createdAt, @JsonKey(name: "start_time", fromJson: ValueTransformers.fromJsonDateTimeLocale)  DateTime startTime, @JsonKey(defaultValue: 90)  int duration, @JsonKey(name: "client_id")  int? clientId, @JsonKey(fromJson: ValueTransformers.fromJsonDouble)  double price, @JsonKey(name: "admin_creator_id")  int? adminCreatorId, @JsonKey(name: "partition_physical_id")  int partitionPhysicalId, @JsonKey(name: "club_name")  String? clubName, @JsonKey(name: "club_type_name")  String? clubTypeName, @JsonKey(includeIfNull: false)  Client? client, @JsonKey(includeIfNull: false)  List<Payment>? payments, @JsonKey(includeIfNull: false)  List<Extra>? extras, @JsonKey(name: "partition_physical", includeIfNull: false)  PhysicalPartition? physicalPartition)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(name: "session_id")  int sessionId, @JsonKey(name: "created_at")  DateTime createdAt, @JsonKey(name: "start_time", fromJson: ValueTransformers.fromJsonDateTimeLocale, toJson: ValueTransformers.toJsonDateTimeUtc)  DateTime startTime, @JsonKey(defaultValue: 90)  int duration, @JsonKey(name: "client_id")  int? clientId, @JsonKey(fromJson: ValueTransformers.fromJsonDouble)  double price, @JsonKey(name: "admin_creator_id")  int? adminCreatorId, @JsonKey(name: "partition_physical_id")  int partitionPhysicalId, @JsonKey(name: "club_name")  String? clubName, @JsonKey(name: "club_type_name")  String? clubTypeName, @JsonKey(name: "status", fromJson: SessionStatusTransformers.fromJson, toJson: SessionStatusTransformers.toJson)  SessionStatus? status, @JsonKey(includeIfNull: false)  Client? client, @JsonKey(includeIfNull: false)  List<Payment>? payments, @JsonKey(includeIfNull: false)  List<Extra>? extras, @JsonKey(name: "partition_physical", includeIfNull: false)  PhysicalPartition? physicalPartition)  $default,) {final _that = this;
 switch (_that) {
 case _Session():
-return $default(_that.sessionId,_that.createdAt,_that.startTime,_that.duration,_that.clientId,_that.price,_that.adminCreatorId,_that.partitionPhysicalId,_that.clubName,_that.clubTypeName,_that.client,_that.payments,_that.extras,_that.physicalPartition);}
+return $default(_that.sessionId,_that.createdAt,_that.startTime,_that.duration,_that.clientId,_that.price,_that.adminCreatorId,_that.partitionPhysicalId,_that.clubName,_that.clubTypeName,_that.status,_that.client,_that.payments,_that.extras,_that.physicalPartition);}
 }
 /// A variant of `when` that fallback to returning `null`
 ///
@@ -225,10 +226,10 @@ return $default(_that.sessionId,_that.createdAt,_that.startTime,_that.duration,_
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@JsonKey(name: "session_id")  int sessionId, @JsonKey(name: "created_at")  DateTime createdAt, @JsonKey(name: "start_time", fromJson: ValueTransformers.fromJsonDateTimeLocale)  DateTime startTime, @JsonKey(defaultValue: 90)  int duration, @JsonKey(name: "client_id")  int? clientId, @JsonKey(fromJson: ValueTransformers.fromJsonDouble)  double price, @JsonKey(name: "admin_creator_id")  int? adminCreatorId, @JsonKey(name: "partition_physical_id")  int partitionPhysicalId, @JsonKey(name: "club_name")  String? clubName, @JsonKey(name: "club_type_name")  String? clubTypeName, @JsonKey(includeIfNull: false)  Client? client, @JsonKey(includeIfNull: false)  List<Payment>? payments, @JsonKey(includeIfNull: false)  List<Extra>? extras, @JsonKey(name: "partition_physical", includeIfNull: false)  PhysicalPartition? physicalPartition)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@JsonKey(name: "session_id")  int sessionId, @JsonKey(name: "created_at")  DateTime createdAt, @JsonKey(name: "start_time", fromJson: ValueTransformers.fromJsonDateTimeLocale, toJson: ValueTransformers.toJsonDateTimeUtc)  DateTime startTime, @JsonKey(defaultValue: 90)  int duration, @JsonKey(name: "client_id")  int? clientId, @JsonKey(fromJson: ValueTransformers.fromJsonDouble)  double price, @JsonKey(name: "admin_creator_id")  int? adminCreatorId, @JsonKey(name: "partition_physical_id")  int partitionPhysicalId, @JsonKey(name: "club_name")  String? clubName, @JsonKey(name: "club_type_name")  String? clubTypeName, @JsonKey(name: "status", fromJson: SessionStatusTransformers.fromJson, toJson: SessionStatusTransformers.toJson)  SessionStatus? status, @JsonKey(includeIfNull: false)  Client? client, @JsonKey(includeIfNull: false)  List<Payment>? payments, @JsonKey(includeIfNull: false)  List<Extra>? extras, @JsonKey(name: "partition_physical", includeIfNull: false)  PhysicalPartition? physicalPartition)?  $default,) {final _that = this;
 switch (_that) {
 case _Session() when $default != null:
-return $default(_that.sessionId,_that.createdAt,_that.startTime,_that.duration,_that.clientId,_that.price,_that.adminCreatorId,_that.partitionPhysicalId,_that.clubName,_that.clubTypeName,_that.client,_that.payments,_that.extras,_that.physicalPartition);case _:
+return $default(_that.sessionId,_that.createdAt,_that.startTime,_that.duration,_that.clientId,_that.price,_that.adminCreatorId,_that.partitionPhysicalId,_that.clubName,_that.clubTypeName,_that.status,_that.client,_that.payments,_that.extras,_that.physicalPartition);case _:
   return null;
 
 }
@@ -240,12 +241,12 @@ return $default(_that.sessionId,_that.createdAt,_that.startTime,_that.duration,_
 @JsonSerializable()
 
 class _Session extends Session {
-   _Session({@JsonKey(name: "session_id") required this.sessionId, @JsonKey(name: "created_at") required this.createdAt, @JsonKey(name: "start_time", fromJson: ValueTransformers.fromJsonDateTimeLocale) required this.startTime, @JsonKey(defaultValue: 90) required this.duration, @JsonKey(name: "client_id") this.clientId, @JsonKey(fromJson: ValueTransformers.fromJsonDouble) required this.price, @JsonKey(name: "admin_creator_id") this.adminCreatorId, @JsonKey(name: "partition_physical_id") required this.partitionPhysicalId, @JsonKey(name: "club_name") this.clubName, @JsonKey(name: "club_type_name") this.clubTypeName, @JsonKey(includeIfNull: false) this.client, @JsonKey(includeIfNull: false) final  List<Payment>? payments, @JsonKey(includeIfNull: false) final  List<Extra>? extras, @JsonKey(name: "partition_physical", includeIfNull: false) this.physicalPartition}): _payments = payments,_extras = extras,super._();
+   _Session({@JsonKey(name: "session_id") required this.sessionId, @JsonKey(name: "created_at") required this.createdAt, @JsonKey(name: "start_time", fromJson: ValueTransformers.fromJsonDateTimeLocale, toJson: ValueTransformers.toJsonDateTimeUtc) required this.startTime, @JsonKey(defaultValue: 90) required this.duration, @JsonKey(name: "client_id") this.clientId, @JsonKey(fromJson: ValueTransformers.fromJsonDouble) required this.price, @JsonKey(name: "admin_creator_id") this.adminCreatorId, @JsonKey(name: "partition_physical_id") required this.partitionPhysicalId, @JsonKey(name: "club_name") this.clubName, @JsonKey(name: "club_type_name") this.clubTypeName, @JsonKey(name: "status", fromJson: SessionStatusTransformers.fromJson, toJson: SessionStatusTransformers.toJson) this.status, @JsonKey(includeIfNull: false) this.client, @JsonKey(includeIfNull: false) final  List<Payment>? payments, @JsonKey(includeIfNull: false) final  List<Extra>? extras, @JsonKey(name: "partition_physical", includeIfNull: false) this.physicalPartition}): _payments = payments,_extras = extras,super._();
   factory _Session.fromJson(Map<String, dynamic> json) => _$SessionFromJson(json);
 
 @override@JsonKey(name: "session_id") final  int sessionId;
 @override@JsonKey(name: "created_at") final  DateTime createdAt;
-@override@JsonKey(name: "start_time", fromJson: ValueTransformers.fromJsonDateTimeLocale) final  DateTime startTime;
+@override@JsonKey(name: "start_time", fromJson: ValueTransformers.fromJsonDateTimeLocale, toJson: ValueTransformers.toJsonDateTimeUtc) final  DateTime startTime;
 @override@JsonKey(defaultValue: 90) final  int duration;
 @override@JsonKey(name: "client_id") final  int? clientId;
 @override@JsonKey(fromJson: ValueTransformers.fromJsonDouble) final  double price;
@@ -253,6 +254,7 @@ class _Session extends Session {
 @override@JsonKey(name: "partition_physical_id") final  int partitionPhysicalId;
 @override@JsonKey(name: "club_name") final  String? clubName;
 @override@JsonKey(name: "club_type_name") final  String? clubTypeName;
+@override@JsonKey(name: "status", fromJson: SessionStatusTransformers.fromJson, toJson: SessionStatusTransformers.toJson) final  SessionStatus? status;
 @override@JsonKey(includeIfNull: false) final  Client? client;
  final  List<Payment>? _payments;
 @override@JsonKey(includeIfNull: false) List<Payment>? get payments {
@@ -287,16 +289,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Session&&(identical(other.sessionId, sessionId) || other.sessionId == sessionId)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.startTime, startTime) || other.startTime == startTime)&&(identical(other.duration, duration) || other.duration == duration)&&(identical(other.clientId, clientId) || other.clientId == clientId)&&(identical(other.price, price) || other.price == price)&&(identical(other.adminCreatorId, adminCreatorId) || other.adminCreatorId == adminCreatorId)&&(identical(other.partitionPhysicalId, partitionPhysicalId) || other.partitionPhysicalId == partitionPhysicalId)&&(identical(other.clubName, clubName) || other.clubName == clubName)&&(identical(other.clubTypeName, clubTypeName) || other.clubTypeName == clubTypeName)&&(identical(other.client, client) || other.client == client)&&const DeepCollectionEquality().equals(other._payments, _payments)&&const DeepCollectionEquality().equals(other._extras, _extras)&&(identical(other.physicalPartition, physicalPartition) || other.physicalPartition == physicalPartition));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Session&&(identical(other.sessionId, sessionId) || other.sessionId == sessionId)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.startTime, startTime) || other.startTime == startTime)&&(identical(other.duration, duration) || other.duration == duration)&&(identical(other.clientId, clientId) || other.clientId == clientId)&&(identical(other.price, price) || other.price == price)&&(identical(other.adminCreatorId, adminCreatorId) || other.adminCreatorId == adminCreatorId)&&(identical(other.partitionPhysicalId, partitionPhysicalId) || other.partitionPhysicalId == partitionPhysicalId)&&(identical(other.clubName, clubName) || other.clubName == clubName)&&(identical(other.clubTypeName, clubTypeName) || other.clubTypeName == clubTypeName)&&(identical(other.status, status) || other.status == status)&&(identical(other.client, client) || other.client == client)&&const DeepCollectionEquality().equals(other._payments, _payments)&&const DeepCollectionEquality().equals(other._extras, _extras)&&(identical(other.physicalPartition, physicalPartition) || other.physicalPartition == physicalPartition));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,sessionId,createdAt,startTime,duration,clientId,price,adminCreatorId,partitionPhysicalId,clubName,clubTypeName,client,const DeepCollectionEquality().hash(_payments),const DeepCollectionEquality().hash(_extras),physicalPartition);
+int get hashCode => Object.hash(runtimeType,sessionId,createdAt,startTime,duration,clientId,price,adminCreatorId,partitionPhysicalId,clubName,clubTypeName,status,client,const DeepCollectionEquality().hash(_payments),const DeepCollectionEquality().hash(_extras),physicalPartition);
 
 @override
 String toString() {
-  return 'Session(sessionId: $sessionId, createdAt: $createdAt, startTime: $startTime, duration: $duration, clientId: $clientId, price: $price, adminCreatorId: $adminCreatorId, partitionPhysicalId: $partitionPhysicalId, clubName: $clubName, clubTypeName: $clubTypeName, client: $client, payments: $payments, extras: $extras, physicalPartition: $physicalPartition)';
+  return 'Session(sessionId: $sessionId, createdAt: $createdAt, startTime: $startTime, duration: $duration, clientId: $clientId, price: $price, adminCreatorId: $adminCreatorId, partitionPhysicalId: $partitionPhysicalId, clubName: $clubName, clubTypeName: $clubTypeName, status: $status, client: $client, payments: $payments, extras: $extras, physicalPartition: $physicalPartition)';
 }
 
 
@@ -307,7 +309,7 @@ abstract mixin class _$SessionCopyWith<$Res> implements $SessionCopyWith<$Res> {
   factory _$SessionCopyWith(_Session value, $Res Function(_Session) _then) = __$SessionCopyWithImpl;
 @override @useResult
 $Res call({
-@JsonKey(name: "session_id") int sessionId,@JsonKey(name: "created_at") DateTime createdAt,@JsonKey(name: "start_time", fromJson: ValueTransformers.fromJsonDateTimeLocale) DateTime startTime,@JsonKey(defaultValue: 90) int duration,@JsonKey(name: "client_id") int? clientId,@JsonKey(fromJson: ValueTransformers.fromJsonDouble) double price,@JsonKey(name: "admin_creator_id") int? adminCreatorId,@JsonKey(name: "partition_physical_id") int partitionPhysicalId,@JsonKey(name: "club_name") String? clubName,@JsonKey(name: "club_type_name") String? clubTypeName,@JsonKey(includeIfNull: false) Client? client,@JsonKey(includeIfNull: false) List<Payment>? payments,@JsonKey(includeIfNull: false) List<Extra>? extras,@JsonKey(name: "partition_physical", includeIfNull: false) PhysicalPartition? physicalPartition
+@JsonKey(name: "session_id") int sessionId,@JsonKey(name: "created_at") DateTime createdAt,@JsonKey(name: "start_time", fromJson: ValueTransformers.fromJsonDateTimeLocale, toJson: ValueTransformers.toJsonDateTimeUtc) DateTime startTime,@JsonKey(defaultValue: 90) int duration,@JsonKey(name: "client_id") int? clientId,@JsonKey(fromJson: ValueTransformers.fromJsonDouble) double price,@JsonKey(name: "admin_creator_id") int? adminCreatorId,@JsonKey(name: "partition_physical_id") int partitionPhysicalId,@JsonKey(name: "club_name") String? clubName,@JsonKey(name: "club_type_name") String? clubTypeName,@JsonKey(name: "status", fromJson: SessionStatusTransformers.fromJson, toJson: SessionStatusTransformers.toJson) SessionStatus? status,@JsonKey(includeIfNull: false) Client? client,@JsonKey(includeIfNull: false) List<Payment>? payments,@JsonKey(includeIfNull: false) List<Extra>? extras,@JsonKey(name: "partition_physical", includeIfNull: false) PhysicalPartition? physicalPartition
 });
 
 
@@ -324,7 +326,7 @@ class __$SessionCopyWithImpl<$Res>
 
 /// Create a copy of Session
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? sessionId = null,Object? createdAt = null,Object? startTime = null,Object? duration = null,Object? clientId = freezed,Object? price = null,Object? adminCreatorId = freezed,Object? partitionPhysicalId = null,Object? clubName = freezed,Object? clubTypeName = freezed,Object? client = freezed,Object? payments = freezed,Object? extras = freezed,Object? physicalPartition = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? sessionId = null,Object? createdAt = null,Object? startTime = null,Object? duration = null,Object? clientId = freezed,Object? price = null,Object? adminCreatorId = freezed,Object? partitionPhysicalId = null,Object? clubName = freezed,Object? clubTypeName = freezed,Object? status = freezed,Object? client = freezed,Object? payments = freezed,Object? extras = freezed,Object? physicalPartition = freezed,}) {
   return _then(_Session(
 sessionId: null == sessionId ? _self.sessionId : sessionId // ignore: cast_nullable_to_non_nullable
 as int,createdAt: null == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
@@ -336,7 +338,8 @@ as double,adminCreatorId: freezed == adminCreatorId ? _self.adminCreatorId : adm
 as int?,partitionPhysicalId: null == partitionPhysicalId ? _self.partitionPhysicalId : partitionPhysicalId // ignore: cast_nullable_to_non_nullable
 as int,clubName: freezed == clubName ? _self.clubName : clubName // ignore: cast_nullable_to_non_nullable
 as String?,clubTypeName: freezed == clubTypeName ? _self.clubTypeName : clubTypeName // ignore: cast_nullable_to_non_nullable
-as String?,client: freezed == client ? _self.client : client // ignore: cast_nullable_to_non_nullable
+as String?,status: freezed == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
+as SessionStatus?,client: freezed == client ? _self.client : client // ignore: cast_nullable_to_non_nullable
 as Client?,payments: freezed == payments ? _self._payments : payments // ignore: cast_nullable_to_non_nullable
 as List<Payment>?,extras: freezed == extras ? _self._extras : extras // ignore: cast_nullable_to_non_nullable
 as List<Extra>?,physicalPartition: freezed == physicalPartition ? _self.physicalPartition : physicalPartition // ignore: cast_nullable_to_non_nullable

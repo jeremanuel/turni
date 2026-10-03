@@ -9,6 +9,28 @@ rootProject.buildDir = '../build'
 subprojects {
     project.buildDir = "${rootProject.buildDir}/${project.name}"
 }
+
+// AGP 8 exige `namespace` en cada módulo Android; algunos plugins viejos del
+// pubspec (ej. geolocator_android 3.2.1, de `geolocator: ^8.0.0`) todavía no
+// lo declaran, solo tienen el `package` en su AndroidManifest.xml (forma
+// vieja, deprecada). Workaround estándar de la comunidad Flutter: si un
+// subproyecto Android no trae `namespace`, se lo completamos con su propio
+// `group` (que estos plugins sí declaran y coincide con el package viejo).
+// Tiene que registrarse ACÁ, antes de `evaluationDependsOn(':app')` de abajo
+// (esa línea fuerza la evaluación temprana de los subproyectos — si el hook
+// `afterEvaluate` se registra después, Gradle tira "already evaluated").
+subprojects { subproject ->
+    afterEvaluate {
+        if (subproject.hasProperty('android')) {
+            subproject.android {
+                if (namespace == null) {
+                    namespace subproject.group
+                }
+            }
+        }
+    }
+}
+
 subprojects {
     project.evaluationDependsOn(':app')
 }

@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_portal/flutter_portal.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
+import '../../core/config/router/app_routes.dart';
 import '../../core/config/service_locator.dart';
 import '../core/cubit/auth/auth_cubit.dart';
 
@@ -97,11 +98,15 @@ class SideBar extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.end,
           children:[
+            if (sl<AuthCubit>().isAdmin())
+              IconButton(onPressed: (){
+                context.push(AppRoutes.ADMIN_SETTINGS_ROUTE.path);
+              }, icon: const Icon(Icons.settings)),
             IconButton(onPressed: (){
               sl<AuthCubit>().signOutGoogle();
             }, icon: const Icon(Icons.logout)),
             const SizedBox(height: 40,)
-          ] 
+          ]
         ),
       ) ,
       onDestinationSelected: (index) => child.goBranch(index),

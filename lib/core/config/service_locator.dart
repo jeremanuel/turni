@@ -41,7 +41,7 @@ class ServiceLocator {
 
     sl.registerSingleton<AuthRepository>(
         AuthRepositoryImpl(authProvider: AuthProvider()));
-    
+
     sl.registerSingleton<PaymentRepository>(PaymentRepositoryImpl());
 
     sl.registerSingleton<ProductRepository>(ProductRepositoryImpl());
@@ -73,17 +73,15 @@ class ServiceLocator {
       );
     });
 
-
     //sl.registerLazySingleton<FeedCubit>(() => FeedCubit());
 
     sl.registerLazySingleton<CreateSesssionsFormBloc>(() => CreateSesssionsFormBloc());
 
     sl.registerLazySingleton<RoutineRepository>(() => RoutineRepositoryMock());
 
-
     sl.registerLazySingleton<IARepository>(
-      () => GeminiRepository(), 
-    ); 
+      () => GeminiRepository(),
+    );
 
     sl.registerFactoryParam<SessionManagerBloc, int?, void>((sessionId, _) => SessionManagerBloc(sessionId, SessionUserCases(sl<SessionRepository>())));
 

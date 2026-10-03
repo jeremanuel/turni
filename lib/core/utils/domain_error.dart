@@ -47,6 +47,4 @@ class DomainError implements Exception {
     return message;
   }
 
-
-
 }

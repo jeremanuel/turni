@@ -22,7 +22,7 @@ class BaseRepository {
       return Either.left(DomainError.fromErrorResponse(errorResponse));
     }
 
-      
-  
+
+
   }
 }

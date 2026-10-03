@@ -9,6 +9,7 @@ import '../../../../domain/entities/session.dart';
 import '../../../../domain/usercases/session_user_cases.dart';
 import '../../../../infrastructure/api/providers/session_provider.dart';
 import '../../../../infrastructure/api/repositories/session_repository_impl.dart';
+import 'date_preset.dart';
 
 part 'create_sesssions_form_event.dart';
 part 'create_sesssions_form_state.dart';
@@ -16,11 +17,16 @@ part 'create_sesssions_form_bloc.freezed.dart';
 
 class CreateSesssionsFormBloc
     extends Bloc<CreateSesssionsFormEvent, CreateSesssionsFormState> {
-  final SessionUserCases _sessionUserCases = SessionUserCases(
-    SessionRepositoryImplementation(sessionProvider: SessionProvider()),
-  );
+  final SessionUserCases _sessionUserCases;
 
-  CreateSesssionsFormBloc() : super(const _CreateSessionManagerState()) {
+  // `sessionUserCases` es inyectable (por default arma el real) para poder
+  // testear el bloc con un SessionRepository mockeado, sin pegarle a la red.
+  CreateSesssionsFormBloc({SessionUserCases? sessionUserCases})
+      : _sessionUserCases = sessionUserCases ??
+            SessionUserCases(
+              SessionRepositoryImplementation(sessionProvider: SessionProvider()),
+            ),
+        super(const _CreateSessionManagerState()) {
     on<ChangeSelectionClubPartition>((
       ChangeSelectionClubPartition event,
       emit,
@@ -104,25 +110,103 @@ class CreateSesssionsFormBloc
     });
 
     on<CreateSessions>((event, emit) async {
+      if (state.isSubmitting) return;
+
       emit(state.copyWith(
+        isSubmitting: true,
         savedSessions: false,
         createdCount: 0,
         skippedSessions: const [],
       ));
 
-      final result = await _sessionUserCases.createSessions(
-        state.sessions,
-        state.selectedPhysicalPartitions
-            .map((el) => el.partitionPhysicalId)
-            .toList(),
-        state.interval!,
-      );
+      // Agrupa canchas por su lista efectiva de turnos (plantilla +/-
+      // ajustes propios de esa cancha, ver effectiveSessionsForPartition):
+      // las que compartan exactamente la misma lista van en UNA sola
+      // llamada al backend (caso normal, sin ajustes por cancha); las que
+      // difieren disparan su propia llamada, con sus propios turnos.
+      final groups = <String, _PartitionGroup>{};
+      for (final partition in state.selectedPhysicalPartitions) {
+        final effective = state.effectiveSessionsForPartition(
+          partition.partitionPhysicalId,
+        );
+        final key = effective
+            .map((s) => '${s.startTime.hour}:${s.startTime.minute}-${s.duration}')
+            .join(',');
+        groups
+            .putIfAbsent(key, () => _PartitionGroup(effective))
+            .partitionIds
+            .add(partition.partitionPhysicalId);
+      }
+
+      var createdCount = 0;
+      final skipped = <SkippedSession>[];
+      for (final group in groups.values) {
+        if (group.sessions.isEmpty) continue;
+
+        final result = await _sessionUserCases.createSessions(
+          group.sessions,
+          group.partitionIds,
+          state.interval!,
+        );
+        createdCount += result.createdCount;
+        skipped.addAll(result.skipped);
+      }
 
       emit(state.copyWith(
+        isSubmitting: false,
         savedSessions: true,
-        createdCount: result.createdCount,
-        skippedSessions: result.skipped,
+        createdCount: createdCount,
+        skippedSessions: skipped,
       ));
     });
+
+    on<ChangeDatePreset>((ChangeDatePreset event, emit) {
+      final interval = event.preset.toInterval();
+      emit(state.copyWith(
+        datePreset: event.preset,
+        interval: interval ?? state.interval,
+      ));
+    });
+
+    on<RemoveSessionFromPartition>((RemoveSessionFromPartition event, emit) {
+      final current = Map<int, List<Session>>.from(state.courtRemovedSessions);
+      final list = List<Session>.from(
+        current[event.partitionPhysicalId] ?? const [],
+      );
+      if (!list.contains(event.session)) list.add(event.session);
+      current[event.partitionPhysicalId] = list;
+      emit(state.copyWith(courtRemovedSessions: current));
+    });
+
+    on<AddExtraSessionToPartition>((AddExtraSessionToPartition event, emit) {
+      final current = Map<int, List<Session>>.from(state.courtExtraSessions);
+      final list = List<Session>.from(
+        current[event.partitionPhysicalId] ?? const [],
+      );
+      list.add(event.session);
+      current[event.partitionPhysicalId] = list;
+      emit(state.copyWith(courtExtraSessions: current));
+    });
+
+    on<RemoveExtraSessionFromPartition>((
+      RemoveExtraSessionFromPartition event,
+      emit,
+    ) {
+      final current = Map<int, List<Session>>.from(state.courtExtraSessions);
+      final list = List<Session>.from(
+        current[event.partitionPhysicalId] ?? const [],
+      )..remove(event.session);
+      current[event.partitionPhysicalId] = list;
+      emit(state.copyWith(courtExtraSessions: current));
+    });
   }
+}
+
+/// Turnos a crear + canchas que comparten exactamente esos mismos turnos —
+/// una entrada por cada combinacion distinta (ver el handler de CreateSessions).
+class _PartitionGroup {
+  _PartitionGroup(this.sessions);
+
+  final List<Session> sessions;
+  final List<int> partitionIds = [];
 }

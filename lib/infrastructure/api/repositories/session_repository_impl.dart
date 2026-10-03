@@ -9,6 +9,7 @@ import '../../../domain/entities/create_sessions_result.dart';
 import '../../../domain/entities/extra.dart';
 import '../../../domain/entities/payment/payment.dart';
 import '../../../domain/entities/session.dart';
+import '../../../domain/entities/session_status.dart';
 import '../../../domain/repositories/session_repository.dart';
 import '../providers/session_provider.dart';
 import 'base/base_repository.dart';
@@ -40,14 +41,14 @@ class SessionRepositoryImplementation extends BaseRepository implements SessionR
   Future<Session> saveSession(Session session) {
     return sessionProvider.saveSession(session);
   }
-  
+
   @override
   Future<Client?> reservateSession(int sessionId, Client client) {
-    
+
     return sessionProvider.reservateSession(sessionId, client);
 
   }
-  
+
   @override
   Future<Either<DomainError,List<Session>>> getSessionsBySessionId(int sessionId) async {
     return safeCall<List<Session>>(() async {
@@ -56,7 +57,7 @@ class SessionRepositoryImplementation extends BaseRepository implements SessionR
       .get<List<dynamic>>("/admin/sessions/$sessionId");
 
       return response.data!.map((e) => Session.fromJson(e)).toList();
-      
+
     });
 
   }
@@ -94,9 +95,7 @@ class SessionRepositoryImplementation extends BaseRepository implements SessionR
       int sessionId, Extra extra) {
     return safeCall<bool>(() => sessionProvider.deleteSessionExtra(sessionId, extra));
   }
-  
 
-  
   @override
   Future<bool> deleteSession(int sessionId) async {
     try {
@@ -116,5 +115,51 @@ class SessionRepositoryImplementation extends BaseRepository implements SessionR
       return false;
     }
   }
-  
+
+  @override
+  Future<Either<DomainError, SessionStatus>> acceptSessionRequest(int sessionId) async {
+    try {
+      final data = await sessionProvider.acceptSession(sessionId);
+
+      return Either.right(SessionStatus.fromApiValue(data['status'])!);
+    } on DioException catch (err) {
+      return Either.left(_domainErrorFromSessionActionError(err));
+    }
+  }
+
+  @override
+  Future<Either<DomainError, SessionStatus>> rejectSessionRequest(int sessionId) async {
+    try {
+      final data = await sessionProvider.rejectSession(sessionId);
+
+      return Either.right(SessionStatus.fromApiValue(data['status'])!);
+    } on DioException catch (err) {
+      return Either.left(_domainErrorFromSessionActionError(err));
+    }
+  }
+
+  /// Traduce el error de aceptar/rechazar una solicitud a un [DomainError]
+  /// con mensaje legible. El 409 `STALE_STATUS` usa un shape de respuesta
+  /// `{ error: "STALE_STATUS", message: "..." }` distinto del genérico
+  /// `{ error: "<mensaje>" }` que arma el resto del backend a propósito
+  /// (ver `SessionStateConflictError` en `turni_mono_be`) — por eso no se
+  /// puede usar `DomainError.fromErrorResponse` acá sin perder el mensaje.
+  DomainError _domainErrorFromSessionActionError(DioException err) {
+    final data = err.response?.data;
+
+    if (data is Map && data['error'] == 'STALE_STATUS') {
+      return DomainError(
+        message: data['message'] as String? ??
+            "Esta solicitud ya no está disponible: alguien más la resolvió.",
+        internalCode: DomainError.unknwonError,
+        httpStatusCode: err.response?.statusCode ?? 409,
+        date: DateTime.now(),
+      );
+    }
+
+    if (data == null) return DomainError.unknownError();
+
+    return DomainError.fromErrorResponse(data);
+  }
+
 }

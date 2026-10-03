@@ -50,7 +50,14 @@ class AppRoutes {
 
   static const PAYMENTS_LIST = RouteDefinition("PAYMENTS", '/payments');
 
-  
+  static const ADMIN_SETTINGS_ROUTE = RouteDefinition(
+    "ADMIN_SETTINGS",
+    "/admin/settings",
+    mobileAppBar: MobileAppBarConfig(
+      title: 'Configuración',
+      backToPath: '/session_manager',
+    ),
+  );
 
   static final routesMap = {
     ROOT_ROUTE.name: ROOT_ROUTE,
@@ -70,6 +77,7 @@ class AppRoutes {
     PROFILE_SETTINGS_ROUTE.name: PROFILE_SETTINGS_ROUTE,
     PROFILE_SECURITY_ROUTE.name: PROFILE_SECURITY_ROUTE,
     PAYMENTS_LIST.name: PAYMENTS_LIST,
+    ADMIN_SETTINGS_ROUTE.name: ADMIN_SETTINGS_ROUTE,
   };
 }
 
