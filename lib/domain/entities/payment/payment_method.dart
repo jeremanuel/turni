@@ -11,7 +11,11 @@ sealed class PaymentMethod with _$PaymentMethod {
   factory PaymentMethod({
     @JsonKey(name: "payment_method_id")
     required int paymentMethodId,
-    required String name
+    required String name,
+    /// Proveedor que respalda el medio (ej. "MERCADOPAGO"); null para los
+    /// manuales (Efectivo, Transferencia).
+    @JsonKey(name: "provider_type")
+    String? providerType,
   }) = _PaymentMethod;
 
   factory PaymentMethod.fromJson(Map<String, dynamic> json) => _$PaymentMethodFromJson(json);

@@ -4,6 +4,7 @@ import '../../../core/config/service_locator.dart';
 import '../../../core/utils/domain_error.dart';
 import '../../../core/utils/either.dart';
 import '../../../domain/entities/payment/payment.dart';
+import '../../../domain/entities/payment/payment_method.dart';
 import '../../../domain/entities/request/page_response.dart';
 import '../../../domain/entities/request/payment/payment_list_page_response.dart';
 import '../../../domain/repositories/payment_repository.dart';
@@ -56,6 +57,17 @@ class PaymentRepositoryImpl extends BaseRepository implements PaymentRepository 
       final response = await dioInstance.get("/payments", queryParameters: queryParams);
 
       return PaymentListPageResponse.fromJson(response.data);
+    });
+  }
+
+  @override
+  Future<Either<DomainError, List<PaymentMethod>>> getPaymentMethods() {
+    return safeCall<List<PaymentMethod>>(() async {
+      final response = await dioInstance.get("/payments/methods");
+
+      return (response.data as List)
+          .map((el) => PaymentMethod.fromJson(el as Map<String, dynamic>))
+          .toList();
     });
   }
 }
