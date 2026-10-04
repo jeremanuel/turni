@@ -40,6 +40,7 @@ class PaymentsListCubit extends Cubit<PaymentsListState> {
         'fecha': TrinaCell(value: _formatDate(payment.paymentDate)),
         'monto': TrinaCell(value: _formatAmount(payment.amount)),
         'metodo': TrinaCell(value: payment.paymentMethodName),
+        'estado': TrinaCell(value: payment.providerStatus),
         'subscripcion': TrinaCell(value: payment.subscriptionName ?? 'Sin suscripcion'),
         'turno': TrinaCell(value: payment.sessionId),
       }

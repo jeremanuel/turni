@@ -6,6 +6,7 @@ import 'package:trina_grid/trina_grid.dart';
 import '../../../core/config/router/app_routes.dart';
 import '../../../core/config/service_locator.dart';
 import '../../../core/presentation/components/custom_trina_grid/custom_trina_grid.dart';
+import '../../../domain/entities/payment/payment_provider_status.dart';
 import '../../../domain/repositories/payment_repository.dart';
 import 'cubit/payments_list_cubit.dart';
 import 'widgets/payments_list_header.dart';
@@ -69,6 +70,36 @@ class PaymentsListPage extends StatelessWidget {
                         enableContextMenu: false,
                         enableDropToResize: false,
                         enableEditingMode: false
+                      ),
+                      TrinaColumn(
+                        title: 'Estado',
+                        field: 'estado',
+                        type: TrinaColumnType.text(),
+                        width: 110,
+                        enableContextMenu: false,
+                        enableDropToResize: false,
+                        enableEditingMode: false,
+                        renderer: (rendererContext) {
+                          final status = rendererContext.cell.value as PaymentProviderStatus?;
+
+                          // Pago cargado a mano por el admin: no tiene estado.
+                          if (status == null) return const Text('-');
+
+                          return Align(
+                            alignment: Alignment.centerLeft,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: status.color.withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(999),
+                              ),
+                              child: Text(
+                                status.label,
+                                style: TextStyle(color: status.color, fontWeight: FontWeight.w600, fontSize: 12),
+                              ),
+                            ),
+                          );
+                        },
                       ),
                       TrinaColumn(
                         title: 'Subscripcion',

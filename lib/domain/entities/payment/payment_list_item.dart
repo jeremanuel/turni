@@ -1,4 +1,5 @@
 import '../../../core/utils/value_transformers.dart';
+import 'payment_provider_status.dart';
 
 enum PaymentListItemType {
   payment,
@@ -16,6 +17,8 @@ class PaymentListItem {
   final String? observation;
   final int? sessionId;
   final PaymentListItemType type;
+  /// Solo para pagos online; null en los cargados a mano por el admin.
+  final PaymentProviderStatus? providerStatus;
 
   const PaymentListItem({
     required this.paymentId,
@@ -28,6 +31,7 @@ class PaymentListItem {
     required this.observation,
     required this.sessionId,
     required this.type,
+    this.providerStatus,
   });
 
   bool get isSessionPayment => type == PaymentListItemType.sessionPayment;
@@ -62,6 +66,7 @@ class PaymentListItem {
       type: sessionId != null
           ? PaymentListItemType.sessionPayment
           : PaymentListItemType.payment,
+      providerStatus: PaymentProviderStatus.fromApiValue(json['provider_status']),
     );
   }
 }

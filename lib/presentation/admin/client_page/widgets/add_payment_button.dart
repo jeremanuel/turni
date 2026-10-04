@@ -14,6 +14,7 @@ import '../../../../core/utils/either.dart';
 import '../../../../core/utils/responsive_builder.dart';
 import '../../../../domain/entities/client.dart';
 import '../../../../domain/entities/payment/payment.dart';
+import '../../../../domain/entities/payment/payment_method.dart';
 import '../../../../domain/entities/subscription/subscription.dart';
 import '../../../../domain/repositories/payment_repository.dart';
 import '../../../core/cubit/auth/auth_cubit.dart';
@@ -107,10 +108,37 @@ class _AddPaymentContainerState extends State<AddPaymentContainer> {
 
   List<Subscription> subscriptions = [];
 
+  /// Catálogo de medios de pago del backend; null mientras carga.
+  List<PaymentMethod>? paymentMethods;
+  String? paymentMethodsError;
+
   @override
   void initState() {
     subscriptions = [...Set.from(widget.client?.clientSubscriptions?.map((e) => e.subscription)?? [])] ;
+    loadPaymentMethods();
     super.initState();
+  }
+
+  Future<void> loadPaymentMethods() async {
+    final result = await paymentRepository.getPaymentMethods();
+    if (!mounted) return;
+
+    switch (result) {
+      case Right(:final value):
+        setState(() => paymentMethods = value);
+        // Por defecto "Efectivo" (lo más común), o el primero del catálogo.
+        // Después del rebuild: el dropdown descarta un valor que todavía no
+        // está entre sus items.
+        final defaultMethod = value.firstWhereOrNull((method) => method.name.toLowerCase() == 'efectivo') ?? value.firstOrNull;
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          formKey.currentState?.fields['payment_method']?.didChange(defaultMethod?.paymentMethodId);
+        });
+      case Left():
+        setState(() {
+          paymentMethods = [];
+          paymentMethodsError = "No se pudieron cargar los medios de pago";
+        });
+    }
   }
 
   @override
@@ -156,7 +184,6 @@ class _AddPaymentContainerState extends State<AddPaymentContainer> {
 
     return FormBuilder(
       initialValue: {
-        "payment_method": 1,
         "subscription": subscriptions.firstOrNull,
         "amount": subscriptions.firstOrNull?.getCurrentPrice()?.price.toString(),
         "observations": subscriptions.isEmpty ? "Clase sin subcripcion" : null
@@ -291,17 +318,19 @@ class _AddPaymentContainerState extends State<AddPaymentContainer> {
   FormBuilderDropdown<int> buildPaymentMethodField() {
     return FormBuilderDropdown(
             name: "payment_method",
-            decoration: const InputDecoration(
-              border: OutlineInputBorder(),
-              contentPadding:  EdgeInsets.symmetric(horizontal: 8),
-              labelText: "Metodo de pago", 
-              helperText: ""
+            enabled: paymentMethods != null,
+            validator: FormBuilderValidators.required(errorText: "Elegí un medio de pago"),
+            decoration: InputDecoration(
+              border: const OutlineInputBorder(),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 8),
+              labelText: "Metodo de pago",
+              hintText: paymentMethods == null ? "Cargando..." : null,
+              helperText: "",
+              errorText: paymentMethodsError,
             ),
-            initialValue: 1,
-            items: const [
-              DropdownMenuItem(value: 2, child: Text("Transferencia")),
-              DropdownMenuItem(value: 1, child: Text("Efectivo"))
-            ]
+            items: (paymentMethods ?? [])
+              .map((method) => DropdownMenuItem(value: method.paymentMethodId, child: Text(method.name)))
+              .toList(),
           );
   }
 
