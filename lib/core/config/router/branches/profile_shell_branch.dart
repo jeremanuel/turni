@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../presentation/admin/settings_screen/admin_settings_page.dart';
+import '../../../../presentation/admin/club_config/club_config_page.dart';
 import '../app_routes.dart';
 import '../../../../presentation/admin/profile_manager/profile_page.dart';
 
@@ -15,7 +15,7 @@ StatefulShellBranch profileShellBranch() {
            GoRoute(
             path: AppRoutes.ADMIN_SETTINGS_ROUTE.path,
             name: AppRoutes.ADMIN_SETTINGS_ROUTE.name,
-            builder: (context, state) => const AdminSettingsPage(),
+            builder: (context, state) => const ClubConfigPage(),
           )
           ]),
           StatefulShellBranch(routes: [

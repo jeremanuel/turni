@@ -20,6 +20,7 @@ sealed class ClubPartition with _$ClubPartition {
       required int club_type_id,
       String? phone,
       @JsonKey(name: 'physical_partition_name') String? physicalPartitionName,
+      @Default(true) bool active,
 
       // Relations
       @JsonKey(name: "partition_physical")
