@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/config/service_locator.dart';
 import '../../../core/utils/either.dart';
 import '../../../domain/repositories/admin_repository.dart';
+import 'widgets/mercado_pago_account_card.dart';
 
 /// Pantalla mínima de configuración del club del admin autenticado.
 ///
@@ -14,6 +15,10 @@ import '../../../domain/repositories/admin_repository.dart';
 /// esto a una pantalla existente. Se llega acá vía el ícono de engranaje en
 /// `DesktopLayout`/`CustomDrawer` (no es parte del `StatefulShellRoute`
 /// indexado — es una ruta simple, empujada arriba de la agenda).
+///
+/// Debajo, la sección "Cobros online" (`MercadoPagoAccountCard`): vincular la
+/// cuenta de Mercado Pago del club. Carga su estado por separado, así un
+/// error en una sección no bloquea la otra.
 class AdminSettingsPage extends StatefulWidget {
   const AdminSettingsPage({super.key});
 
@@ -111,72 +116,89 @@ class _AdminSettingsPageState extends State<AdminSettingsPage> {
           onPressed: () => context.pop(),
         ),
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : Padding(
-              padding: const EdgeInsets.all(24),
-              child: Form(
-                key: _formKey,
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 400),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Text(
-                        "Solicitudes de turno",
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 8),
-                      const Text(
-                        "Minutos que un cliente puede esperar la aprobación de un turno "
-                        "antes de que la solicitud expire automáticamente y el horario "
-                        "vuelva a estar libre.",
-                      ),
-                      const SizedBox(height: 16),
-                      TextFormField(
-                        controller: _ttlController,
-                        keyboardType: TextInputType.number,
-                        decoration: const InputDecoration(
-                          labelText: "Minutos para expirar",
-                          border: OutlineInputBorder(),
-                        ),
-                        validator: (value) {
-                          final parsed = int.tryParse(value ?? '');
-
-                          if (parsed == null || parsed <= 0) {
-                            return "Ingresá un número entero mayor a 0.";
-                          }
-
-                          return null;
-                        },
-                      ),
-                      if (_errorMessage != null) ...[
-                        const SizedBox(height: 8),
-                        Text(
-                          _errorMessage!,
-                          style: TextStyle(color: Theme.of(context).colorScheme.error),
-                        ),
-                      ],
-                      const SizedBox(height: 24),
-                      SizedBox(
-                        height: 40,
-                        child: FilledButton(
-                          onPressed: _isSaving ? null : _save,
-                          child: _isSaving
-                              ? const SizedBox(
-                                  height: 16,
-                                  width: 16,
-                                  child: CircularProgressIndicator(strokeWidth: 2),
-                                )
-                              : const Text("Guardar"),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
+        child: Align(
+          alignment: Alignment.topLeft,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 480),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : _buildPendingRequestsSection(context),
+                const SizedBox(height: 32),
+                const Divider(),
+                const SizedBox(height: 24),
+                const MercadoPagoAccountCard(),
+              ],
             ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPendingRequestsSection(BuildContext context) {
+    return Form(
+      key: _formKey,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Text(
+            "Solicitudes de turno",
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            "Minutos que un cliente puede esperar la aprobación de un turno "
+            "antes de que la solicitud expire automáticamente y el horario "
+            "vuelva a estar libre.",
+          ),
+          const SizedBox(height: 16),
+          TextFormField(
+            controller: _ttlController,
+            keyboardType: TextInputType.number,
+            decoration: const InputDecoration(
+              labelText: "Minutos para expirar",
+              border: OutlineInputBorder(),
+            ),
+            validator: (value) {
+              final parsed = int.tryParse(value ?? '');
+
+              if (parsed == null || parsed <= 0) {
+                return "Ingresá un número entero mayor a 0.";
+              }
+
+              return null;
+            },
+          ),
+          if (_errorMessage != null) ...[
+            const SizedBox(height: 8),
+            Text(
+              _errorMessage!,
+              style: TextStyle(color: Theme.of(context).colorScheme.error),
+            ),
+          ],
+          const SizedBox(height: 24),
+          SizedBox(
+            height: 40,
+            child: FilledButton(
+              onPressed: _isSaving ? null : _save,
+              child: _isSaving
+                  ? const SizedBox(
+                      height: 16,
+                      width: 16,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Text("Guardar"),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
