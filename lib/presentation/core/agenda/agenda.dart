@@ -22,6 +22,7 @@ class Agenda extends StatelessWidget {
       this.columnWidth = 300,
       this.onBlankSpaceTap,
       this.partitionSubtitleBuilder,
+      this.showNowIndicator = false,
 
       }) : sessions = [...sessions]
           ..sort((a, b) => a.startTime.compareTo(b.startTime)) {
@@ -49,6 +50,11 @@ class Agenda extends StatelessWidget {
   /// Segunda linea opcional en el header de cada columna (ej. capacidad de
   /// jugadores) — null mantiene el header de una sola linea de siempre.
   final String Function(PhysicalPartition)? partitionSubtitleBuilder;
+
+  /// Dibuja la línea de "ahora" (punto + línea `tertiary`) a la altura exacta
+  /// de la hora actual, si el día mostrado es hoy. Apagado por defecto: en
+  /// la plantilla del agregador de turnos no tiene sentido.
+  final bool showNowIndicator;
 
   late final List<ScrollController> scrollControllers;
   
@@ -261,11 +267,44 @@ class Agenda extends StatelessWidget {
                 isCurrentDivider = true;
               }
 
-              return SizedBox(
+              final divider = SizedBox(
                 height: heightPerMinute * 30,
                 child: Divider(
                   color: isCurrentDivider ? Theme.of(context).colorScheme.primary : null,
                 ),
+              );
+
+              final isToday = DateUtils.isSameDay(fromDate, now);
+              if (!showNowIndicator || !isCurrentDivider || !isToday) return divider;
+
+              // Cada fila mide 30 min y su divisor (centro de la fila) es la
+              // hora de `horariosDisponibles[index]`: la línea de "ahora" va
+              // desplazada desde ese centro según los minutos transcurridos.
+              final minutesIn = now.difference(horariosDisponibles[index]).inSeconds / 60;
+              final top = heightPerMinute * 15 + minutesIn * heightPerMinute;
+              final tertiary = Theme.of(context).colorScheme.tertiary;
+              return Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  divider,
+                  Positioned(
+                    left: 0,
+                    right: 0,
+                    top: top - 4,
+                    child: IgnorePointer(
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 8,
+                            height: 8,
+                            decoration: BoxDecoration(color: tertiary, shape: BoxShape.circle),
+                          ),
+                          Expanded(child: Container(height: 2, color: tertiary)),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               );
             },
             itemCount: horariosDisponibles.length,

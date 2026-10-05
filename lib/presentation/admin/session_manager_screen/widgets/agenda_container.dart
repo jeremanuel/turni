@@ -25,15 +25,7 @@ class AgendaContainer extends StatelessWidget {
         builder: (context, state) {
           return Column(
             children: [
-              SizedBox(
-                  width: 500,
-                  child: GenericBrowser(
-                    browserOptions:
-                        BrowserOptions(clubPartitions: state.clubPartitions),
-                  )),
-              const SizedBox(
-                height: 8,
-              ),
+         
               if (ResponsiveBuilder.isMobile(context))
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 8),

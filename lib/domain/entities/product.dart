@@ -4,11 +4,15 @@ class Product {
   final String name;
   final double price;
 
+  /// Categoría (ej. "Bebidas"), para filtrar en "Agregar consumo".
+  final String? categoryName;
+
   const Product({
     required this.productId,
     this.clubId,
     required this.name,
     required this.price,
+    this.categoryName,
   });
 
   factory Product.fromJson(Map<String, dynamic> json) {
@@ -21,6 +25,7 @@ class Product {
       price: rawPrice is num
           ? rawPrice.toDouble()
           : double.tryParse(rawPrice?.toString() ?? '0') ?? 0,
+      categoryName: json['category_name'] as String?,
     );
   }
 }

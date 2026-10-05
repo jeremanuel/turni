@@ -8,6 +8,7 @@ import '../../../core/utils/entities/range_date.dart';
 import '../../../core/utils/repository_response.dart';
 import '../../../domain/entities/client.dart';
 import '../../../domain/entities/generic_search_item.dart';
+import '../../../domain/entities/payment/payment_method.dart';
 import '../../../domain/entities/request/page_response.dart';
 import '../../../domain/entities/session.dart';
 import '../../../domain/repositories/admin_repository.dart';
@@ -26,6 +27,30 @@ class AdminrepositroyImpl extends BaseRepository implements AdminRepository {
 
     return safeCall(() => adminProvider.getClients(search, page, clientId));
 
+  }
+
+  @override
+  Future<RepositoryResponse<List<PaymentMethod>>> getPaymentMethods() {
+    return safeCall(() async {
+      final response = await dioInstance.get("/admin/payment_methods");
+      return (response.data as List)
+          .map((row) => PaymentMethod(
+                paymentMethodId: (row['payment_method_id'] as num).toInt(),
+                name: (row['name'] ?? '').toString(),
+              ))
+          .toList();
+    });
+  }
+
+  @override
+  Future<RepositoryResponse<String?>> updateSessionObservation(int sessionId, String? observation) {
+    return safeCall(() async {
+      final response = await dioInstance.patch(
+        "/admin/session/$sessionId/observation",
+        data: {"observation": observation},
+      );
+      return response.data['observation'] as String?;
+    });
   }
 
   @override

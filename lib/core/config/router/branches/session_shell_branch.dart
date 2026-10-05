@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../presentation/admin/session_manager_screen/bloc/session_manager_event.dart';
 import '../../../../presentation/admin/session_manager_screen/bloc/session_manager_bloc.dart';
 import '../../../../presentation/admin/session_manager_screen/session_manager_route.dart';
-import '../../../../presentation/admin/session_manager_screen/widgets/calendar_side_column.dart';
+import '../../../../presentation/admin/session_manager_screen/widgets/side_panel/day_summary_panel.dart';
 import '../../../../presentation/admin/session_manager_screen/utils/session_manager_add_page_builder.dart';
 import '../../../../presentation/admin/session_manager_screen/utils/session_manager_reserve_page_builder.dart';
 import '../../../../presentation/admin/bulk_sessions/bulk_sessions_page.dart';
@@ -32,7 +32,7 @@ StatefulShellBranch sessionShellBranch() {
             redirect: setCurrentRoute,
             pageBuilder: (context, state) {
               context.read<SessionManagerBloc>().add(SetSelectedSession(null));
-              return const NoTransitionPage(child: CalendarSideColumn());
+              return const NoTransitionPage(child: DaySummaryPanel());
             },
           ),
           GoRoute(

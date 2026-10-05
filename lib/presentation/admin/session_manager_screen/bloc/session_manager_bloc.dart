@@ -28,7 +28,10 @@ class SessionManagerBloc extends Bloc<SessionManagerEvent, SessionManagerState> 
         state.copyWith(currentDate: event.newDate, isLoadingSessions: true),
       );
       
-      datesCarrouselController.setDate!(event.newDate);
+      // El carrusel de días solo existe en mobile; en escritorio no hay a
+      // quién avisar (antes el `!` cortaba el evento y la agenda quedaba
+      // cargando).
+      datesCarrouselController.setDate?.call(event.newDate);
 
       final sessions = await _sessionUserCases.getSessions(state.currentDate); 
       

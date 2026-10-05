@@ -8,6 +8,7 @@ import '../../core/config/service_locator.dart';
 import '../core/cubit/auth/auth_cubit.dart';
 
 import 'states/scaffold_cubit/scaffold_cubit.dart';
+import 'widgets/admin_rail.dart';
 
 class DesktopLayout extends StatelessWidget {
 
@@ -26,25 +27,38 @@ class DesktopLayout extends StatelessWidget {
         bloc: sl<ScaffoldCubit>(),
         builder: (context, state) => state.child!
         ),
-      body:  Padding(
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        child: Row(
-          children: [
-                       
-            const SizedBox(width: 20,),
-            SideBar(child: child),
-            const SizedBox(width: 20,),
-            
-            Expanded(
-              child: Material(
-                elevation: 25,
-                color: Theme.of(context2).colorScheme.surfaceContainer,
-                child: child,
+      // Admin: menú lateral nuevo pegado al borde y el contenido ocupando
+      // todo el resto (sin márgenes ni elevación), como en el diseño del
+      // gestor de turnos. El cliente sigue con el NavigationRail de siempre.
+      body: sl<AuthCubit>().isAdmin()
+          ? Row(
+              children: [
+                AdminRail(shell: child),
+                Expanded(
+                  child: Material(
+                    color: Theme.of(context2).colorScheme.surfaceContainer,
+                    child: child,
+                  ),
+                ),
+              ],
+            )
+          : Padding(
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              child: Row(
+                children: [
+                  const SizedBox(width: 20,),
+                  SideBar(child: child),
+                  const SizedBox(width: 20,),
+                  Expanded(
+                    child: Material(
+                      elevation: 25,
+                      color: Theme.of(context2).colorScheme.surfaceContainer,
+                      child: child,
+                    ),
+                  ),
+                ],
               ),
             ),
-          ]
-          ),
-        ),
       );
     
 

@@ -48,7 +48,7 @@ class _DatesCarrouselState extends State<DatesCarrousel> {
                 2));
 
     widget.datesCarrouselController?.setDate = (date) {
-      if (!dates.contains(date)) return;
+      if (!mounted || !dates.contains(date)) return;
 
       scrollController.animateTo(
         (dates.indexOf(date) - 2).toDouble() * widget.itemWidth -

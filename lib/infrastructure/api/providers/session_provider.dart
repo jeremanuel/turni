@@ -52,7 +52,8 @@ class SessionProvider {
         },
         'payment': {
           'amount': extra.amount,
-          'payment_method_id': 1,
+          // Medio elegido en "Cobrar" (si viene); Efectivo por compatibilidad.
+          'payment_method_id': extra.payment?.paymentMethod.paymentMethodId ?? 1,
         }
       },
     );
