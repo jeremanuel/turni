@@ -17,7 +17,7 @@ class PaymentRepositoryMock implements PaymentRepository {
     PaymentMethod(paymentMethodId: 2, name: 'Tarjeta de Débito'),
     PaymentMethod(paymentMethodId: 3, name: 'Tarjeta de Crédito'),
     PaymentMethod(paymentMethodId: 4, name: 'Transferencia'),
-    PaymentMethod(paymentMethodId: 5, name: 'MercadoPago'),
+    PaymentMethod(paymentMethodId: 5, name: 'Mercado Pago', providerType: 'MERCADOPAGO'),
   ];
 
   // Datos mock de pagos
@@ -272,5 +272,10 @@ class PaymentRepositoryMock implements PaymentRepository {
 
   List<PaymentMethod> getAllMockPaymentMethods() {
     return List.unmodifiable(_mockPaymentMethods);
+  }
+
+  @override
+  Future<Either<DomainError, List<PaymentMethod>>> getPaymentMethods() async {
+    return Right(_mockPaymentMethods);
   }
 }

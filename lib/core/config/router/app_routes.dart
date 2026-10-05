@@ -62,6 +62,8 @@ class AppRoutes {
 
   static const PAYMENTS_LIST = RouteDefinition("PAYMENTS", '/payments');
 
+  static const CLUB_MAP_ROUTE = RouteDefinition("CLUB_MAP", '/club_map');
+
   static const ADMIN_SETTINGS_ROUTE = RouteDefinition(
     "ADMIN_SETTINGS",
     "/admin/settings",
@@ -90,6 +92,7 @@ class AppRoutes {
     PROFILE_SETTINGS_ROUTE.name: PROFILE_SETTINGS_ROUTE,
     PROFILE_SECURITY_ROUTE.name: PROFILE_SECURITY_ROUTE,
     PAYMENTS_LIST.name: PAYMENTS_LIST,
+    CLUB_MAP_ROUTE.name: CLUB_MAP_ROUTE,
     ADMIN_SETTINGS_ROUTE.name: ADMIN_SETTINGS_ROUTE,
   };
 }

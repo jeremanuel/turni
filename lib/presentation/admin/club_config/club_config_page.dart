@@ -7,6 +7,7 @@ import 'tabs/club_partitions_tab.dart';
 import 'tabs/price_tariffs_tab.dart';
 import 'tabs/products_tab.dart';
 import 'tabs/session_request_settings_tab.dart';
+import '../settings_screen/widgets/mercado_pago_account_card.dart';
 
 /// Pantalla de configuración de admin para el club (reemplaza la vieja
 /// `AdminSettingsPage`, que ahora vive como la tab "Solicitudes de turno").
@@ -25,7 +26,7 @@ class ClubConfigPage extends StatelessWidget {
     final focus = this.focus;
 
     return DefaultTabController(
-      length: 5,
+      length: 6,
       initialIndex: focus?.tab ?? ClubConfigTab.info,
       child: Scaffold(
         // En el mockup solo la franja de arriba (appbar + tabs) usa el tono
@@ -47,6 +48,7 @@ class ClubConfigPage extends StatelessWidget {
               Tab(text: "Tarifas por horario"),
               Tab(text: "Productos"),
               Tab(text: "Solicitudes de turno"),
+              Tab(text: "Cobros online"),
             ],
           ),
         ),
@@ -68,6 +70,18 @@ class ClubConfigPage extends StatelessWidget {
             ),
             const ProductsTab(),
             const SessionRequestSettingsTab(),
+            // Vincular la cuenta de Mercado Pago del club (antes estaba en
+            // la vieja AdminSettingsPage, debajo de las solicitudes de turno).
+            SingleChildScrollView(
+              padding: const EdgeInsets.all(24),
+              child: Align(
+                alignment: Alignment.topLeft,
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 560),
+                  child: MercadoPagoAccountCard(),
+                ),
+              ),
+            ),
           ],
         ),
       ),

@@ -1,6 +1,7 @@
 import '../../core/utils/domain_error.dart';
 import '../../core/utils/either.dart';
 import '../entities/payment/payment.dart';
+import '../entities/payment/payment_method.dart';
 import '../entities/request/payment/payment_list_page_response.dart';
 import '../entities/request/page_response.dart';
 
@@ -10,4 +11,7 @@ abstract class PaymentRepository {
     Future<Either<DomainError, Payment>> createPayment(Map<String, dynamic> paymentData);
 
     Future<Either<DomainError, PaymentListPageResponse>> getPayments(int page, {DateTime? fechaDesde, DateTime? fechaHasta});
+
+    /// Catálogo de medios de pago del backend (`GET /payments/methods`).
+    Future<Either<DomainError, List<PaymentMethod>>> getPaymentMethods();
 }

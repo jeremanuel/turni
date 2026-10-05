@@ -8,6 +8,8 @@ import '../../domain/repositories/club_info_repository.dart';
 import '../../domain/repositories/club_partition_admin_repository.dart';
 import '../../domain/repositories/price_tariff_repository.dart';
 import '../../domain/repositories/product_admin_repository.dart';
+import '../../domain/repositories/club_map_repository.dart';
+import '../../domain/repositories/club_payment_account_repository.dart';
 import '../../domain/repositories/label_repository.dart';
 import '../../domain/repositories/payment_repository.dart';
 import '../../domain/repositories/routine_repository.dart';
@@ -24,6 +26,8 @@ import '../../infrastructure/api/repositories/club_info_repository_impl.dart';
 import '../../infrastructure/api/repositories/club_partition_admin_repository_impl.dart';
 import '../../infrastructure/api/repositories/price_tariff_repository_impl.dart';
 import '../../infrastructure/api/repositories/product_admin_repository_impl.dart';
+import '../../infrastructure/api/repositories/club_map_repository_impl.dart';
+import '../../infrastructure/api/repositories/club_payment_account_repository_impl.dart';
 import '../../infrastructure/api/repositories/label_repository_impl.dart';
 import '../../infrastructure/api/repositories/payment_repository_impl.dart';
 import '../../infrastructure/api/repositories/product_repository_impl.dart';
@@ -53,6 +57,9 @@ class ServiceLocator {
         AuthRepositoryImpl(authProvider: AuthProvider()));
 
     sl.registerSingleton<PaymentRepository>(PaymentRepositoryImpl());
+
+    sl.registerSingleton<ClubPaymentAccountRepository>(ClubPaymentAccountRepositoryImpl());
+    sl.registerSingleton<ClubMapRepository>(ClubMapRepositoryImpl());
 
     sl.registerSingleton<ProductRepository>(ProductRepositoryImpl());
 

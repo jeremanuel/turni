@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import '../../../presentation/admin/club_map/club_map_page.dart';
 import '../../../presentation/admin/payments_list/payments_list_page.dart';
 import 'branches/client_shell_branch.dart';
 import 'branches/profile_shell_branch.dart';
@@ -106,7 +107,17 @@ List<StatefulShellBranch> buildBranches(RouterType routerType) {
          
       ]
     ),
-    
+    // El orden de las ramas es el de los destinos del NavigationRail
+    // (desktop_layout.dart): Mapa va antes de Ajustes.
+    StatefulShellBranch(
+      routes: [
+        GoRoute(
+          path: AppRoutes.CLUB_MAP_ROUTE.path,
+          name: AppRoutes.CLUB_MAP_ROUTE.name,
+          builder: (context, state) => const ClubMapPage(),
+        ),
+      ]
+    ),
     profileShellBranch()
   ];
 }

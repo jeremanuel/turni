@@ -19,6 +19,7 @@ class AdminRail extends StatelessWidget {
     (Icons.calendar_month_outlined, 'Turnos'),
     (Icons.groups_outlined, 'Clientes'),
     (Icons.credit_card, 'Pagos'),
+    (Icons.map_outlined, 'Mapa'),
     (Icons.settings_outlined, 'Configuración'),
   ];
 

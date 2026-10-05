@@ -171,6 +171,12 @@ class SideBar extends StatelessWidget {
           icon: Icon(Icons.attach_money), 
           label: Text("Pagos")
         ),
+        NavigationRailDestination(
+          padding: EdgeInsets.all(16),
+          icon: Icon(Icons.map_outlined),
+          selectedIcon: Icon(Icons.map),
+          label: Text("Mapa")
+        ),
           NavigationRailDestination(
           padding: EdgeInsets.all(16),
           icon: Icon(Icons.build), 

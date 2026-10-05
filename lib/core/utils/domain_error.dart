@@ -36,7 +36,16 @@ class DomainError implements Exception {
 
   factory DomainError.fromErrorResponse(dynamic response){
     try {
-      return DomainError(message: response['error'], internalCode: response['code'], date: DateTime.now());
+      // `code` es opcional: muchos endpoints responden solo `{ error }`, y
+      // algunos mandan un código de texto (ej. "CLUB_ACCOUNT_NOT_LINKED").
+      // Antes, sin un `code` numérico se perdía el mensaje del backend.
+      final code = response['code'];
+      return DomainError(
+        message: response['error'] as String,
+        internalCode: code is int ? code : unknwonError,
+        details: code is int ? null : { "code": code },
+        date: DateTime.now(),
+      );
     } catch (e) {
       return DomainError(message: "Unknown Error", internalCode: unknwonError, details: { "originalError":response }, date: DateTime.now());
     }
