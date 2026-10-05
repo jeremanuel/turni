@@ -251,7 +251,7 @@ class Agenda extends StatelessWidget {
   // Construye las listviews que dibujan las lineas verticales y horizontales
   Padding linesList() {
     return Padding(
-      padding: const EdgeInsets.only(top: 40),
+      padding: EdgeInsets.only(top: headerHeight),
       child: Stack(
         children: [
           ListView.builder(
@@ -341,7 +341,7 @@ class Agenda extends StatelessWidget {
     return SizedBox(
       width: hoursWidth,
       child: Padding(
-        padding: const EdgeInsets.only(top: 40),
+        padding: EdgeInsets.only(top: headerHeight),
         child: ListView.builder(
           controller: verticalLinesScrollController,
           itemBuilder: (context, index) {
@@ -374,8 +374,42 @@ class Agenda extends StatelessWidget {
     );
   }
 
+  /// Alto de la fila de encabezados de cancha. Con subtítulo ("Cubierta ·
+  /// 4 jug.") necesita dos líneas: nombre 14px + bajada 12px + margen.
+  double get headerHeight => partitionSubtitleBuilder == null ? 40 : 52;
+
   Widget buildPartitionHeader(PhysicalPartition physicalPartition, context) {
     final subtitle = partitionSubtitleBuilder?.call(physicalPartition);
+    final scheme = Theme.of(context).colorScheme;
+
+    if (subtitle != null) {
+      return SizedBox(
+        width: columnWidth,
+        height: headerHeight,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(4, 0, 4, 12),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                partitionLabelBuilder(physicalPartition),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: scheme.onSurface),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                subtitle,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     return Padding(
       padding: const EdgeInsets.all(8),
       child:Container(
@@ -386,26 +420,8 @@ class Agenda extends StatelessWidget {
               borderRadius: BorderRadius.circular(4),
         ),
 
-        child: Center(
-          child: subtitle == null
-              ? Text(partitionLabelBuilder(physicalPartition))
-              : Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      partitionLabelBuilder(physicalPartition),
-                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    Text(
-                      subtitle,
-                      style: const TextStyle(fontSize: 10),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
-                ),
-        )),
+        child: Center(child: Text(partitionLabelBuilder(physicalPartition))),
+      ),
     );
   }
 
