@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_portal/flutter_portal.dart';
+import 'package:flutter_portal/flutter_portal.dart' hide Aligned;
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/services.dart';
@@ -8,6 +8,7 @@ import 'package:flutter/services.dart';
 import '../../../core/config/router/app_routes.dart';
 import '../../../core/config/service_locator.dart';
 import '../../../core/presentation/components/inputs/chips/filter_chip_interval_date.dart';
+import '../../../core/presentation/components/inputs/dropdown_widget.dart';
 import '../../../core/presentation/components/inputs/snackbars/snackbars_functions.dart';
 import '../../../core/utils/physical_partition_naming.dart';
 import '../../../core/utils/types/time_interval.dart';
@@ -22,7 +23,6 @@ import '../session_manager_screen/bloc/session_manager_event.dart';
 import 'bloc/create_sesssions_form_bloc.dart';
 import 'bloc/date_preset.dart';
 
-import 'widgets/add_session_button.dart';
 import 'widgets/agenda_edit_card.dart';
 import 'widgets/rework_styles.dart';
 
@@ -39,6 +39,14 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
   int? _selectedAfternoonDuration;
   final GeneratePresetSessionsUseCase _generatePresetSessionsUseCase =
       GeneratePresetSessionsUseCase();
+
+  /// El turno recién creado clickeando un espacio libre — paso "Horarios" —
+  /// para que su card abra el popover de edición sola, sin un botón "+".
+  Session? _pendingAutoOpenTemplateSession;
+
+  /// Lo mismo, pero para el turno (de plantilla o extra) recién creado en
+  /// una cancha puntual del paso "Canchas".
+  Session? _pendingAutoOpenCourtSession;
 
   static const int _customDurationOption = -1;
 
@@ -61,73 +69,64 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
   Widget build(BuildContext context) {
     final formBloc = sl<CreateSesssionsFormBloc>();
 
-    return BlocListener<CreateSesssionsFormBloc, CreateSesssionsFormState>(
-      bloc: formBloc,
-      listenWhen: (previous, current) =>
-          previous.isSubmitting != current.isSubmitting ||
-          (previous.savedSessions != current.savedSessions && current.savedSessions),
-      listener: (context, state) async {
-        if (state.isSubmitting) {
-          showDialog<void>(
-            context: context,
-            barrierDismissible: false,
-            builder: (_) => const _SavingDialog(),
-          );
-          return;
-        }
-
-        // isSubmitting volvio a false: si el dialogo de carga esta abierto, cerrarlo.
-        if (Navigator.of(context).canPop()) {
-          Navigator.of(context).pop();
-        }
-
-        if (!state.savedSessions) return;
-
-        final action = await _showBulkCreationResultDialog(context, state);
-
-        if (!context.mounted) return;
-
-        if (action == _BulkCreationDialogAction.backToCalendar) {
-          context.read<SessionManagerBloc>().add(
-            SessionManagerEvent.reloadSessionsEvent(),
-          );
-          context.go(AppRoutes.SESSION_MANAGER_ROUTE.path);
-          return;
-        }
-
-        if (action == _BulkCreationDialogAction.retryCreation) {
-          setState(() {
-            _currentStep = _firstWizardStep;
-          });
-        }
-      },
-      child: Portal(
-        child: BlocBuilder<CreateSesssionsFormBloc, CreateSesssionsFormState>(
-          bloc: formBloc,
-          builder: (context, state) {
-            return ClipRRect(
-              borderRadius: BorderRadius.circular(RW.cardRadius),
-              child: Container(
-                color: RW.card,
-                child: Column(
-                  children: [
-                    _buildTopBar(context),
-                    _StepTrackerBar(
-                      steps: _steps,
-                      currentStep: _currentStep,
-                      maxReachable: _maxReachableStep(state),
-                      onStepTap: (index) => setState(() => _currentStep = index),
-                    ),
-                    const Divider(height: 1, color: RW.divider),
-                    Expanded(child: _buildWorkArea(context, state)),
-                  ],
+    return Portal(
+      child: BlocBuilder<CreateSesssionsFormBloc, CreateSesssionsFormState>(
+        bloc: formBloc,
+        builder: (context, state) {
+          // "Creando turnos" y el resultado se renderizan como overlays DENTRO
+          // de este mismo widget (no con showDialog) para que no puedan
+          // quedar huérfanos: un showDialog queda pusheado en el Navigator
+          // de arriba y go_router no lo saca al navegar afuera de esta
+          // pantalla (ej. "Volver a gestor de turnos", o el botón atrás del
+          // navegador) — quedaba la tilde de "Creando turnos" trabada en
+          // pantalla. Al ser parte del árbol de este widget, desaparecen
+          // solos en cuanto esta pantalla se desmonta, sea como sea que se
+          // haya salido de ella.
+          return Stack(
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(RW.cardRadius),
+                child: Container(
+                  color: RW.card,
+                  child: Column(
+                    children: [
+                      _buildTopBar(context),
+                      _StepTrackerBar(
+                        steps: _steps,
+                        currentStep: _currentStep,
+                        maxReachable: _maxReachableStep(state),
+                        onStepTap: (index) => setState(() => _currentStep = index),
+                      ),
+                      const Divider(height: 1, color: RW.divider),
+                      Expanded(child: _buildWorkArea(context, state)),
+                    ],
+                  ),
                 ),
               ),
-            );
-          },
-        ),
+              if (state.isSubmitting) Positioned.fill(child: _buildSavingOverlay()),
+              if (!state.isSubmitting && state.savedSessions)
+                Positioned.fill(child: _buildResultOverlay(context, state)),
+            ],
+          );
+        },
       ),
     );
+  }
+
+  void _handleBackToCalendar(BuildContext context) {
+    context.read<SessionManagerBloc>().add(
+      SessionManagerEvent.reloadSessionsEvent(),
+    );
+    context.go(AppRoutes.SESSION_MANAGER_ROUTE.path);
+  }
+
+  void _handleCreateMore() {
+    sl<CreateSesssionsFormBloc>().add(const ResetForm());
+    setState(() {
+      _currentStep = _firstWizardStep;
+      _selectedMorningDuration = null;
+      _selectedAfternoonDuration = null;
+    });
   }
 
   Widget _buildTopBar(BuildContext context) {
@@ -362,16 +361,9 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
           ],
         ),
         const SizedBox(height: 16),
-        Row(
-          children: [
-            Expanded(
-              child: Text(
-                'El timeline de la izquierda es editable: clic en una hora libre agrega un turno de 60 min ahí mismo, clic en un turno lo edita o lo borra.',
-                style: RW.tSmall,
-              ),
-            ),
-            const AddSessionButton(),
-          ],
+        Text(
+          'El timeline de la izquierda es editable: clic en una hora libre agrega un turno de 60 min ahí mismo, clic en un turno lo edita o lo borra.',
+          style: RW.tSmall,
         ),
       ],
     );
@@ -631,11 +623,22 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
   }
 
   Widget _buildTemplatePreview(CreateSesssionsFormState state) {
+    final today = DateTime.now();
+
     return _RWSurfaceBox(
-      child: Agenda(
+      child: Agenda(heightPerMinute: 1,
         sessions: state.sessions,
-        buildCard: (session, physicalPartition, height) =>
-            AgendaEditCard(session: session),
+        buildCard: (session, physicalPartition, height) {
+          final autoOpen = _pendingAutoOpenTemplateSession == session;
+          return AgendaEditCard(
+            session: session,
+            height: height,
+            autoOpen: autoOpen,
+            onAutoOpened: autoOpen
+                ? () => setState(() => _pendingAutoOpenTemplateSession = null)
+                : null,
+          );
+        },
         partitionLabelBuilder: (physicalPartition) =>
             PhysicalPartitionNaming.labelFromPhysicalPartition(
           physicalPartition,
@@ -649,14 +652,22 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
             physicalIdentifier: 1,
             isCover: 'true',
             description: '',
+            // No-null: habilita el hover/click sobre huecos libres para
+            // agregar un turno ahí mismo (reemplaza al botón "+").
+            durationInMinutes: 60,
           ),
         ],
-        fromDate: DateTime.now().applied(
-          TimeOfDay(hour: RW.firstHour, minute: 0),
-        ),
-        lastDate: DateTime.now().applied(
-          TimeOfDay(hour: RW.lastHour, minute: 0),
-        ),
+        fromDate: today.applied(TimeOfDay(hour: RW.firstHour, minute: 0)),
+        lastDate: today.applied(TimeOfDay(hour: RW.lastHour, minute: 0)),
+        onBlankSpaceTap: (partition, interval) {
+          final startTime = interval.initialDate!;
+          final newSession = Session.fromDates(
+            DateTime(startTime.year, startTime.month, startTime.day, startTime.hour, 0),
+            const TimeOfDay(hour: 1, minute: 0),
+          );
+          setState(() => _pendingAutoOpenTemplateSession = newSession);
+          sl<CreateSesssionsFormBloc>().add(AddSession(newSession));
+        },
       ),
     );
   }
@@ -685,42 +696,78 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
       }
     }
 
-    return _RWSurfaceBox(
-      child: Agenda(
-        sessions: previewSessions,
-        physicalPartitions: state.selectedPhysicalPartitions,
-        columnWidth: RW.courtColumnWidth + 50,
-        partitionLabelBuilder: (p) => _courtColumnLabel(state, p),
-        fromDate: today.applied(TimeOfDay(hour: RW.firstHour, minute: 0)),
-        lastDate: today.applied(TimeOfDay(hour: RW.lastHour, minute: 0)),
-        onBlankSpaceTap: (partition, interval) {
-          final startTime = interval.initialDate!;
-          final newSession = Session.fromDates(
-            DateTime(today.year, today.month, today.day, startTime.hour, 0),
-            const TimeOfDay(hour: 1, minute: 0),
-          ).copyWith(partitionPhysicalId: partition.partitionPhysicalId);
-          sl<CreateSesssionsFormBloc>().add(
-            AddExtraSessionToPartition(partition.partitionPhysicalId, newSession),
-          );
-        },
-        buildCard: (session, partition, height) {
-          final info = meta[session];
-          final isExtra = info?.isExtra ?? false;
-          return _PartitionSessionCard(
-            session: session,
-            isExtra: isExtra,
-            onRemove: info == null
-                ? null
-                : () {
-                    final bloc = sl<CreateSesssionsFormBloc>();
-                    if (isExtra) {
-                      bloc.add(RemoveExtraSessionFromPartition(partition.partitionPhysicalId, info.original));
-                    } else {
-                      bloc.add(RemoveSessionFromPartition(partition.partitionPhysicalId, info.original));
-                    }
-                  },
-          );
-        },
+    return Column(
+      children: [
+        Expanded(
+          child: _RWSurfaceBox(
+            child: Agenda(
+              heightPerMinute: 1,
+              sessions: previewSessions,
+              physicalPartitions: state.selectedPhysicalPartitions,
+              columnWidth: RW.courtColumnWidth + 50,
+              partitionLabelBuilder: (p) => _courtColumnLabel(state, p),
+              fromDate: today.applied(TimeOfDay(hour: RW.firstHour, minute: 0)),
+              lastDate: today.applied(TimeOfDay(hour: RW.lastHour, minute: 0)),
+              onBlankSpaceTap: (partition, interval) {
+                final startTime = interval.initialDate!;
+                final newSession = Session.fromDates(
+                  DateTime(today.year, today.month, today.day, startTime.hour, 0),
+                  const TimeOfDay(hour: 1, minute: 0),
+                ).copyWith(partitionPhysicalId: partition.partitionPhysicalId);
+                setState(() {
+                  _pendingAutoOpenCourtSession =
+                      _toPreviewSession(newSession, partition, today);
+                });
+                sl<CreateSesssionsFormBloc>().add(
+                  AddExtraSessionToPartition(partition.partitionPhysicalId, newSession),
+                );
+              },
+              buildCard: (session, partition, height) {
+                final info = meta[session];
+                final isExtra = info?.isExtra ?? false;
+                final autoOpen = _pendingAutoOpenCourtSession == session;
+                return _CourtSessionEditCard(
+                  previewSession: session,
+                  original: info?.original ?? session,
+                  isExtra: isExtra,
+                  partitionPhysicalId: partition.partitionPhysicalId,
+                  autoOpen: autoOpen,
+                  onAutoOpened: autoOpen
+                      ? () => setState(() => _pendingAutoOpenCourtSession = null)
+                      : null,
+                );
+              },
+            ),
+          ),
+        ),
+        const SizedBox(height: 10),
+        _buildCourtsTotalsFooter(state),
+      ],
+    );
+  }
+
+  /// Fila de totales por columna, debajo de la grilla del paso "Canchas" —
+  /// precio por turno y subtotal de esa cancha (turnos efectivos × precio),
+  /// alineada con cada columna (64px de hueco a la izquierda, igual que el
+  /// ancho reservado por Agenda para la columna de horarios).
+  Widget _buildCourtsTotalsFooter(CreateSesssionsFormState state) {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(width: 64),
+          for (final p in state.selectedPhysicalPartitions)
+            SizedBox(
+              width: RW.courtColumnWidth + 50,
+              child: _CourtTotalSummary(
+                price: p.defaultSessionPrice ?? 0,
+                sessionsCount: state
+                    .effectiveSessionsForPartition(p.partitionPhysicalId)
+                    .length,
+              ),
+            ),
+        ],
       ),
     );
   }
@@ -985,10 +1032,33 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
     return fromSelection;
   }
 
-  Future<_BulkCreationDialogAction?> _showBulkCreationResultDialog(
-    BuildContext context,
-    CreateSesssionsFormState state,
-  ) {
+  Widget _buildSavingOverlay() {
+    return Container(
+      color: const Color(0xB80A090D),
+      alignment: Alignment.center,
+      child: Container(
+        width: 320,
+        decoration: BoxDecoration(color: RW.card, borderRadius: BorderRadius.circular(20)),
+        padding: const EdgeInsets.all(36),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(
+              width: 40,
+              height: 40,
+              child: CircularProgressIndicator(strokeWidth: 4, color: RW.primary),
+            ),
+            const SizedBox(height: 18),
+            const Text('Creando turnos…', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: RW.onSurface)),
+            const SizedBox(height: 6),
+            Text('Validando superposiciones con turnos existentes.', style: RW.tSubtitle, textAlign: TextAlign.center),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildResultOverlay(BuildContext context, CreateSesssionsFormState state) {
     final skipped = [...state.skippedSessions]
       ..sort((a, b) => a.startTime.compareTo(b.startTime));
     final previewItems = skipped.take(30).toList();
@@ -999,132 +1069,127 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
     );
     final hasIncidents = skipped.isNotEmpty;
 
-    return showDialog<_BulkCreationDialogAction>(
-      context: context,
-      barrierDismissible: false,
-      builder: (dialogContext) {
-        return Dialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          backgroundColor: RW.card,
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 460, maxHeight: 620),
-            child: Padding(
-              padding: const EdgeInsets.all(28),
-              child: Column(
+    return Container(
+      color: const Color(0xB80A090D),
+      alignment: Alignment.center,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 460, maxHeight: 620),
+        child: Container(
+          decoration: BoxDecoration(color: RW.card, borderRadius: BorderRadius.circular(20)),
+          padding: const EdgeInsets.all(28),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        width: 40,
-                        height: 40,
-                        decoration: BoxDecoration(
-                          color: hasIncidents ? RW.errorContainer : RW.primaryContainer,
-                          borderRadius: BorderRadius.circular(RW.columnRadius),
-                        ),
-                        child: Center(
-                          child: Text(
-                            hasIncidents ? 'ⓘ' : '✓',
-                            style: TextStyle(color: hasIncidents ? RW.onErrorContainer : RW.onPrimaryContainer, fontSize: 18),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              hasIncidents ? 'Carga completada con incidencias' : 'Carga completada',
-                              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: RW.onSurface),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              hasIncidents
-                                  ? 'Algunos turnos no se pudieron crear y requieren revisión.'
-                                  : 'Todos los turnos se crearon correctamente.',
-                              style: RW.tSubtitle,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 18),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _ResultMetricCard(
-                          label: 'Creados',
-                          value: '${state.createdCount}',
-                          accentColor: RW.primary,
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: _ResultMetricCard(
-                          label: 'No creados',
-                          value: '${skipped.length}',
-                          accentColor: hasIncidents ? RW.error : RW.mutedMore,
-                        ),
-                      ),
-                    ],
-                  ),
-                  if (skipped.isNotEmpty) ...[
-                    const SizedBox(height: 18),
-                    Text('Turnos no creados:', style: RW.tLabel),
-                    const SizedBox(height: 8),
-                    Flexible(
-                      child: SingleChildScrollView(
-                        child: Column(
-                          children: previewItems
-                              .map(
-                                (item) => _SkippedSessionTile(
-                                  item: item,
-                                  physicalPartitionDisplayLabel:
-                                      physicalPartitionDisplayLabelMap[item.partitionPhysicalId],
-                                ),
-                              )
-                              .toList(),
-                        ),
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: hasIncidents ? RW.errorContainer : RW.primaryContainer,
+                      borderRadius: BorderRadius.circular(RW.columnRadius),
+                    ),
+                    child: Center(
+                      child: Text(
+                        hasIncidents ? 'ⓘ' : '✓',
+                        style: TextStyle(color: hasIncidents ? RW.onErrorContainer : RW.onPrimaryContainer, fontSize: 18),
                       ),
                     ),
-                    if (hiddenCount > 0)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 4),
-                        child: Text(
-                          'Mostrando ${previewItems.length} de ${skipped.length}. Quedaron $hiddenCount turno(s) adicionales con incidencia.',
-                          style: RW.tSmall,
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          hasIncidents ? 'Carga completada con incidencias' : 'Carga completada',
+                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: RW.onSurface),
                         ),
-                      ),
-                  ],
-                  const SizedBox(height: 18),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _RWOutlinedButton(
-                          label: 'Volver al gestor',
-                          onPressed: () => Navigator.of(dialogContext).pop(_BulkCreationDialogAction.backToCalendar),
+                        const SizedBox(height: 4),
+                        Text(
+                          hasIncidents
+                              ? 'Algunos turnos no se pudieron crear y requieren revisión.'
+                              : 'Todos los turnos se crearon correctamente.',
+                          style: RW.tSubtitle,
                         ),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: _RWFilledButton(
-                          label: 'Intentar de nuevo',
-                          icon: Icons.refresh,
-                          onPressed: () => Navigator.of(dialogContext).pop(_BulkCreationDialogAction.retryCreation),
-                        ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ],
               ),
-            ),
+              const SizedBox(height: 18),
+              Row(
+                children: [
+                  Expanded(
+                    child: _ResultMetricCard(
+                      label: 'Creados',
+                      value: '${state.createdCount}',
+                      accentColor: RW.primary,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: _ResultMetricCard(
+                      label: 'No creados',
+                      value: '${skipped.length}',
+                      accentColor: hasIncidents ? RW.error : RW.mutedMore,
+                    ),
+                  ),
+                ],
+              ),
+              if (skipped.isNotEmpty) ...[
+                const SizedBox(height: 18),
+                Text('Turnos no creados:', style: RW.tLabel),
+                const SizedBox(height: 8),
+                Flexible(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      children: previewItems
+                          .map(
+                            (item) => _SkippedSessionTile(
+                              item: item,
+                              physicalPartitionDisplayLabel:
+                                  physicalPartitionDisplayLabelMap[item.partitionPhysicalId],
+                            ),
+                          )
+                          .toList(),
+                    ),
+                  ),
+                ),
+                if (hiddenCount > 0)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: Text(
+                      'Mostrando ${previewItems.length} de ${skipped.length}. Quedaron $hiddenCount turno(s) adicionales con incidencia.',
+                      style: RW.tSmall,
+                    ),
+                  ),
+              ],
+              const SizedBox(height: 18),
+              Row(
+                children: [
+                  Expanded(
+                    child: _RWOutlinedButton(
+                      label: 'Volver al gestor',
+                      onPressed: () => _handleBackToCalendar(context),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: _RWFilledButton(
+                      label: 'Cargar más turnos',
+                      icon: Icons.add,
+                      onPressed: _handleCreateMore,
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 
@@ -1383,8 +1448,6 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
   }
 }
 
-enum _BulkCreationDialogAction { backToCalendar, retryCreation }
-
 class _WizardStep {
   const _WizardStep({required this.label, required this.title, required this.subtitle});
 
@@ -1554,50 +1617,202 @@ class _RWEmptyBox extends StatelessWidget {
 /// precio (de la cancha, no de la plantilla) y permite quitarlo solo de esa
 /// cancha. Distingue visualmente si viene de la plantilla o fue agregado
 /// solo en esta cancha (ver leyenda del header).
-class _PartitionSessionCard extends StatelessWidget {
-  const _PartitionSessionCard({
-    required this.session,
-    required this.isExtra,
-    required this.onRemove,
-  });
+/// Resumen por columna, debajo de la grilla del paso "Canchas": precio por
+/// turno y el subtotal de esa cancha (turnos efectivos × precio).
+class _CourtTotalSummary extends StatelessWidget {
+  const _CourtTotalSummary({required this.price, required this.sessionsCount});
 
-  final Session session;
-  final bool isExtra;
-  final VoidCallback? onRemove;
+  final double price;
+  final int sessionsCount;
 
   @override
   Widget build(BuildContext context) {
+    final priceLabel = '\$${price.toStringAsFixed(0)}';
+    final subtotalLabel = '\$${(price * sessionsCount).toStringAsFixed(0)}';
+
+    return Column(
+      children: [
+        Text('$priceLabel / turno', style: RW.tSmall),
+        const SizedBox(height: 2),
+        Text(
+          '$subtotalLabel total',
+          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: RW.onSurfaceVariant),
+        ),
+      ],
+    );
+  }
+}
+
+/// Card de un turno en la vista por cancha (paso "Canchas") — funciona
+/// idéntico a la card de la plantilla (paso "Horarios"): clic en la card
+/// abre el mismo popover de edición (nudges de hora/15min + duración),
+/// clic en la × la borra. Si el turno viene de la plantilla, editarlo lo
+/// "desprende" en un ajuste propio de esta cancha (se quita de la plantilla
+/// compartida y se agrega como extra con el valor nuevo), ya que esta vista
+/// no puede modificar el horario global sin afectar a las demás canchas.
+class _CourtSessionEditCard extends StatefulWidget {
+  const _CourtSessionEditCard({
+    required this.previewSession,
+    required this.original,
+    required this.isExtra,
+    required this.partitionPhysicalId,
+    this.autoOpen = false,
+    this.onAutoOpened,
+  });
+
+  final Session previewSession;
+  final Session original;
+  final bool isExtra;
+  final int partitionPhysicalId;
+  final bool autoOpen;
+  final VoidCallback? onAutoOpened;
+
+  @override
+  State<_CourtSessionEditCard> createState() => _CourtSessionEditCardState();
+}
+
+class _CourtSessionEditCardState extends State<_CourtSessionEditCard> {
+  final dropdownController = DropdownController();
+
+  @override
+  void initState() {
+    super.initState();
+    _maybeAutoOpen();
+  }
+
+  @override
+  void didUpdateWidget(covariant _CourtSessionEditCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.autoOpen && !oldWidget.autoOpen) _maybeAutoOpen();
+  }
+
+  void _maybeAutoOpen() {
+    if (!widget.autoOpen) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      dropdownController.show!();
+      widget.onAutoOpened?.call();
+    });
+  }
+
+  void _replaceWith(Session updated) {
+    final bloc = sl<CreateSesssionsFormBloc>();
+    if (widget.isExtra) {
+      bloc.add(RemoveExtraSessionFromPartition(widget.partitionPhysicalId, widget.original));
+    } else {
+      bloc.add(RemoveSessionFromPartition(widget.partitionPhysicalId, widget.original));
+    }
+    bloc.add(AddExtraSessionToPartition(widget.partitionPhysicalId, updated));
+  }
+
+  void _nudge(int deltaMinutes) {
+    final base = widget.original;
+    final totalMinutes = (base.startTime.hour * 60 + base.startTime.minute + deltaMinutes)
+        .clamp(RW.firstHour * 60, RW.lastHour * 60 - 15);
+    final newStart = DateTime(
+      base.startTime.year,
+      base.startTime.month,
+      base.startTime.day,
+      totalMinutes ~/ 60,
+      totalMinutes % 60,
+    );
+    _replaceWith(base.copyWith(startTime: newStart));
+  }
+
+  void _setDuration(int minutes) {
+    _replaceWith(widget.original.copyWith(duration: minutes));
+  }
+
+  void _delete() {
+    final bloc = sl<CreateSesssionsFormBloc>();
+    if (widget.isExtra) {
+      bloc.add(RemoveExtraSessionFromPartition(widget.partitionPhysicalId, widget.original));
+    } else {
+      bloc.add(RemoveSessionFromPartition(widget.partitionPhysicalId, widget.original));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return DropdownWidget(
+      aligned: const Aligned(
+        follower: Alignment.topLeft,
+        target: Alignment.bottomLeft,
+        offset: Offset(0, 6),
+      ),
+      width: 230,
+      obscureBackground: false,
+      dropdownController: dropdownController,
+      menuWidget: SessionEditPopover(
+        session: widget.original,
+        onNudge: _nudge,
+        onSetDuration: _setDuration,
+        onDelete: () {
+          _delete();
+          dropdownController.hide!();
+        },
+        onClose: () => dropdownController.hide!(),
+      ),
+      child: _buildBlock(context),
+    );
+  }
+
+  Widget _buildBlock(BuildContext context) {
+    final session = widget.previewSession;
     final end = session.endTime as DateTime;
     final label = '${DateFormat.Hm().format(session.startTime)}–${DateFormat.Hm().format(end)}'
         ' · \$${session.price.toStringAsFixed(0)}';
+    final accent = widget.isExtra ? RW.accentExtra : RW.accent60min;
 
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 4),
-      decoration: BoxDecoration(
-        color: RW.panel,
-        borderRadius: BorderRadius.circular(RW.blockRadiusSmall),
-        border: Border(left: BorderSide(color: isExtra ? RW.accentExtra : RW.accent60min, width: 3)),
-      ),
-      padding: const EdgeInsets.fromLTRB(8, 4, 4, 4),
-      child: Row(
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4),
+      child: Stack(
         children: [
-          Expanded(
-            child: Text(
-              label,
-              style: const TextStyle(fontSize: 10, color: RW.onSurface),
-              overflow: TextOverflow.ellipsis,
-              maxLines: 1,
-            ),
-          ),
-          if (onRemove != null)
-            InkWell(
-              onTap: onRemove,
-              borderRadius: BorderRadius.circular(999),
-              child: const Padding(
-                padding: EdgeInsets.all(2),
-                child: Text('×', style: TextStyle(fontSize: 12, color: RW.onSurface)),
+          Positioned.fill(
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: () => dropdownController.show!(),
+                borderRadius: BorderRadius.circular(RW.blockRadiusSmall),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: RW.primaryContainer,
+                    borderRadius: BorderRadius.circular(RW.blockRadiusSmall),
+                    border: Border(left: BorderSide(color: accent, width: 3)),
+                  ),
+                  padding: const EdgeInsets.fromLTRB(6, 4, 18, 4),
+                  alignment: Alignment.topLeft,
+                  child: Text(
+                    label,
+                    style: const TextStyle(fontSize: 10, color: RW.onPrimaryContainer),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                  ),
+                ),
               ),
             ),
+          ),
+          Positioned(
+            top: 3,
+            right: 3,
+            child: InkWell(
+              onTap: _delete,
+              borderRadius: BorderRadius.circular(999),
+              child: Container(
+                width: 15,
+                height: 15,
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.32),
+                  shape: BoxShape.circle,
+                ),
+                alignment: Alignment.center,
+                child: const Text(
+                  '×',
+                  style: TextStyle(fontSize: 10, color: RW.onPrimaryContainer, height: 1),
+                ),
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -1714,35 +1929,6 @@ class _RWFilledButton extends StatelessWidget {
           ? SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: disabled ? RW.mutedMore : RW.onPrimary))
           : (icon == null ? const SizedBox.shrink() : Icon(icon, size: 16)),
       label: Text(label),
-    );
-  }
-}
-
-class _SavingDialog extends StatelessWidget {
-  const _SavingDialog();
-
-  @override
-  Widget build(BuildContext context) {
-    return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      backgroundColor: RW.card,
-      child: Padding(
-        padding: const EdgeInsets.all(36),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const SizedBox(
-              width: 40,
-              height: 40,
-              child: CircularProgressIndicator(strokeWidth: 4, color: RW.primary),
-            ),
-            const SizedBox(height: 18),
-            const Text('Creando turnos…', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: RW.onSurface)),
-            const SizedBox(height: 6),
-            Text('Validando superposiciones con turnos existentes.', style: RW.tSubtitle, textAlign: TextAlign.center),
-          ],
-        ),
-      ),
     );
   }
 }

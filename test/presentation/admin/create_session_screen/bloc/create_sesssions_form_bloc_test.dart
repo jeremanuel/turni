@@ -338,4 +338,45 @@ void main() {
       ],
     );
   });
+
+  group('Estado inicial y reseteo', () {
+    test(
+      'el estado inicial ya trae resuelto el intervalo del preset por defecto',
+      () {
+        final bloc = buildBloc();
+
+        expect(bloc.state.datePreset, DatePreset.week);
+        expect(bloc.state.interval, isNotNull);
+        expect(bloc.state.interval!.generateDateRange(), hasLength(7));
+
+        bloc.close();
+      },
+    );
+
+    blocTest<CreateSesssionsFormBloc, CreateSesssionsFormState>(
+      'ResetForm vuelve a un estado en blanco, con el intervalo del preset '
+      'por defecto ya resuelto (no en 0 días)',
+      build: buildBloc,
+      seed: () => CreateSesssionsFormState(
+        sessions: [templateSession],
+        selectedPhysicalPartitions: [physicalPartition],
+        interval: interval,
+        datePreset: DatePreset.custom,
+        createdCount: 5,
+        savedSessions: true,
+      ),
+      act: (bloc) => bloc.add(const ResetForm()),
+      expect: () => [
+        predicate<CreateSesssionsFormState>((s) {
+          return s.sessions.isEmpty &&
+              s.selectedPhysicalPartitions.isEmpty &&
+              s.savedSessions == false &&
+              s.createdCount == 0 &&
+              s.datePreset == DatePreset.week &&
+              s.interval != null &&
+              s.interval!.generateDateRange().length == 7;
+        }, 'plantilla y selección vacías, con el rango de 7 días ya resuelto'),
+      ],
+    );
+  });
 }
