@@ -79,7 +79,9 @@ class _ClubMapOverviewState extends State<ClubMapOverview> {
 
     final plan = LayoutBuilder(
       builder: (context, constraints) {
-        final scale = planScale(map.widthM, map.heightM, constraints.maxWidth - 34, 600);
+        // Que el plano use el alto de la pantalla (menos el encabezado), no un tope fijo.
+        final maxHeight = (MediaQuery.sizeOf(context).height - 300).clamp(360.0, double.infinity);
+        final scale = planScale(map.widthM, map.heightM, constraints.maxWidth - 34, maxHeight);
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
