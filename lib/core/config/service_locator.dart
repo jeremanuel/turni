@@ -3,6 +3,7 @@ import 'package:flutter_localization/flutter_localization.dart';
 import 'package:get_it/get_it.dart';
 import '../../domain/repositories/ia_repository.dart';
 import '../../domain/repositories/admin_repository.dart';
+import '../../domain/repositories/club_map_repository.dart';
 import '../../domain/repositories/club_payment_account_repository.dart';
 import '../../domain/repositories/label_repository.dart';
 import '../../domain/repositories/payment_repository.dart';
@@ -15,6 +16,7 @@ import '../../infrastructure/api/providers/admin_provider.dart';
 import '../../infrastructure/api/providers/session_provider.dart';
 import '../../infrastructure/api/repositories/IA/gemini_repository.dart';
 import '../../infrastructure/api/repositories/admin_repository_impl.dart';
+import '../../infrastructure/api/repositories/club_map_repository_impl.dart';
 import '../../infrastructure/api/repositories/club_payment_account_repository_impl.dart';
 import '../../infrastructure/api/repositories/label_repository_impl.dart';
 import '../../infrastructure/api/repositories/payment_repository_impl.dart';
@@ -47,6 +49,7 @@ class ServiceLocator {
     sl.registerSingleton<PaymentRepository>(PaymentRepositoryImpl());
 
     sl.registerSingleton<ClubPaymentAccountRepository>(ClubPaymentAccountRepositoryImpl());
+    sl.registerSingleton<ClubMapRepository>(ClubMapRepositoryImpl());
 
     sl.registerSingleton<ProductRepository>(ProductRepositoryImpl());
 
