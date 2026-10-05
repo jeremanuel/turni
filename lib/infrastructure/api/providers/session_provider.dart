@@ -127,7 +127,12 @@ class SessionProvider {
 
 
   Future<List<ClubPartition>> getClubPartitionsByAdmin() async {
-    final response = await dioInstance.get("/admin/club_partitions");
+    // Incluye sectores/canchas inactivos (con su `active`): la UI los muestra
+    // deshabilitados con un acceso a la configuración para reactivarlos.
+    final response = await dioInstance.get(
+      "/admin/club_partitions",
+      queryParameters: {"include_inactive": true},
+    );
 
     return (response.data as List)
         .map((session) {
@@ -144,9 +149,20 @@ class SessionProvider {
   }
 
   Future<CreateSessionsResult> createSessions(List<Session> sessions, List<int> physicalPartitions,
-      List<DateTime> dates) async {
+      List<DateTime> dates, {List<Map<int, double>>? pricesByDayOfWeek}) async {
     final body = {
-      "sessions": sessions,
+      // `price_by_day_of_week` (1 = lunes ... 7 = domingo): el backend toma el
+      // precio de cada turno creado según el día de la fecha (tarifas por
+      // horario, ver CreateSessions.ts). `price` queda como fallback.
+      "sessions": [
+        for (var i = 0; i < sessions.length; i++)
+          {
+            ...sessions[i].toJson(),
+            if (pricesByDayOfWeek != null && i < pricesByDayOfWeek.length)
+              "price_by_day_of_week": pricesByDayOfWeek[i]
+                  .map((day, price) => MapEntry(day.toString(), price)),
+          },
+      ],
       "physical_partitions": physicalPartitions,
       // .toUtc().toIso8601String() en vez de .toString(): este último no
       // agrega offset ("2026-01-01 00:00:00.000"), y el backend

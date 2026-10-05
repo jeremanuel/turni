@@ -5,6 +5,8 @@ import '../../../../core/utils/responsive_builder.dart';
 import '../../../../core/utils/physical_partition_naming.dart';
 import '../../../../domain/entities/club_partition.dart';
 import '../../../core/agenda/agenda.dart';
+import '../../club_config/club_config_focus.dart';
+import '../../club_config/widgets/inactive_partition_hint.dart';
 import '../bloc/session_manager_bloc.dart';
 import '../bloc/session_manager_event.dart';
 import '../bloc/session_manager_state.dart';
@@ -128,20 +130,35 @@ class AgendaContainer extends StatelessWidget {
                 fallbackClubPartition: state.selectedClubPartition,
               ),
           sessions: state.sessions,
-          physicalPartitions:
-              state.selectedClubPartition?.physicalPartitions ?? [],
+          // Las canchas inactivas no se muestran como columna, salvo que ese
+          // día tengan turnos (dar de baja no borra los turnos ya creados).
+          physicalPartitions: (state.selectedClubPartition?.physicalPartitions ?? [])
+              .where((p) =>
+                  p.active ||
+                  state.sessions.any(
+                    (s) => s.partitionPhysicalId == p.partitionPhysicalId,
+                  ))
+              .toList(),
         );
       },
     );
   }
 
-    FilterChip buildChip(ClubPartition e, BuildContext context, SessionManagerState state) =>
-      FilterChip(
-        label: Text(e.clubType!.name),
-        onSelected: onSelectChip(context, e),
-        showCheckmark: false,
-        selected: e.club_partition_id ==
-            state.selectedClubPartition?.club_partition_id,
+    Widget buildChip(ClubPartition e, BuildContext context, SessionManagerState state) =>
+      InactivePartitionHint(
+        inactive: !e.active,
+        message: InactivePartitionHint.clubPartitionMessage,
+        focus: ClubConfigFocus.clubPartition(e.club_partition_id ?? 0),
+        onConfigClosed: () => context
+            .read<SessionManagerBloc>()
+            .add(ReloadClubPartitionsEvent()),
+        child: FilterChip(
+          label: Text(e.clubType!.name),
+          onSelected: e.active ? onSelectChip(context, e) : null,
+          showCheckmark: false,
+          selected: e.club_partition_id ==
+              state.selectedClubPartition?.club_partition_id,
+        ),
       );
 
       

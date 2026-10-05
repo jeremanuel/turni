@@ -13,7 +13,16 @@ import '../widgets/club_partition_form_dialog.dart';
 import '../widgets/partition_physical_form_dialog.dart';
 
 class ClubPartitionsTab extends StatefulWidget {
-  const ClubPartitionsTab({super.key});
+  const ClubPartitionsTab({
+    super.key,
+    this.focusClubPartitionId,
+    this.focusPartitionPhysicalId,
+  });
+
+  /// Sector (y opcionalmente cancha) al que apunta un acceso directo desde
+  /// otra pantalla (ver `ClubConfigFocus`): se scrollea hasta él y se resalta.
+  final int? focusClubPartitionId;
+  final int? focusPartitionPhysicalId;
 
   @override
   State<ClubPartitionsTab> createState() => _ClubPartitionsTabState();
@@ -33,6 +42,7 @@ class _ClubPartitionsTabState extends State<ClubPartitionsTab> {
   List<ClubPartition> _clubPartitions = [];
   final Map<int, List<PhysicalPartition>> _physicalByClubPartition = {};
   final Set<int> _loadingPhysicalFor = {};
+  final _focusedCardKey = GlobalKey();
 
   @override
   void initState() {
@@ -104,6 +114,18 @@ class _ClubPartitionsTabState extends State<ClubPartitionsTab> {
     setState(() {
       _isLoading = false;
     });
+
+    if (widget.focusClubPartitionId != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        final focusedContext = _focusedCardKey.currentContext;
+        if (focusedContext == null) return;
+        Scrollable.ensureVisible(
+          focusedContext,
+          duration: const Duration(milliseconds: 300),
+          alignment: 0.1,
+        );
+      });
+    }
   }
 
   Future<void> _loadPhysicalPartitions(int clubPartitionId, {bool silent = false}) async {
@@ -292,10 +314,15 @@ class _ClubPartitionsTabState extends State<ClubPartitionsTab> {
           else
             ...(_clubPartitions.map((partition) {
               final id = partition.club_partition_id!;
+              final focused = id == widget.focusClubPartitionId;
               return Padding(
+                key: focused ? _focusedCardKey : null,
                 padding: const EdgeInsets.only(bottom: 16),
                 child: ClubPartitionCard(
                   clubPartition: partition,
+                  highlighted: focused,
+                  highlightedPartitionPhysicalId:
+                      focused ? widget.focusPartitionPhysicalId : null,
                   clubTypeName: _clubTypeName(partition.club_type_id),
                   physicalPartitions: _physicalByClubPartition[id] ?? [],
                   isLoadingPhysical: _loadingPhysicalFor.contains(id),

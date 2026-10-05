@@ -56,7 +56,25 @@ class SessionManagerBloc extends Bloc<SessionManagerEvent, SessionManagerState> 
           sessions: sessions,
           isFirstLoad: false,
           clubPartitions: clubPartitions,
-          selectedClubPartition: clubPartitions.first
+          // Los inactivos vienen igual (se muestran deshabilitados), así que
+          // arranca en el primero activo.
+          selectedClubPartition: firstActive(clubPartitions)
+        )
+      );
+    });
+
+    on<ReloadClubPartitionsEvent>((event, emit) async {
+      final clubPartitions = await _sessionUserCases.getClubPartitions();
+
+      final currentId = state.selectedClubPartition?.club_partition_id;
+      final current = clubPartitions.firstWhereOrNull(
+        (p) => p.club_partition_id == currentId && p.active,
+      );
+
+      emit(
+        state.copyWith(
+          clubPartitions: clubPartitions,
+          selectedClubPartition: current ?? firstActive(clubPartitions),
         )
       );
     });
@@ -240,6 +258,9 @@ print("test desde bloc:");
 
 
 
+
+  static ClubPartition? firstActive(List<ClubPartition> clubPartitions) =>
+      clubPartitions.firstWhereOrNull((p) => p.active) ?? clubPartitions.firstOrNull;
 
   ClubPartition getNewSelectedClubPartition(Session session, List<ClubPartition> clubPartitions){
     return clubPartitions.firstWhere((element) {

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import 'club_config_focus.dart';
 import 'tabs/club_info_tab.dart';
 import 'tabs/club_partitions_tab.dart';
 import 'tabs/price_tariffs_tab.dart';
@@ -10,12 +11,22 @@ import 'tabs/session_request_settings_tab.dart';
 /// Pantalla de configuración de admin para el club (reemplaza la vieja
 /// `AdminSettingsPage`, que ahora vive como la tab "Solicitudes de turno").
 class ClubConfigPage extends StatelessWidget {
-  const ClubConfigPage({super.key});
+  const ClubConfigPage({super.key, this.focus, this.modal = false});
+
+  /// Tab + ítem a abrir/resaltar al entrar (ver [openClubConfig]).
+  final ClubConfigFocus? focus;
+
+  /// true cuando se abrió con [openClubConfig] encima de otra pantalla: el
+  /// "atrás" cierra esa ruta en vez de navegar con go_router.
+  final bool modal;
 
   @override
   Widget build(BuildContext context) {
+    final focus = this.focus;
+
     return DefaultTabController(
       length: 5,
+      initialIndex: focus?.tab ?? ClubConfigTab.info,
       child: Scaffold(
         // En el mockup solo la franja de arriba (appbar + tabs) usa el tono
         // más oscuro (`surface`); el cuerpo de cada tab usa el tono más
@@ -24,8 +35,9 @@ class ClubConfigPage extends StatelessWidget {
         appBar: AppBar(
           title: const Text("Configuración"),
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
-            onPressed: () => context.pop(),
+            icon: Icon(modal ? Icons.close : Icons.arrow_back),
+            tooltip: modal ? 'Cerrar' : null,
+            onPressed: () => modal ? Navigator.of(context).pop() : context.pop(),
           ),
           bottom: const TabBar(
             isScrollable: true,
@@ -38,13 +50,24 @@ class ClubConfigPage extends StatelessWidget {
             ],
           ),
         ),
-        body: const TabBarView(
+        body: TabBarView(
           children: [
-            ClubInfoTab(),
-            ClubPartitionsTab(),
-            PriceTariffsTab(),
-            ProductsTab(),
-            SessionRequestSettingsTab(),
+            const ClubInfoTab(),
+            ClubPartitionsTab(
+              focusClubPartitionId: focus?.tab == ClubConfigTab.partitions
+                  ? focus?.clubPartitionId
+                  : null,
+              focusPartitionPhysicalId: focus?.partitionPhysicalId,
+            ),
+            PriceTariffsTab(
+              focusClubPartitionId: focus?.tab == ClubConfigTab.priceTariffs
+                  ? focus?.clubPartitionId
+                  : null,
+              focusPriceTariffId: focus?.priceTariffId,
+              focusPriceRuleId: focus?.priceRuleId,
+            ),
+            const ProductsTab(),
+            const SessionRequestSettingsTab(),
           ],
         ),
       ),

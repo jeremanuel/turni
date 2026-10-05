@@ -55,7 +55,18 @@ Widget _dayPill(
 }
 
 class PriceTariffsTab extends StatefulWidget {
-  const PriceTariffsTab({super.key});
+  const PriceTariffsTab({
+    super.key,
+    this.focusClubPartitionId,
+    this.focusPriceTariffId,
+    this.focusPriceRuleId,
+  });
+
+  /// Sector/tarifa/franja a dejar seleccionados al abrir (acceso directo
+  /// desde otra pantalla, ver `ClubConfigFocus`). La franja se resalta.
+  final int? focusClubPartitionId;
+  final int? focusPriceTariffId;
+  final int? focusPriceRuleId;
 
   @override
   State<PriceTariffsTab> createState() => _PriceTariffsTabState();
@@ -81,6 +92,7 @@ class _PriceTariffsTabState extends State<PriceTariffsTab> {
   List<PriceTariff> _tariffs = [];
   int? _selectedTariffId;
   bool _isLoadingTariffs = false;
+  bool _focusConsumed = false;
 
   @override
   void initState() {
@@ -135,7 +147,12 @@ class _PriceTariffsTabState extends State<PriceTariffsTab> {
           _clubTypes = clubTypes;
           _clubPartitions = partitions;
           _isLoading = false;
-          _selectedClubPartitionId = partitions.isNotEmpty ? partitions.first.club_partition_id : null;
+          final focused = partitions.where(
+            (p) => p.club_partition_id == widget.focusClubPartitionId,
+          );
+          _selectedClubPartitionId = focused.isNotEmpty
+              ? focused.first.club_partition_id
+              : (partitions.isNotEmpty ? partitions.first.club_partition_id : null);
         });
 
         if (_selectedClubPartitionId != null) {
@@ -166,10 +183,20 @@ class _PriceTariffsTabState extends State<PriceTariffsTab> {
       right: (List<PriceTariff> value) => tariffs = value,
     );
 
+    // La tarifa enfocada se respeta solo la primera vez que se carga su
+    // sector: si el admin después cambia de sector y vuelve, es navegación suya.
+    final focusTariffId = widget.focusPriceTariffId;
+    final focused = !_focusConsumed && focusTariffId != null
+        ? tariffs.where((t) => t.priceTariffId == focusTariffId)
+        : const <PriceTariff>[];
+    if (focused.isNotEmpty) _focusConsumed = true;
+
     setState(() {
       _physicalPartitions = physical;
       _tariffs = tariffs;
-      _selectedTariffId = tariffs.isNotEmpty ? tariffs.first.priceTariffId : null;
+      _selectedTariffId = focused.isNotEmpty
+          ? focused.first.priceTariffId
+          : (tariffs.isNotEmpty ? tariffs.first.priceTariffId : null);
       _isLoadingTariffs = false;
       if (error != null) _errorMessage = error;
     });
@@ -664,8 +691,21 @@ class _PriceTariffsTabState extends State<PriceTariffsTab> {
   }
 
   Widget _buildRuleRow(PriceTariff tariff, PriceRule rule) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
+    final colorScheme = Theme.of(context).colorScheme;
+    // Franja a la que apunta un acceso directo (ej. "este turno usa esta
+    // franja" desde la carga de turnos): se resalta para encontrarla rápido.
+    final highlighted = rule.priceRuleId == widget.focusPriceRuleId;
+
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 2),
+      padding: EdgeInsets.symmetric(vertical: 4, horizontal: highlighted ? 8 : 0),
+      decoration: highlighted
+          ? BoxDecoration(
+              color: colorScheme.secondaryContainer,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: colorScheme.primary),
+            )
+          : null,
       child: Row(
         children: [
           Expanded(

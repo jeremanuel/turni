@@ -198,6 +198,7 @@ class SessionEditPopover extends StatelessWidget {
     required this.onSetDuration,
     required this.onDelete,
     required this.onClose,
+    this.extraSection,
   });
 
   final Session session;
@@ -205,6 +206,10 @@ class SessionEditPopover extends StatelessWidget {
   final ValueChanged<int> onSetDuration;
   final VoidCallback onDelete;
   final VoidCallback onClose;
+
+  /// Sección extra arriba de las acciones (ej. el precio del turno en una
+  /// cancha puntual, en el paso "Canchas").
+  final Widget? extraSection;
 
   static const List<int> _durationOptions = [30, 60, 90];
 
@@ -273,6 +278,12 @@ class SessionEditPopover extends StatelessWidget {
               ],
             ],
           ),
+          if (extraSection != null) ...[
+            const SizedBox(height: 10),
+            const Divider(height: 1, color: RW.outlineVariant),
+            const SizedBox(height: 10),
+            extraSection!,
+          ],
           const SizedBox(height: 10),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,

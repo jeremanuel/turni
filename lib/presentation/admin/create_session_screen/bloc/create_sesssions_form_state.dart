@@ -31,6 +31,22 @@ sealed class CreateSesssionsFormState with _$CreateSesssionsFormState {
 
     /// Turnos agregados SOLO para esta cancha, fuera de la plantilla.
     @Default({}) Map<int, List<Session>> courtExtraSessions,
+
+    /// Tarifas por horario de cada modalidad seleccionada (club partition
+    /// id -> tarifas). Se cargan al seleccionar la modalidad.
+    @Default({}) Map<int, List<PriceTariff>> tariffsByClubPartition,
+
+    /// true mientras se están trayendo tarifas del backend.
+    @Default(false) bool isLoadingTariffs,
+
+    /// Día de la semana (1 = lunes ... 7 = domingo) con el que se previsualizan
+    /// los precios en el paso "Canchas": la plantilla es un único día que se
+    /// repite en todo el rango, y una tarifa puede cobrar distinto según el día.
+    @Default(1) int priceDayOfWeek,
+
+    /// Precio pisado a mano por el admin para un turno puntual de una cancha
+    /// (partition physical id -> turno -> precio). Aplica a todos los días.
+    @Default({}) Map<int, Map<Session, double>> courtManualPrices,
   }) = _CreateSessionManagerState;
 
   const CreateSesssionsFormState._();
@@ -42,5 +58,29 @@ sealed class CreateSesssionsFormState with _$CreateSesssionsFormState {
     final extra = courtExtraSessions[partitionPhysicalId] ?? const [];
     final base = sessions.where((s) => !removed.contains(s));
     return [...base, ...extra]..sort((a, b) => a.startTime.compareTo(b.startTime));
+  }
+
+  /// Resolvedor de precios con las tarifas cargadas de todas las modalidades.
+  SessionPriceResolver get priceResolver => SessionPriceResolver(
+        tariffsByClubPartition.values.expand((tariffs) => tariffs).toList(),
+      );
+
+  double? manualPriceFor(int partitionPhysicalId, Session session) =>
+      courtManualPrices[partitionPhysicalId]?[session];
+
+  /// Precio de [session] en [partition] para el día [dayOfWeek] (por default,
+  /// el día elegido para previsualizar), con la regla que lo determina.
+  ResolvedSessionPrice resolvePrice(
+    PhysicalPartition partition,
+    Session session, {
+    SessionPriceResolver? resolver,
+    int? dayOfWeek,
+  }) {
+    return (resolver ?? priceResolver).resolve(
+      partition: partition,
+      dayOfWeek: dayOfWeek ?? priceDayOfWeek,
+      startMinutes: session.startTime.hour * 60 + session.startTime.minute,
+      manualPrice: manualPriceFor(partition.partitionPhysicalId, session),
+    );
   }
 }

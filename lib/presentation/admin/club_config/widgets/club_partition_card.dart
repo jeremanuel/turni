@@ -17,6 +17,8 @@ class ClubPartitionCard extends StatelessWidget {
     required this.onAddPhysical,
     required this.onEditPhysical,
     required this.onTogglePhysicalActive,
+    this.highlighted = false,
+    this.highlightedPartitionPhysicalId,
   });
 
   final ClubPartition clubPartition;
@@ -29,12 +31,23 @@ class ClubPartitionCard extends StatelessWidget {
   final void Function(PhysicalPartition) onEditPhysical;
   final void Function(PhysicalPartition) onTogglePhysicalActive;
 
+  /// Resalta la card (y la fila de [highlightedPartitionPhysicalId]) cuando se
+  /// llegó acá desde un acceso directo de otra pantalla.
+  final bool highlighted;
+  final int? highlightedPartitionPhysicalId;
+
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
 
     return Card(
+      shape: highlighted
+          ? RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+              side: BorderSide(color: colorScheme.primary, width: 2),
+            )
+          : null,
       child: Opacity(
         opacity: clubPartition.active ? 1 : 0.65,
         child: Padding(
@@ -42,11 +55,17 @@ class ClubPartitionCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Wrap(
-                crossAxisAlignment: WrapCrossAlignment.center,
-                spacing: 12,
-                runSpacing: 8,
+              // Row + Expanded(Wrap) en vez de un único Wrap con un Spacer
+              // adentro: Spacer solo funciona en un Flex (tiraba "Incorrect
+              // use of ParentDataWidget" y rompía el layout de la card).
+              Row(
                 children: [
+                  Expanded(
+                    child: Wrap(
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      spacing: 12,
+                      runSpacing: 8,
+                      children: [
                   Chip(
                     label: Text(clubTypeName),
                     backgroundColor: colorScheme.secondaryContainer,
@@ -67,7 +86,9 @@ class ClubPartitionCard extends StatelessWidget {
                       style: textTheme.bodySmall
                           ?.copyWith(color: colorScheme.onSurfaceVariant),
                     ),
-                  const Spacer(),
+                      ],
+                    ),
+                  ),
                   Text(clubPartition.active ? 'Activo' : 'Inactivo'),
                   Switch(
                     value: clubPartition.active,
@@ -107,7 +128,21 @@ class ClubPartitionCard extends StatelessWidget {
                     rows: physicalPartitions
                         .map(
                           (partition) => [
-                            Text(partition.description ?? '-'),
+                            partition.partitionPhysicalId == highlightedPartitionPhysicalId
+                                ? Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(Icons.arrow_right, size: 20, color: colorScheme.primary),
+                                      Text(
+                                        partition.description ?? '-',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w700,
+                                          color: colorScheme.primary,
+                                        ),
+                                      ),
+                                    ],
+                                  )
+                                : Text(partition.description ?? '-'),
                             Text(
                               partition.maxPlayers != null
                                   ? '${partition.minPlayers}–${partition.maxPlayers}'

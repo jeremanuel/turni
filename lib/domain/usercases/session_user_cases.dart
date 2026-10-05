@@ -28,8 +28,10 @@ class SessionUserCases {
     return _sessionRepository.getPhysicalPartitions();
   }
 
-  Future<CreateSessionsResult> createSessions(List<Session> sessions, List<int> physicalPartitions, TimeInterval interval) async {
-   return _sessionRepository.createSessions(sessions, physicalPartitions, interval.generateDateRange());
+  Future<CreateSessionsResult> createSessions(List<Session> sessions, List<int> physicalPartitions, TimeInterval interval,
+      {List<Map<int, double>>? pricesByDayOfWeek}) async {
+   return _sessionRepository.createSessions(sessions, physicalPartitions, interval.generateDateRange(),
+       pricesByDayOfWeek: pricesByDayOfWeek);
   }
 
   Future<Session> saveSession(Session session) async {
