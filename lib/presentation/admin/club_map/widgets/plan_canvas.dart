@@ -10,15 +10,20 @@ double planScale(int widthM, int heightM, double maxWidth, double maxHeight) {
   return byWidth < byHeight ? byWidth : byHeight;
 }
 
-/// El predio dibujado a escala, con la cuadrícula en metros y las canchas
-/// ubicadas. En modo edición las canchas se arrastran.
+/// El predio dibujado a escala, con la cuadrícula en metros, las canchas
+/// ubicadas y los otros espacios (entrada, bar...). En modo edición se
+/// arrastran.
 class PlanCanvas extends StatefulWidget {
   final ClubMapView view;
   final int widthM;
   final int heightM;
   final List<ClubMapElement> elements;
+  final List<ClubMapSpace> spaces;
   final double scale;
   final int? selectedCourtId;
+
+  /// Posición en [spaces] del espacio seleccionado.
+  final int? selectedSpaceIndex;
   final ClubMapIssues? issues;
 
   /// Libre u ocupada ahora, por cancha. `null`: no se muestra.
@@ -27,6 +32,11 @@ class PlanCanvas extends StatefulWidget {
 
   /// Edición: nueva posición (en metros) de una cancha arrastrada.
   final void Function(int courtId, int xM, int yM)? onCourtMoved;
+
+  final ValueChanged<int>? onSpaceTap;
+
+  /// Edición: nueva posición (en metros) de un espacio arrastrado.
+  final void Function(int index, int xM, int yM)? onSpaceMoved;
 
   /// Toque en un lugar vacío del predio.
   final VoidCallback? onBackgroundTap;
@@ -37,12 +47,16 @@ class PlanCanvas extends StatefulWidget {
     required this.widthM,
     required this.heightM,
     required this.elements,
+    this.spaces = const [],
     required this.scale,
     this.selectedCourtId,
+    this.selectedSpaceIndex,
     this.issues,
     this.liveStatus,
     this.onCourtTap,
     this.onCourtMoved,
+    this.onSpaceTap,
+    this.onSpaceMoved,
     this.onBackgroundTap,
   });
 
@@ -52,6 +66,7 @@ class PlanCanvas extends StatefulWidget {
 
 class _PlanCanvasState extends State<PlanCanvas> {
   int? _draggingId;
+  int? _draggingSpace;
   Offset _dragStartM = Offset.zero;
   Offset _dragDeltaPx = Offset.zero;
 
@@ -76,6 +91,8 @@ class _PlanCanvasState extends State<PlanCanvas> {
                 painter: PlanGridPainter(scale: scale, minorLines: _editable),
               ),
             ),
+            // Los espacios van debajo de las canchas.
+            for (var i = 0; i < widget.spaces.length; i++) _buildSpace(i, scale, colors),
             for (final element in _ordered()) _buildCourt(element, scale, colors),
           ],
         ),
@@ -97,7 +114,7 @@ class _PlanCanvasState extends State<PlanCanvas> {
     final found = widget.view.findCourt(element.courtId);
     if (found == null) return const SizedBox.shrink();
 
-    final fp = courtFootprint(found.partition.courtSize, element.rotated);
+    final fp = courtFootprint(widget.view.courtSizeOf(element.courtId), element.rotated);
     final hasIssue = widget.issues?.hasIssue(element.courtId) ?? false;
     final selected = widget.selectedCourtId == element.courtId;
 
@@ -154,6 +171,59 @@ class _PlanCanvasState extends State<PlanCanvas> {
             onPanEnd: _editable ? (_) => setState(() => _draggingId = null) : null,
             onPanCancel: _editable ? () => setState(() => _draggingId = null) : null,
             child: tile,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSpace(int index, double scale, ColorScheme colors) {
+    final space = widget.spaces[index];
+    final hasIssue = widget.issues?.spaceHasIssue(index) ?? false;
+    final selected = widget.selectedSpaceIndex == index;
+    final name = widget.view.spaceName(space);
+    final editable = widget.onSpaceMoved != null;
+
+    return Positioned(
+      left: space.xM * scale,
+      top: space.yM * scale,
+      child: Semantics(
+        button: widget.onSpaceTap != null,
+        selected: selected,
+        label: '$name, ${space.widthM} × ${space.heightM} m',
+        child: MouseRegion(
+          cursor: editable ? (_draggingSpace == index ? SystemMouseCursors.grabbing : SystemMouseCursors.grab) : SystemMouseCursors.basic,
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: widget.onSpaceTap == null ? null : () => widget.onSpaceTap!(index),
+            onPanStart: editable
+                ? (_) {
+                    widget.onSpaceTap?.call(index);
+                    setState(() {
+                      _draggingSpace = index;
+                      _dragStartM = Offset(space.xM.toDouble(), space.yM.toDouble());
+                      _dragDeltaPx = Offset.zero;
+                    });
+                  }
+                : null,
+            onPanUpdate: editable
+                ? (details) {
+                    _dragDeltaPx += details.delta;
+                    final target = _dragStartM + _dragDeltaPx / scale;
+                    final current = widget.spaces[index];
+                    final pos = clampToPlot(target.dx, target.dy, current.widthM.toDouble(), current.heightM.toDouble(), widget.widthM, widget.heightM);
+                    if (pos.x != current.xM || pos.y != current.yM) widget.onSpaceMoved!(index, pos.x, pos.y);
+                  }
+                : null,
+            onPanEnd: editable ? (_) => setState(() => _draggingSpace = null) : null,
+            onPanCancel: editable ? () => setState(() => _draggingSpace = null) : null,
+            child: SpaceTile(
+              type: space.type,
+              name: name,
+              width: space.widthM * scale,
+              height: space.heightM * scale,
+              ringColor: hasIssue ? colors.error : (selected ? colors.primary : null),
+            ),
           ),
         ),
       ),
