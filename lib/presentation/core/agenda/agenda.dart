@@ -22,6 +22,7 @@ class Agenda extends StatelessWidget {
       this.columnWidth = 300,
       this.onBlankSpaceTap,
       this.partitionSubtitleBuilder,
+      this.showNowIndicator = false,
 
       }) : sessions = [...sessions]
           ..sort((a, b) => a.startTime.compareTo(b.startTime)) {
@@ -49,6 +50,11 @@ class Agenda extends StatelessWidget {
   /// Segunda linea opcional en el header de cada columna (ej. capacidad de
   /// jugadores) — null mantiene el header de una sola linea de siempre.
   final String Function(PhysicalPartition)? partitionSubtitleBuilder;
+
+  /// Dibuja la línea de "ahora" (punto + línea `tertiary`) a la altura exacta
+  /// de la hora actual, si el día mostrado es hoy. Apagado por defecto: en
+  /// la plantilla del agregador de turnos no tiene sentido.
+  final bool showNowIndicator;
 
   late final List<ScrollController> scrollControllers;
   
@@ -245,7 +251,7 @@ class Agenda extends StatelessWidget {
   // Construye las listviews que dibujan las lineas verticales y horizontales
   Padding linesList() {
     return Padding(
-      padding: const EdgeInsets.only(top: 40),
+      padding: EdgeInsets.only(top: headerHeight),
       child: Stack(
         children: [
           ListView.builder(
@@ -261,11 +267,44 @@ class Agenda extends StatelessWidget {
                 isCurrentDivider = true;
               }
 
-              return SizedBox(
+              final divider = SizedBox(
                 height: heightPerMinute * 30,
                 child: Divider(
                   color: isCurrentDivider ? Theme.of(context).colorScheme.primary : null,
                 ),
+              );
+
+              final isToday = DateUtils.isSameDay(fromDate, now);
+              if (!showNowIndicator || !isCurrentDivider || !isToday) return divider;
+
+              // Cada fila mide 30 min y su divisor (centro de la fila) es la
+              // hora de `horariosDisponibles[index]`: la línea de "ahora" va
+              // desplazada desde ese centro según los minutos transcurridos.
+              final minutesIn = now.difference(horariosDisponibles[index]).inSeconds / 60;
+              final top = heightPerMinute * 15 + minutesIn * heightPerMinute;
+              final tertiary = Theme.of(context).colorScheme.tertiary;
+              return Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  divider,
+                  Positioned(
+                    left: 0,
+                    right: 0,
+                    top: top - 4,
+                    child: IgnorePointer(
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 8,
+                            height: 8,
+                            decoration: BoxDecoration(color: tertiary, shape: BoxShape.circle),
+                          ),
+                          Expanded(child: Container(height: 2, color: tertiary)),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               );
             },
             itemCount: horariosDisponibles.length,
@@ -302,7 +341,7 @@ class Agenda extends StatelessWidget {
     return SizedBox(
       width: hoursWidth,
       child: Padding(
-        padding: const EdgeInsets.only(top: 40),
+        padding: EdgeInsets.only(top: headerHeight),
         child: ListView.builder(
           controller: verticalLinesScrollController,
           itemBuilder: (context, index) {
@@ -335,8 +374,42 @@ class Agenda extends StatelessWidget {
     );
   }
 
+  /// Alto de la fila de encabezados de cancha. Con subtítulo ("Cubierta ·
+  /// 4 jug.") necesita dos líneas: nombre 14px + bajada 12px + margen.
+  double get headerHeight => partitionSubtitleBuilder == null ? 40 : 52;
+
   Widget buildPartitionHeader(PhysicalPartition physicalPartition, context) {
     final subtitle = partitionSubtitleBuilder?.call(physicalPartition);
+    final scheme = Theme.of(context).colorScheme;
+
+    if (subtitle != null) {
+      return SizedBox(
+        width: columnWidth,
+        height: headerHeight,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(4, 0, 4, 12),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                partitionLabelBuilder(physicalPartition),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: scheme.onSurface),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                subtitle,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     return Padding(
       padding: const EdgeInsets.all(8),
       child:Container(
@@ -347,26 +420,8 @@ class Agenda extends StatelessWidget {
               borderRadius: BorderRadius.circular(4),
         ),
 
-        child: Center(
-          child: subtitle == null
-              ? Text(partitionLabelBuilder(physicalPartition))
-              : Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      partitionLabelBuilder(physicalPartition),
-                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    Text(
-                      subtitle,
-                      style: const TextStyle(fontSize: 10),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
-                ),
-        )),
+        child: Center(child: Text(partitionLabelBuilder(physicalPartition))),
+      ),
     );
   }
 

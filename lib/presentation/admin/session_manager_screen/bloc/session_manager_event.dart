@@ -20,6 +20,10 @@ sealed class SessionManagerEvent with _$SessionManagerEvent {
 
   factory SessionManagerEvent.reloadSessionsEvent() = ReloadSessionsEvent;
 
+  /// Vuelve a traer los sectores/canchas (ej. al cerrar la configuración,
+  /// donde se pudo activar/desactivar alguno).
+  factory SessionManagerEvent.reloadClubPartitions() = ReloadClubPartitionsEvent;
+
   factory SessionManagerEvent.saveSession(Session session) = SaveSessionEvent;
 
   factory SessionManagerEvent.reserve(Session session, Client client) = ReserveEvent;

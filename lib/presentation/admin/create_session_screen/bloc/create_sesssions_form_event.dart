@@ -16,4 +16,12 @@ sealed class CreateSesssionsFormEvent with _$CreateSesssionsFormEvent {
   const factory CreateSesssionsFormEvent.addExtraSessionToPartition(int partitionPhysicalId, Session session) = AddExtraSessionToPartition;
   const factory CreateSesssionsFormEvent.removeExtraSessionFromPartition(int partitionPhysicalId, Session session) = RemoveExtraSessionFromPartition;
   const factory CreateSesssionsFormEvent.resetForm() = ResetForm;
+  const factory CreateSesssionsFormEvent.changePriceDayOfWeek(int dayOfWeek) = ChangePriceDayOfWeek;
+  /// `price` null vuelve a usar la tarifa.
+  const factory CreateSesssionsFormEvent.setManualPrice(int partitionPhysicalId, Session session, double? price) = SetManualPrice;
+  /// Vuelve a traer las tarifas de las modalidades seleccionadas (ej. al volver de la configuración).
+  const factory CreateSesssionsFormEvent.reloadTariffs() = ReloadTariffs;
+  /// Reemplaza la selección por las versiones frescas de [clubPartitions] y
+  /// descarta lo que ya no existe o quedó inactivo.
+  const factory CreateSesssionsFormEvent.syncClubPartitions(List<ClubPartition> clubPartitions) = SyncClubPartitions;
 }

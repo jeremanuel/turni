@@ -65,9 +65,12 @@ dependencies:
   form_builder_validators: ^11.1.1
   firebase_core: ^4.13.0
   firebase_messaging: ^16.5.0
-  
+  google_fonts: ^6.2.1
+
 dev_dependencies:
   flutter_test:
+    sdk: flutter
+  integration_test:
     sdk: flutter
 
   # The "flutter_lints" package below contains a set of recommended lints to

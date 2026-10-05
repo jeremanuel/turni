@@ -17,6 +17,8 @@ import '../../../../../domain/entities/subscription/client_subscription.dart';
 import '../../../../../domain/entities/subscription/subscription.dart';
 import '../../../../../domain/repositories/subscription_repository.dart';
 import '../../../../core/cubit/auth/auth_cubit.dart';
+import '../../../club_config/club_config_focus.dart';
+import '../../../club_config/widgets/inactive_partition_hint.dart';
 import '../../client_page.dart';
 
 class AddSubscriptionContainer extends StatefulWidget {
@@ -345,7 +347,14 @@ class _AddSubscriptionContainerState extends State<AddSubscriptionContainer> {
           Divider(height: 1, color: Theme.of(context).colorScheme.onSurface),
           ...widget.clubPartitions!.expand((clubPartition) {
             return clubPartition.subscriptions!.map((subscription) {
-              return ListTile(
+              // Las suscripciones de una modalidad inactiva se listan pero no
+              // se pueden elegir (ver InactivePartitionHint).
+              return InactivePartitionHint(
+                inactive: !clubPartition.active,
+                message: InactivePartitionHint.clubPartitionMessage,
+                focus: ClubConfigFocus.clubPartition(clubPartition.club_partition_id ?? 0),
+                child: ListTile(
+                enabled: clubPartition.active,
                 trailing: Text(
                   "\$${subscription.getCurrentPrice()!.price}",
                   style: Theme.of(context).textTheme.bodyLarge,
@@ -361,6 +370,7 @@ class _AddSubscriptionContainerState extends State<AddSubscriptionContainer> {
                     selectedSubscription = subscription;
                   });
                 },
+              ),
               );
             }).toList();
           }),
@@ -718,10 +728,19 @@ class _AddSubscriptionContainerState extends State<AddSubscriptionContainer> {
                 .map(
                   (partition) => DropdownMenuItem(
                     value: partition.partitionPhysicalId,
-                    child: Text(
-                      PhysicalPartitionNaming.labelFromPhysicalPartition(
-                        partition,
-                        fallbackClubPartition: selectedSubscriptionClubPartition,
+                    enabled: partition.active,
+                    child: InactivePartitionHint(
+                      inactive: !partition.active,
+                      message: InactivePartitionHint.physicalPartitionMessage,
+                      focus: ClubConfigFocus.physicalPartition(
+                        clubPartitionId: partition.clubPartitionId,
+                        partitionPhysicalId: partition.partitionPhysicalId,
+                      ),
+                      child: Text(
+                        PhysicalPartitionNaming.labelFromPhysicalPartition(
+                          partition,
+                          fallbackClubPartition: selectedSubscriptionClubPartition,
+                        ),
                       ),
                     ),
                   ),

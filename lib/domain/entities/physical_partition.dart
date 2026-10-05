@@ -29,6 +29,7 @@ sealed class PhysicalPartition with _$PhysicalPartition {
     double? defaultSessionPrice,
     @JsonKey(defaultValue: 90) int? durationInMinutes,
     @JsonKey(name: "club_partition") ClubPartition? clubPartition,
+    @Default(true) bool active,
   }) = _PhysicalPartition;
 
   factory PhysicalPartition.fromJson(Map<String, dynamic> json) =>

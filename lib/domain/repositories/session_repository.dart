@@ -15,8 +15,10 @@ abstract class SessionRepository {
 
   Future<List<ClubPartition>> getPhysicalPartitions();
 
+  /// [pricesByDayOfWeek], si viene, va alineado con [sessions]: el precio de
+  /// cada turno según el día de semana (1 = lunes ... 7 = domingo) de cada fecha.
   Future<CreateSessionsResult> createSessions(List<Session> sessions, List<int> physicalPartitions,
-      List<DateTime> dates);
+      List<DateTime> dates, {List<Map<int, double>>? pricesByDayOfWeek});
 
   Future<Session> saveSession(Session session);
 

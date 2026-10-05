@@ -27,11 +27,23 @@ class AppRoutes {
 
   static const SESSION_MANAGER_ADD_ROUTE = RouteDefinition("SESSION_MANAGER_ADD", "/session_manager/add/:idPhysicalPartition");
 
+  /// Ruta vieja del agregador masivo: hoy abre Gestión masiva en la tab
+  /// "Agregar turnos" (ver [BULK_SESSIONS_ROUTE]).
   static const ADD_SESSIONS_MASSIVE_ROUTE = RouteDefinition(
     "ADD_SESSIONS_MASSIVE",
     "/add_sessions",
     mobileAppBar: MobileAppBarConfig(
       title: 'Agregar turnos',
+      backToPath: '/session_manager',
+    ),
+  );
+
+  /// Gestión masiva de turnos. `?tab=add` abre directo "Agregar turnos".
+  static const BULK_SESSIONS_ROUTE = RouteDefinition(
+    "BULK_SESSIONS",
+    "/bulk_sessions",
+    mobileAppBar: MobileAppBarConfig(
+      title: 'Gestión masiva',
       backToPath: '/session_manager',
     ),
   );
@@ -72,6 +84,7 @@ class AppRoutes {
     SESSION_MANAGER_EDIT_ROUTE.name: SESSION_MANAGER_EDIT_ROUTE,
     SESSION_MANAGER_ADD_ROUTE.name: SESSION_MANAGER_ADD_ROUTE,
     ADD_SESSIONS_MASSIVE_ROUTE.name: ADD_SESSIONS_MASSIVE_ROUTE,
+    BULK_SESSIONS_ROUTE.name: BULK_SESSIONS_ROUTE,
     CLIENTS_LIST_ROUTE.name: CLIENTS_LIST_ROUTE,
     CLIENT_ROUTE.name: CLIENT_ROUTE,
     NEW_CLIENT_ROUTE.name: NEW_CLIENT_ROUTE,

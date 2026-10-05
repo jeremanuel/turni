@@ -6,7 +6,7 @@ import '../../../../core/config/router/app_routes.dart';
 import '../bloc/session_manager_bloc.dart';
 import '../bloc/session_manager_event.dart';
 import '../bloc/session_manager_state.dart';
-import '../widgets/session_info/session_info.dart';
+import '../widgets/side_panel/session_panel.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 /// Metodo utilizado en el pagebuilder de la ruta.
@@ -68,7 +68,7 @@ Page<dynamic> sessionManagerReservePageBuilder(
     builder: (context, state) {
       final session = state.sessions.firstWhereOrNull((element) => element.sessionId == idSession);
 
-      return SessionInfo(
+      return SessionPanel(
         session: session!,
         physicalPartition: physicalPartition!,
         clubPartition: state.selectedClubPartition!,

@@ -33,8 +33,9 @@ class SessionRepositoryImplementation extends BaseRepository implements SessionR
 
   @override
   Future<CreateSessionsResult> createSessions(List<Session> sessions, List<int> physicalPartitions,
-      List<DateTime> dates) {
-    return sessionProvider.createSessions(sessions, physicalPartitions, dates);
+      List<DateTime> dates, {List<Map<int, double>>? pricesByDayOfWeek}) {
+    return sessionProvider.createSessions(sessions, physicalPartitions, dates,
+        pricesByDayOfWeek: pricesByDayOfWeek);
   }
 
   @override

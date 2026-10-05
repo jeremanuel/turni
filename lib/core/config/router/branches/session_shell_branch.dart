@@ -4,11 +4,10 @@ import 'package:go_router/go_router.dart';
 import '../../../../presentation/admin/session_manager_screen/bloc/session_manager_event.dart';
 import '../../../../presentation/admin/session_manager_screen/bloc/session_manager_bloc.dart';
 import '../../../../presentation/admin/session_manager_screen/session_manager_route.dart';
-import '../../../../presentation/admin/session_manager_screen/widgets/calendar_side_column.dart';
+import '../../../../presentation/admin/session_manager_screen/widgets/side_panel/day_summary_panel.dart';
 import '../../../../presentation/admin/session_manager_screen/utils/session_manager_add_page_builder.dart';
 import '../../../../presentation/admin/session_manager_screen/utils/session_manager_reserve_page_builder.dart';
-import '../../../../presentation/admin/create_session_screen/create_sessions_screen.dart';
-import '../../../../presentation/admin/settings_screen/admin_settings_page.dart';
+import '../../../../presentation/admin/bulk_sessions/bulk_sessions_page.dart';
 import '../app_router.dart';
 import '../app_routes.dart';
 
@@ -33,7 +32,7 @@ StatefulShellBranch sessionShellBranch() {
             redirect: setCurrentRoute,
             pageBuilder: (context, state) {
               context.read<SessionManagerBloc>().add(SetSelectedSession(null));
-              return const NoTransitionPage(child: CalendarSideColumn());
+              return const NoTransitionPage(child: DaySummaryPanel());
             },
           ),
           GoRoute(
@@ -61,7 +60,16 @@ StatefulShellBranch sessionShellBranch() {
             path: AppRoutes.ADD_SESSIONS_MASSIVE_ROUTE.path,
             name: AppRoutes.ADD_SESSIONS_MASSIVE_ROUTE.name,
             redirect: setCurrentRoute,
-            builder: (context, state) => const CreateSessionScreen(),
+            builder: (context, state) =>
+                const BulkSessionsPage(initialTab: BulkSessionsTab.add),
+          ),
+          GoRoute(
+            path: AppRoutes.BULK_SESSIONS_ROUTE.path,
+            name: AppRoutes.BULK_SESSIONS_ROUTE.name,
+            redirect: setCurrentRoute,
+            builder: (context, state) => BulkSessionsPage(
+              initialTab: BulkSessionsTab.fromQuery(state.uri.queryParameters['tab']),
+            ),
           ),
           
         ],

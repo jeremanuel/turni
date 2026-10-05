@@ -43,7 +43,9 @@ sealed class Session with _$Session {
     @JsonKey(includeIfNull: false)
     List<Extra>? extras,
 
-    @JsonKey(name:"partition_physical", includeIfNull: false) PhysicalPartition? physicalPartition
+    @JsonKey(name:"partition_physical", includeIfNull: false) PhysicalPartition? physicalPartition,
+    /// Nota libre del admin sobre el turno (panel del turno en el gestor).
+    @JsonKey(includeIfNull: false) String? observation
   }) = _Session;
 
   Session._();

@@ -16,18 +16,27 @@ import '../../../domain/entities/club_partition.dart';
 import '../../../domain/entities/create_sessions_result.dart';
 import '../../../domain/entities/physical_partition.dart';
 import '../../../domain/entities/session.dart';
+import '../../../domain/use_case/price/session_price_resolver.dart';
 import '../../../domain/use_case/session_template/generate_preset_sessions_use_case.dart';
 import '../../core/agenda/agenda.dart';
+import '../club_config/club_config_focus.dart';
+import '../club_config/widgets/inactive_partition_hint.dart';
 import '../session_manager_screen/bloc/session_manager_bloc.dart';
 import '../session_manager_screen/bloc/session_manager_event.dart';
+import '../session_manager_screen/bloc/session_manager_state.dart';
 import 'bloc/create_sesssions_form_bloc.dart';
 import 'bloc/date_preset.dart';
 
 import 'widgets/agenda_edit_card.dart';
+import 'widgets/court_session_price.dart';
 import 'widgets/rework_styles.dart';
 
 class CreateSessionScreen extends StatefulWidget {
-  const CreateSessionScreen({super.key});
+  const CreateSessionScreen({super.key, this.showBackButton = true});
+
+  /// false cuando vive como tab de Gestión masiva, que ya tiene su propio
+  /// "volver" en la franja de arriba.
+  final bool showBackButton;
 
   @override
   State<CreateSessionScreen> createState() => _CreateSessionScreenState();
@@ -69,7 +78,15 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
   Widget build(BuildContext context) {
     final formBloc = sl<CreateSesssionsFormBloc>();
 
-    return Portal(
+    // Si los sectores/canchas cambian (ej. se reactivó o dio de baja uno desde
+    // la configuración abierta en el medio del wizard), la selección se
+    // actualiza con las versiones frescas y descarta lo que quedó inactivo.
+    return BlocListener<SessionManagerBloc, SessionManagerState>(
+      listenWhen: (previous, current) =>
+          previous.clubPartitions != current.clubPartitions,
+      listener: (context, managerState) =>
+          formBloc.add(SyncClubPartitions(managerState.clubPartitions)),
+      child: Portal(
       child: BlocBuilder<CreateSesssionsFormBloc, CreateSesssionsFormState>(
         bloc: formBloc,
         builder: (context, state) {
@@ -90,7 +107,7 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
                   color: RW.card,
                   child: Column(
                     children: [
-                      _buildTopBar(context),
+                      if (widget.showBackButton) _buildTopBar(context),
                       _StepTrackerBar(
                         steps: _steps,
                         currentStep: _currentStep,
@@ -110,7 +127,22 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
           );
         },
       ),
+      ),
     );
+  }
+
+  /// Abre la configuración apuntando a [focus] (encima del wizard, sin
+  /// perder lo cargado) y al cerrarla recarga sectores/canchas y tarifas,
+  /// para que el admin vea reflejado lo que haya cambiado.
+  Future<void> _openConfig(ClubConfigFocus focus) async {
+    await openClubConfig(context, focus);
+    if (!mounted) return;
+    _reloadAfterConfig();
+  }
+
+  void _reloadAfterConfig() {
+    context.read<SessionManagerBloc>().add(ReloadClubPartitionsEvent());
+    sl<CreateSesssionsFormBloc>().add(const ReloadTariffs());
   }
 
   void _handleBackToCalendar(BuildContext context) {
@@ -410,11 +442,18 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
           runSpacing: 8,
           children: clubPartitions
               .map(
-                (partition) => _RWChip(
-                  selected: state.selectedClubPartitions.contains(partition),
-                  label: partition.clubType?.name ?? 'Modalidad',
-                  onSelected: (value) => formBloc.add(
-                    ChangeSelectionClubPartition(partition, value),
+                (partition) => InactivePartitionHint(
+                  inactive: !partition.active,
+                  message: InactivePartitionHint.clubPartitionMessage,
+                  focus: ClubConfigFocus.clubPartition(partition.club_partition_id ?? 0),
+                  onConfigClosed: _reloadAfterConfig,
+                  child: _RWChip(
+                    enabled: partition.active,
+                    selected: state.selectedClubPartitions.contains(partition),
+                    label: partition.clubType?.name ?? 'Modalidad',
+                    onSelected: (value) => formBloc.add(
+                      ChangeSelectionClubPartition(partition, value),
+                    ),
                   ),
                 ),
               )
@@ -434,8 +473,17 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
             runSpacing: 8,
             children: physicalPartitions
                 .map(
-                  (physicalPartition) => _RWChip(
+                  (physicalPartition) => InactivePartitionHint(
                     key: ValueKey(physicalPartition.partitionPhysicalId),
+                    inactive: !physicalPartition.active,
+                    message: InactivePartitionHint.physicalPartitionMessage,
+                    focus: ClubConfigFocus.physicalPartition(
+                      clubPartitionId: physicalPartition.clubPartitionId,
+                      partitionPhysicalId: physicalPartition.partitionPhysicalId,
+                    ),
+                    onConfigClosed: _reloadAfterConfig,
+                    child: _RWChip(
+                    enabled: physicalPartition.active,
                     selected: state.selectedPhysicalPartitions.contains(
                       physicalPartition,
                     ),
@@ -458,6 +506,7 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
                         value,
                       ),
                     ),
+                  ),
                   ),
                 )
                 .toList(),
@@ -588,13 +637,23 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
           ],
         );
       case 1:
-        return const _PreviewHeader(
+        return _PreviewHeader(
           title: 'Cómo se reparte entre canchas',
-          subtitle: 'La plantilla repetida en cada cancha — clic en una hora libre de esa columna agrega un turno solo ahí.',
-          legend: [
+          subtitle: 'La plantilla repetida en cada cancha — clic en una hora libre de esa columna agrega un turno solo ahí. '
+              'Cada turno muestra su precio según la tarifa por horario de la cancha; clic en el turno para ver qué regla aplica o cambiarlo a mano.',
+          legend: const [
             _LegendDot(color: RW.accent60min, label: 'de la plantilla'),
             _LegendDot(color: RW.accentExtra, label: 'agregado en esta cancha'),
+            _LegendIcon(icon: Icons.sell_outlined, label: 'tarifa por horario'),
+            _LegendIcon(icon: Icons.sports_tennis_outlined, label: 'precio base'),
+            _LegendIcon(icon: Icons.edit_outlined, label: 'precio manual'),
           ],
+          trailing: PriceDayOfWeekSelector(
+            selected: state.priceDayOfWeek,
+            loading: state.isLoadingTariffs,
+            onChanged: (day) =>
+                sl<CreateSesssionsFormBloc>().add(ChangePriceDayOfWeek(day)),
+          ),
         );
       case 2:
         return const _PreviewHeader(
@@ -678,6 +737,7 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
     }
 
     final today = DateTime.now();
+    final resolver = state.priceResolver;
     final previewSessions = <Session>[];
     final meta = <Session, ({Session original, bool isExtra})>{};
 
@@ -726,11 +786,23 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
                 final info = meta[session];
                 final isExtra = info?.isExtra ?? false;
                 final autoOpen = _pendingAutoOpenCourtSession == session;
+                final original = info?.original ?? session;
+                final startMinutes =
+                    original.startTime.hour * 60 + original.startTime.minute;
                 return _CourtSessionEditCard(
                   previewSession: session,
-                  original: info?.original ?? session,
+                  original: original,
                   isExtra: isExtra,
-                  partitionPhysicalId: partition.partitionPhysicalId,
+                  partition: partition,
+                  height: height,
+                  dayOfWeek: state.priceDayOfWeek,
+                  resolvedPrice: state.resolvePrice(partition, original, resolver: resolver),
+                  weekPrices: resolver.pricesByDayOfWeek(
+                    partition: partition,
+                    startMinutes: startMinutes,
+                    manualPrice: state.manualPriceFor(partition.partitionPhysicalId, original),
+                  ),
+                  onOpenConfig: _openConfig,
                   autoOpen: autoOpen,
                   onAutoOpened: autoOpen
                       ? () => setState(() => _pendingAutoOpenCourtSession = null)
@@ -747,10 +819,12 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
   }
 
   /// Fila de totales por columna, debajo de la grilla del paso "Canchas" —
-  /// precio por turno y subtotal de esa cancha (turnos efectivos × precio),
-  /// alineada con cada columna (64px de hueco a la izquierda, igual que el
-  /// ancho reservado por Agenda para la columna de horarios).
+  /// cantidad de turnos y subtotal de esa cancha para el día elegido (cada
+  /// turno con su precio resuelto por tarifa), alineada con cada columna
+  /// (64px de hueco a la izquierda, igual que el ancho reservado por Agenda
+  /// para la columna de horarios).
   Widget _buildCourtsTotalsFooter(CreateSesssionsFormState state) {
+    final resolver = state.priceResolver;
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
@@ -760,12 +834,18 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
           for (final p in state.selectedPhysicalPartitions)
             SizedBox(
               width: RW.courtColumnWidth + 50,
-              child: _CourtTotalSummary(
-                price: p.defaultSessionPrice ?? 0,
-                sessionsCount: state
-                    .effectiveSessionsForPartition(p.partitionPhysicalId)
-                    .length,
-              ),
+              child: Builder(builder: (context) {
+                final effective =
+                    state.effectiveSessionsForPartition(p.partitionPhysicalId);
+                return _CourtTotalSummary(
+                  total: effective.fold<double>(
+                    0,
+                    (sum, s) => sum + state.resolvePrice(p, s, resolver: resolver).price,
+                  ),
+                  sessionsCount: effective.length,
+                  dayLabel: priceDayShortNames[state.priceDayOfWeek - 1],
+                );
+              }),
             ),
         ],
       ),
@@ -791,9 +871,10 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
   }
 
   Session _toPreviewSession(Session s, PhysicalPartition p, DateTime today) {
+    // El precio NO va en la sesión de preview: lo resuelve la card con las
+    // tarifas (ver _CourtSessionEditCard.resolvedPrice).
     return s.copyWith(
       partitionPhysicalId: p.partitionPhysicalId,
-      price: p.defaultSessionPrice ?? s.price,
       startTime: DateTime(today.year, today.month, today.day, s.startTime.hour, s.startTime.minute),
     );
   }
@@ -1413,6 +1494,7 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
               (partition) =>
                   partition.physicalPartitions ?? const <PhysicalPartition>[],
             )
+            .where((physical) => physical.active)
             .map((physical) => physical.defaultSessionDuration)
             .whereType<int>()
             .where((minutes) => minutes > 0)
@@ -1533,11 +1615,12 @@ class _StepTrackerBar extends StatelessWidget {
 }
 
 class _PreviewHeader extends StatelessWidget {
-  const _PreviewHeader({required this.title, required this.subtitle, this.legend = const []});
+  const _PreviewHeader({required this.title, required this.subtitle, this.legend = const [], this.trailing});
 
   final String title;
   final String subtitle;
-  final List<_LegendDot> legend;
+  final List<Widget> legend;
+  final Widget? trailing;
 
   @override
   Widget build(BuildContext context) {
@@ -1549,8 +1632,31 @@ class _PreviewHeader extends StatelessWidget {
         Text(subtitle, style: RW.tSubtitle),
         if (legend.isNotEmpty) ...[
           const SizedBox(height: 8),
-          Wrap(spacing: 14, children: legend),
+          Wrap(spacing: 14, runSpacing: 4, children: legend),
         ],
+        if (trailing != null) ...[
+          const SizedBox(height: 10),
+          trailing!,
+        ],
+      ],
+    );
+  }
+}
+
+class _LegendIcon extends StatelessWidget {
+  const _LegendIcon({required this.icon, required this.label});
+
+  final IconData icon;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 12, color: RW.muted),
+        const SizedBox(width: 4),
+        Text(label, style: RW.tSmall),
       ],
     );
   }
@@ -1613,29 +1719,27 @@ class _RWEmptyBox extends StatelessWidget {
   }
 }
 
-/// Card de un turno en la vista previa por cancha (paso "Canchas") — muestra
-/// precio (de la cancha, no de la plantilla) y permite quitarlo solo de esa
-/// cancha. Distingue visualmente si viene de la plantilla o fue agregado
-/// solo en esta cancha (ver leyenda del header).
-/// Resumen por columna, debajo de la grilla del paso "Canchas": precio por
-/// turno y el subtotal de esa cancha (turnos efectivos × precio).
+/// Resumen por columna, debajo de la grilla del paso "Canchas": cantidad de
+/// turnos y subtotal de esa cancha para el día de semana elegido.
 class _CourtTotalSummary extends StatelessWidget {
-  const _CourtTotalSummary({required this.price, required this.sessionsCount});
+  const _CourtTotalSummary({
+    required this.total,
+    required this.sessionsCount,
+    required this.dayLabel,
+  });
 
-  final double price;
+  final double total;
   final int sessionsCount;
+  final String dayLabel;
 
   @override
   Widget build(BuildContext context) {
-    final priceLabel = '\$${price.toStringAsFixed(0)}';
-    final subtotalLabel = '\$${(price * sessionsCount).toStringAsFixed(0)}';
-
     return Column(
       children: [
-        Text('$priceLabel / turno', style: RW.tSmall),
+        Text('$sessionsCount turno(s) · $dayLabel', style: RW.tSmall),
         const SizedBox(height: 2),
         Text(
-          '$subtotalLabel total',
+          '${formatPriceLabel(total)} total',
           style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: RW.onSurfaceVariant),
         ),
       ],
@@ -1650,12 +1754,22 @@ class _CourtTotalSummary extends StatelessWidget {
 /// "desprende" en un ajuste propio de esta cancha (se quita de la plantilla
 /// compartida y se agrega como extra con el valor nuevo), ya que esta vista
 /// no puede modificar el horario global sin afectar a las demás canchas.
+///
+/// Muestra el precio del turno en esa cancha (resuelto por la tarifa por
+/// horario, el precio base de la cancha o un precio manual) y qué regla lo
+/// determina; el popover agrega el detalle, el enlace a la configuración de
+/// esa regla y la opción de pisar el precio a mano.
 class _CourtSessionEditCard extends StatefulWidget {
   const _CourtSessionEditCard({
     required this.previewSession,
     required this.original,
     required this.isExtra,
-    required this.partitionPhysicalId,
+    required this.partition,
+    required this.height,
+    required this.dayOfWeek,
+    required this.resolvedPrice,
+    required this.weekPrices,
+    required this.onOpenConfig,
     this.autoOpen = false,
     this.onAutoOpened,
   });
@@ -1663,9 +1777,20 @@ class _CourtSessionEditCard extends StatefulWidget {
   final Session previewSession;
   final Session original;
   final bool isExtra;
-  final int partitionPhysicalId;
+  final PhysicalPartition partition;
+  final double height;
+
+  /// Día (1..7) para el que está calculado [resolvedPrice].
+  final int dayOfWeek;
+  final ResolvedSessionPrice resolvedPrice;
+
+  /// Precio de este turno en esta cancha para cada día de la semana.
+  final Map<int, double> weekPrices;
+  final Future<void> Function(ClubConfigFocus focus) onOpenConfig;
   final bool autoOpen;
   final VoidCallback? onAutoOpened;
+
+  int get partitionPhysicalId => partition.partitionPhysicalId;
 
   @override
   State<_CourtSessionEditCard> createState() => _CourtSessionEditCardState();
@@ -1697,12 +1822,45 @@ class _CourtSessionEditCardState extends State<_CourtSessionEditCard> {
 
   void _replaceWith(Session updated) {
     final bloc = sl<CreateSesssionsFormBloc>();
+    // Un precio manual sigue al turno aunque se le cambie el horario.
+    final manualPrice = bloc.state.manualPriceFor(widget.partitionPhysicalId, widget.original);
     if (widget.isExtra) {
       bloc.add(RemoveExtraSessionFromPartition(widget.partitionPhysicalId, widget.original));
     } else {
       bloc.add(RemoveSessionFromPartition(widget.partitionPhysicalId, widget.original));
     }
     bloc.add(AddExtraSessionToPartition(widget.partitionPhysicalId, updated));
+    if (manualPrice != null) {
+      bloc.add(SetManualPrice(widget.partitionPhysicalId, widget.original, null));
+      bloc.add(SetManualPrice(widget.partitionPhysicalId, updated, manualPrice));
+    }
+  }
+
+  void _setManualPrice(double? price) {
+    sl<CreateSesssionsFormBloc>().add(
+      SetManualPrice(widget.partitionPhysicalId, widget.original, price),
+    );
+  }
+
+  void _openConfig(ClubConfigFocus focus) {
+    dropdownController.hide!();
+    widget.onOpenConfig(focus);
+  }
+
+  void _openTariff() {
+    final resolved = widget.resolvedPrice;
+    _openConfig(ClubConfigFocus.priceTariff(
+      clubPartitionId: resolved.tariff?.clubPartitionId ?? widget.partition.clubPartitionId,
+      priceTariffId: resolved.tariff?.priceTariffId,
+      priceRuleId: resolved.rule?.priceRuleId,
+    ));
+  }
+
+  void _openPartition() {
+    _openConfig(ClubConfigFocus.physicalPartition(
+      clubPartitionId: widget.partition.clubPartitionId,
+      partitionPhysicalId: widget.partitionPhysicalId,
+    ));
   }
 
   void _nudge(int deltaMinutes) {
@@ -1740,7 +1898,7 @@ class _CourtSessionEditCardState extends State<_CourtSessionEditCard> {
         target: Alignment.bottomLeft,
         offset: Offset(0, 6),
       ),
-      width: 230,
+      width: 290,
       obscureBackground: false,
       dropdownController: dropdownController,
       menuWidget: SessionEditPopover(
@@ -1752,6 +1910,14 @@ class _CourtSessionEditCardState extends State<_CourtSessionEditCard> {
           dropdownController.hide!();
         },
         onClose: () => dropdownController.hide!(),
+        extraSection: CourtPriceSection(
+          resolved: widget.resolvedPrice,
+          dayOfWeek: widget.dayOfWeek,
+          weekPrices: widget.weekPrices,
+          onSetManualPrice: _setManualPrice,
+          onOpenTariff: _openTariff,
+          onOpenPartition: _openPartition,
+        ),
       ),
       child: _buildBlock(context),
     );
@@ -1760,9 +1926,24 @@ class _CourtSessionEditCardState extends State<_CourtSessionEditCard> {
   Widget _buildBlock(BuildContext context) {
     final session = widget.previewSession;
     final end = session.endTime as DateTime;
+    final resolved = widget.resolvedPrice;
     final label = '${DateFormat.Hm().format(session.startTime)}–${DateFormat.Hm().format(end)}'
-        ' · \$${session.price.toStringAsFixed(0)}';
+        ' · ${formatPriceLabel(resolved.price)}';
     final accent = widget.isExtra ? RW.accentExtra : RW.accent60min;
+    final varies = widget.weekPrices.values.toSet().length > 1;
+    // Segunda línea con la regla que aplica, si el bloque es lo bastante alto.
+    final showSource = widget.height >= 30;
+    final sourceLabel = shortPriceSourceLabel(resolved);
+    final tooltip = [
+      switch (resolved.source) {
+        SessionPriceSource.tariffRule =>
+          'Tarifa «${resolved.tariff!.name}» · franja ${formatDaysOfWeek(resolved.rule!.daysOfWeek)} '
+              '${resolved.rule!.startTime}–${resolved.rule!.endTime}',
+        SessionPriceSource.partitionDefault => 'Precio base de la cancha',
+        SessionPriceSource.manual => 'Precio manual',
+      },
+      if (varies) 'Según el día: ${formatWeekPrices(widget.weekPrices)}',
+    ].join('\n');
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 4),
@@ -1782,11 +1963,38 @@ class _CourtSessionEditCardState extends State<_CourtSessionEditCard> {
                   ),
                   padding: const EdgeInsets.fromLTRB(6, 4, 18, 4),
                   alignment: Alignment.topLeft,
-                  child: Text(
-                    label,
-                    style: const TextStyle(fontSize: 10, color: RW.onPrimaryContainer),
-                    overflow: TextOverflow.ellipsis,
-                    maxLines: 1,
+                  child: Tooltip(
+                    message: tooltip,
+                    waitDuration: const Duration(milliseconds: 400),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          label,
+                          style: const TextStyle(fontSize: 10, color: RW.onPrimaryContainer),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                        ),
+                        if (showSource) ...[
+                          const SizedBox(height: 2),
+                          Row(
+                            children: [
+                              Icon(priceSourceIcon(resolved.source), size: 10, color: RW.primary),
+                              const SizedBox(width: 3),
+                              Flexible(
+                                child: Text(
+                                  varies ? '$sourceLabel · varía x día' : sourceLabel,
+                                  style: const TextStyle(fontSize: 9, color: RW.onPrimaryContainer),
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 1,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -1820,17 +2028,28 @@ class _CourtSessionEditCardState extends State<_CourtSessionEditCard> {
 }
 
 class _RWChip extends StatelessWidget {
-  const _RWChip({super.key, required this.selected, required this.label, this.helper, required this.onSelected});
+  const _RWChip({
+    required this.selected,
+    required this.label,
+    this.helper,
+    required this.onSelected,
+    this.enabled = true,
+  });
 
   final bool selected;
   final String label;
   final String? helper;
   final ValueChanged<bool> onSelected;
 
+  /// false para un sector/cancha inactivo: se ve apagado y no se puede tocar.
+  final bool enabled;
+
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: () => onSelected(!selected),
+    return Opacity(
+      opacity: enabled ? 1 : 0.45,
+      child: InkWell(
+      onTap: enabled ? () => onSelected(!selected) : null,
       borderRadius: BorderRadius.circular(RW.chipRadius),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
@@ -1839,10 +2058,24 @@ class _RWChip extends StatelessWidget {
           borderRadius: BorderRadius.circular(RW.chipRadius),
           border: Border.all(color: selected ? RW.primaryContainer : RW.outlineVariant),
         ),
-        child: Text(
-          helper == null ? label : '$label · $helper',
-          style: TextStyle(fontSize: 12, color: selected ? RW.onPrimaryContainer : RW.onSurfaceVariant),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (!enabled) ...[
+              const Icon(Icons.block, size: 12, color: RW.muted),
+              const SizedBox(width: 4),
+            ],
+            Text(
+              helper == null ? label : '$label · $helper',
+              style: TextStyle(
+                fontSize: 12,
+                color: selected ? RW.onPrimaryContainer : RW.onSurfaceVariant,
+                decoration: enabled ? null : TextDecoration.lineThrough,
+              ),
+            ),
+          ],
         ),
+      ),
       ),
     );
   }

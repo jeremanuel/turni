@@ -28,7 +28,10 @@ class SessionManagerBloc extends Bloc<SessionManagerEvent, SessionManagerState> 
         state.copyWith(currentDate: event.newDate, isLoadingSessions: true),
       );
       
-      datesCarrouselController.setDate!(event.newDate);
+      // El carrusel de días solo existe en mobile; en escritorio no hay a
+      // quién avisar (antes el `!` cortaba el evento y la agenda quedaba
+      // cargando).
+      datesCarrouselController.setDate?.call(event.newDate);
 
       final sessions = await _sessionUserCases.getSessions(state.currentDate); 
       
@@ -56,7 +59,25 @@ class SessionManagerBloc extends Bloc<SessionManagerEvent, SessionManagerState> 
           sessions: sessions,
           isFirstLoad: false,
           clubPartitions: clubPartitions,
-          selectedClubPartition: clubPartitions.first
+          // Los inactivos vienen igual (se muestran deshabilitados), así que
+          // arranca en el primero activo.
+          selectedClubPartition: firstActive(clubPartitions)
+        )
+      );
+    });
+
+    on<ReloadClubPartitionsEvent>((event, emit) async {
+      final clubPartitions = await _sessionUserCases.getClubPartitions();
+
+      final currentId = state.selectedClubPartition?.club_partition_id;
+      final current = clubPartitions.firstWhereOrNull(
+        (p) => p.club_partition_id == currentId && p.active,
+      );
+
+      emit(
+        state.copyWith(
+          clubPartitions: clubPartitions,
+          selectedClubPartition: current ?? firstActive(clubPartitions),
         )
       );
     });
@@ -240,6 +261,9 @@ print("test desde bloc:");
 
 
 
+
+  static ClubPartition? firstActive(List<ClubPartition> clubPartitions) =>
+      clubPartitions.firstWhereOrNull((p) => p.active) ?? clubPartitions.firstOrNull;
 
   ClubPartition getNewSelectedClubPartition(Session session, List<ClubPartition> clubPartitions){
     return clubPartitions.firstWhere((element) {
