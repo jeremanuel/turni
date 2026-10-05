@@ -1,9 +1,8 @@
 import 'package:calendar_date_picker2/calendar_date_picker2.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 
-import '../../../../../core/config/router/app_routes.dart';
+import '../../bulk_sessions/widgets/bulk_sessions_menu_button.dart';
 import '../bloc/session_manager_bloc.dart';
 import '../bloc/session_manager_event.dart';
 import '../bloc/session_manager_state.dart';
@@ -38,14 +37,7 @@ class CalendarSideColumn extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            SizedBox(
-              height: 36,
-              child: FilledButton(
-                  onPressed: () {
-                    context.go(AppRoutes.ADD_SESSIONS_MASSIVE_ROUTE.path);
-                  }, 
-                  child: const Text("Agregar Turnos")),
-            ),
+            const BulkSessionsMenuButton(),
             SizedBox(
               height: 36,
               child: TextButton(

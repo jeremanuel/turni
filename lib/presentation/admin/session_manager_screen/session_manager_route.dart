@@ -67,7 +67,8 @@ class _SessionManagerRouteState extends State<SessionManagerRoute> {
         buildWhen: (previous, current) => previous.isFirstLoad != current.isFirstLoad,
         builder: (context, sessionManagerState) {
 
-          if(widget.routeName == AppRoutes.ADD_SESSIONS_MASSIVE_ROUTE.name){
+          if(widget.routeName == AppRoutes.ADD_SESSIONS_MASSIVE_ROUTE.name ||
+              widget.routeName == AppRoutes.BULK_SESSIONS_ROUTE.name){
             return widget.child;
           }
 

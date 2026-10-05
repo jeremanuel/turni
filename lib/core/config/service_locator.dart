@@ -3,6 +3,7 @@ import 'package:flutter_localization/flutter_localization.dart';
 import 'package:get_it/get_it.dart';
 import '../../domain/repositories/ia_repository.dart';
 import '../../domain/repositories/admin_repository.dart';
+import '../../domain/repositories/bulk_session_repository.dart';
 import '../../domain/repositories/club_info_repository.dart';
 import '../../domain/repositories/club_partition_admin_repository.dart';
 import '../../domain/repositories/price_tariff_repository.dart';
@@ -18,6 +19,7 @@ import '../../infrastructure/api/providers/admin_provider.dart';
 import '../../infrastructure/api/providers/session_provider.dart';
 import '../../infrastructure/api/repositories/IA/gemini_repository.dart';
 import '../../infrastructure/api/repositories/admin_repository_impl.dart';
+import '../../infrastructure/api/repositories/bulk_session_repository_impl.dart';
 import '../../infrastructure/api/repositories/club_info_repository_impl.dart';
 import '../../infrastructure/api/repositories/club_partition_admin_repository_impl.dart';
 import '../../infrastructure/api/repositories/price_tariff_repository_impl.dart';
@@ -70,6 +72,8 @@ class ServiceLocator {
     );
 
     sl.registerSingleton<PriceTariffRepository>(PriceTariffRepositoryImpl());
+
+    sl.registerSingleton<BulkSessionRepository>(BulkSessionRepositoryImpl());
 
     sl.registerSingleton<ProductAdminRepository>(ProductAdminRepositoryImpl());
 
