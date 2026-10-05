@@ -34,6 +34,17 @@ class SportStyle {
 
 const _coveredBorder = Color(0xFF2B2440);
 
+/// Estado en vivo de una cancha en el mapa del club.
+enum CourtLiveStatus {
+  free('Libre', Color(0xFF1E8E3E)),
+  occupied('Ocupada', Color(0xFFC5221F));
+
+  final String label;
+  final Color color;
+
+  const CourtLiveStatus(this.label, this.color);
+}
+
 /// Una cancha dibujada a escala: color del deporte, líneas, rayado de techo
 /// si es techada, y su nombre.
 class CourtTile extends StatelessWidget {
@@ -46,7 +57,19 @@ class CourtTile extends StatelessWidget {
   /// Anillo alrededor: seleccionada (primario) o con problema (error).
   final Color? ringColor;
 
-  const CourtTile({super.key, required this.name, required this.style, required this.isCover, required this.width, required this.height, this.ringColor});
+  /// Libre u ocupada ahora. `null`: no se muestra (ej. en el editor).
+  final CourtLiveStatus? liveStatus;
+
+  const CourtTile({
+    super.key,
+    required this.name,
+    required this.style,
+    required this.isCover,
+    required this.width,
+    required this.height,
+    this.ringColor,
+    this.liveStatus,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -76,6 +99,7 @@ class CourtTile extends StatelessWidget {
             Positioned.fill(child: CustomPaint(painter: CourtLinesPainter(style.lines))),
             if (isCover) const Positioned.fill(child: CustomPaint(painter: RoofStripesPainter())),
             if (showBadge) Positioned(left: 4, top: 4, child: _Badge(isCover: isCover)),
+            if (liveStatus != null) Positioned(right: 4, top: 4, child: _LiveStatusBadge(status: liveStatus!, compact: width < 150)),
             if (showName)
               Positioned(
                 left: 2,
@@ -121,6 +145,44 @@ class _Badge extends StatelessWidget {
             style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: Color(0xFF1D1B20)),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Libre / Ocupada arriba a la derecha. En canchas chicas, solo el punto.
+class _LiveStatusBadge extends StatelessWidget {
+  final CourtLiveStatus status;
+  final bool compact;
+
+  const _LiveStatusBadge({required this.status, required this.compact});
+
+  @override
+  Widget build(BuildContext context) {
+    final dot = Container(
+      width: 10,
+      height: 10,
+      decoration: BoxDecoration(color: status.color, shape: BoxShape.circle),
+    );
+
+    return Tooltip(
+      message: status.label,
+      child: Container(
+        padding: compact ? const EdgeInsets.all(3) : const EdgeInsets.fromLTRB(5, 2, 7, 2),
+        decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.94), borderRadius: BorderRadius.circular(999)),
+        child: compact
+            ? dot
+            : Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  dot,
+                  const SizedBox(width: 4),
+                  Text(
+                    status.label,
+                    style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF1D1B20)),
+                  ),
+                ],
+              ),
       ),
     );
   }
