@@ -161,6 +161,7 @@ class _ClubMapPageState extends State<ClubMapPage> {
           onEdit: () => _openEditor(extraPartitions: const {}),
           onAddSports: () => setState(() => _step = _Step.pickSports),
           onSeeSessions: () => context.go(AppRoutes.SESSION_MANAGER_ROUTE.path),
+          loadUsage: (days) => _repository.getCourtUsage(days: days),
           onOpenSession: (session) => context.goNamed(
             AppRoutes.SESSION_MANAGER_RESERVE_ROUTE.name,
             pathParameters: {'idSession': session.sessionId.toString()},

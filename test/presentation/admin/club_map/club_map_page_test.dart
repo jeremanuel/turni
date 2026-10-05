@@ -6,6 +6,7 @@ import 'package:turni/core/utils/domain_error.dart';
 import 'package:turni/core/utils/either.dart';
 import 'package:turni/domain/entities/client.dart';
 import 'package:turni/domain/entities/club_map/club_map.dart';
+import 'package:turni/domain/entities/club_map/court_usage.dart';
 import 'package:turni/domain/entities/person.dart';
 import 'package:turni/domain/entities/session.dart';
 import 'package:turni/domain/repositories/club_map_repository.dart';
@@ -218,6 +219,50 @@ void main() {
 
     await tester.pump(const Duration(minutes: 1));
     verify(() => sessionRepository.getSessions(any())).called(1);
+  });
+
+  testWidgets('uso por cancha: pinta el mapa con el % de cada cancha y cambia de período', (tester) async {
+    when(() => repository.getClubMap()).thenAnswer(
+      (_) async => const Either.right(ClubMapView(
+        map: ClubMapLayout(widthM: 80, heightM: 50, elements: [ClubMapElement(courtId: 31, xM: 1, yM: 1), ClubMapElement(courtId: 32, xM: 1, yM: 20)]),
+        partitions: [_padel],
+      )),
+    );
+    CourtUsageView usage(double used) => CourtUsageView(
+          from: DateTime(2026, 9, 6),
+          to: DateTime(2026, 10, 6),
+          byCourt: {
+            31: CourtUsage(courtId: 31, offeredMinutes: 600, reservedMinutes: (600 * used).round(), usage: used),
+            32: const CourtUsage(courtId: 32, offeredMinutes: 0, reservedMinutes: 0),
+          },
+        );
+    when(() => repository.getCourtUsage(days: 30)).thenAnswer((_) async => Either.right(usage(0.75)));
+    when(() => repository.getCourtUsage(days: 7)).thenAnswer((_) async => Either.right(usage(0.5)));
+
+    await pumpPage(tester);
+    // Arranca en ocupación de ahora: no pide el uso hasta que se elige.
+    verifyNever(() => repository.getCourtUsage(days: any(named: 'days')));
+
+    await tester.tap(find.text('Uso por cancha'));
+    await tester.pumpAndSettle();
+    verify(() => repository.getCourtUsage(days: 30)).called(1);
+
+    expect(find.text('75 %'), findsOneWidget);
+    expect(find.text('Sin turnos'), findsNWidgets(2)); // en la cancha y en la referencia
+    expect(find.text('Del 06/09 al 05/10'), findsOneWidget);
+    // En esta vista no se muestra libre / ocupada.
+    expect(find.text('Libre'), findsNothing);
+
+    await tester.tap(find.text('Padel A'));
+    await tester.pumpAndSettle();
+    expect(find.text('Uso en los últimos 30 días'), findsOneWidget);
+    expect(find.text('7,5 h reservadas de 10 h cargadas'), findsOneWidget);
+
+    await tester.tap(find.text('Últimos 7 días'));
+    await tester.pumpAndSettle();
+    verify(() => repository.getCourtUsage(days: 7)).called(1);
+    expect(find.text('50 %'), findsWidgets);
+    expect(find.text('Uso en los últimos 7 días'), findsOneWidget);
   });
 
   testWidgets('editor: cambiar la medida de una cancha y sumar un espacio se guardan', (tester) async {
