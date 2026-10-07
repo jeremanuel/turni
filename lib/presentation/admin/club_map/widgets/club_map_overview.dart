@@ -8,11 +8,12 @@ import 'plan_canvas.dart';
 /// cancha que se toca.
 class ClubMapOverview extends StatefulWidget {
   final ClubMapView view;
-  final VoidCallback onEdit;
-  final VoidCallback onAddSports;
+  /// null = el rol no puede editar el plano (sin botones de edición).
+  final VoidCallback? onEdit;
+  final VoidCallback? onAddSports;
   final VoidCallback onSeeSessions;
 
-  const ClubMapOverview({super.key, required this.view, required this.onEdit, required this.onAddSports, required this.onSeeSessions});
+  const ClubMapOverview({super.key, required this.view, this.onEdit, this.onAddSports, required this.onSeeSessions});
 
   @override
   State<ClubMapOverview> createState() => _ClubMapOverviewState();
@@ -49,12 +50,12 @@ class _ClubMapOverviewState extends State<ClubMapOverview> {
                     Text('Así están ubicadas las canchas en el club, todas en un mismo plano.', style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
                   ],
                 ),
-                if (map != null) FilledButton.icon(onPressed: widget.onEdit, icon: const Icon(Icons.edit_outlined), label: const Text('Editar plano')),
+                if (map != null && widget.onEdit != null) FilledButton.icon(onPressed: widget.onEdit, icon: const Icon(Icons.edit_outlined), label: const Text('Editar plano')),
               ],
             ),
           ),
           const SizedBox(height: 20),
-          if (map != null && missing.isNotEmpty) ...[_MissingBanner(sports: missing, onAdd: widget.onAddSports), const SizedBox(height: 20)],
+          if (map != null && missing.isNotEmpty && widget.onAddSports != null) ...[_MissingBanner(sports: missing, onAdd: widget.onAddSports!), const SizedBox(height: 20)],
           if (map == null) _EmptyState(hasCourts: _hasCourts(), onDesign: widget.onAddSports) else _buildPlan(context, map),
         ],
       ),
@@ -252,7 +253,7 @@ class _MissingBanner extends StatelessWidget {
 
 class _EmptyState extends StatelessWidget {
   final bool hasCourts;
-  final VoidCallback onDesign;
+  final VoidCallback? onDesign;
 
   const _EmptyState({required this.hasCourts, required this.onDesign});
 

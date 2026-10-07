@@ -1,6 +1,7 @@
 // ignore_for_file: prefer_const_constructors
 
 import 'package:flutter/material.dart';
+import '../../../core/utils/permissions.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_portal/flutter_portal.dart';
 import 'package:go_router/go_router.dart';
@@ -117,7 +118,7 @@ class _ClientsListState extends State<ClientsList> {
     );
 
     return Scaffold(
-      floatingActionButton: FloatingActionButton.extended(
+      floatingActionButton: !Permissions.can(Permissions.CLIENTES_EDITAR) ? null : FloatingActionButton.extended(
         onPressed: () => context.pushNamed(AppRoutes.NEW_CLIENT_ROUTE.name),
         label: ResponsiveBuilder.isDesktop(context)
             ? Row(spacing: 8, mainAxisSize: MainAxisSize.min, children: [Icon(Icons.person_add_alt_1_rounded), Text("Nuevo cliente")])

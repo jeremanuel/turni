@@ -17,6 +17,7 @@ class ClubPartitionCard extends StatelessWidget {
     required this.onAddPhysical,
     required this.onEditPhysical,
     required this.onTogglePhysicalActive,
+    this.readOnly = false,
     this.highlighted = false,
     this.highlightedPartitionPhysicalId,
   });
@@ -30,6 +31,9 @@ class ClubPartitionCard extends StatelessWidget {
   final VoidCallback onAddPhysical;
   final void Function(PhysicalPartition) onEditPhysical;
   final void Function(PhysicalPartition) onTogglePhysicalActive;
+
+  /// Sin permiso para editar canchas: se ve todo, sin switches ni botones de edición.
+  final bool readOnly;
 
   /// Resalta la card (y la fila de [highlightedPartitionPhysicalId]) cuando se
   /// llegó acá desde un acceso directo de otra pantalla.
@@ -92,9 +96,9 @@ class ClubPartitionCard extends StatelessWidget {
                   Text(clubPartition.active ? 'Activo' : 'Inactivo'),
                   Switch(
                     value: clubPartition.active,
-                    onChanged: (_) => onToggleActive(),
+                    onChanged: readOnly ? null : (_) => onToggleActive(),
                   ),
-                  IconButton(onPressed: onEdit, icon: const Icon(Icons.edit)),
+                  if (!readOnly) IconButton(onPressed: onEdit, icon: const Icon(Icons.edit)),
                 ],
               ),
               const Divider(),
@@ -161,19 +165,19 @@ class ClubPartitionCard extends StatelessWidget {
                             ),
                             Switch(
                               value: partition.active,
-                              onChanged: (_) => onTogglePhysicalActive(partition),
+                              onChanged: readOnly ? null : (_) => onTogglePhysicalActive(partition),
                             ),
                             IconButton(
                               icon: const Icon(Icons.edit),
-                              onPressed: () => onEditPhysical(partition),
+                              onPressed: readOnly ? null : () => onEditPhysical(partition),
                             ),
                           ],
                         )
                         .toList(),
                   ),
                 ),
-              const SizedBox(height: 12),
-              Align(
+              if (!readOnly) const SizedBox(height: 12),
+              if (!readOnly) Align(
                 alignment: Alignment.centerLeft,
                 child: OutlinedButton.icon(
                   onPressed: onAddPhysical,

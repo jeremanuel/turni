@@ -16,6 +16,7 @@ class AuthRepositoryImpl extends AuthRepository {
       displayName: user.person.fullName,
       email: user.person.email!,
       photoUrl: user.picture,
+      idToken: user.googleIdToken,
     );
 
     return authProvider.login(reqData);

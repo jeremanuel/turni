@@ -1,5 +1,6 @@
 
 import 'package:flutter/material.dart';
+import '../../../../core/utils/permissions.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 
@@ -372,7 +373,7 @@ class _EditBasicDataContainerState extends State<EditBasicDataContainer> {
                     ),
                   ),
                 ),
-                onPressed: (formKey.currentState?.isDirty ?? false) ? onPressSave : null, 
+                onPressed: (formKey.currentState?.isDirty ?? false) && Permissions.can(Permissions.CLIENTES_EDITAR) ? onPressSave : null, 
                 child: const Text("Guardar")
             );
   }

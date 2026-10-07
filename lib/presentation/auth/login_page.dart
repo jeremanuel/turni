@@ -4,6 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../core/config/service_locator.dart';
 import '../core/cubit/auth/auth_cubit.dart';
+import 'widgets/dev_login_button.dart';
 import 'widgets/google_button.dart';
 
 class LoginPage extends StatelessWidget {
@@ -90,7 +91,15 @@ class LoginPage extends StatelessWidget {
   Widget buildGoogleButton() {
     return Container(
       margin: const EdgeInsets.only(bottom: 35),
-      child: const GoogleButton(),
+      child: const Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          GoogleButton(),
+          SizedBox(height: 12),
+          // Solo en debug: el login de Google no funciona en local.
+          DevLoginButton(),
+        ],
+      ),
     );
   }
 }

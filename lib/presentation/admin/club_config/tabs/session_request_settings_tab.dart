@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/presentation/components/permission_lock.dart';
+import '../../../../core/utils/permissions.dart';
+
 import '../../../../core/config/service_locator.dart';
 import '../../../../core/presentation/components/inputs/snackbars/snackbars_functions.dart';
 import '../../../../core/utils/domain_error.dart';
@@ -104,7 +107,13 @@ class _SessionRequestSettingsTabState
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
-      child: Form(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+        const ReadOnlyNotice(permissions: [Permissions.CONFIGURACION_SOLICITUDES]),
+        PermissionLock(
+        permissions: const [Permissions.CONFIGURACION_SOLICITUDES],
+        child: Form(
         key: _formKey,
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 400),
@@ -164,6 +173,9 @@ class _SessionRequestSettingsTabState
             ],
           ),
         ),
+      ),
+      ),
+        ],
       ),
     );
   }

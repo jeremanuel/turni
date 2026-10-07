@@ -60,6 +60,7 @@ class _GoogleWebButtonState extends State<_GoogleWebButton> {
             displayName: user.displayName,
             photoUrl: user.photoUrl,
           ),
+          idToken: user.authentication.idToken,
         );
       case GoogleSignInAuthenticationEventSignOut():
         break;

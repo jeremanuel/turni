@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/utils/permissions.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/config/router/app_routes.dart';
@@ -26,7 +27,7 @@ class ClientListHeader extends StatelessWidget {
         children: [
           const Text("Clientes"),
           const Spacer(),
-          FilledButton(
+          if (Permissions.can(Permissions.CLIENTES_EDITAR)) FilledButton(
             onPressed: () {
               context.goNamed(
                 AppRoutes.NEW_CLIENT_ROUTE.name,

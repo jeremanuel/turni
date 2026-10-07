@@ -20,7 +20,7 @@ sealed class Client with _$Client {
 
     @JsonKey(name: "user_id", fromJson: ValueTransformers.fromJsonString)
     String? userId,
-    @JsonKey(name: "club_id", fromJson: ValueTransformers.fromJsonInt)
+    @JsonKey(name: "club_id", fromJson: ValueTransformers.fromJsonIntNullable)
     int? clubId,
     Person? person,
     @JsonKey(name: "client_label", fromJson: Label.clientLabelToLabel)

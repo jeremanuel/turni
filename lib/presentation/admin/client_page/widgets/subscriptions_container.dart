@@ -2,6 +2,7 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:flutter/material.dart';
+import '../../../../core/utils/permissions.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/config/service_locator.dart';
@@ -339,7 +340,7 @@ class SubscriptionCard extends StatelessWidget {
                   ),
                 ),
                 _buildStatusBadge(context),
-                if (clientSubscription.isActive) ...[
+                if (clientSubscription.isActive && Permissions.can(Permissions.CLIENTES_ABONOS)) ...[
                   const SizedBox(width: 6),
                   const SizedBox(width: 4),
                   IconButton(
@@ -370,7 +371,7 @@ class SubscriptionCard extends StatelessWidget {
     child: Stack(
       children: [
         
-        if(clientSubscription.isActive)
+        if(clientSubscription.isActive && Permissions.can(Permissions.CLIENTES_ABONOS))
           Positioned(
             right: 0,
             child: IconButton(

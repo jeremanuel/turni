@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+
+import '../../../core/presentation/components/permission_lock.dart';
+import '../../../core/utils/permissions.dart';
 import 'package:go_router/go_router.dart';
 
 import 'club_config_focus.dart';
@@ -78,7 +81,16 @@ class ClubConfigPage extends StatelessWidget {
                 alignment: Alignment.topLeft,
                 child: ConstrainedBox(
                   constraints: const BoxConstraints(maxWidth: 560),
-                  child: MercadoPagoAccountCard(),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const ReadOnlyNotice(permissions: [Permissions.CONFIGURACION_COBROS_ONLINE]),
+                      PermissionLock(
+                        permissions: const [Permissions.CONFIGURACION_COBROS_ONLINE],
+                        child: MercadoPagoAccountCard(),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),

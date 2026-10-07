@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/presentation/components/permission_lock.dart';
+import '../../../../core/utils/permissions.dart';
+
 import '../../../../core/config/service_locator.dart';
 import '../../../../core/presentation/components/inputs/snackbars/snackbars_functions.dart';
 import '../../../../core/utils/domain_error.dart';
@@ -91,6 +94,8 @@ class _PriceTariffsTabState extends State<PriceTariffsTab> {
   List<PhysicalPartition> _physicalPartitions = [];
   List<PriceTariff> _tariffs = [];
   int? _selectedTariffId;
+
+  bool get _canEdit => Permissions.can(Permissions.CONFIGURACION_TARIFAS);
   bool _isLoadingTariffs = false;
   bool _focusConsumed = false;
 
@@ -442,6 +447,7 @@ class _PriceTariffsTabState extends State<PriceTariffsTab> {
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant),
           ),
           const SizedBox(height: 16),
+          const ReadOnlyNotice(permissions: [Permissions.CONFIGURACION_TARIFAS]),
           Wrap(
             spacing: 8,
             children: _clubPartitions.map((partition) {
@@ -497,7 +503,7 @@ class _PriceTariffsTabState extends State<PriceTariffsTab> {
           crossAxisAlignment: WrapCrossAlignment.center,
           children: [
             Text('Tarifas', style: Theme.of(context).textTheme.titleMedium),
-            TextButton.icon(
+            if (_canEdit) TextButton.icon(
               onPressed: _createTariff,
               icon: const Icon(Icons.add, size: 18),
               label: const Text('Nueva tarifa'),
@@ -601,9 +607,9 @@ class _PriceTariffsTabState extends State<PriceTariffsTab> {
               children: [
                 Expanded(child: Text(tariff.name, style: Theme.of(context).textTheme.titleMedium)),
                 Text(tariff.active ? 'Activa' : 'Inactiva'),
-                Switch(value: tariff.active, onChanged: (_) => _toggleTariffActive(tariff)),
-                IconButton(onPressed: () => _renameTariff(tariff), icon: const Icon(Icons.edit)),
-                IconButton(onPressed: () => _deleteTariff(tariff), icon: const Icon(Icons.delete_outline)),
+                Switch(value: tariff.active, onChanged: _canEdit ? (_) => _toggleTariffActive(tariff) : null),
+                if (_canEdit) IconButton(onPressed: () => _renameTariff(tariff), icon: const Icon(Icons.edit)),
+                if (_canEdit) IconButton(onPressed: () => _deleteTariff(tariff), icon: const Icon(Icons.delete_outline)),
               ],
             ),
             const SizedBox(height: 16),
@@ -615,13 +621,13 @@ class _PriceTariffsTabState extends State<PriceTariffsTab> {
               children: [
                 ...tariff.memberPartitionPhysicalIds.map((id) => InputChip(
                       label: Text(_partitionLabel(id)),
-                      onDeleted: () => _removeMember(tariff, id),
+                      onDeleted: _canEdit ? () => _removeMember(tariff, id) : null,
                       backgroundColor: colorScheme.secondaryContainer,
                       side: BorderSide.none,
                       deleteIconColor: colorScheme.onSecondaryContainer,
                       labelStyle: TextStyle(color: colorScheme.onSecondaryContainer),
                     )),
-                if (availableToAdd.isNotEmpty)
+                if (_canEdit && availableToAdd.isNotEmpty)
                   PopupMenuButton<int>(
                     // `PopupMenuButton` se posiciona solo pegado a este botón;
                     // el `showMenu` manual anterior usaba una posición fija
@@ -656,7 +662,7 @@ class _PriceTariffsTabState extends State<PriceTariffsTab> {
             else
               ...tariff.rules.map((rule) => _buildRuleRow(tariff, rule)),
             const SizedBox(height: 8),
-            _buildInlineRuleForm(tariff),
+            if (_canEdit) _buildInlineRuleForm(tariff),
             if (defaultPrices.isNotEmpty) ...[
               const SizedBox(height: 16),
               Container(
@@ -726,8 +732,8 @@ class _PriceTariffsTabState extends State<PriceTariffsTab> {
               ],
             ),
           ),
-          Switch(value: rule.active, onChanged: (_) => _toggleRuleActive(tariff, rule)),
-          IconButton(onPressed: () => _editRule(tariff, rule), icon: const Icon(Icons.edit, size: 18)),
+          Switch(value: rule.active, onChanged: _canEdit ? (_) => _toggleRuleActive(tariff, rule) : null),
+          if (_canEdit) IconButton(onPressed: () => _editRule(tariff, rule), icon: const Icon(Icons.edit, size: 18)),
         ],
       ),
     );

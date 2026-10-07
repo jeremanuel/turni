@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/presentation/components/permission_lock.dart';
+import '../../../../core/utils/permissions.dart';
+
 import '../../../../core/config/service_locator.dart';
 import '../../../../core/presentation/components/inputs/snackbars/snackbars_functions.dart';
 import '../../../../core/utils/domain_error.dart';
@@ -34,6 +37,8 @@ class _ProductsTabState extends State<ProductsTab> {
   List<ProductCategory> _categories = [];
   List<AdminProduct> _products = [];
   int? _selectedCategoryFilter;
+
+  bool get _canEdit => Permissions.can(Permissions.CONFIGURACION_PRODUCTOS);
 
   @override
   void initState() {
@@ -253,6 +258,7 @@ class _ProductsTabState extends State<ProductsTab> {
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant),
           ),
           const SizedBox(height: 20),
+          const ReadOnlyNotice(permissions: [Permissions.CONFIGURACION_PRODUCTOS]),
           Card(
             child: Padding(
               padding: const EdgeInsets.all(20),
@@ -297,18 +303,18 @@ class _ProductsTabState extends State<ProductsTab> {
                                   Text('\$${ThousandsFormat.formatPrice(product.price)}'),
                                   Switch(
                                     value: product.active,
-                                    onChanged: (_) => _toggleProductActive(product),
+                                    onChanged: _canEdit ? (_) => _toggleProductActive(product) : null,
                                   ),
                                   IconButton(
                                     icon: const Icon(Icons.edit),
-                                    onPressed: () => _renameProduct(product),
+                                    onPressed: _canEdit ? () => _renameProduct(product) : null,
                                   ),
                                 ])
                             .toList(),
                       ),
                     ),
                   const SizedBox(height: 4),
-                  _buildInlineProductForm(),
+                  if (_canEdit) _buildInlineProductForm(),
                 ],
               ),
             ),
@@ -351,12 +357,12 @@ class _ProductsTabState extends State<ProductsTab> {
                                     scale: 0.75,
                                     child: Switch(
                                       value: category.active,
-                                      onChanged: (_) => _toggleCategoryActive(category),
+                                      onChanged: _canEdit ? (_) => _toggleCategoryActive(category) : null,
                                     ),
                                   ),
                                   IconButton(
                                     icon: const Icon(Icons.edit, size: 16),
-                                    onPressed: () => _renameCategory(category),
+                                    onPressed: _canEdit ? () => _renameCategory(category) : null,
                                     padding: EdgeInsets.zero,
                                     constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
                                   ),
@@ -365,8 +371,8 @@ class _ProductsTabState extends State<ProductsTab> {
                             ))
                         .toList(),
                   ),
-                  const SizedBox(height: 16),
-                  Row(
+                  if (_canEdit) const SizedBox(height: 16),
+                  if (_canEdit) Row(
                     children: [
                       SizedBox(
                         width: 240,

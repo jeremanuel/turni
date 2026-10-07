@@ -3,24 +3,27 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/config/service_locator.dart';
 import '../../core/cubit/auth/auth_cubit.dart';
+import '../../../core/utils/permissions.dart';
 
 /// Menú lateral del admin (diseño "Gestor de turnos: layout, menú lateral y
 /// panel del turno"): logo, destinos con ícono y texto siempre visibles, y el
 /// avatar del admin abajo con perfil y cerrar sesión.
 ///
-/// El orden de [_destinations] es el de las ramas del `StatefulShellRoute`.
+/// Cada destino apunta a una rama del `StatefulShellRoute` (`buildBranches`)
+/// y solo se muestra si el rol tiene alguno de sus permisos.
 class AdminRail extends StatelessWidget {
   const AdminRail({super.key, required this.shell});
 
   final StatefulNavigationShell shell;
 
-  static const _destinations = [
-    (Icons.space_dashboard_outlined, 'Inicio'),
-    (Icons.calendar_month_outlined, 'Turnos'),
-    (Icons.groups_outlined, 'Clientes'),
-    (Icons.credit_card, 'Pagos'),
-    (Icons.map_outlined, 'Mapa'),
-    (Icons.settings_outlined, 'Configuración'),
+  static const _destinations = <(IconData, String, int, List<String>)>[
+    (Icons.space_dashboard_outlined, 'Inicio', 0, []),
+    (Icons.calendar_month_outlined, 'Turnos', 1, [Permissions.AGENDA_VER]),
+    (Icons.groups_outlined, 'Clientes', 2, [Permissions.CLIENTES_VER]),
+    (Icons.credit_card, 'Pagos', 3, [Permissions.PAGOS_VER]),
+    (Icons.map_outlined, 'Mapa', 4, [Permissions.MAPA_VER]),
+    (Icons.settings_outlined, 'Configuración', 5, [Permissions.CONFIGURACION_VER]),
+    (Icons.manage_accounts_outlined, 'Usuarios', 6, [Permissions.ADMINISTRADORES_VER, Permissions.ROLES_VER]),
   ];
 
   String _initials() {
@@ -33,6 +36,9 @@ class AdminRail extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final visible = _destinations
+        .where((destination) => destination.$4.isEmpty || Permissions.canAny(destination.$4))
+        .toList();
 
     return Container(
       width: 88,
@@ -54,13 +60,13 @@ class AdminRail extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 28),
-          for (var i = 0; i < _destinations.length; i++) ...[
+          for (final (i, (icon, label, branch, _)) in visible.indexed) ...[
             if (i > 0) const SizedBox(height: 12),
             _RailItem(
-              icon: _destinations[i].$1,
-              label: _destinations[i].$2,
-              selected: shell.currentIndex == i,
-              onTap: () => shell.goBranch(i, initialLocation: shell.currentIndex == i),
+              icon: icon,
+              label: label,
+              selected: shell.currentIndex == branch,
+              onTap: () => shell.goBranch(branch, initialLocation: shell.currentIndex == branch),
             ),
           ],
           const Spacer(),
