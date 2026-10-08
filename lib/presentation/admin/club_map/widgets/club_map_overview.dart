@@ -38,6 +38,7 @@ class ClubMapOverview extends StatefulWidget {
 
 class _ClubMapOverviewState extends State<ClubMapOverview> {
   int? _selectedCourtId;
+  int? _selectedSpace;
 
   @override
   Widget build(BuildContext context) {
@@ -94,6 +95,7 @@ class _ClubMapOverviewState extends State<ClubMapOverview> {
   Widget _buildPlan(BuildContext context, ClubMapLayout map) {
     final theme = Theme.of(context);
     final selected = _selectedCourtId == null ? null : widget.view.findCourt(_selectedCourtId!);
+    final selectedSpace = _selectedSpace == null || _selectedSpace! >= map.spaces.length ? null : map.spaces[_selectedSpace!];
 
     final plan = LayoutBuilder(
       builder: (context, constraints) {
@@ -116,11 +118,23 @@ class _ClubMapOverviewState extends State<ClubMapOverview> {
                 widthM: map.widthM,
                 heightM: map.heightM,
                 elements: map.elements,
+                spaces: map.spaces,
                 scale: scale,
                 selectedCourtId: _selectedCourtId,
+                selectedSpaceIndex: _selectedSpace,
                 liveStatus: _liveStatus(map),
-                onCourtTap: (id) => setState(() => _selectedCourtId = id),
-                onBackgroundTap: () => setState(() => _selectedCourtId = null),
+                onCourtTap: (id) => setState(() {
+                  _selectedCourtId = id;
+                  _selectedSpace = null;
+                }),
+                onSpaceTap: (index) => setState(() {
+                  _selectedSpace = index;
+                  _selectedCourtId = null;
+                }),
+                onBackgroundTap: () => setState(() {
+                  _selectedCourtId = null;
+                  _selectedSpace = null;
+                }),
               ),
             ),
             const SizedBox(height: 10),
@@ -143,7 +157,9 @@ class _ClubMapOverviewState extends State<ClubMapOverview> {
       width: 300,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(color: theme.colorScheme.surfaceContainerLow, borderRadius: BorderRadius.circular(12)),
-      child: selected == null
+      child: selectedSpace != null
+          ? _SpaceDetail(space: selectedSpace, name: widget.view.spaceName(selectedSpace), typeName: widget.view.spaceTypeName(selectedSpace.type))
+          : selected == null
           ? Text('Tocá una cancha del plano para ver sus datos.', style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant))
           : _CourtDetail(
               partition: selected.partition,
@@ -250,7 +266,7 @@ class _CourtDetail extends StatelessWidget {
             SizedBox(width: 110, child: field('Cubierta', court.isCover ? 'Techada' : 'Descubierta')),
             SizedBox(width: 110, child: field('Jugadores', court.maxPlayers?.toString() ?? '-')),
             SizedBox(width: 110, child: field('Turno', court.defaultSessionDuration != null ? '${court.defaultSessionDuration} min' : '-')),
-            SizedBox(width: 110, child: field('Medidas', partition.courtSize.label)),
+            SizedBox(width: 110, child: field(court.ownSize != null ? 'Medidas (propias)' : 'Medidas', (court.ownSize ?? partition.courtSize).label)),
           ],
         ),
         const SizedBox(height: 16),
@@ -268,6 +284,33 @@ class _CourtDetail extends StatelessWidget {
           width: double.infinity,
           child: OutlinedButton(onPressed: onSeeSessions, child: const Text('Ver los turnos')),
         ),
+      ],
+    );
+  }
+}
+
+/// Detalle de un espacio que no es cancha (entrada, bar...).
+class _SpaceDetail extends StatelessWidget {
+  final ClubMapSpace space;
+  final String name;
+  final String typeName;
+
+  const _SpaceDetail({required this.space, required this.name, required this.typeName});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(typeName.toUpperCase(), style: theme.textTheme.labelMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
+        const SizedBox(height: 4),
+        Text(name, style: theme.textTheme.headlineSmall),
+        const SizedBox(height: 16),
+        Text('Tamaño', style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
+        const SizedBox(height: 2),
+        Text('${space.widthM} × ${space.heightM} m', style: theme.textTheme.bodyMedium),
       ],
     );
   }

@@ -150,6 +150,81 @@ class _Badge extends StatelessWidget {
   }
 }
 
+/// Espacio del predio que no es una cancha (entrada, bar...): gris claro,
+/// con el ícono del tipo y su nombre si entra.
+class SpaceTile extends StatelessWidget {
+  final String type;
+  final String name;
+  final double width;
+  final double height;
+
+  /// Anillo alrededor: seleccionado (primario) o con problema (error).
+  final Color? ringColor;
+
+  const SpaceTile({super.key, required this.type, required this.name, required this.width, required this.height, this.ringColor});
+
+  static IconData iconOf(String type) {
+    switch (type) {
+      case 'ENTRANCE':
+        return Icons.door_front_door_outlined;
+      case 'LOCKER_ROOM':
+        return Icons.checkroom;
+      case 'BATHROOM':
+        return Icons.wc;
+      case 'BAR':
+        return Icons.local_cafe_outlined;
+      case 'PARKING':
+        return Icons.local_parking;
+      default:
+        return Icons.crop_square;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    const ink = Color(0xFF49454F);
+    final showName = width >= 56 && height >= 34;
+    final showIcon = width >= 18 && height >= 18;
+
+    return Container(
+      width: width,
+      height: height,
+      decoration: BoxDecoration(
+        color: const Color(0xFFE9E5DD),
+        borderRadius: BorderRadius.circular(3),
+        border: Border.all(color: const Color(0xFF9C968A), width: 1.5),
+        boxShadow: [
+          if (ringColor != null) ...[
+            BoxShadow(color: Theme.of(context).colorScheme.surface, spreadRadius: 3),
+            BoxShadow(color: ringColor!, spreadRadius: 6),
+          ],
+        ],
+      ),
+      child: !showIcon
+          ? null
+          : Center(
+              child: Padding(
+                padding: const EdgeInsets.all(2),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(iconOf(type), size: 16, color: ink),
+                    if (showName)
+                      Text(
+                        name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: ink),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+    );
+  }
+}
+
 /// Libre / Ocupada arriba a la derecha. En canchas chicas, solo el punto.
 class _LiveStatusBadge extends StatelessWidget {
   final CourtLiveStatus status;

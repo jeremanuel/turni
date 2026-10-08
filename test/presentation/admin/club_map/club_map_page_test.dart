@@ -220,6 +220,103 @@ void main() {
     verify(() => sessionRepository.getSessions(any())).called(1);
   });
 
+  testWidgets('editor: cambiar la medida de una cancha y sumar un espacio se guardan', (tester) async {
+    const spaceTypes = [
+      ClubMapSpaceType(type: 'ENTRANCE', name: 'Entrada', defaultWidthM: 6, defaultHeightM: 3),
+      ClubMapSpaceType(type: 'BAR', name: 'Bar', defaultWidthM: 10, defaultHeightM: 8),
+    ];
+    when(() => repository.getClubMap()).thenAnswer(
+      (_) async => const Either.right(ClubMapView(
+        map: ClubMapLayout(widthM: 80, heightM: 50, elements: [ClubMapElement(courtId: 41, xM: 1, yM: 1)]),
+        partitions: [_futbol],
+        spaceTypes: spaceTypes,
+      )),
+    );
+    ClubMapLayout? saved;
+    when(() => repository.saveClubMap(any())).thenAnswer((invocation) async {
+      saved = invocation.positionalArguments.first as ClubMapLayout;
+      return Either.right(ClubMapView(map: saved, partitions: const [_futbol], spaceTypes: spaceTypes));
+    });
+
+    await pumpPage(tester);
+    await tester.tap(find.text('Editar plano'));
+    await tester.pumpAndSettle();
+
+    // Medida propia de la cancha.
+    await tester.tap(find.text('Cancha 1').last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Medidas: 36 × 20 m'));
+    await tester.pumpAndSettle();
+    expect(find.text('Medidas de Cancha 1'), findsOneWidget);
+    await tester.enterText(find.widgetWithText(TextFormField, 'Largo'), '30');
+    await tester.enterText(find.widgetWithText(TextFormField, 'Ancho'), '18,5');
+    await tester.tap(find.text('Aplicar'));
+    await tester.pumpAndSettle();
+    expect(find.text('Medidas: 30 × 18,5 m (propia)'), findsOneWidget);
+
+    // Un espacio: entra en el primer lugar libre, con el tamaño sugerido.
+    await tester.tap(find.widgetWithText(OutlinedButton, 'Bar'));
+    await tester.pumpAndSettle();
+    expect(find.text('Bar · 10 × 8 m'), findsOneWidget);
+    await tester.tap(find.text('Nombre y tamaño'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.widgetWithText(TextFormField, 'Nombre (opcional)'), 'Buffet');
+    await tester.tap(find.text('Aplicar'));
+    await tester.pumpAndSettle();
+    expect(find.text('Buffet · 10 × 8 m'), findsOneWidget);
+
+    await tester.tap(find.text('Guardar plano'));
+    await tester.pumpAndSettle();
+
+    expect(saved!.courtSizes, {41: const CourtSize(lengthM: 30, widthM: 18.5)});
+    expect(saved!.spaces.single.type, 'BAR');
+    expect(saved!.spaces.single.label, 'Buffet');
+    expect((saved!.spaces.single.widthM, saved!.spaces.single.heightM), (10, 8));
+    // No se encima con la cancha (30 x 18,5 en 1,1).
+    expect(findIssues(const ClubMapView(map: null, partitions: [_futbol]).withCourtSize(41, const CourtSize(lengthM: 30, widthM: 18.5)), saved!.elements, 80, 50, spaces: saved!.spaces).isEmpty, isTrue);
+  });
+
+  testWidgets('editor: volver a la medida del deporte manda null', (tester) async {
+    const futbolPropia = ClubMapPartition(
+      id: 400,
+      clubTypeId: 20,
+      sport: 'Fútbol',
+      courtSize: CourtSize(lengthM: 36, widthM: 20),
+      courts: [ClubMapCourt(id: 41, name: 'Cancha 1', isCover: false, maxPlayers: 10, defaultSessionDuration: 60, ownSize: CourtSize(lengthM: 30, widthM: 18))],
+    );
+    when(() => repository.getClubMap()).thenAnswer(
+      (_) async => const Either.right(ClubMapView(
+        map: ClubMapLayout(widthM: 80, heightM: 50, elements: [ClubMapElement(courtId: 41, xM: 1, yM: 1)]),
+        partitions: [futbolPropia],
+      )),
+    );
+    ClubMapLayout? saved;
+    when(() => repository.saveClubMap(any())).thenAnswer((invocation) async {
+      saved = invocation.positionalArguments.first as ClubMapLayout;
+      return Either.right(ClubMapView(map: saved, partitions: const [_futbol]));
+    });
+
+    await pumpPage(tester);
+    // En el mapa, el detalle dice que la medida es propia.
+    await tester.tap(find.text('Cancha 1'));
+    await tester.pumpAndSettle();
+    expect(find.text('Medidas (propias)'), findsOneWidget);
+    expect(find.text('30 × 18 m'), findsOneWidget);
+
+    await tester.tap(find.text('Editar plano'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Cancha 1').last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Medidas: 30 × 18 m (propia)'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Usar la del deporte'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Guardar plano'));
+    await tester.pumpAndSettle();
+
+    expect(saved!.courtSizes, {41: null});
+  });
+
   testWidgets('si el backend rechaza el plano, se muestra su mensaje y se queda en el editor', (tester) async {
     when(() => repository.getClubMap()).thenAnswer(
       (_) async => const Either.right(ClubMapView(
