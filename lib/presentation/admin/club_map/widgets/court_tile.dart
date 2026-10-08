@@ -34,6 +34,24 @@ class SportStyle {
 
 const _coveredBorder = Color(0xFF2B2440);
 
+/// Escala de uso (un solo tono, de claro a oscuro), en 5 tramos de 20 %.
+/// Validada contra el piso del plano (#FBFAF7), que es claro en los dos
+/// temas: el tramo más claro llega a 2:1.
+class UsageScale {
+  static const steps = [Color(0xFF86B6EF), Color(0xFF5598E7), Color(0xFF2A78D6), Color(0xFF1C5CAB), Color(0xFF0D366B)];
+
+  /// Cancha sin turnos en el período.
+  static const none = Color(0xFFB9B6AE);
+
+  static const labels = ['0–20 %', '20–40 %', '40–60 %', '60–80 %', '80–100 %'];
+
+  static Color colorOf(double? usage) {
+    if (usage == null) return none;
+    final index = (usage * steps.length).floor().clamp(0, steps.length - 1);
+    return steps[index];
+  }
+}
+
 /// Estado en vivo de una cancha en el mapa del club.
 enum CourtLiveStatus {
   free('Libre', Color(0xFF1E8E3E)),
@@ -60,6 +78,11 @@ class CourtTile extends StatelessWidget {
   /// Libre u ocupada ahora. `null`: no se muestra (ej. en el editor).
   final CourtLiveStatus? liveStatus;
 
+  /// Vista de uso: la cancha se pinta con este color (sin líneas de juego)
+  /// y muestra [usageLabel] al centro.
+  final Color? usageColor;
+  final String? usageLabel;
+
   const CourtTile({
     super.key,
     required this.name,
@@ -69,6 +92,8 @@ class CourtTile extends StatelessWidget {
     required this.height,
     this.ringColor,
     this.liveStatus,
+    this.usageColor,
+    this.usageLabel,
   });
 
   @override
@@ -81,7 +106,7 @@ class CourtTile extends StatelessWidget {
       width: width,
       height: height,
       decoration: BoxDecoration(
-        color: style.fill,
+        color: usageColor ?? style.fill,
         borderRadius: BorderRadius.circular(4),
         border: Border.all(color: isCover ? _coveredBorder : Colors.white, width: borderWidth),
         boxShadow: [
@@ -96,8 +121,17 @@ class CourtTile extends StatelessWidget {
         borderRadius: BorderRadius.circular(2),
         child: Stack(
           children: [
-            Positioned.fill(child: CustomPaint(painter: CourtLinesPainter(style.lines))),
+            if (usageColor == null) Positioned.fill(child: CustomPaint(painter: CourtLinesPainter(style.lines))),
             if (isCover) const Positioned.fill(child: CustomPaint(painter: RoofStripesPainter())),
+            // El % va arriba del rayado de techada.
+            if (usageLabel != null)
+              Center(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.94), borderRadius: BorderRadius.circular(4)),
+                  child: Text(usageLabel!, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF1D1B20))),
+                ),
+              ),
             if (showBadge) Positioned(left: 4, top: 4, child: _Badge(isCover: isCover)),
             if (liveStatus != null) Positioned(right: 4, top: 4, child: _LiveStatusBadge(status: liveStatus!, compact: width < 150)),
             if (showName)

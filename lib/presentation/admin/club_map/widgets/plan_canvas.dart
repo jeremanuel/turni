@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../domain/entities/club_map/club_map.dart';
+import '../../../../domain/entities/club_map/court_usage.dart';
 import 'court_tile.dart';
 
 /// Escala (px por metro) para que el predio entre en el espacio disponible.
@@ -28,6 +29,9 @@ class PlanCanvas extends StatefulWidget {
 
   /// Libre u ocupada ahora, por cancha. `null`: no se muestra.
   final Map<int, CourtLiveStatus>? liveStatus;
+
+  /// Vista de uso: cada cancha pintada según cuánto se usó. `null`: no se muestra.
+  final CourtUsageView? usage;
   final ValueChanged<int>? onCourtTap;
 
   /// Edición: nueva posición (en metros) de una cancha arrastrada.
@@ -53,6 +57,7 @@ class PlanCanvas extends StatefulWidget {
     this.selectedSpaceIndex,
     this.issues,
     this.liveStatus,
+    this.usage,
     this.onCourtTap,
     this.onCourtMoved,
     this.onSpaceTap,
@@ -100,6 +105,17 @@ class _PlanCanvasState extends State<PlanCanvas> {
     );
   }
 
+  /// En la vista de uso, el detalle al pasar el mouse.
+  Widget _usageTooltip(int courtId, Widget tile) {
+    final usage = widget.usage;
+    if (usage == null) return tile;
+    final court = usage.byCourt[courtId];
+    final message = court == null || court.usage == null
+        ? 'Sin turnos cargados en el período'
+        : '${court.percentLabel} · ${formatHours(court.reservedMinutes)} reservadas de ${formatHours(court.offeredMinutes)}';
+    return Tooltip(message: message, child: tile);
+  }
+
   /// La cancha que se arrastra va arriba de las demás.
   List<ClubMapElement> _ordered() {
     final list = [...widget.elements];
@@ -126,6 +142,8 @@ class _PlanCanvasState extends State<PlanCanvas> {
       height: fp.h * scale,
       ringColor: hasIssue ? colors.error : (selected ? colors.primary : null),
       liveStatus: widget.liveStatus?[element.courtId],
+      usageColor: widget.usage == null ? null : UsageScale.colorOf(widget.usage!.byCourt[element.courtId]?.usage),
+      usageLabel: widget.usage == null ? null : (widget.usage!.byCourt[element.courtId]?.percentLabel ?? 'Sin turnos'),
     );
 
     final status = widget.liveStatus?[element.courtId];
@@ -134,6 +152,7 @@ class _PlanCanvasState extends State<PlanCanvas> {
       found.court.name,
       found.court.isCover ? 'techada' : 'descubierta',
       if (status != null) status.label.toLowerCase(),
+      if (widget.usage != null) 'uso ${widget.usage!.byCourt[element.courtId]?.percentLabel ?? 'sin turnos'}',
     ].join(', ');
 
     return Positioned(
@@ -170,7 +189,7 @@ class _PlanCanvasState extends State<PlanCanvas> {
                 : null,
             onPanEnd: _editable ? (_) => setState(() => _draggingId = null) : null,
             onPanCancel: _editable ? () => setState(() => _draggingId = null) : null,
-            child: tile,
+            child: _usageTooltip(element.courtId, tile),
           ),
         ),
       ),
