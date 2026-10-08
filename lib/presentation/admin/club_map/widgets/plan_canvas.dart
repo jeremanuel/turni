@@ -20,6 +20,9 @@ class PlanCanvas extends StatefulWidget {
   final double scale;
   final int? selectedCourtId;
   final ClubMapIssues? issues;
+
+  /// Libre u ocupada ahora, por cancha. `null`: no se muestra.
+  final Map<int, CourtLiveStatus>? liveStatus;
   final ValueChanged<int>? onCourtTap;
 
   /// Edición: nueva posición (en metros) de una cancha arrastrada.
@@ -37,6 +40,7 @@ class PlanCanvas extends StatefulWidget {
     required this.scale,
     this.selectedCourtId,
     this.issues,
+    this.liveStatus,
     this.onCourtTap,
     this.onCourtMoved,
     this.onBackgroundTap,
@@ -104,9 +108,16 @@ class _PlanCanvasState extends State<PlanCanvas> {
       width: fp.w * scale,
       height: fp.h * scale,
       ringColor: hasIssue ? colors.error : (selected ? colors.primary : null),
+      liveStatus: widget.liveStatus?[element.courtId],
     );
 
-    final label = '${found.partition.sport}, ${found.court.name}, ${found.court.isCover ? 'techada' : 'descubierta'}';
+    final status = widget.liveStatus?[element.courtId];
+    final label = [
+      found.partition.sport,
+      found.court.name,
+      found.court.isCover ? 'techada' : 'descubierta',
+      if (status != null) status.label.toLowerCase(),
+    ].join(', ');
 
     return Positioned(
       left: element.xM * scale,

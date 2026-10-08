@@ -4,11 +4,33 @@ import 'package:mocktail/mocktail.dart';
 
 import 'package:turni/core/utils/domain_error.dart';
 import 'package:turni/core/utils/either.dart';
+import 'package:turni/domain/entities/client.dart';
 import 'package:turni/domain/entities/club_map/club_map.dart';
+import 'package:turni/domain/entities/person.dart';
+import 'package:turni/domain/entities/session.dart';
 import 'package:turni/domain/repositories/club_map_repository.dart';
+import 'package:turni/domain/repositories/session_repository.dart';
 import 'package:turni/presentation/admin/club_map/club_map_page.dart';
 
 class _MockRepository extends Mock implements ClubMapRepository {}
+
+class _MockSessionRepository extends Mock implements SessionRepository {}
+
+final _now = DateTime(2026, 10, 5, 19, 30);
+
+Session _session(int id, int courtId, DateTime start, {Client? client}) => Session(
+      sessionId: id,
+      createdAt: DateTime(2026, 10, 5),
+      startTime: start,
+      duration: 60,
+      price: 1000,
+      partitionPhysicalId: courtId,
+      clientId: client == null ? null : int.parse(client.clientId!),
+      client: client,
+    );
+
+Client _client(String id, String name, String lastName) =>
+    Client(clientId: id, person: Person(name: name, lastName: lastName, email: null));
 
 const _padel = ClubMapPartition(
   id: 300,
@@ -31,13 +53,17 @@ const _futbol = ClubMapPartition(
 
 void main() {
   late _MockRepository repository;
+  late _MockSessionRepository sessionRepository;
 
   setUpAll(() {
     registerFallbackValue(const ClubMapLayout(widthM: 10, heightM: 10, elements: []));
+    registerFallbackValue(DateTime(2026));
   });
 
   setUp(() {
     repository = _MockRepository();
+    sessionRepository = _MockSessionRepository();
+    when(() => sessionRepository.getSessions(any())).thenAnswer((_) async => []);
   });
 
   Future<void> pumpPage(WidgetTester tester) async {
@@ -45,7 +71,7 @@ void main() {
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
 
-    await tester.pumpWidget(MaterialApp(home: ClubMapPage(repository: repository)));
+    await tester.pumpWidget(MaterialApp(home: ClubMapPage(repository: repository, sessionRepository: sessionRepository, now: () => _now)));
     await tester.pumpAndSettle();
   }
 
@@ -139,6 +165,59 @@ void main() {
     expect(find.text('Techada'), findsWidgets);
     expect(find.text('90 min'), findsOneWidget);
     expect(find.text('20 × 10 m'), findsOneWidget);
+  });
+
+  testWidgets('ocupación en vivo: cada cancha libre u ocupada, con el turno en curso y el próximo', (tester) async {
+    when(() => repository.getClubMap()).thenAnswer(
+      (_) async => const Either.right(ClubMapView(
+        map: ClubMapLayout(
+          widthM: 80,
+          heightM: 50,
+          elements: [ClubMapElement(courtId: 31, xM: 1, yM: 1), ClubMapElement(courtId: 32, xM: 1, yM: 20)],
+        ),
+        partitions: [_padel],
+      )),
+    );
+    when(() => sessionRepository.getSessions(any())).thenAnswer((_) async => [
+          _session(1, 31, DateTime(2026, 10, 5, 19), client: _client('7', 'Juan', 'Pérez')),
+          _session(2, 31, DateTime(2026, 10, 5, 21), client: _client('8', 'Ana', 'Gómez')),
+          _session(3, 32, DateTime(2026, 10, 5, 19)),
+        ]);
+
+    await pumpPage(tester);
+
+    verify(() => sessionRepository.getSessions(_now)).called(1);
+    expect(find.text('Actualizado 19:30'), findsOneWidget);
+    // En el plano (más la referencia de abajo).
+    expect(find.text('Ocupada'), findsNWidgets(2));
+    expect(find.text('Libre'), findsNWidgets(2));
+
+    await tester.tap(find.text('Padel A'));
+    await tester.pumpAndSettle();
+    expect(find.text('Juan Pérez · hasta las 20:00'), findsOneWidget);
+    expect(find.text('21:00 · Ana Gómez'), findsOneWidget);
+    expect(find.text('Abrir el turno en curso'), findsOneWidget);
+
+    await tester.tap(find.text('Padel B'));
+    await tester.pumpAndSettle();
+    expect(find.text('Turno libre hasta las 20:00'), findsOneWidget);
+    expect(find.text('No hay más turnos reservados hoy'), findsOneWidget);
+    expect(find.text('Reservar ahora'), findsOneWidget);
+  });
+
+  testWidgets('la ocupación se refresca sola', (tester) async {
+    when(() => repository.getClubMap()).thenAnswer(
+      (_) async => const Either.right(ClubMapView(
+        map: ClubMapLayout(widthM: 80, heightM: 50, elements: [ClubMapElement(courtId: 31, xM: 1, yM: 1)]),
+        partitions: [_padel],
+      )),
+    );
+
+    await pumpPage(tester);
+    verify(() => sessionRepository.getSessions(any())).called(1);
+
+    await tester.pump(const Duration(minutes: 1));
+    verify(() => sessionRepository.getSessions(any())).called(1);
   });
 
   testWidgets('si el backend rechaza el plano, se muestra su mensaje y se queda en el editor', (tester) async {

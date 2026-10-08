@@ -1,18 +1,36 @@
 import 'package:flutter/material.dart';
 
 import '../../../../domain/entities/club_map/club_map.dart';
+import '../../../../domain/entities/club_map/court_occupancy.dart';
+import '../../../../domain/entities/session.dart';
 import 'court_tile.dart';
 import 'plan_canvas.dart';
 
-/// Vista del mapa: el plano del club en modo lectura y el detalle de la
-/// cancha que se toca.
+/// Vista del mapa: el plano del club en modo lectura, con cada cancha libre u
+/// ocupada ahora, y el detalle de la cancha que se toca.
 class ClubMapOverview extends StatefulWidget {
   final ClubMapView view;
+
+  /// Ocupación de cada cancha ahora. `null`: todavía no se cargaron los turnos.
+  final Map<int, CourtOccupancy>? occupancy;
+
+  /// Cuándo se calculó [occupancy].
+  final DateTime? occupancyAt;
   final VoidCallback onEdit;
   final VoidCallback onAddSports;
   final VoidCallback onSeeSessions;
+  final ValueChanged<Session> onOpenSession;
 
-  const ClubMapOverview({super.key, required this.view, required this.onEdit, required this.onAddSports, required this.onSeeSessions});
+  const ClubMapOverview({
+    super.key,
+    required this.view,
+    this.occupancy,
+    this.occupancyAt,
+    required this.onEdit,
+    required this.onAddSports,
+    required this.onSeeSessions,
+    required this.onOpenSession,
+  });
 
   @override
   State<ClubMapOverview> createState() => _ClubMapOverviewState();
@@ -46,7 +64,7 @@ class _ClubMapOverviewState extends State<ClubMapOverview> {
                   children: [
                     Text('Mapa del club', style: theme.textTheme.headlineMedium),
                     const SizedBox(height: 4),
-                    Text('Así están ubicadas las canchas en el club, todas en un mismo plano.', style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
+                    Text('Así están ubicadas las canchas en el club y cuáles están ocupadas ahora.', style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
                   ],
                 ),
                 if (map != null) FilledButton.icon(onPressed: widget.onEdit, icon: const Icon(Icons.edit_outlined), label: const Text('Editar plano')),
@@ -100,6 +118,7 @@ class _ClubMapOverviewState extends State<ClubMapOverview> {
                 elements: map.elements,
                 scale: scale,
                 selectedCourtId: _selectedCourtId,
+                liveStatus: _liveStatus(map),
                 onCourtTap: (id) => setState(() => _selectedCourtId = id),
                 onBackgroundTap: () => setState(() => _selectedCourtId = null),
               ),
@@ -111,6 +130,7 @@ class _ClubMapOverviewState extends State<ClubMapOverview> {
               crossAxisAlignment: WrapCrossAlignment.center,
               children: [
                 ..._sportLegend(context, map),
+                if (widget.occupancy != null) _LiveLegend(at: widget.occupancyAt),
                 PlanScaleLegend(scale: scale, widthM: map.widthM, heightM: map.heightM),
               ],
             ),
@@ -125,7 +145,13 @@ class _ClubMapOverviewState extends State<ClubMapOverview> {
       decoration: BoxDecoration(color: theme.colorScheme.surfaceContainerLow, borderRadius: BorderRadius.circular(12)),
       child: selected == null
           ? Text('Tocá una cancha del plano para ver sus datos.', style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant))
-          : _CourtDetail(partition: selected.partition, court: selected.court, onSeeSessions: widget.onSeeSessions),
+          : _CourtDetail(
+              partition: selected.partition,
+              court: selected.court,
+              occupancy: widget.occupancy == null ? null : (widget.occupancy![selected.court.id] ?? CourtOccupancy.empty),
+              onSeeSessions: widget.onSeeSessions,
+              onOpenSession: widget.onOpenSession,
+            ),
     );
 
     return LayoutBuilder(
@@ -143,6 +169,14 @@ class _ClubMapOverviewState extends State<ClubMapOverview> {
         );
       },
     );
+  }
+
+  Map<int, CourtLiveStatus>? _liveStatus(ClubMapLayout map) {
+    final occupancy = widget.occupancy;
+    if (occupancy == null) return null;
+    return {
+      for (final e in map.elements) e.courtId: (occupancy[e.courtId]?.isOccupied ?? false) ? CourtLiveStatus.occupied : CourtLiveStatus.free,
+    };
   }
 
   List<Widget> _sportLegend(BuildContext context, ClubMapLayout map) {
@@ -175,9 +209,17 @@ class _ClubMapOverviewState extends State<ClubMapOverview> {
 class _CourtDetail extends StatelessWidget {
   final ClubMapPartition partition;
   final ClubMapCourt court;
+  final CourtOccupancy? occupancy;
   final VoidCallback onSeeSessions;
+  final ValueChanged<Session> onOpenSession;
 
-  const _CourtDetail({required this.partition, required this.court, required this.onSeeSessions});
+  const _CourtDetail({
+    required this.partition,
+    required this.court,
+    required this.occupancy,
+    required this.onSeeSessions,
+    required this.onOpenSession,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -199,6 +241,7 @@ class _CourtDetail extends StatelessWidget {
         Text(partition.sport.toUpperCase(), style: theme.textTheme.labelMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
         const SizedBox(height: 4),
         Text(court.name, style: theme.textTheme.headlineSmall),
+        if (occupancy != null) ...[const SizedBox(height: 16), _NowSection(occupancy: occupancy!)],
         const SizedBox(height: 16),
         Wrap(
           spacing: 24,
@@ -211,10 +254,111 @@ class _CourtDetail extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 16),
+        if (occupancy?.sessionToOpen case final session?) ...[
+          SizedBox(
+            width: double.infinity,
+            child: FilledButton(
+              onPressed: () => onOpenSession(session),
+              child: Text(_openLabel(occupancy!)),
+            ),
+          ),
+          const SizedBox(height: 8),
+        ],
         SizedBox(
           width: double.infinity,
           child: OutlinedButton(onPressed: onSeeSessions, child: const Text('Ver los turnos')),
         ),
+      ],
+    );
+  }
+}
+
+String _openLabel(CourtOccupancy occupancy) {
+  if (occupancy.current != null) return 'Abrir el turno en curso';
+  if (occupancy.freeNow != null) return 'Reservar ahora';
+  return 'Abrir el próximo turno';
+}
+
+String _hhmm(DateTime time) => '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
+
+String _whoText(Session session) => session.isPending ? 'Solicitud pendiente' : (session.client?.person?.fullName.trim() ?? 'Cliente');
+
+/// "Ahora" en el detalle: si se está jugando (quién y hasta qué hora), si hay
+/// un turno libre para reservar en el momento, y el próximo turno del día.
+class _NowSection extends StatelessWidget {
+  final CourtOccupancy occupancy;
+
+  const _NowSection({required this.occupancy});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final muted = theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant);
+    final status = occupancy.isOccupied ? CourtLiveStatus.occupied : CourtLiveStatus.free;
+    final current = occupancy.current;
+    final freeNow = occupancy.freeNow;
+    final next = occupancy.next;
+
+    final String nowText;
+    if (current != null) {
+      nowText = '${_whoText(current)} · hasta las ${_hhmm(current.endTime as DateTime)}';
+    } else if (freeNow != null) {
+      nowText = 'Turno libre hasta las ${_hhmm(freeNow.endTime as DateTime)}';
+    } else {
+      nowText = 'No hay un turno cargado ahora';
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Container(width: 10, height: 10, decoration: BoxDecoration(color: status.color, shape: BoxShape.circle)),
+            const SizedBox(width: 8),
+            Text(status.label, style: theme.textTheme.titleMedium),
+          ],
+        ),
+        const SizedBox(height: 4),
+        Text(nowText, style: theme.textTheme.bodyMedium),
+        const SizedBox(height: 12),
+        Text('Próximo turno', style: muted),
+        const SizedBox(height: 2),
+        Text(
+          next == null ? 'No hay más turnos reservados hoy' : '${_hhmm(next.startTime)} · ${_whoText(next)}',
+          style: theme.textTheme.bodyMedium,
+        ),
+      ],
+    );
+  }
+}
+
+/// Referencia de Libre / Ocupada y la hora de la última actualización.
+class _LiveLegend extends StatelessWidget {
+  final DateTime? at;
+
+  const _LiveLegend({required this.at});
+
+  @override
+  Widget build(BuildContext context) {
+    final textStyle = Theme.of(context).textTheme.bodySmall?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant);
+
+    Widget item(CourtLiveStatus status) => Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(width: 10, height: 10, decoration: BoxDecoration(color: status.color, shape: BoxShape.circle)),
+            const SizedBox(width: 6),
+            Text(status.label, style: textStyle),
+          ],
+        );
+
+    return Wrap(
+      spacing: 12,
+      runSpacing: 4,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      children: [
+        item(CourtLiveStatus.free),
+        item(CourtLiveStatus.occupied),
+        if (at != null) Text('Actualizado ${_hhmm(at!)}', style: textStyle),
       ],
     );
   }
