@@ -190,11 +190,156 @@ class ClubMapElement {
       ClubMapElement(courtId: courtId, xM: xM ?? this.xM, yM: yM ?? this.yM, rotated: rotated ?? this.rotated);
 }
 
+/// Extremo de un camino: una cancha (por id) o un espacio (por su posición
+/// en `spaces`; los espacios se guardan enteros en cada PUT, así que la
+/// posición es lo estable).
+class ClubMapNodeRef {
+  final int? courtId;
+  final int? spaceIndex;
+
+  const ClubMapNodeRef.court(int id)
+      : courtId = id,
+        spaceIndex = null;
+
+  const ClubMapNodeRef.space(int index)
+      : spaceIndex = index,
+        courtId = null;
+
+  static ClubMapNodeRef? fromJson(Object? json) {
+    if (json is! Map) return null;
+    final court = json['court'];
+    final space = json['space'];
+    if (court is int) return ClubMapNodeRef.court(court);
+    if (space is int) return ClubMapNodeRef.space(space);
+    return null;
+  }
+
+  Map<String, dynamic> toJson() => courtId != null ? {'court': courtId} : {'space': spaceIndex};
+
+  @override
+  bool operator ==(Object other) => other is ClubMapNodeRef && other.courtId == courtId && other.spaceIndex == spaceIndex;
+
+  @override
+  int get hashCode => Object.hash(courtId, spaceIndex);
+}
+
+/// Camino entre dos elementos del plano. Sin dirección: A-B es lo mismo que B-A.
+class ClubMapConnection {
+  final ClubMapNodeRef from;
+  final ClubMapNodeRef to;
+
+  const ClubMapConnection(this.from, this.to);
+
+  static ClubMapConnection? fromJson(Object? json) {
+    if (json is! Map) return null;
+    final from = ClubMapNodeRef.fromJson(json['from']);
+    final to = ClubMapNodeRef.fromJson(json['to']);
+    return from == null || to == null ? null : ClubMapConnection(from, to);
+  }
+
+  Map<String, dynamic> toJson() => {'from': from.toJson(), 'to': to.toJson()};
+
+  bool touches(ClubMapNodeRef ref) => from == ref || to == ref;
+
+  bool joins(ClubMapNodeRef a, ClubMapNodeRef b) => (from == a && to == b) || (from == b && to == a);
+
+  /// El otro extremo, si [ref] es uno de los dos.
+  ClubMapNodeRef? other(ClubMapNodeRef ref) => from == ref ? to : (to == ref ? from : null);
+}
+
+/// Los caminos después de sacar el espacio en la posición [index]: se caen
+/// los que lo usaban y se corren los de los espacios que venían después.
+List<ClubMapConnection> connectionsWithoutSpace(List<ClubMapConnection> connections, int index) {
+  ClubMapNodeRef shift(ClubMapNodeRef ref) =>
+      ref.spaceIndex != null && ref.spaceIndex! > index ? ClubMapNodeRef.space(ref.spaceIndex! - 1) : ref;
+  final removed = ClubMapNodeRef.space(index);
+  return [
+    for (final c in connections)
+      if (!c.touches(removed)) ClubMapConnection(shift(c.from), shift(c.to)),
+  ];
+}
+
+/// Recorrido de un camino en metros, de borde a borde: recto si los dos
+/// rectángulos se enfrentan, si no en L (primero horizontal, después
+/// vertical, o al revés si así pasa menos por debajo de [obstacles]).
+List<({double x, double y})> connectionPath(MapRect a, MapRect b, {List<MapRect> obstacles = const []}) =>
+    _trimToEdges(_centerPath(a, b, obstacles), a, b);
+
+List<({double x, double y})> _centerPath(MapRect a, MapRect b, List<MapRect> obstacles) {
+  final ax = a.x + a.w / 2, ay = a.y + a.h / 2;
+  final bx = b.x + b.w / 2, by = b.y + b.h / 2;
+
+  // Se enfrentan en vertical: una línea recta en el medio de lo que comparten.
+  final left = a.x > b.x ? a.x : b.x;
+  final right = (a.x + a.w) < (b.x + b.w) ? a.x + a.w : b.x + b.w;
+  if (right - left >= 1) {
+    final x = (left + right) / 2;
+    return [(x: x, y: ay), (x: x, y: by)];
+  }
+  // Se enfrentan en horizontal.
+  final top = a.y > b.y ? a.y : b.y;
+  final bottom = (a.y + a.h) < (b.y + b.h) ? a.y + a.h : b.y + b.h;
+  if (bottom - top >= 1) {
+    final y = (top + bottom) / 2;
+    return [(x: ax, y: y), (x: bx, y: y)];
+  }
+  // Hay que doblar: de las dos L, la que menos pasa por debajo de otras
+  // cosas del plano ([obstacles]).
+  final horizontalFirst = [(x: ax, y: ay), (x: bx, y: ay), (x: bx, y: by)];
+  final verticalFirst = [(x: ax, y: ay), (x: ax, y: by), (x: bx, y: by)];
+  return _hiddenLength(verticalFirst, obstacles, a, b) < _hiddenLength(horizontalFirst, obstacles, a, b)
+      ? verticalFirst
+      : horizontalFirst;
+}
+
+/// El recorrido arranca en el borde de [a] y termina en el borde de [b]: el
+/// camino une los dos elementos, no se mete adentro.
+List<({double x, double y})> _trimToEdges(List<({double x, double y})> points, MapRect a, MapRect b) {
+  ({double x, double y}) toEdge(({double x, double y}) inside, ({double x, double y}) toward, MapRect r) {
+    if (inside.y == toward.y) return (x: toward.x > inside.x ? r.x + r.w : r.x, y: inside.y);
+    return (x: inside.x, y: toward.y > inside.y ? r.y + r.h : r.y);
+  }
+
+  final n = points.length;
+  return [
+    toEdge(points[0], points[1], a),
+    for (var i = 1; i < n - 1; i++) points[i],
+    toEdge(points[n - 1], points[n - 2], b),
+  ];
+}
+
+bool _sameRect(MapRect r, MapRect o) => r.x == o.x && r.y == o.y && r.w == o.w && r.h == o.h;
+
+/// Metros del recorrido que quedan debajo de [obstacles] (sin contar los
+/// dos extremos).
+double _hiddenLength(List<({double x, double y})> points, List<MapRect> obstacles, MapRect a, MapRect b) {
+  var hidden = 0.0;
+  for (var i = 0; i + 1 < points.length; i++) {
+    final p = points[i], q = points[i + 1];
+    for (final r in obstacles) {
+      if (_sameRect(r, a) || _sameRect(r, b)) continue;
+      if (p.y == q.y) {
+        if (p.y <= r.y || p.y >= r.y + r.h) continue;
+        final from = p.x < q.x ? p.x : q.x, to = p.x < q.x ? q.x : p.x;
+        final overlap = (to < r.x + r.w ? to : r.x + r.w) - (from > r.x ? from : r.x);
+        if (overlap > 0) hidden += overlap;
+      } else {
+        if (p.x <= r.x || p.x >= r.x + r.w) continue;
+        final from = p.y < q.y ? p.y : q.y, to = p.y < q.y ? q.y : p.y;
+        final overlap = (to < r.y + r.h ? to : r.y + r.h) - (from > r.y ? from : r.y);
+        if (overlap > 0) hidden += overlap;
+      }
+    }
+  }
+  return hidden;
+}
+
 class ClubMapLayout {
   final int widthM;
   final int heightM;
   final List<ClubMapElement> elements;
   final List<ClubMapSpace> spaces;
+  final List<ClubMapConnection> connections;
   final DateTime? updatedAt;
 
   /// Al guardar: medidas propias que cambiaron, por cancha (`null` = volver
@@ -206,6 +351,7 @@ class ClubMapLayout {
     required this.heightM,
     required this.elements,
     this.spaces = const [],
+    this.connections = const [],
     this.updatedAt,
     this.courtSizes = const {},
   });
@@ -216,10 +362,14 @@ class ClubMapLayout {
         updatedAt: DateTime.tryParse(json['updated_at'] as String? ?? '')?.toLocal(),
         elements: (json['elements'] as List).map((e) => ClubMapElement.fromJson(e as Map<String, dynamic>)).toList(),
         spaces: ((json['spaces'] as List?) ?? const []).map((e) => ClubMapSpace.fromJson(e as Map<String, dynamic>)).toList(),
+        connections: [
+          for (final c in (json['connections'] as List?) ?? const [])
+            if (ClubMapConnection.fromJson(c) case final connection?) connection,
+        ],
       );
 
-  /// Lo que espera `PUT /admin/club-map`. Siempre manda los espacios (es el
-  /// editor el que los conoce todos).
+  /// Lo que espera `PUT /admin/club-map`. Siempre manda los espacios y los
+  /// caminos (es el editor el que los conoce todos).
   Map<String, dynamic> toJson() => {
         'width_m': widthM,
         'height_m': heightM,
@@ -231,6 +381,7 @@ class ClubMapLayout {
             },
         ],
         'spaces': spaces.map((s) => s.toJson()).toList(),
+        'connections': connections.map((c) => c.toJson()).toList(),
       };
 }
 
@@ -399,6 +550,17 @@ class ClubMapIssues {
   bool hasIssue(int courtId) => overlapping.contains(courtId) || outside.contains(courtId);
 
   bool spaceHasIssue(int index) => overlappingSpaces.contains(index) || outsideSpaces.contains(index);
+}
+
+/// Rectángulo de un extremo de camino. `null` si ya no está en el plano.
+MapRect? rectOfNode(ClubMapView view, List<ClubMapElement> elements, List<ClubMapSpace> spaces, ClubMapNodeRef ref) {
+  if (ref.spaceIndex != null) {
+    return ref.spaceIndex! < spaces.length ? spaces[ref.spaceIndex!].rect : null;
+  }
+  for (final e in elements) {
+    if (e.courtId == ref.courtId) return view.findCourt(e.courtId) == null ? null : rectOf(view, e);
+  }
+  return null;
 }
 
 MapRect rectOf(ClubMapView view, ClubMapElement element) {
