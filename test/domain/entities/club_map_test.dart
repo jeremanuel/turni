@@ -88,6 +88,7 @@ void main() {
         {'partition_physical_id': 31, 'x_m': 2, 'y_m': 3, 'rotated': true},
       ],
       'spaces': [],
+      'connections': [],
     });
   });
 
@@ -188,5 +189,69 @@ void main() {
   test('presets de tamaño', () {
     expect(ClubMapSizePreset.match(80, 50)!.name, 'Mediano');
     expect(ClubMapSizePreset.match(81, 50), isNull);
+  });
+
+  group('Caminos', () {
+  test('connectionPath dobla por donde no hay nada en el medio', () {
+    // De abajo a la izquierda hacia arriba a la derecha, con una calle
+    // abajo: la L horizontal primero pasaría por debajo de la calle.
+    const entrance = MapRect(0, 47, 6, 3);
+    const court = MapRect(20, 31, 20, 10);
+    const street = MapRect(8, 47, 72, 3);
+    final path = connectionPath(entrance, court, obstacles: const [entrance, court, street]);
+    expect(path.map((p) => (p.x, p.y)).toList(), [(3.0, 47.0), (3.0, 36.0), (20.0, 36.0)]);
+  });
+
+    test('parsea, descarta lo que no tiene forma y vuelve a mandar', () {
+      final layout = ClubMapLayout.fromJson({
+        'width_m': 80,
+        'height_m': 50,
+        'elements': [],
+        'spaces': [],
+        'connections': [
+          {'from': {'space': 0}, 'to': {'court': 31}},
+          {'from': {'nada': 1}, 'to': {'court': 31}},
+        ],
+      });
+
+      expect(layout.connections, hasLength(1));
+      expect(layout.connections.single.toJson(), {'from': {'space': 0}, 'to': {'court': 31}});
+      expect(layout.toJson()['connections'], [
+        {'from': {'space': 0}, 'to': {'court': 31}},
+      ]);
+    });
+
+    test('joins no tiene dirección', () {
+      const c = ClubMapConnection(ClubMapNodeRef.court(31), ClubMapNodeRef.space(0));
+      expect(c.joins(const ClubMapNodeRef.space(0), const ClubMapNodeRef.court(31)), isTrue);
+      expect(c.other(const ClubMapNodeRef.court(31)), const ClubMapNodeRef.space(0));
+    });
+
+    test('sacar un espacio tira sus caminos y corre los de después', () {
+      final result = connectionsWithoutSpace(const [
+        ClubMapConnection(ClubMapNodeRef.space(0), ClubMapNodeRef.court(31)),
+        ClubMapConnection(ClubMapNodeRef.space(1), ClubMapNodeRef.court(31)),
+        ClubMapConnection(ClubMapNodeRef.space(2), ClubMapNodeRef.court(32)),
+      ], 1);
+
+      expect(result.map((c) => c.toJson()).toList(), [
+        {'from': {'space': 0}, 'to': {'court': 31}},
+        {'from': {'space': 1}, 'to': {'court': 32}},
+      ]);
+    });
+
+    test('connectionPath: recto si se enfrentan, en L si no', () {
+      // Uno arriba del otro, compartiendo x de 5 a 10: vertical en x = 7,5.
+      final vertical = connectionPath(const MapRect(0, 0, 10, 5), const MapRect(5, 20, 10, 5));
+      expect(vertical.map((p) => (p.x, p.y)).toList(), [(7.5, 5.0), (7.5, 20.0)]);
+
+      // Lado a lado, compartiendo y de 2 a 6.
+      final horizontal = connectionPath(const MapRect(0, 0, 10, 6), const MapRect(30, 2, 10, 10));
+      expect(horizontal.map((p) => (p.x, p.y)).toList(), [(10.0, 4.0), (30.0, 4.0)]);
+
+      // En diagonal: L, primero horizontal.
+      final l = connectionPath(const MapRect(0, 0, 10, 10), const MapRect(30, 30, 10, 10));
+      expect(l.map((p) => (p.x, p.y)).toList(), [(10.0, 5.0), (35.0, 5.0), (35.0, 30.0)]);
+    });
   });
 }

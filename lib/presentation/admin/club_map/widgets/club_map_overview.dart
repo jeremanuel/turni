@@ -177,6 +177,7 @@ class _ClubMapOverviewState extends State<ClubMapOverview> {
                 heightM: map.heightM,
                 elements: map.elements,
                 spaces: map.spaces,
+                connections: map.connections,
                 scale: scale,
                 selectedCourtId: _selectedCourtId,
                 selectedSpaceIndex: _selectedSpace,

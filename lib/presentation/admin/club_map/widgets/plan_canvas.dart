@@ -20,6 +20,9 @@ class PlanCanvas extends StatefulWidget {
   final int heightM;
   final List<ClubMapElement> elements;
   final List<ClubMapSpace> spaces;
+
+  /// Caminos entre canchas y espacios; se dibujan debajo de todo.
+  final List<ClubMapConnection> connections;
   final double scale;
   final int? selectedCourtId;
 
@@ -52,6 +55,7 @@ class PlanCanvas extends StatefulWidget {
     required this.heightM,
     required this.elements,
     this.spaces = const [],
+    this.connections = const [],
     required this.scale,
     this.selectedCourtId,
     this.selectedSpaceIndex,
@@ -96,6 +100,22 @@ class _PlanCanvasState extends State<PlanCanvas> {
                 painter: PlanGridPainter(scale: scale, minorLines: _editable),
               ),
             ),
+            if (widget.connections.isNotEmpty)
+              Positioned.fill(
+                child: IgnorePointer(
+                  child: CustomPaint(
+                    painter: ConnectionsPainter(
+                      paths: [
+                        for (final c in widget.connections)
+                          if (_pathOf(c) case final path?) (points: path, highlighted: _isSelectedNode(c)),
+                      ],
+                      scale: scale,
+                      color: const Color(0xFFD9CDB4),
+                      highlightColor: colors.primary,
+                    ),
+                  ),
+                ),
+              ),
             // Los espacios van debajo de las canchas.
             for (var i = 0; i < widget.spaces.length; i++) _buildSpace(i, scale, colors),
             for (final element in _ordered()) _buildCourt(element, scale, colors),
@@ -104,6 +124,22 @@ class _PlanCanvasState extends State<PlanCanvas> {
       ),
     );
   }
+
+  List<({double x, double y})>? _pathOf(ClubMapConnection c) {
+    final a = rectOfNode(widget.view, widget.elements, widget.spaces, c.from);
+    final b = rectOfNode(widget.view, widget.elements, widget.spaces, c.to);
+    if (a == null || b == null) return null;
+    final obstacles = [
+      for (final e in widget.elements)
+        if (widget.view.findCourt(e.courtId) != null) rectOf(widget.view, e),
+      for (final s in widget.spaces) s.rect,
+    ];
+    return connectionPath(a, b, obstacles: obstacles);
+  }
+
+  bool _isSelectedNode(ClubMapConnection c) =>
+      (widget.selectedCourtId != null && c.touches(ClubMapNodeRef.court(widget.selectedCourtId!))) ||
+      (widget.selectedSpaceIndex != null && c.touches(ClubMapNodeRef.space(widget.selectedSpaceIndex!)));
 
   /// En la vista de uso, el detalle al pasar el mouse.
   Widget _usageTooltip(int courtId, Widget tile) {
@@ -248,6 +284,42 @@ class _PlanCanvasState extends State<PlanCanvas> {
       ),
     );
   }
+}
+
+/// Caminos del plano: una franja de 2 m (o más fina si el plano es chico),
+/// con las puntas redondeadas. Los del elemento seleccionado, resaltados.
+class ConnectionsPainter extends CustomPainter {
+  final List<({List<({double x, double y})> points, bool highlighted})> paths;
+  final double scale;
+  final Color color;
+  final Color highlightColor;
+
+  const ConnectionsPainter({required this.paths, required this.scale, required this.color, required this.highlightColor});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final width = (2 * scale).clamp(3.0, 18.0);
+    // Los resaltados al final, arriba de los demás.
+    for (final p in [...paths.where((p) => !p.highlighted), ...paths.where((p) => p.highlighted)]) {
+      final path = Path()..moveTo(p.points.first.x * scale, p.points.first.y * scale);
+      for (final point in p.points.skip(1)) {
+        path.lineTo(point.x * scale, point.y * scale);
+      }
+      canvas.drawPath(
+        path,
+        Paint()
+          ..color = p.highlighted ? highlightColor : color
+          ..strokeWidth = width
+          ..style = PaintingStyle.stroke
+          // Punta recta: el camino termina justo en el borde, sin meterse.
+          ..strokeCap = StrokeCap.butt
+          ..strokeJoin = StrokeJoin.round,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant ConnectionsPainter old) => true;
 }
 
 /// Cuadrícula del predio: líneas cada 5 m y, en edición, cada 1 m.
