@@ -3,10 +3,15 @@
 /// pantalla elige la escala.
 library;
 
-/// Medida de referencia de una cancha del deporte (largo x ancho, en metros).
+/// Medida de una cancha (largo x ancho, en metros): la de referencia del
+/// deporte o la propia de una cancha.
 class CourtSize {
   final double lengthM;
   final double widthM;
+
+  /// Límites de una medida propia (el backend valida lo mismo).
+  static const minSideM = 1.0;
+  static const maxSideM = 200.0;
 
   const CourtSize({required this.lengthM, required this.widthM});
 
@@ -15,11 +20,23 @@ class CourtSize {
         widthM: (json['width_m'] as num).toDouble(),
       );
 
+  Map<String, dynamic> toJson() => {'length_m': lengthM, 'width_m': widthM};
+
   String get label => '${_m(lengthM)} × ${_m(widthM)} m';
+
+  @override
+  bool operator ==(Object other) => other is CourtSize && other.lengthM == lengthM && other.widthM == widthM;
+
+  @override
+  int get hashCode => Object.hash(lengthM, widthM);
 }
 
+/// Metros con coma decimal y sin decimales de más: 36 → "36", 23.77 → "23,77".
+String formatMeters(double value) => _m(value);
+
 String _m(double value) {
-  final text = value == value.roundToDouble() ? value.toStringAsFixed(0) : value.toStringAsFixed(2);
+  // Hasta 2 decimales, sin ceros de más: 36 → "36", 18.5 → "18,5", 23.77 → "23,77".
+  final text = value.toStringAsFixed(2).replaceFirst(RegExp(r'\.?0+$'), '');
   return text.replaceAll('.', ',');
 }
 
@@ -31,6 +48,9 @@ class ClubMapCourt {
   final int? maxPlayers;
   final int? defaultSessionDuration;
 
+  /// Medida propia de la cancha. `null`: usa la del deporte.
+  final CourtSize? ownSize;
+
   const ClubMapCourt({
     required this.id,
     required this.name,
@@ -38,6 +58,7 @@ class ClubMapCourt {
     required this.isCover,
     this.maxPlayers,
     this.defaultSessionDuration,
+    this.ownSize,
   });
 
   factory ClubMapCourt.fromJson(Map<String, dynamic> json) => ClubMapCourt(
@@ -47,7 +68,74 @@ class ClubMapCourt {
         isCover: json['is_cover'] as bool? ?? false,
         maxPlayers: (json['max_players'] as num?)?.toInt(),
         defaultSessionDuration: (json['default_session_duration'] as num?)?.toInt(),
+        ownSize: json['court_size'] == null ? null : CourtSize.fromJson(json['court_size'] as Map<String, dynamic>),
       );
+
+  ClubMapCourt withOwnSize(CourtSize? size) => ClubMapCourt(
+        id: id,
+        name: name,
+        physicalIdentifier: physicalIdentifier,
+        isCover: isCover,
+        maxPlayers: maxPlayers,
+        defaultSessionDuration: defaultSessionDuration,
+        ownSize: size,
+      );
+}
+
+/// Tipo de espacio del plano que no es una cancha (catálogo del backend).
+class ClubMapSpaceType {
+  final String type;
+  final String name;
+  final int defaultWidthM;
+  final int defaultHeightM;
+
+  const ClubMapSpaceType({required this.type, required this.name, required this.defaultWidthM, required this.defaultHeightM});
+
+  factory ClubMapSpaceType.fromJson(Map<String, dynamic> json) => ClubMapSpaceType(
+        type: json['type'] as String,
+        name: json['name'] as String,
+        defaultWidthM: (json['default_width_m'] as num).toInt(),
+        defaultHeightM: (json['default_height_m'] as num).toInt(),
+      );
+}
+
+/// Espacio del predio que no es una cancha (entrada, vestuarios, bar...):
+/// un rectángulo en metros enteros.
+class ClubMapSpace {
+  final String type;
+
+  /// Nombre opcional. `null`: se muestra el del tipo.
+  final String? label;
+  final int xM;
+  final int yM;
+  final int widthM;
+  final int heightM;
+
+  static const maxLabelLength = 40;
+
+  const ClubMapSpace({required this.type, this.label, required this.xM, required this.yM, required this.widthM, required this.heightM});
+
+  factory ClubMapSpace.fromJson(Map<String, dynamic> json) => ClubMapSpace(
+        type: json['type'] as String,
+        label: json['label'] as String?,
+        xM: json['x_m'] as int,
+        yM: json['y_m'] as int,
+        widthM: json['width_m'] as int,
+        heightM: json['height_m'] as int,
+      );
+
+  Map<String, dynamic> toJson() => {'type': type, 'label': label, 'x_m': xM, 'y_m': yM, 'width_m': widthM, 'height_m': heightM};
+
+  ClubMapSpace copyWith({int? xM, int? yM, int? widthM, int? heightM, String? Function()? label}) => ClubMapSpace(
+        type: type,
+        label: label != null ? label() : this.label,
+        xM: xM ?? this.xM,
+        yM: yM ?? this.yM,
+        widthM: widthM ?? this.widthM,
+        heightM: heightM ?? this.heightM,
+      );
+
+  MapRect get rect => MapRect(xM.toDouble(), yM.toDouble(), widthM.toDouble(), heightM.toDouble());
 }
 
 /// Un deporte del club (club_partition) con sus canchas.
@@ -65,6 +153,9 @@ class ClubMapPartition {
     required this.courtSize,
     required this.courts,
   });
+
+  ClubMapPartition withCourts(List<ClubMapCourt> courts) =>
+      ClubMapPartition(id: id, clubTypeId: clubTypeId, sport: sport, courtSize: courtSize, courts: courts);
 
   factory ClubMapPartition.fromJson(Map<String, dynamic> json) => ClubMapPartition(
         id: json['club_partition_id'] as int,
@@ -103,21 +194,43 @@ class ClubMapLayout {
   final int widthM;
   final int heightM;
   final List<ClubMapElement> elements;
+  final List<ClubMapSpace> spaces;
   final DateTime? updatedAt;
 
-  const ClubMapLayout({required this.widthM, required this.heightM, required this.elements, this.updatedAt});
+  /// Al guardar: medidas propias que cambiaron, por cancha (`null` = volver
+  /// a la del deporte). Las canchas que no están no se tocan.
+  final Map<int, CourtSize?> courtSizes;
+
+  const ClubMapLayout({
+    required this.widthM,
+    required this.heightM,
+    required this.elements,
+    this.spaces = const [],
+    this.updatedAt,
+    this.courtSizes = const {},
+  });
 
   factory ClubMapLayout.fromJson(Map<String, dynamic> json) => ClubMapLayout(
         widthM: json['width_m'] as int,
         heightM: json['height_m'] as int,
         updatedAt: DateTime.tryParse(json['updated_at'] as String? ?? '')?.toLocal(),
         elements: (json['elements'] as List).map((e) => ClubMapElement.fromJson(e as Map<String, dynamic>)).toList(),
+        spaces: ((json['spaces'] as List?) ?? const []).map((e) => ClubMapSpace.fromJson(e as Map<String, dynamic>)).toList(),
       );
 
+  /// Lo que espera `PUT /admin/club-map`. Siempre manda los espacios (es el
+  /// editor el que los conoce todos).
   Map<String, dynamic> toJson() => {
         'width_m': widthM,
         'height_m': heightM,
-        'elements': elements.map((e) => e.toJson()).toList(),
+        'elements': [
+          for (final e in elements)
+            {
+              ...e.toJson(),
+              if (courtSizes.containsKey(e.courtId)) 'court_size': courtSizes[e.courtId]?.toJson(),
+            },
+        ],
+        'spaces': spaces.map((s) => s.toJson()).toList(),
       };
 }
 
@@ -126,12 +239,49 @@ class ClubMapView {
   final ClubMapLayout? map;
   final List<ClubMapPartition> partitions;
 
-  const ClubMapView({required this.map, required this.partitions});
+  /// Tipos de espacio que se pueden sumar al plano.
+  final List<ClubMapSpaceType> spaceTypes;
+
+  const ClubMapView({required this.map, required this.partitions, this.spaceTypes = const []});
 
   factory ClubMapView.fromJson(Map<String, dynamic> json) => ClubMapView(
         map: json['map'] == null ? null : ClubMapLayout.fromJson(json['map'] as Map<String, dynamic>),
         partitions: (json['partitions'] as List).map((p) => ClubMapPartition.fromJson(p as Map<String, dynamic>)).toList(),
+        spaceTypes: ((json['space_types'] as List?) ?? const []).map((t) => ClubMapSpaceType.fromJson(t as Map<String, dynamic>)).toList(),
       );
+
+  /// Medida con la que se dibuja una cancha: la propia o la del deporte.
+  CourtSize courtSizeOf(int courtId) {
+    final found = findCourt(courtId)!;
+    return found.court.ownSize ?? found.partition.courtSize;
+  }
+
+  /// La misma vista con otra medida propia para una cancha (para el editor).
+  ClubMapView withCourtSize(int courtId, CourtSize? size) => ClubMapView(
+        map: map,
+        spaceTypes: spaceTypes,
+        partitions: [
+          for (final p in partitions)
+            p.courts.any((c) => c.id == courtId) ? p.withCourts([for (final c in p.courts) c.id == courtId ? c.withOwnSize(size) : c]) : p,
+        ],
+      );
+
+  /// Nombre a mostrar de un espacio: el suyo o el del tipo.
+  String spaceName(ClubMapSpace space) {
+    final label = space.label?.trim();
+    if (label != null && label.isNotEmpty) return label;
+    for (final t in spaceTypes) {
+      if (t.type == space.type) return t.name;
+    }
+    return 'Espacio';
+  }
+
+  String spaceTypeName(String type) {
+    for (final t in spaceTypes) {
+      if (t.type == type) return t.name;
+    }
+    return 'Espacio';
+  }
 
   ({ClubMapPartition partition, ClubMapCourt court})? findCourt(int courtId) {
     for (final partition in partitions) {
@@ -231,51 +381,64 @@ class MapRect {
     rotated ? (w: size.widthM, h: size.lengthM) : (w: size.lengthM, h: size.widthM);
 
 /// Problemas de un plano en edición. El backend valida lo mismo al guardar.
+/// Canchas por id; espacios por su posición en la lista.
 class ClubMapIssues {
   final Set<int> overlapping;
   final Set<int> outside;
+  final Set<int> overlappingSpaces;
+  final Set<int> outsideSpaces;
 
-  const ClubMapIssues({required this.overlapping, required this.outside});
+  const ClubMapIssues({required this.overlapping, required this.outside, this.overlappingSpaces = const {}, this.outsideSpaces = const {}});
 
-  bool get isEmpty => overlapping.isEmpty && outside.isEmpty;
+  bool get isEmpty => overlapping.isEmpty && outside.isEmpty && overlappingSpaces.isEmpty && outsideSpaces.isEmpty;
+
+  bool get hasOutside => outside.isNotEmpty || outsideSpaces.isNotEmpty;
+
+  bool get hasOverlap => overlapping.isNotEmpty || overlappingSpaces.isNotEmpty;
 
   bool hasIssue(int courtId) => overlapping.contains(courtId) || outside.contains(courtId);
+
+  bool spaceHasIssue(int index) => overlappingSpaces.contains(index) || outsideSpaces.contains(index);
 }
 
 MapRect rectOf(ClubMapView view, ClubMapElement element) {
-  final size = view.findCourt(element.courtId)!.partition.courtSize;
-  final fp = courtFootprint(size, element.rotated);
+  final fp = courtFootprint(view.courtSizeOf(element.courtId), element.rotated);
   return MapRect(element.xM.toDouble(), element.yM.toDouble(), fp.w, fp.h);
 }
 
-ClubMapIssues findIssues(ClubMapView view, List<ClubMapElement> elements, int widthM, int heightM) {
+ClubMapIssues findIssues(ClubMapView view, List<ClubMapElement> elements, int widthM, int heightM, {List<ClubMapSpace> spaces = const []}) {
   final overlapping = <int>{};
   final outside = <int>{};
-  final rects = [for (final e in elements) rectOf(view, e)];
+  final overlappingSpaces = <int>{};
+  final outsideSpaces = <int>{};
 
-  for (var i = 0; i < elements.length; i++) {
-    if (!rects[i].isInside(widthM, heightM)) outside.add(elements[i].courtId);
-    for (var j = i + 1; j < elements.length; j++) {
+  // Canchas primero (índices 0..n-1) y después los espacios.
+  final rects = [for (final e in elements) rectOf(view, e), for (final s in spaces) s.rect];
+  void markOverlap(int i) => i < elements.length ? overlapping.add(elements[i].courtId) : overlappingSpaces.add(i - elements.length);
+
+  for (var i = 0; i < rects.length; i++) {
+    if (!rects[i].isInside(widthM, heightM)) {
+      i < elements.length ? outside.add(elements[i].courtId) : outsideSpaces.add(i - elements.length);
+    }
+    for (var j = i + 1; j < rects.length; j++) {
       if (rects[i].overlaps(rects[j])) {
-        overlapping
-          ..add(elements[i].courtId)
-          ..add(elements[j].courtId);
+        markOverlap(i);
+        markOverlap(j);
       }
     }
   }
 
-  return ClubMapIssues(overlapping: overlapping, outside: outside);
+  return ClubMapIssues(overlapping: overlapping, outside: outside, overlappingSpaces: overlappingSpaces, outsideSpaces: outsideSpaces);
 }
 
 /// Primer lugar libre (recorriendo de arriba a la izquierda) con 1 m de
-/// margen alrededor. Si no entra, (0, 0).
-({int x, int y}) firstFreeSpot(ClubMapView view, List<ClubMapElement> elements, CourtSize size, int widthM, int heightM) {
-  final fp = courtFootprint(size, false);
-  final taken = [for (final e in elements) rectOf(view, e)];
+/// margen alrededor, para algo de [w] x [h] metros. Si no entra, (0, 0).
+({int x, int y}) firstFreeSpot(ClubMapView view, List<ClubMapElement> elements, double w, double h, int widthM, int heightM, {List<ClubMapSpace> spaces = const []}) {
+  final taken = [for (final e in elements) rectOf(view, e), for (final s in spaces) s.rect];
 
-  for (var y = 1; y + fp.h <= heightM; y++) {
-    for (var x = 1; x + fp.w <= widthM; x++) {
-      final probe = MapRect(x - 1.0, y - 1.0, fp.w + 2, fp.h + 2);
+  for (var y = 1; y + h <= heightM; y++) {
+    for (var x = 1; x + w <= widthM; x++) {
+      final probe = MapRect(x - 1.0, y - 1.0, w + 2, h + 2);
       if (!taken.any(probe.overlaps)) return (x: x, y: y);
     }
   }

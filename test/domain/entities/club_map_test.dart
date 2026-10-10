@@ -11,7 +11,15 @@ final _json = {
     'elements': [
       {'partition_physical_id': 31, 'x_m': 0, 'y_m': 0, 'rotated': true},
     ],
+    'spaces': [
+      {'type': 'BAR', 'label': 'Buffet', 'x_m': 60, 'y_m': 40, 'width_m': 10, 'height_m': 8},
+      {'type': 'PARKING', 'label': null, 'x_m': 0, 'y_m': 30, 'width_m': 20, 'height_m': 15},
+    ],
   },
+  'space_types': [
+    {'type': 'BAR', 'name': 'Bar', 'default_width_m': 10, 'default_height_m': 8},
+    {'type': 'PARKING', 'name': 'Estacionamiento', 'default_width_m': 20, 'default_height_m': 15},
+  ],
   'partitions': [
     {
       'club_partition_id': 300,
@@ -20,7 +28,7 @@ final _json = {
       'court_size': {'length_m': 20, 'width_m': 10},
       'courts': [
         {'partition_physical_id': 31, 'name': 'Padel A', 'physical_identifier': 1, 'is_cover': true, 'max_players': 4, 'default_session_duration': 90},
-        {'partition_physical_id': 32, 'name': 'Padel B', 'physical_identifier': 2, 'is_cover': false, 'max_players': 4, 'default_session_duration': 90},
+        {'partition_physical_id': 32, 'name': 'Padel B', 'physical_identifier': 2, 'is_cover': false, 'max_players': 4, 'default_session_duration': 90, 'court_size': {'length_m': 18, 'width_m': 9}},
       ],
     },
     {
@@ -48,6 +56,24 @@ void main() {
     expect(view.partitionIdsInMap(view.map!.elements), {300});
   });
 
+  test('parsea medidas propias, espacios y tipos de espacio', () {
+    expect(view.findCourt(31)!.court.ownSize, isNull);
+    expect(view.courtSizeOf(31), const CourtSize(lengthM: 20, widthM: 10));
+    expect(view.courtSizeOf(32), const CourtSize(lengthM: 18, widthM: 9));
+    expect(view.map!.spaces, hasLength(2));
+    expect(view.spaceName(view.map!.spaces[0]), 'Buffet');
+    expect(view.spaceName(view.map!.spaces[1]), 'Estacionamiento');
+    expect(view.spaceTypes.map((t) => t.name), ['Bar', 'Estacionamiento']);
+  });
+
+  test('withCourtSize cambia solo esa cancha', () {
+    final edited = view.withCourtSize(31, const CourtSize(lengthM: 22, widthM: 11));
+    expect(edited.courtSizeOf(31), const CourtSize(lengthM: 22, widthM: 11));
+    expect(edited.courtSizeOf(32), const CourtSize(lengthM: 18, widthM: 9));
+    expect(view.courtSizeOf(31), const CourtSize(lengthM: 20, widthM: 10));
+    expect(edited.withCourtSize(31, null).courtSizeOf(31), const CourtSize(lengthM: 20, widthM: 10));
+  });
+
   test('ClubMapView sin plano', () {
     final empty = ClubMapView.fromJson({..._json, 'map': null});
     expect(empty.map, isNull);
@@ -61,7 +87,59 @@ void main() {
       'elements': [
         {'partition_physical_id': 31, 'x_m': 2, 'y_m': 3, 'rotated': true},
       ],
+      'spaces': [],
     });
+  });
+
+  test('toJson manda court_size solo de las canchas que cambiaron, y los espacios', () {
+    const layout = ClubMapLayout(
+      widthM: 40,
+      heightM: 30,
+      elements: [ClubMapElement(courtId: 31, xM: 0, yM: 0), ClubMapElement(courtId: 32, xM: 0, yM: 12), ClubMapElement(courtId: 61, xM: 0, yM: 22)],
+      spaces: [ClubMapSpace(type: 'ENTRANCE', xM: 30, yM: 27, widthM: 6, heightM: 3)],
+      courtSizes: {31: CourtSize(lengthM: 18.5, widthM: 9), 32: null},
+    );
+    final json = layout.toJson();
+    final elements = json['elements'] as List;
+    expect(elements[0], {'partition_physical_id': 31, 'x_m': 0, 'y_m': 0, 'rotated': false, 'court_size': {'length_m': 18.5, 'width_m': 9.0}});
+    expect(elements[1], {'partition_physical_id': 32, 'x_m': 0, 'y_m': 12, 'rotated': false, 'court_size': null});
+    expect((elements[2] as Map).containsKey('court_size'), isFalse);
+    expect(json['spaces'], [
+      {'type': 'ENTRANCE', 'label': null, 'x_m': 30, 'y_m': 27, 'width_m': 6, 'height_m': 3},
+    ]);
+  });
+
+  test('findIssues: espacios encimados con canchas o afuera del predio', () {
+    final issues = findIssues(
+      view,
+      const [ClubMapElement(courtId: 31, xM: 0, yM: 0)],
+      40,
+      30,
+      spaces: const [
+        ClubMapSpace(type: 'BAR', xM: 15, yM: 5, widthM: 10, heightM: 8), // pisa la cancha (20 x 10)
+        ClubMapSpace(type: 'PARKING', xM: 30, yM: 20, widthM: 20, heightM: 15), // se sale
+        ClubMapSpace(type: 'ENTRANCE', xM: 20, yM: 0, widthM: 6, heightM: 3), // pegada a la cancha: ok
+      ],
+    );
+    expect(issues.overlapping, {31});
+    expect(issues.overlappingSpaces, {0});
+    expect(issues.outsideSpaces, {1});
+    expect(issues.spaceHasIssue(2), isFalse);
+    expect(issues.isEmpty, isFalse);
+  });
+
+  test('la medida propia cuenta para encimadas', () {
+    // Padel A (20 x 10) ocupa y 0..10 y Padel B (18 x 9 propia) arranca en y=10: se tocan sin encimarse.
+    // Si Padel A pasa a medir 11 de ancho, se enciman.
+    final issues = findIssues(view, const [ClubMapElement(courtId: 31, xM: 0, yM: 0), ClubMapElement(courtId: 32, xM: 0, yM: 10)], 40, 30);
+    expect(issues.isEmpty, isTrue);
+    final grown = view.withCourtSize(31, const CourtSize(lengthM: 20, widthM: 11));
+    expect(findIssues(grown, const [ClubMapElement(courtId: 31, xM: 0, yM: 0), ClubMapElement(courtId: 32, xM: 0, yM: 10)], 40, 30).overlapping, {31, 32});
+  });
+
+  test('firstFreeSpot esquiva los espacios', () {
+    final spot = firstFreeSpot(view, const [], 6, 3, 40, 30, spaces: const [ClubMapSpace(type: 'BAR', xM: 0, yM: 0, widthM: 10, heightM: 8)]);
+    expect(spot, (x: 11, y: 1));
   });
 
   test('la cancha girada ocupa ancho x largo', () {
@@ -95,7 +173,7 @@ void main() {
   });
 
   test('firstFreeSpot deja 1 m de margen con lo que ya está', () {
-    final spot = firstFreeSpot(view, const [ClubMapElement(courtId: 31, xM: 0, yM: 0)], const CourtSize(lengthM: 20, widthM: 10), 40, 30);
+    final spot = firstFreeSpot(view, const [ClubMapElement(courtId: 31, xM: 0, yM: 0)], 20, 10, 40, 30);
     // Al lado no entra (20 + 1 + 20 > 40): va abajo, a 1 m.
     expect(spot, (x: 1, y: 11));
   });
