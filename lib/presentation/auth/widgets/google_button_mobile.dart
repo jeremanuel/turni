@@ -56,6 +56,7 @@ class _GoogleMobileButtonState extends State<_GoogleMobileButton> {
           displayName: signIn.displayName,
           photoUrl: signIn.photoUrl,
         ),
+        idToken: signIn.authentication.idToken,
       );
     } on GoogleSignInException catch (error) {
       sl<AuthCubit>().emitError(error.description ?? error.toString());

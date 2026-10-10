@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/presentation/components/permission_lock.dart';
+import '../../../../core/utils/permissions.dart';
+
 import '../../../../core/config/service_locator.dart';
 import '../../../../core/presentation/components/inputs/snackbars/snackbars_functions.dart';
 import '../../../../core/utils/domain_error.dart';
@@ -137,7 +140,10 @@ class _ClubInfoTabState extends State<ClubInfoTab> {
               "Datos generales que ven tus clientes al buscar el club.",
             ),
             const SizedBox(height: 20),
-            Card(
+            const ReadOnlyNotice(permissions: [Permissions.CONFIGURACION_CLUB]),
+            PermissionLock(
+              permissions: const [Permissions.CONFIGURACION_CLUB],
+              child: Card(
               child: Padding(
                 padding: const EdgeInsets.all(20),
                 child: Form(
@@ -264,6 +270,7 @@ class _ClubInfoTabState extends State<ClubInfoTab> {
                   ),
                 ),
               ),
+            ),
             ),
             const SizedBox(height: 20),
             Card(

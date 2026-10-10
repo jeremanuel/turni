@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+import '../../../helpers/logged_admin.dart';
 import 'package:mocktail/mocktail.dart';
 
 import 'package:turni/core/utils/domain_error.dart';
@@ -57,6 +59,7 @@ void main() {
   late _MockSessionRepository sessionRepository;
 
   setUpAll(() {
+    registerLoggedAdmin();
     registerFallbackValue(const ClubMapLayout(widthM: 10, heightM: 10, elements: []));
     registerFallbackValue(DateTime(2026));
   });

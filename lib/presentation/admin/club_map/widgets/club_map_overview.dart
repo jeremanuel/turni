@@ -23,8 +23,9 @@ class ClubMapOverview extends StatefulWidget {
 
   /// Cuándo se calculó [occupancy].
   final DateTime? occupancyAt;
-  final VoidCallback onEdit;
-  final VoidCallback onAddSports;
+  /// null = el rol no puede editar el plano (sin botones de edición).
+  final VoidCallback? onEdit;
+  final VoidCallback? onAddSports;
   final VoidCallback onSeeSessions;
   final ValueChanged<Session> onOpenSession;
 
@@ -36,8 +37,8 @@ class ClubMapOverview extends StatefulWidget {
     required this.view,
     this.occupancy,
     this.occupancyAt,
-    required this.onEdit,
-    required this.onAddSports,
+    this.onEdit,
+    this.onAddSports,
     required this.onSeeSessions,
     required this.onOpenSession,
     this.loadUsage,
@@ -125,12 +126,12 @@ class _ClubMapOverviewState extends State<ClubMapOverview> {
                     Text('Así están ubicadas las canchas en el club y cuáles están ocupadas ahora.', style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
                   ],
                 ),
-                if (map != null) FilledButton.icon(onPressed: widget.onEdit, icon: const Icon(Icons.edit_outlined), label: const Text('Editar plano')),
+                if (map != null && widget.onEdit != null) FilledButton.icon(onPressed: widget.onEdit, icon: const Icon(Icons.edit_outlined), label: const Text('Editar plano')),
               ],
             ),
           ),
           const SizedBox(height: 20),
-          if (map != null && missing.isNotEmpty) ...[_MissingBanner(sports: missing, onAdd: widget.onAddSports), const SizedBox(height: 20)],
+          if (map != null && missing.isNotEmpty && widget.onAddSports != null) ...[_MissingBanner(sports: missing, onAdd: widget.onAddSports!), const SizedBox(height: 20)],
           if (map != null && widget.loadUsage != null) ...[_buildModeBar(context), const SizedBox(height: 16)],
           if (map == null) _EmptyState(hasCourts: _hasCourts(), onDesign: widget.onAddSports) else _buildPlan(context, map),
         ],
@@ -624,7 +625,7 @@ class _MissingBanner extends StatelessWidget {
 
 class _EmptyState extends StatelessWidget {
   final bool hasCourts;
-  final VoidCallback onDesign;
+  final VoidCallback? onDesign;
 
   const _EmptyState({required this.hasCourts, required this.onDesign});
 

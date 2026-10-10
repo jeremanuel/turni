@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../../core/utils/permissions.dart';
 
 import '../../../../../core/config/service_locator.dart';
 import '../../../../../core/presentation/components/inputs/dropdown_widget.dart';
@@ -60,6 +61,8 @@ class _AddSubscriptionButtonState extends State<AddSubscriptionButton> {
 
   @override
   Widget build(BuildContext context) {
+    if (!Permissions.can(Permissions.CLIENTES_ABONOS)) return const SizedBox.shrink();
+
     final clubPartitions =  sl<AuthCubit>().state.userCredential?.admin?.clubPartitions;
 
     return DropdownWidget(

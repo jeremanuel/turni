@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+import '../../../helpers/logged_admin.dart';
 import 'package:turni/core/config/service_locator.dart';
 import 'package:turni/core/utils/domain_error.dart';
 import 'package:turni/core/utils/either.dart';
@@ -118,6 +120,7 @@ class FakeProductAdminRepo implements ProductAdminRepository {
 
 void main() {
   setUp(() {
+    registerLoggedAdmin();
     if (sl.isRegistered<AdminRepository>()) sl.unregister<AdminRepository>();
     if (sl.isRegistered<ClubInfoRepository>()) sl.unregister<ClubInfoRepository>();
     if (sl.isRegistered<ClubPartitionAdminRepository>()) {

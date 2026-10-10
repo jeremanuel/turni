@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import '../../../../../core/utils/permissions.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -181,15 +182,17 @@ class _BookedDetail extends StatelessWidget {
     return PanelFrame(
       footer: Row(
         children: [
-          PanelTextButton(
-            label: session.isPending ? 'Rechazar solicitud' : 'Cancelar reserva',
-            color: scheme.error,
-            onPressed: session.isPending
-                ? () => context.read<SessionManagerBloc>().add(RejectSessionRequest(session.sessionId))
-                : () => _cancelReservation(context),
-          ),
+          if (Permissions.can(session.isPending ? Permissions.AGENDA_SOLICITUDES : Permissions.AGENDA_RESERVAR))
+            PanelTextButton(
+              label: session.isPending ? 'Rechazar solicitud' : 'Cancelar reserva',
+              color: scheme.error,
+              onPressed: session.isPending
+                  ? () => context.read<SessionManagerBloc>().add(RejectSessionRequest(session.sessionId))
+                  : () => _cancelReservation(context),
+            ),
           const Spacer(),
-          PanelTextButton(label: 'Eliminar turno', color: scheme.onSurfaceVariant, onPressed: () => _delete(context)),
+          if (Permissions.can(Permissions.AGENDA_ELIMINAR))
+            PanelTextButton(label: 'Eliminar turno', color: scheme.onSurfaceVariant, onPressed: () => _delete(context)),
         ],
       ),
       children: [
@@ -292,7 +295,7 @@ class _PendingBanner extends StatelessWidget {
             },
           ),
           const SizedBox(height: 12),
-          Row(
+          if (Permissions.can(Permissions.AGENDA_SOLICITUDES)) Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
               PanelTextButton(
@@ -433,7 +436,7 @@ class _AccountCardState extends State<_AccountCard> {
                                     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
                                   ),
-                                  onPressed: () => _deleteExtra(extra),
+                                  onPressed: Permissions.can(Permissions.AGENDA_COBRAR) ? () => _deleteExtra(extra) : null,
                                   icon: const Icon(Icons.close),
                                 ),
                         ),
@@ -468,14 +471,14 @@ class _AccountCardState extends State<_AccountCard> {
             children: [
               Expanded(
                 flex: 5,
-                child: PanelFilledButton(label: 'Cobrar', icon: Icons.credit_card, onPressed: settled ? null : widget.onCharge),
+                child: PanelFilledButton(label: 'Cobrar', icon: Icons.credit_card, onPressed: settled || !Permissions.can(Permissions.AGENDA_COBRAR) ? null : widget.onCharge),
               ),
               const SizedBox(width: 8),
               Expanded(
                 // Un poco más ancho que "Cobrar" para que entre el texto completo.
                 flex: 6,
                 child: OutlinedButton.icon(
-                  onPressed: widget.onAddConsumo,
+                  onPressed: Permissions.can(Permissions.AGENDA_COBRAR) ? widget.onAddConsumo : null,
                   style: OutlinedButton.styleFrom(
                     minimumSize: const Size(0, 40),
                     padding: const EdgeInsets.symmetric(horizontal: 6),
@@ -625,6 +628,7 @@ class _NotesFieldState extends State<_NotesField> {
         TextField(
           controller: _controller,
           focusNode: _focus,
+          readOnly: !Permissions.can(Permissions.AGENDA_EDITAR),
           minLines: 2,
           maxLines: 5,
           maxLength: 1000,

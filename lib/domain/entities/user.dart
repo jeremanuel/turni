@@ -3,6 +3,7 @@ import 'package:json_annotation/json_annotation.dart';
 import '../../core/utils/entities/coordinate.dart';
 import '../../core/utils/value_transformers.dart';
 import 'admin.dart';
+import 'admin_access.dart';
 import 'person.dart';
 
 import 'client.dart';
@@ -21,6 +22,7 @@ class User {
     this.admin,
     this.userInterest,
     this.templateMessage,
+    this.adminAccess,
   });
 
   @JsonKey(name: "user_id", fromJson: ValueTransformers.fromJsonString)
@@ -40,13 +42,22 @@ class User {
   @JsonKey(name: "template_message")
   final String? templateMessage;
 
+  /// Rol y permisos si es admin (null si no lo es).
+  @JsonKey(name: "admin_access")
+  final AdminAccess? adminAccess;
+
   Coordinate? location;
+
+  /// id_token de Google del login actual. Solo vive en memoria para mandarlo
+  /// en el signup; no viene del backend ni se guarda.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  String? googleIdToken;
 
   bool get isAdmin {
     return admin != null;
   }
 
-  factory User.fromGoogleSignInUserData(GoogleSignInUserData userData) {
+  factory User.fromGoogleSignInUserData(GoogleSignInUserData userData, {String? idToken}) {
     final nameParts = _splitDisplayName(userData.displayName);
     final fallbackName = userData.email.split('@').first;
 
@@ -62,7 +73,7 @@ class User {
           email: userData.email,
         ),
       ),
-    );
+    )..googleIdToken = idToken;
   }
 
   static ({String firstName, String lastName}) _splitDisplayName(

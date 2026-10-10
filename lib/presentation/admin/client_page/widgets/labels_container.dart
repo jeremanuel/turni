@@ -1,5 +1,6 @@
 
 import 'package:flutter/material.dart';
+import '../../../../core/utils/permissions.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 
@@ -110,7 +111,10 @@ class _AddLabelButtonState extends State<AddLabelButton> {
         },
       ), 
       dropdownController: _dropdownController,
-      child: TextButton(onPressed: () => _dropdownController.show!(), child: const Row(spacing: 4, children: [Icon(Icons.add), Text("Agregar etiqueta")]))
+      child: TextButton(
+        onPressed: Permissions.can(Permissions.CLIENTES_EDITAR) ? () => _dropdownController.show!() : null,
+        child: const Row(spacing: 4, children: [Icon(Icons.add), Text("Agregar etiqueta")]),
+      )
     );
   }
 }

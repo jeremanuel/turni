@@ -73,6 +73,19 @@ class AppRoutes {
     ),
   );
 
+  /// Administradores del club y roles y permisos.
+  static const USERS_ROUTE = RouteDefinition(
+    "USERS",
+    "/users",
+    mobileAppBar: MobileAppBarConfig(title: 'Usuarios'),
+  );
+
+  /// Link de invitación de admin. Lo abre alguien que todavía no es admin.
+  static const ADMIN_INVITE_ROUTE = RouteDefinition("ADMIN_INVITE", "/invite/:token", usesScaffold: false);
+
+  /// Usuario logueado que no es admin, o admin deshabilitado.
+  static const NO_ACCESS_ROUTE = RouteDefinition("NO_ACCESS", "/sin-acceso", usesScaffold: false);
+
   static final routesMap = {
     ROOT_ROUTE.name: ROOT_ROUTE,
     LOGIN_ROUTE.name: LOGIN_ROUTE,
@@ -94,6 +107,9 @@ class AppRoutes {
     PAYMENTS_LIST.name: PAYMENTS_LIST,
     CLUB_MAP_ROUTE.name: CLUB_MAP_ROUTE,
     ADMIN_SETTINGS_ROUTE.name: ADMIN_SETTINGS_ROUTE,
+    USERS_ROUTE.name: USERS_ROUTE,
+    ADMIN_INVITE_ROUTE.name: ADMIN_INVITE_ROUTE,
+    NO_ACCESS_ROUTE.name: NO_ACCESS_ROUTE,
   };
 }
 

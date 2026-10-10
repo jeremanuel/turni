@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/utils/permissions.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/config/router/app_routes.dart';
@@ -41,6 +42,10 @@ class BulkSessionsMenuButton extends StatelessWidget {
           ),
         );
 
+    final canAdd = Permissions.can(Permissions.AGENDA_CREAR);
+    final canEdit = Permissions.can(Permissions.AGENDA_GESTION_MASIVA);
+    if (!canAdd && !canEdit) return const SizedBox.shrink();
+
     return MenuAnchor(
       alignmentOffset: const Offset(0, 8),
       style: MenuStyle(
@@ -49,9 +54,10 @@ class BulkSessionsMenuButton extends StatelessWidget {
         shape: WidgetStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadius.circular(4))),
       ),
       menuChildren: [
-        item(BulkSessionsTab.add, Icons.add, 'Agregar turnos', 'Plantilla repetida en varias canchas y días'),
-        item(BulkSessionsTab.edit, Icons.edit_outlined, 'Editar o eliminar turnos',
-            'Precio, duración u horario por reglas'),
+        if (canAdd) item(BulkSessionsTab.add, Icons.add, 'Agregar turnos', 'Plantilla repetida en varias canchas y días'),
+        if (canEdit)
+          item(BulkSessionsTab.edit, Icons.edit_outlined, 'Editar o eliminar turnos',
+              'Precio, duración u horario por reglas'),
       ],
       builder: (context, controller, _) => FilledButton(
         onPressed: () => controller.isOpen ? controller.close() : controller.open(),

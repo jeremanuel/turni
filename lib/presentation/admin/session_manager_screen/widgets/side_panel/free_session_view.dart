@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import '../../../../../core/utils/permissions.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
@@ -104,13 +105,14 @@ class _FreeSessionViewState extends State<FreeSessionView> {
     return PanelFrame(
       footer: Row(
         children: [
-          PanelTextButton(label: 'Eliminar turno', color: scheme.error, onPressed: _delete),
+          if (Permissions.can(Permissions.AGENDA_ELIMINAR))
+            PanelTextButton(label: 'Eliminar turno', color: scheme.error, onPressed: _delete),
           const Spacer(),
           PanelFilledButton(
             label: 'Reservar turno',
             icon: Icons.check,
             loading: _reserving,
-            onPressed: _picked == null ? null : _reserve,
+            onPressed: _picked == null || !Permissions.can(Permissions.AGENDA_RESERVAR) ? null : _reserve,
           ),
         ],
       ),
@@ -188,7 +190,7 @@ class _FreeSessionViewState extends State<FreeSessionView> {
               child: Transform.translate(
                 offset: const Offset(-8, 0),
                 child: TextButton.icon(
-                  onPressed: widget.onCreateClient,
+                  onPressed: Permissions.can(Permissions.AGENDA_RESERVAR) ? widget.onCreateClient : null,
                   style: TextButton.styleFrom(
                     minimumSize: const Size(0, 40),
                     padding: const EdgeInsets.symmetric(horizontal: 8),

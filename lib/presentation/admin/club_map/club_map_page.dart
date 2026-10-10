@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+
+import '../../../core/utils/permissions.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/config/router/app_routes.dart';
@@ -77,6 +79,9 @@ class _ClubMapPageState extends State<ClubMapPage> {
 
   /// Turnos de hoy, para la ocupación en vivo. Si fallan, el mapa se ve igual.
   Future<void> _loadSessions() async {
+    // Sin permiso de ver la agenda el backend rechaza los turnos: el mapa se
+    // ve sin ocupación.
+    if (!Permissions.can(Permissions.AGENDA_VER)) return;
     final now = widget.now();
     try {
       final sessions = await _sessionRepository.getSessions(now);
@@ -151,6 +156,8 @@ class _ClubMapPageState extends State<ClubMapPage> {
     final view = _view;
     if (view == null) return const Center(child: CircularProgressIndicator());
 
+    final canEdit = Permissions.can(Permissions.MAPA_EDITAR);
+
     switch (_step) {
       case _Step.overview:
         final sessions = _todaySessions;
@@ -158,8 +165,8 @@ class _ClubMapPageState extends State<ClubMapPage> {
           view: view,
           occupancy: sessions == null ? null : computeCourtOccupancy(sessions, _occupancyAt!),
           occupancyAt: _occupancyAt,
-          onEdit: () => _openEditor(extraPartitions: const {}),
-          onAddSports: () => setState(() => _step = _Step.pickSports),
+          onEdit: canEdit ? () => _openEditor(extraPartitions: const {}) : null,
+          onAddSports: canEdit ? () => setState(() => _step = _Step.pickSports) : null,
           onSeeSessions: () => context.go(AppRoutes.SESSION_MANAGER_ROUTE.path),
           loadUsage: (days) => _repository.getCourtUsage(days: days),
           onOpenSession: (session) => context.goNamed(

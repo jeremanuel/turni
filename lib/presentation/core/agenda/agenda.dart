@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import '../../../core/utils/permissions.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -633,6 +634,8 @@ class _BlankSpaceState extends State<BlankSpace> {
             widget.onTap!(widget.physicalPartition!, widget.blankSpaceTimeInterval!);
             return;
           }
+          // Espacio vacío = crear un turno.
+          if (!Permissions.can(Permissions.AGENDA_CREAR)) return;
           context.goNamed(
             AppRoutes.SESSION_MANAGER_ADD_ROUTE.name,
             pathParameters:{

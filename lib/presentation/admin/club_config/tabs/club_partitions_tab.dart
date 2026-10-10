@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/presentation/components/permission_lock.dart';
+import '../../../../core/utils/permissions.dart';
+
 import '../../../../core/config/service_locator.dart';
 import '../../../../core/presentation/components/inputs/snackbars/snackbars_functions.dart';
 import '../../../../core/utils/domain_error.dart';
@@ -306,6 +309,7 @@ class _ClubPartitionsTabState extends State<ClubPartitionsTab> {
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant),
           ),
           const SizedBox(height: 20),
+          const ReadOnlyNotice(permissions: [Permissions.CONFIGURACION_CANCHAS]),
           if (_clubPartitions.isEmpty)
             const Padding(
               padding: EdgeInsets.symmetric(vertical: 12),
@@ -331,11 +335,15 @@ class _ClubPartitionsTabState extends State<ClubPartitionsTab> {
                   onAddPhysical: () => _openCreatePartitionPhysicalDialog(partition),
                   onEditPhysical: _openEditPartitionPhysicalDialog,
                   onTogglePhysicalActive: _togglePartitionPhysicalActive,
+                  readOnly: !Permissions.can(Permissions.CONFIGURACION_CANCHAS),
                 ),
               );
             })),
           const SizedBox(height: 8),
-          Card(
+          PermissionLock(
+            permissions: const [Permissions.CONFIGURACION_CANCHAS],
+            hide: true,
+            child: Card(
             child: Padding(
               padding: const EdgeInsets.all(20),
               child: Form(
@@ -416,6 +424,7 @@ class _ClubPartitionsTabState extends State<ClubPartitionsTab> {
                 ),
               ),
             ),
+          ),
           ),
         ],
       ),

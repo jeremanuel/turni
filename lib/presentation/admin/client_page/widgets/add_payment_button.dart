@@ -1,6 +1,7 @@
 
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
+import '../../../../core/utils/permissions.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_portal/flutter_portal.dart';
@@ -37,6 +38,8 @@ class _AddPaymentButtonState extends State<AddPaymentButton> {
 
   @override
   Widget build(BuildContext context) {
+    if (!Permissions.can(Permissions.PAGOS_REGISTRAR)) return const SizedBox.shrink();
+
     return DropdownWidget(
       menuWidget: AddPaymentContainer(
         client: widget.client, 

@@ -40,6 +40,8 @@ import '../utils/dio_init.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../../domain/usercases/auth_user_cases.dart';
 import '../../infrastructure/api/providers/auth_provider.dart';
+import '../../domain/repositories/admin_access_repository.dart';
+import '../../infrastructure/api/repositories/admin_access_repository_impl.dart';
 import '../../infrastructure/api/repositories/auth_repository_impl.dart';
 import '../../presentation/core/cubit/auth/auth_cubit.dart';
 
@@ -83,6 +85,8 @@ class ServiceLocator {
     sl.registerSingleton<BulkSessionRepository>(BulkSessionRepositoryImpl());
 
     sl.registerSingleton<ProductAdminRepository>(ProductAdminRepositoryImpl());
+
+    sl.registerSingleton<AdminAccessRepository>(AdminAccessRepositoryImpl());
 
     sl.registerSingleton<SessionRepository>(SessionRepositoryImplementation(sessionProvider: SessionProvider()));
 
