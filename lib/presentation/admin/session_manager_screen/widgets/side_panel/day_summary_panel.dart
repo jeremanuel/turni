@@ -1,5 +1,7 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
+
+import '../../../../../core/presentation/components/links/entity_links.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 
@@ -340,10 +342,9 @@ class _PendingList extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          s.client?.person?.fullName ?? 'Cliente',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                        ClientLink(
+                          clientId: int.tryParse(s.client?.clientId ?? ''),
+                          name: s.client?.person?.fullName ?? 'Cliente',
                           style: TextStyle(fontSize: 14, color: scheme.onSurface),
                         ),
                         Text(

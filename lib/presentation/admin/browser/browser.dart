@@ -2,6 +2,7 @@
 
 import 'dart:async';
 import 'package:flutter/material.dart';
+import '../../../core/presentation/components/links/entity_links.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 
@@ -154,7 +155,7 @@ class _GenericBrowserState extends State<GenericBrowser> {
                     if(client.person!.hasPhone()) Text(client.person!.phone!, overflow: TextOverflow.ellipsis)
                   ],
                 ),
-      title: Text(client.person!.fullName),
+      title: ClientLink(clientId: int.tryParse(client.clientId ?? ''), name: client.person!.fullName),
     );
 
   Widget buildSession(Session session){

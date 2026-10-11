@@ -9,7 +9,7 @@ class RoutePermissions {
     ('/session_manager/add', [Permissions.AGENDA_CREAR]),
     (AppRoutes.SESSION_MANAGER_ROUTE.path, [Permissions.AGENDA_VER]),
     (AppRoutes.ADD_SESSIONS_MASSIVE_ROUTE.path, [Permissions.AGENDA_CREAR]),
-    (AppRoutes.BULK_SESSIONS_ROUTE.path, [Permissions.AGENDA_GESTION_MASIVA, Permissions.AGENDA_CREAR]),
+    (AppRoutes.BULK_SESSIONS_ROUTE.path, [Permissions.AGENDA_GESTION_MASIVA, Permissions.AGENDA_CREAR, Permissions.TURNOS_FIJOS_VER]),
     // `/client` cubre también `/clients`.
     (AppRoutes.NEW_CLIENT_ROUTE.path, [Permissions.CLIENTES_VER]),
     (AppRoutes.PAYMENTS_LIST.path, [Permissions.PAGOS_VER]),

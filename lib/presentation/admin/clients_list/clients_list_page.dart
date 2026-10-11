@@ -1,6 +1,7 @@
 // ignore_for_file: prefer_const_constructors
 
 import 'package:flutter/material.dart';
+import '../../../core/presentation/components/links/entity_links.dart';
 import '../../../core/utils/permissions.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_portal/flutter_portal.dart';
@@ -65,7 +66,17 @@ class _ClientsListState extends State<ClientsList> {
                       return TrinaRow(
                         cells: {
                           "id": TrinaCell(value: e.clientId ?? '',),
-                          "name": TrinaCell(value: e.person?.fullName ?? ''),
+                          "name": TrinaCell(
+                            value: e.person?.fullName ?? '',
+                            renderer: (rendererContext) => Align(
+                              alignment: Alignment.centerLeft,
+                              child: ClientLink(
+                                clientId: int.tryParse(e.clientId ?? ''),
+                                name: e.person?.fullName ?? '',
+                                onTap: () => context.goNamed(AppRoutes.CLIENT_ROUTE.name, extra: {"client":e, "bloc":context.read<ClientsListBloc>(), "onUpdateClient": (Client updated) { clientsBloc.refetchClients(); }}, pathParameters: {"clientId":e.clientId!}),
+                              ),
+                            ),
+                          ),
                           "phone": TrinaCell(value: e.person?.phone ?? ''),
                           "email": TrinaCell(value: e.person?.email ?? ''),
                           "labels": TrinaCell(renderer: (rendererContext) {

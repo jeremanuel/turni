@@ -7,6 +7,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import '../../core/utils/value_transformers.dart';
 import 'client.dart';
 import 'extra.dart';
+import 'fixed_session.dart';
 import 'payment/payment.dart';
 import 'physical_partition.dart';
 import 'session_status.dart';
@@ -45,7 +46,11 @@ sealed class Session with _$Session {
 
     @JsonKey(name:"partition_physical", includeIfNull: false) PhysicalPartition? physicalPartition,
     /// Nota libre del admin sobre el turno (panel del turno en el gestor).
-    @JsonKey(includeIfNull: false) String? observation
+    @JsonKey(includeIfNull: false) String? observation,
+    /// Lo generó un turno fijo (null si no).
+    @JsonKey(name: "fixed_session", includeIfNull: false) SessionFixedInfo? fixedSession,
+    /// Turno libre por un día cancelado de un turno fijo (null si no).
+    @JsonKey(name: "cancelled_fixed", includeIfNull: false) SessionCancelledFixed? cancelledFixed,
   }) = _Session;
 
   Session._();

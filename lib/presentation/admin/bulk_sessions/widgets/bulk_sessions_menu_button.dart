@@ -44,7 +44,8 @@ class BulkSessionsMenuButton extends StatelessWidget {
 
     final canAdd = Permissions.can(Permissions.AGENDA_CREAR);
     final canEdit = Permissions.can(Permissions.AGENDA_GESTION_MASIVA);
-    if (!canAdd && !canEdit) return const SizedBox.shrink();
+    final canFixed = Permissions.can(Permissions.TURNOS_FIJOS_VER);
+    if (!canAdd && !canEdit && !canFixed) return const SizedBox.shrink();
 
     return MenuAnchor(
       alignmentOffset: const Offset(0, 8),
@@ -58,6 +59,9 @@ class BulkSessionsMenuButton extends StatelessWidget {
         if (canEdit)
           item(BulkSessionsTab.edit, Icons.edit_outlined, 'Editar o eliminar turnos',
               'Precio, duración u horario por reglas'),
+        if (canFixed)
+          item(BulkSessionsTab.fixed, Icons.event_repeat, 'Turnos fijos',
+              'Clientes con el mismo horario todas las semanas'),
       ],
       builder: (context, controller, _) => FilledButton(
         onPressed: () => controller.isOpen ? controller.close() : controller.open(),
