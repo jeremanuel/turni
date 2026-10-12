@@ -10,7 +10,7 @@ import '../../../core/utils/types/time_interval.dart';
 import '../../../domain/entities/physical_partition.dart';
 import '../../../domain/entities/session.dart';
 
-class Agenda extends StatelessWidget {
+class Agenda extends StatefulWidget {
   Agenda(
       {super.key,
       required List<Session> sessions,
@@ -24,13 +24,9 @@ class Agenda extends StatelessWidget {
       this.onBlankSpaceTap,
       this.partitionSubtitleBuilder,
       this.showNowIndicator = false,
-
+      this.focusSession,
       }) : sessions = [...sessions]
-          ..sort((a, b) => a.startTime.compareTo(b.startTime)) {
-    horariosDisponibles = generateDates(fromDate, lastDate);
-    scrollControllers = generateScrollControllers();
-    initializeScrollControllerListeners();
-  }
+          ..sort((a, b) => a.startTime.compareTo(b.startTime));
 
   final List<Session> sessions;
   final Widget Function(Session, PhysicalPartition, double) buildCard;
@@ -57,15 +53,142 @@ class Agenda extends StatelessWidget {
   /// la plantilla del agregador de turnos no tiene sentido.
   final bool showNowIndicator;
 
-  late final List<ScrollController> scrollControllers;
-  
+  /// Turno enfocado (el de la ruta abierta): cuando cambia, la agenda scrollea
+  /// para dejarlo centrado, en vertical y en horizontal.
+  final Session? focusSession;
+
+  @override
+  State<Agenda> createState() => _AgendaState();
+}
+
+class _AgendaState extends State<Agenda> {
+  List<Session> get sessions => widget.sessions;
+  Widget Function(Session, PhysicalPartition, double) get buildCard => widget.buildCard;
+  List<PhysicalPartition> get physicalPartitions => widget.physicalPartitions;
+  String Function(PhysicalPartition) get partitionLabelBuilder => widget.partitionLabelBuilder;
+  double get heightPerMinute => widget.heightPerMinute;
+  DateTime get fromDate => widget.fromDate;
+  DateTime get lastDate => widget.lastDate;
+  double get columnWidth => widget.columnWidth;
+  double get hoursWidth => widget.hoursWidth;
+  void Function(PhysicalPartition, TimeInterval)? get onBlankSpaceTap => widget.onBlankSpaceTap;
+  String Function(PhysicalPartition)? get partitionSubtitleBuilder => widget.partitionSubtitleBuilder;
+  bool get showNowIndicator => widget.showNowIndicator;
+
+  /// Un controller por columna de cancha; todas las listas verticales se
+  /// mueven juntas (ver [_addSyncListener]) para simular una única lista.
+  late List<ScrollController> scrollControllers;
+
   final ScrollController horizontalColumnesScrollController = ScrollController();
   final ScrollController horizontalLinesScrollController = ScrollController();
   final ScrollController verticalColumnsScrollController = ScrollController();
   final ScrollController verticalLinesScrollController = ScrollController();
   final ScrollController verticalLinesAuxScrollController = ScrollController();
 
-  late final List<DateTime> horariosDisponibles;
+  late List<DateTime> horariosDisponibles;
+
+  /// Último turno centrado, para no volver a scrollear en cada rebuild.
+  int? _centeredSessionId;
+
+  @override
+  void initState() {
+    super.initState();
+    horariosDisponibles = generateDates(fromDate, lastDate);
+    scrollControllers = generateScrollControllers();
+    for (final controller in [verticalLinesScrollController, verticalColumnsScrollController, verticalLinesAuxScrollController, ...scrollControllers]) {
+      _addSyncListener(controller);
+    }
+    horizontalColumnesScrollController.addListener(() {
+      if (horizontalColumnesScrollController.offset != horizontalLinesScrollController.offset) {
+        horizontalLinesScrollController.jumpTo(horizontalColumnesScrollController.offset);
+      }
+    });
+    _scheduleFocus();
+  }
+
+  @override
+  void didUpdateWidget(covariant Agenda oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.fromDate != fromDate || oldWidget.lastDate != lastDate) {
+      horariosDisponibles = generateDates(fromDate, lastDate);
+    }
+    if (physicalPartitions.length != scrollControllers.length) {
+      final offset = verticalLinesScrollController.hasClients ? verticalLinesScrollController.offset : 0.0;
+      final old = scrollControllers;
+      scrollControllers = generateScrollControllers(offset);
+      scrollControllers.forEach(_addSyncListener);
+      // Las listas viejas todavía están montadas hasta el próximo frame.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        for (final c in old) {
+          c.dispose();
+        }
+      });
+    }
+    if (oldWidget.fromDate != fromDate) _centeredSessionId = null;
+    _scheduleFocus();
+  }
+
+  @override
+  void dispose() {
+    for (final c in [
+      horizontalColumnesScrollController,
+      horizontalLinesScrollController,
+      verticalColumnsScrollController,
+      verticalLinesScrollController,
+      verticalLinesAuxScrollController,
+      ...scrollControllers,
+    ]) {
+      c.dispose();
+    }
+    super.dispose();
+  }
+
+  void _scheduleFocus() {
+    final focus = widget.focusSession;
+    if (focus == null || focus.sessionId == _centeredSessionId) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) => _centerOn(focus));
+  }
+
+  /// Centra [focus] en pantalla. Se scrollea la columna de su cancha (las
+  /// demás listas la siguen) y, si hace falta, la grilla en horizontal.
+  void _centerOn(Session focus) {
+    if (!mounted || widget.focusSession?.sessionId != focus.sessionId) return;
+    final column = physicalPartitions.indexWhere((p) => p.partitionPhysicalId == focus.partitionPhysicalId);
+    if (column < 0 || !scrollControllers[column].hasClients) return;
+    _centeredSessionId = focus.sessionId;
+
+    const duration = Duration(milliseconds: 350);
+    const curve = Curves.easeOutCubic;
+
+    // Mismo cálculo que el layout de la columna: el inicio de la grilla está
+    // corrido media fila (15 min) y cada minuto mide [heightPerMinute].
+    final vertical = scrollControllers[column].position;
+    final minutes = focus.startTime.difference(fromDate).inSeconds / 60;
+    final centerY = (15 + minutes + focus.getDurationInMinutes() / 2) * heightPerMinute;
+    final targetY = (centerY - vertical.viewportDimension / 2).clamp(vertical.minScrollExtent, vertical.maxScrollExtent);
+    scrollControllers[column].animateTo(targetY, duration: duration, curve: curve);
+
+    final h = horizontalColumnesScrollController;
+    if (h.hasClients) {
+      final horizontal = h.position;
+      final centerX = column * columnWidth + columnWidth / 2;
+      final targetX = (centerX - horizontal.viewportDimension / 2).clamp(horizontal.minScrollExtent, horizontal.maxScrollExtent);
+      if ((targetX - horizontal.pixels).abs() > 1) h.animateTo(targetX, duration: duration, curve: curve);
+    }
+  }
+
+  /// Si el offset de [current] cambia, el resto de las listas verticales salta
+  /// al mismo offset.
+  void _addSyncListener(ScrollController current) {
+    current.addListener(() {
+      if (!current.hasClients) return;
+      final offset = current.offset;
+      for (final other in [verticalLinesScrollController, verticalColumnsScrollController, ...scrollControllers]) {
+        if (identical(other, current) || !other.hasClients) continue;
+        if (other.offset != offset) other.jumpTo(offset);
+      }
+    });
+  }
 
   List<DateTime> generateDates(DateTime startDate, DateTime endDate) {
     List<DateTime> dates = [];
@@ -84,55 +207,8 @@ class Agenda extends StatelessWidget {
     return dates;
   }
 
-  List<ScrollController> generateScrollControllers(){
-        return List.generate(
-        physicalPartitions.length, (index) => ScrollController()
-    ); 
-  }
-
-  initializeScrollControllerListeners(){
-
-      for (var (index, currentScrollController) in [verticalLinesScrollController, verticalColumnsScrollController, verticalLinesAuxScrollController,...scrollControllers].indexed) {
-
-       // A cada uno de los scrollControlles le agrego un listener para que si el offset de alguno de los otros controllers cambia
-       // Este salte al offset del otro
-       // Para sincronizar todas las listas verticales y que simule ser una unica lista
-
-       currentScrollController.addListener(() {
-        var currentIndex = 0;
-
-        for (var scrollController in scrollControllers) {
-          if (currentIndex == index) {
-            currentIndex++;
-            continue;
-          }
-
-          if (currentScrollController.offset != scrollController.offset) {
-            scrollController.jumpTo(currentScrollController.offset);
-          }
-          
-        }
-
-        if(currentScrollController.offset != verticalLinesScrollController.offset){
-          verticalLinesScrollController.jumpTo(currentScrollController.offset);
-        }
-
-        if(currentScrollController.offset != verticalColumnsScrollController.offset){
-          verticalColumnsScrollController.jumpTo(currentScrollController.offset);
-        }
-
-
-      }); 
-    }
-
-    horizontalColumnesScrollController.addListener(() {
-      if (horizontalColumnesScrollController.offset != horizontalLinesScrollController.offset) {
-        horizontalLinesScrollController.jumpTo(horizontalColumnesScrollController.offset);
-      }
-    }); 
-
-
-  }
+  List<ScrollController> generateScrollControllers([double initialOffset = 0]) =>
+      List.generate(physicalPartitions.length, (index) => ScrollController(initialScrollOffset: initialOffset));
 
   @override
   Widget build(BuildContext context) {

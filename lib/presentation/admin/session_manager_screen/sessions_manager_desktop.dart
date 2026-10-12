@@ -36,7 +36,14 @@ class SessionManagerDesktop extends StatelessWidget {
               const Expanded(
                 child: Padding(
                   padding: EdgeInsets.all(20),
-                  child: _DesktopAgenda(),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _AgendaLegend(),
+                      SizedBox(height: 12),
+                      Expanded(child: _DesktopAgenda()),
+                    ],
+                  ),
                 ),
               ),
               Container(
@@ -49,6 +56,36 @@ class SessionManagerDesktop extends StatelessWidget {
             ],
           ),
         ),
+      ],
+    );
+  }
+}
+
+/// Qué significa cada tipo de tarjeta de la agenda.
+class _AgendaLegend extends StatelessWidget {
+  const _AgendaLegend();
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    Widget item(String label, BoxDecoration swatch) => Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(width: 14, height: 14, decoration: swatch),
+            const SizedBox(width: 6),
+            Text(label, style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant)),
+          ],
+        );
+    final radius = BorderRadius.circular(4);
+    return Wrap(
+      spacing: 16,
+      runSpacing: 8,
+      children: [
+        item('Reservado', BoxDecoration(color: scheme.primaryContainer, borderRadius: radius)),
+        item('Turno fijo', BoxDecoration(color: scheme.primaryContainer, borderRadius: radius, border: Border.all(color: scheme.tertiary, width: 2))),
+        item('Libre', BoxDecoration(borderRadius: radius, border: Border.all(color: scheme.outline))),
+        item('Fijo cancelado este día', BoxDecoration(color: scheme.tertiaryContainer.withValues(alpha: 0.25), borderRadius: radius, border: Border.all(color: scheme.tertiary))),
+        item('Por aprobar', BoxDecoration(color: scheme.tertiaryContainer, borderRadius: radius)),
       ],
     );
   }
@@ -83,6 +120,7 @@ class _DesktopAgenda extends StatelessWidget {
             columnWidth: 200,
             heightPerMinute: 1.35,
             showNowIndicator: true,
+            focusSession: state.selectedSession,
             fromDate: state.currentDate.applied(const TimeOfDay(hour: 8, minute: 0)),
             lastDate: state.currentDate.applied(const TimeOfDay(hour: 22, minute: 0)),
             buildCard: (session, physicalPartition, height) => SessionManagerCard(

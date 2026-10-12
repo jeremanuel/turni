@@ -84,6 +84,8 @@ class BulkEditTexts {
 
   static String excludedLabel(BulkRowResult result) {
     switch (result) {
+      case BulkRowResult.fixed:
+        return 'Turno fijo · excluido';
       case BulkRowResult.booked:
         return 'Reservado · excluido';
       case BulkRowResult.pending:

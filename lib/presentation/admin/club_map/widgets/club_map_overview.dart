@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/presentation/components/links/entity_links.dart';
+
 import '../../../../domain/entities/club_map/club_map.dart';
 import '../../../../core/utils/either.dart';
 import '../../../../core/utils/repository_response.dart';
@@ -511,7 +513,9 @@ String _openLabel(CourtOccupancy occupancy) {
 
 String _hhmm(DateTime time) => '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
 
-String _whoText(Session session) => session.isPending ? 'Solicitud pendiente' : (session.client?.person?.fullName.trim() ?? 'Cliente');
+LinkSegment _who(Session session) => session.isPending
+    ? const LinkSegment.text('Solicitud pendiente')
+    : LinkSegment.client(int.tryParse(session.client?.clientId ?? ''), session.client?.person?.fullName.trim() ?? 'Cliente');
 
 /// "Ahora" en el detalle: si se está jugando (quién y hasta qué hora), si hay
 /// un turno libre para reservar en el momento, y el próximo turno del día.
@@ -529,13 +533,13 @@ class _NowSection extends StatelessWidget {
     final freeNow = occupancy.freeNow;
     final next = occupancy.next;
 
-    final String nowText;
+    final List<LinkSegment> nowText;
     if (current != null) {
-      nowText = '${_whoText(current)} · hasta las ${_hhmm(current.endTime as DateTime)}';
+      nowText = [_who(current), LinkSegment.text(' · hasta las ${_hhmm(current.endTime as DateTime)}')];
     } else if (freeNow != null) {
-      nowText = 'Turno libre hasta las ${_hhmm(freeNow.endTime as DateTime)}';
+      nowText = [LinkSegment.text('Turno libre hasta las ${_hhmm(freeNow.endTime as DateTime)}')];
     } else {
-      nowText = 'No hay un turno cargado ahora';
+      nowText = [const LinkSegment.text('No hay un turno cargado ahora')];
     }
 
     return Column(
@@ -549,12 +553,14 @@ class _NowSection extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 4),
-        Text(nowText, style: theme.textTheme.bodyMedium),
+        ClientLinksText(nowText, style: theme.textTheme.bodyMedium),
         const SizedBox(height: 12),
         Text('Próximo turno', style: muted),
         const SizedBox(height: 2),
-        Text(
-          next == null ? 'No hay más turnos reservados hoy' : '${_hhmm(next.startTime)} · ${_whoText(next)}',
+        ClientLinksText(
+          next == null
+              ? [const LinkSegment.text('No hay más turnos reservados hoy')]
+              : [LinkSegment.text('${_hhmm(next.startTime)} · '), _who(next)],
           style: theme.textTheme.bodyMedium,
         ),
       ],

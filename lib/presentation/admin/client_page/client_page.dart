@@ -1,22 +1,19 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
+import 'widgets/client_profile_body.dart';
 import 'package:go_router/go_router.dart';
 import 'package:trina_grid/trina_grid.dart';
 import '../../../core/config/router/app_routes.dart';
 import '../../../core/config/service_locator.dart';
-import '../../../core/utils/domain_error.dart';
-import '../../../core/utils/either.dart';
 import '../../../core/utils/responsive_builder.dart';
 import '../../../domain/entities/client.dart';
 import '../../../domain/entities/payment/payment.dart';
-import '../../../domain/repositories/admin_repository.dart';
 import '../../../domain/repositories/payment_repository.dart';
 import '../client_feature/wrapper_client_provider.dart';
 import 'widgets/add_payment_button.dart';
 import 'widgets/basic_data_container.dart';
 import 'widgets/labels_container.dart';
 import 'widgets/payments/payments_list.dart';
-import 'widgets/routines_container.dart';
 import 'widgets/subscriptions_container.dart';
 import 'widgets/subscriptions_container/add_subscription_button.dart';
 
@@ -79,105 +76,24 @@ class _ClientpageState extends State<Clientpage> {
             builder: (context) {
               final client = ClientInherited.of(context)!.client;
 
-              if (ResponsiveBuilder.isDesktop(context)) {
-                return SingleChildScrollView(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                   
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.all(24),
-                        child: IntrinsicHeight(
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            spacing: 24,
-                            children: [
-                              Expanded(
-                                flex: 2,
-                                child: BasicDataContainer(
-                                  colorScheme: colorScheme,
-                                  onToggleEditing: (c) => setState(() {
-                                    isEditingMode = !isEditingMode;
-                                  }),
-                                  isEditing: isEditingMode,
-                                ),
-                              ),
-
-                              SizedBox(
-                                width: 450,
-                                child: _ActiveSubscriptionWidget(
-                                  client: client,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-                      const Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 20),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            SizedBox(
-                              height: 450,
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                spacing: 16,
-                                children: [
-                                  Expanded(flex: 2, child: PaymentsContainer()),
-                                  SizedBox(width: 8),
-                                  RoutinesContainer(),
-                                ],
-                              ),
-                            ),
-                            SizedBox(height: 24),
-                            SizedBox(width: 450, child: LabelsContainer()),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              }
-
-              return buildMobileBody(colorScheme, context, client);
+              return ClientProfileBody(
+                key: ValueKey('profile-${client.clientId}'),
+                client: client,
+                isEditing: isEditingMode,
+                onEdit: toggleEditing,
+                editor: BasicDataContainer(
+                  colorScheme: colorScheme,
+                  onToggleEditing: (c) => toggleEditing(),
+                  isEditing: isEditingMode,
+                ),
+                payments: const PaymentsContainer(),
+                subscription: _ActiveSubscriptionWidget(client: client),
+                labels: const LabelsContainer(),
+              );
             },
           ),
         ),
       ),
-    );
-  }
-
-  ListView buildMobileBody(
-    ColorScheme colorScheme,
-    BuildContext context,
-    Client client,
-  ) {
-    return ListView(
-      children: [
-        BasicDataContainer(
-          colorScheme: colorScheme,
-          onToggleEditing: (c) => setState(() {
-            isEditingMode = !isEditingMode;
-          }),
-          isEditing: isEditingMode,
-        ),
-        const SizedBox(height: 24),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _ActiveSubscriptionWidget(client: client),
-            const SizedBox(height: 24),
-            const SizedBox(height: 400, child: PaymentsContainer()),
-            const SizedBox(height: 24),
-            Container(height: 400, child: RoutinesContainer(), padding: const EdgeInsets.all(20),),
-            const SizedBox(height: 24),
-            const LabelsContainer(),
-            const SizedBox(height: 24),
-          ],
-        ),
-      ],
     );
   }
 
@@ -508,8 +424,9 @@ class _ActiveSubscriptionWidget extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
 
     // Obtener la suscripción activa
+    // Los turnos fijos se ven en su propia sección (ClientFixedSessions).
     final activeSubscription = client.clientSubscriptions?.firstWhereOrNull(
-      (sub) => sub.isActive,
+      (sub) => sub.isActive && sub.subscription.subscriptionType != "FIXED_SESSION",
     );
 
     final hasActiveSubscription =

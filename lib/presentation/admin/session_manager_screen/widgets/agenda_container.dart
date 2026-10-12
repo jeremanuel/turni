@@ -98,6 +98,7 @@ class AgendaContainer extends StatelessWidget {
 
         return Agenda(
           columnWidth: 200,
+          focusSession: state.selectedSession,
           heightPerMinute: ResponsiveBuilder.isDesktop(context) ? 1.35 : 1.1,
           fromDate:
               state.currentDate.applied(const TimeOfDay(hour: 8, minute: 0)),

@@ -57,6 +57,17 @@ nueva, no solo a esa.
   formulario inline embebido en la card de la lista — salvo un caso ya
   confirmado explícitamente con el usuario (las franjas horarias de Tarifas sí
   quedaron con alta inline, edición por diálogo).
+- **Todo nombre de cliente es un link a su ficha**, con subrayado al pasar
+  el mouse: `ClientLink` (o `ClientLinksText` si el nombre va dentro de una
+  frase, ej. "Con Juan y Ana"), en
+  `lib/core/presentation/components/links/entity_links.dart`. Aplica a
+  tablas, cards, paneles y listas; no a buscadores/selectores de cliente ni
+  al texto de diálogos de confirmación. Si el dato no trae el `client_id`,
+  se agrega al endpoint, no se deja el nombre como texto plano.
+- **Todo turno que aparezca en la ficha del cliente abre ese turno en la
+  agenda** (`openSession` / `HoverLink`, misma regla de hover). La ruta del
+  turno (`SESSION_MANAGER_RESERVE_ROUTE`) centra la agenda en él vía
+  `Agenda.focusSession`.
 - **Una sola jerarquía de navegación lateral por pantalla.** No agregar un
   segundo `NavigationRail`/menú dentro de una sección interna.
 

@@ -804,6 +804,13 @@ class _BulkEditViewState extends State<_BulkEditView> {
                       background: scheme.surfaceContainerHighest,
                       foreground: scheme.onSurfaceVariant,
                     ),
+                    if (preview.excluded.fixed > 0)
+                      BulkSummaryChip(
+                        count: preview.excluded.fixed,
+                        label: preview.excluded.fixed == 1 ? 'es turno fijo' : 'son turnos fijos',
+                        background: scheme.tertiaryContainer,
+                        foreground: scheme.onTertiaryContainer,
+                      ),
                     if (preview.excluded.unchanged > 0)
                       BulkSummaryChip(
                         count: preview.excluded.unchanged,

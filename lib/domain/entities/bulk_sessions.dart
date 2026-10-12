@@ -121,6 +121,9 @@ class BulkSessionAction {
 /// Por qué un turno que cumple las reglas queda afuera de la operación.
 enum BulkRowResult {
   ok('ok'),
+
+  /// Es de un turno fijo: se cancela desde Turnos fijos, no en masa.
+  fixed('fixed'),
   booked('booked'),
   pending('pending'),
   paid('paid'),
@@ -139,8 +142,9 @@ enum BulkRowResult {
 }
 
 class BulkExcluded {
-  const BulkExcluded({this.booked = 0, this.pending = 0, this.paid = 0, this.overlap = 0, this.unchanged = 0});
+  const BulkExcluded({this.fixed = 0, this.booked = 0, this.pending = 0, this.paid = 0, this.overlap = 0, this.unchanged = 0});
 
+  final int fixed;
   final int booked;
   final int pending;
   final int paid;
@@ -152,10 +156,11 @@ class BulkExcluded {
   /// Todos los que no se modifican (protegidos + sin cambios).
   int get total => protectedTotal + unchanged;
 
-  /// Los que quedan afuera por estar reservados, pendientes, pagos o superponerse.
-  int get protectedTotal => booked + pending + paid + overlap;
+  /// Los que quedan afuera por ser turno fijo, estar reservados, pendientes, pagos o superponerse.
+  int get protectedTotal => fixed + booked + pending + paid + overlap;
 
   factory BulkExcluded.fromJson(Map<String, dynamic>? json) => BulkExcluded(
+        fixed: (json?['fixed'] as num?)?.toInt() ?? 0,
         booked: (json?['booked'] as num?)?.toInt() ?? 0,
         pending: (json?['pending'] as num?)?.toInt() ?? 0,
         paid: (json?['paid'] as num?)?.toInt() ?? 0,

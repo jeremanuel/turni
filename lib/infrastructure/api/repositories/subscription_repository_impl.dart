@@ -16,42 +16,13 @@ class SubscriptionRepositoryImpl extends BaseRepository implements SubscriptionR
       return safeCall(() async {
                     final response = await dioInstance.post(
                         "/client/subscribe/$clientId",
-                        data: {
-                            "clientSubscription": clientSubscriptionData,
-                            "overrideDates": clientSubscriptionData["overrideDates"] ?? const <String>[],
-                        },
+                        data: {"clientSubscription": clientSubscriptionData},
                     );
 
           return ClientSubscription.fromJson(response.data['newSubscription']);
       });
   }
 
-    @override
-    Future<Either<DomainError, Map<String, dynamic>>> previewFixedSessions(Map<String, dynamic> previewData) {
-        return safeCall(() async {
-            final response = await dioInstance.post(
-                "/client/subscription/fixed-preview",
-                data: previewData,
-            );
-
-            final rawPreview = (response.data['preview'] as List?) ?? const [];
-            final preview = rawPreview
-                    .whereType<Map>()
-                    .map((item) => Map<String, dynamic>.from(item))
-                    .toList();
-
-            final rawFixedConflict = response.data['fixedConflict'];
-            final fixedConflict = rawFixedConflict is Map
-                ? Map<String, dynamic>.from(rawFixedConflict)
-                : null;
-
-            return {
-              'preview': preview,
-              'fixedConflict': fixedConflict,
-            };
-        });
-    }
-  
   @override
     Future<Either<DomainError, int>> previewUnsubscribeLinkedSessions(int clientSubscription, int clientId) {
             return safeCall(() async {
