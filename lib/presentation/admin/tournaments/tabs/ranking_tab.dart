@@ -7,6 +7,7 @@ import '../../../../core/config/service_locator.dart';
 import '../../../../domain/entities/tournament/tournament.dart';
 import '../../../../domain/repositories/tournament_repository.dart';
 import '../../club_config/widgets/admin_data_table.dart';
+import '../../../../core/utils/responsive_builder.dart';
 import '../widgets/tournament_ui.dart';
 
 /// Ranking del club o de su ciudad (últimos 12 meses), por deporte, categoría
@@ -174,7 +175,7 @@ class _RankingTabState extends State<RankingTab> {
     final table = _loading
         ? const Padding(padding: EdgeInsets.all(32), child: Center(child: CircularProgressIndicator()))
         : _error != null
-            ? Padding(padding: const EdgeInsets.all(24), child: Text(_error!, style: TextStyle(color: scheme.error)))
+            ? Padding(padding: EdgeInsets.all(ResponsiveBuilder.isMobile(context) ? 16 : 24), child: Text(_error!, style: TextStyle(color: scheme.error)))
             : result == null || result.rows.isEmpty
                 ? Padding(
                     padding: const EdgeInsets.all(32),
@@ -263,7 +264,7 @@ class _RankingTabState extends State<RankingTab> {
       builder: (context, constraints) {
         final wide = constraints.maxWidth > 1100;
         return ListView(
-          padding: const EdgeInsets.all(24),
+          padding: EdgeInsets.all(ResponsiveBuilder.isMobile(context) ? 16 : 24),
           children: [
             Text(
               _city && result?.city != null ? 'Ranking de ${result!.city!.name} · últimos 12 meses' : 'Ranking del club · últimos 12 meses',

@@ -227,7 +227,7 @@ class _TournamentFormPageState extends State<TournamentFormPage> {
               ],
             );
             return SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
+              padding: EdgeInsets.all(ResponsiveBuilder.isMobile(context) ? 16 : 24),
               child: wide
                   ? Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -237,7 +237,7 @@ class _TournamentFormPageState extends State<TournamentFormPage> {
                         SizedBox(width: 320, child: _summary()),
                       ],
                     )
-                  : Column(children: [_summary(), const SizedBox(height: 16), form]),
+                  : Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [_summary(), const SizedBox(height: 16), form]),
             );
           },
         ),
@@ -311,7 +311,7 @@ class _TournamentFormPageState extends State<TournamentFormPage> {
             runSpacing: 16,
             children: [
               SizedBox(
-                width: 240,
+                width: _fieldW(240),
                 child: DropdownButtonFormField<int>(
                   initialValue: _draft.clubTypeId,
                   decoration: const InputDecoration(labelText: 'Deporte'),
@@ -320,7 +320,7 @@ class _TournamentFormPageState extends State<TournamentFormPage> {
                 ),
               ),
               SizedBox(
-                width: 280,
+                width: _fieldW(280),
                 child: DropdownButtonFormField<int>(
                   key: ValueKey('format-${_draft.clubTypeId}'),
                   initialValue: _draft.teamFormatId,
@@ -356,7 +356,7 @@ class _TournamentFormPageState extends State<TournamentFormPage> {
 
   Widget _dateButton(String label, DateTime? value, void Function(DateTime?) set) {
     return SizedBox(
-      width: 200,
+      width: _fieldW(200),
       child: InkWell(
         onTap: () => _pickDate(value, set),
         child: InputDecorator(
@@ -416,7 +416,7 @@ class _TournamentFormPageState extends State<TournamentFormPage> {
             children: [
               if (_draft.admission == TournamentAdmission.single) ...[
                 SizedBox(
-                  width: 200,
+                  width: _fieldW(200),
                   child: DropdownButtonFormField<int>(
                     key: ValueKey('cat-${_draft.clubTypeId}'),
                     initialValue: _draft.categoryId,
@@ -427,7 +427,7 @@ class _TournamentFormPageState extends State<TournamentFormPage> {
                   ),
                 ),
                 SizedBox(
-                  width: 300,
+                  width: _fieldW(300),
                   child: DropdownButtonFormField<int?>(
                     key: ValueKey('lower-${_draft.categoryId}'),
                     initialValue: _draft.lowerCategoriesAllowed == null ? null : math.min(_draft.lowerCategoriesAllowed!, maxLower),
@@ -444,7 +444,7 @@ class _TournamentFormPageState extends State<TournamentFormPage> {
               ],
               if (_draft.admission == TournamentAdmission.sum)
                 SizedBox(
-                  width: 200,
+                  width: _fieldW(200),
                   child: TextFormField(
                     controller: _sumMin,
                     enabled: !_lockedByEntries,
@@ -454,7 +454,7 @@ class _TournamentFormPageState extends State<TournamentFormPage> {
                   ),
                 ),
               SizedBox(
-                width: 180,
+                width: _fieldW(180),
                 child: DropdownButtonFormField<TournamentBranch>(
                   initialValue: _draft.branch,
                   decoration: const InputDecoration(labelText: 'Rama'),
@@ -463,7 +463,7 @@ class _TournamentFormPageState extends State<TournamentFormPage> {
                 ),
               ),
               SizedBox(
-                width: 240,
+                width: _fieldW(240),
                 child: CheckboxListTile(
                   contentPadding: EdgeInsets.zero,
                   controlAffinity: ListTileControlAffinity.leading,
@@ -505,7 +505,7 @@ class _TournamentFormPageState extends State<TournamentFormPage> {
             children: [
               if (_draft.format == TournamentFormat.groupsKnockout) ...[
                 SizedBox(
-                  width: 200,
+                  width: _fieldW(200),
                   child: DropdownButtonFormField<int>(
                     initialValue: _draft.groupSize,
                     decoration: const InputDecoration(labelText: 'Equipos por zona'),
@@ -517,7 +517,7 @@ class _TournamentFormPageState extends State<TournamentFormPage> {
                   ),
                 ),
                 SizedBox(
-                  width: 200,
+                  width: _fieldW(200),
                   child: DropdownButtonFormField<int>(
                     key: ValueKey('q-${_draft.groupSize}'),
                     initialValue: _draft.qualifiersPerGroup,
@@ -528,7 +528,7 @@ class _TournamentFormPageState extends State<TournamentFormPage> {
                 ),
               ],
               SizedBox(
-                width: 260,
+                width: _fieldW(260),
                 child: DropdownButtonFormField<Seeding>(
                   initialValue: _draft.seeding,
                   decoration: const InputDecoration(labelText: 'Sorteo'),
@@ -565,7 +565,7 @@ class _TournamentFormPageState extends State<TournamentFormPage> {
             runSpacing: 16,
             children: [
               SizedBox(
-                width: 300,
+                width: _fieldW(300),
                 child: DropdownButtonFormField<ScoreMode>(
                   key: ValueKey('score-${_draft.clubTypeId}'),
                   initialValue: _draft.scoreMode ?? sport?.defaultScoreMode,
@@ -578,7 +578,7 @@ class _TournamentFormPageState extends State<TournamentFormPage> {
                 ),
               ),
               SizedBox(
-                width: 260,
+                width: _fieldW(260),
                 child: DurationMinutesField(
                   controller: _duration,
                   decoration: const InputDecoration(labelText: 'Duración de cada partido (min)'),
@@ -637,7 +637,7 @@ class _TournamentFormPageState extends State<TournamentFormPage> {
             crossAxisAlignment: WrapCrossAlignment.center,
             children: [
               SizedBox(
-                width: 160,
+                width: _fieldW(160),
                 child: TextFormField(
                   controller: _minTeams,
                   keyboardType: TextInputType.number,
@@ -647,7 +647,7 @@ class _TournamentFormPageState extends State<TournamentFormPage> {
                 ),
               ),
               SizedBox(
-                width: 160,
+                width: _fieldW(160),
                 child: TextFormField(
                   controller: _maxTeams,
                   keyboardType: TextInputType.number,
@@ -686,7 +686,7 @@ class _TournamentFormPageState extends State<TournamentFormPage> {
               crossAxisAlignment: WrapCrossAlignment.center,
               children: [
                 SizedBox(
-                  width: 200,
+                  width: _fieldW(200),
                   child: PriceField(
                     controller: _fee,
                     decoration: InputDecoration(labelText: 'Valor', prefixText: '\$ ', enabled: !_lockedByEntries),
@@ -723,7 +723,7 @@ class _TournamentFormPageState extends State<TournamentFormPage> {
                     runSpacing: 16,
                     children: [
                       SizedBox(
-                        width: 280,
+                        width: _fieldW(280),
                         child: DropdownButtonFormField<int>(
                           key: ValueKey('minpaid-$players'),
                           initialValue: _draft.minPaidPlayers.clamp(1, players),
@@ -736,7 +736,7 @@ class _TournamentFormPageState extends State<TournamentFormPage> {
                         ),
                       ),
                       SizedBox(
-                        width: 300,
+                        width: _fieldW(300),
                         child: DropdownButtonFormField<int>(
                           initialValue: _draft.finalReminderHours,
                           decoration: const InputDecoration(labelText: 'Aviso final de pagos pendientes'),
@@ -793,6 +793,9 @@ class _TournamentFormPageState extends State<TournamentFormPage> {
   }
 
   // -- Resumen -----------------------------------------------------------------
+
+  /// Ancho de un campo: en el celular todos van a lo ancho de la tarjeta.
+  double _fieldW(double width) => ResponsiveBuilder.isMobile(context) ? double.infinity : width;
 
   Widget _summary() {
     final scheme = Theme.of(context).colorScheme;

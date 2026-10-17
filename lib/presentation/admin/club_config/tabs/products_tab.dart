@@ -13,6 +13,7 @@ import '../../../../domain/entities/product_category.dart';
 import '../../../../domain/repositories/product_admin_repository.dart';
 import '../widgets/admin_data_table.dart';
 import '../widgets/price_field.dart';
+import '../../../../core/utils/responsive_builder.dart';
 
 class ProductsTab extends StatefulWidget {
   const ProductsTab({super.key});
@@ -249,7 +250,7 @@ class _ProductsTabState extends State<ProductsTab> {
     final colorScheme = Theme.of(context).colorScheme;
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(24),
+      padding: EdgeInsets.all(ResponsiveBuilder.isMobile(context) ? 16 : 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -290,6 +291,7 @@ class _ProductsTabState extends State<ProductsTab> {
                   else
                     AdminTableScroll(
                       child: AdminDataTable(
+                    mobileNested: true,
                         columns: const ['Nombre', 'Categoría', 'Precio', 'Activo', ''],
                         rows: _visibleProducts
                             .map((product) => [

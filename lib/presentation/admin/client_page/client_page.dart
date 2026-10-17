@@ -115,8 +115,18 @@ class _ClientpageState extends State<Clientpage> {
                 icon: const Icon(Icons.arrow_back),
                 onPressed: () => context.go(AppRoutes.CLIENTS_LIST_ROUTE.path),
               ),
+        // Celular: título simple, alineado como el resto de las pantallas.
+        titleSpacing: ResponsiveBuilder.isMobile(context) ? 0 : null,
         title: Builder(
           builder: (context) {
+            if (ResponsiveBuilder.isMobile(context)) {
+              final clientInherited = ClientInherited.of(context);
+              return Text(isEditingMode && clientInherited == null
+                  ? 'Nuevo cliente'
+                  : isEditingMode
+                      ? 'Editando cliente'
+                      : 'Cliente');
+            }
             return buildBreadcrumb(context);
           },
         ),

@@ -30,7 +30,13 @@ class AdminDataTable extends StatelessWidget {
     this.rowTextColors,
     this.maxBodyHeight,
     this.mobileLayout = AdminTableMobileLayout.cards,
+    this.mobileNested = false,
   });
+
+  /// La tabla está dentro de otra tarjeta (ej. los espacios de un servicio):
+  /// en el celular las filas se dibujan con borde en vez de relleno, para
+  /// que se distingan de la tarjeta que las contiene.
+  final bool mobileNested;
 
   final AdminTableMobileLayout mobileLayout;
 
@@ -167,6 +173,21 @@ class AdminTableScroll extends StatelessWidget {
   }
 }
 
+/// Tarjeta que contiene una [AdminDataTable]. En el celular la tabla ya se
+/// muestra como tarjetas, así que no se dibuja otra tarjeta alrededor (quedaba
+/// doble margen y las filas no se distinguían del fondo).
+class AdminTableCard extends StatelessWidget {
+  const AdminTableCard({super.key, required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    if (ResponsiveBuilder.isMobile(context)) return child;
+    return Card(child: Padding(padding: const EdgeInsets.all(20), child: child));
+  }
+}
+
 /// Celular: una tarjeta por fila.
 class _MobileCards extends StatelessWidget {
   const _MobileCards({required this.table});
@@ -197,7 +218,7 @@ class _MobileCards extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               SizedBox(
-                width: 112,
+                width: 96,
                 child: Text(label, style: textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant)),
               ),
               const SizedBox(width: 8),
@@ -214,23 +235,31 @@ class _MobileCards extends StatelessWidget {
 
       return Card(
         margin: EdgeInsets.zero,
+        color: table.mobileNested ? Colors.transparent : null,
+        shape: table.mobileNested
+            ? RoundedRectangleBorder(borderRadius: BorderRadius.circular(12), side: BorderSide(color: scheme.outlineVariant))
+            : null,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+          padding: EdgeInsets.fromLTRB(table.mobileNested ? 12 : 16, 12, table.mobileNested ? 12 : 16, 12),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             mainAxisSize: MainAxisSize.min,
             children: [
+              // Las acciones (íconos, menú ⋮) van arriba a la derecha, junto
+              // al título, en vez de ocupar una fila propia al pie.
               if (cells.isNotEmpty)
-                DefaultTextStyle.merge(
-                  style: textTheme.titleSmall?.copyWith(color: color),
-                  child: cells.first,
+                Row(
+                  children: [
+                    Expanded(
+                      child: DefaultTextStyle.merge(
+                        style: textTheme.titleSmall?.copyWith(color: color),
+                        child: Align(alignment: Alignment.centerLeft, child: cells.first),
+                      ),
+                    ),
+                    ...actions,
+                  ],
                 ),
               ...details,
-              if (actions.isNotEmpty)
-                Padding(
-                  padding: const EdgeInsets.only(top: 8),
-                  child: Wrap(alignment: WrapAlignment.end, spacing: 8, runSpacing: 8, children: actions),
-                ),
             ],
           ),
         ),

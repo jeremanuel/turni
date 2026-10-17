@@ -5,6 +5,7 @@ import '../../../../core/config/service_locator.dart';
 import '../../../../core/presentation/components/inputs/snackbars/snackbars_functions.dart';
 import '../../../../domain/entities/tournament/tournament.dart';
 import '../../../../domain/repositories/tournament_repository.dart';
+import '../../../../core/utils/responsive_builder.dart';
 import '../widgets/tournament_ui.dart';
 
 /// Qué deportes categoriza el club (asigna su propia categoría a los
@@ -88,7 +89,7 @@ class _CategorySettingsTabState extends State<CategorySettingsTab> {
     final scheme = Theme.of(context).colorScheme;
 
     return ListView(
-      padding: const EdgeInsets.all(24),
+      padding: EdgeInsets.all(ResponsiveBuilder.isMobile(context) ? 16 : 24),
       children: [
         Align(
           alignment: Alignment.topLeft,

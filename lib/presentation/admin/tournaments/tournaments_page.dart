@@ -10,6 +10,7 @@ import '../../../domain/repositories/tournament_repository.dart';
 import '../club_config/widgets/admin_data_table.dart';
 import 'tabs/category_settings_tab.dart';
 import 'tabs/ranking_tab.dart';
+import '../../../core/utils/responsive_builder.dart';
 import 'widgets/tournament_ui.dart';
 
 /// Torneos del club: el listado, el ranking (club y ciudad) y qué deportes
@@ -97,7 +98,7 @@ class _TournamentsTabState extends State<_TournamentsTab> {
     return RefreshIndicator(
       onRefresh: _load,
       child: ListView(
-        padding: const EdgeInsets.all(24),
+        padding: EdgeInsets.all(ResponsiveBuilder.isMobile(context) ? 16 : 24),
         children: [
           Row(
             children: [

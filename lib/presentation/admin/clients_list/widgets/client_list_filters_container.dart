@@ -53,6 +53,7 @@ class _ClientListFiltersContainerState extends State<ClientListFiltersContainer>
     }
 
     final colorSchenme = Theme.of(context).colorScheme;
+    final isMobile = ResponsiveBuilder.isMobile(context);
 
     return FormBuilder(
       initialValue: clientsBloc.state.filters.toJson(),
@@ -72,8 +73,9 @@ class _ClientListFiltersContainerState extends State<ClientListFiltersContainer>
             child: Column(
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  height: 102,
+                  // Celular: buscador y botón en una fila, alineados con la lista.
+                  padding: EdgeInsets.symmetric(horizontal: isMobile ? 16 : 12),
+                  height: isMobile ? 72 : 102,
                   decoration: BoxDecoration(
                       color: colorSchenme.surfaceContainerLow,
                       border: Border.symmetric(
@@ -81,7 +83,7 @@ class _ClientListFiltersContainerState extends State<ClientListFiltersContainer>
                   child: Row(
                     spacing: 10,
                     children: [
-                      const _SearchBarFilter(),
+                      if (isMobile) const Expanded(child: _SearchBarFilter()) else const _SearchBarFilter(),
                       if (ResponsiveBuilder.isDesktop(context)) ...[
                         const Padding(
                           padding: EdgeInsets.symmetric(vertical: 12),
@@ -101,7 +103,7 @@ class _ClientListFiltersContainerState extends State<ClientListFiltersContainer>
                         _ClearFiltersButton(
                             clientsBloc: clientsBloc,
                             filtersFormKey: clientsBloc.filtersFormKey),
-                      ] else ...[
+                      ] else if (!isMobile) ...[
                         const Spacer(),
                       
                         IconButton(
@@ -110,6 +112,7 @@ class _ClientListFiltersContainerState extends State<ClientListFiltersContainer>
                           tooltip: "Mas filtros",
                         )
                       ],
+                      if (!isMobile)
                       const Padding(
                           padding: EdgeInsets.symmetric(vertical: 12),
                           child: VerticalDivider()
@@ -231,21 +234,23 @@ class _SearchBarFilterState extends State<_SearchBarFilter> {
 
   @override
   Widget build(BuildContext context) {
+    final isMobile = ResponsiveBuilder.isMobile(context);
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.start,
       spacing: 8,
       children: [
+        if (!isMobile)
         const Row(
          children: [
            SizedBox(
              width: 8,
            ),
-           Text("A quien estás bucando?"),
+           Text("¿A quién estás buscando?"),
          ],
                   ), 
         SizedBox(
-          width: ResponsiveBuilder.isMobile(context) ? 200 : 300,
+          width: isMobile ? double.infinity : 300,
           height: 48,
           child: FormBuilderField<String>(
               onChanged: (value) {

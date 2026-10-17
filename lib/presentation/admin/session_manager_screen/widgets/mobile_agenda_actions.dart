@@ -37,6 +37,8 @@ class MobileAgendaToolbar extends StatelessWidget {
               onPressed: isToday ? null : () => context.read<SessionManagerBloc>().add(SessionChangeDateEvent(DateTime.now())),
               icon: const Icon(Icons.today_outlined, size: 20),
               label: const Text('Hoy'),
+              // Ícono alineado con el borde de la agenda.
+              style: TextButton.styleFrom(padding: const EdgeInsets.fromLTRB(0, 10, 14, 10)),
             ),
             const Spacer(),
             IconButton(
@@ -45,6 +47,7 @@ class MobileAgendaToolbar extends StatelessWidget {
               onPressed: () => _openSearch(context, state),
             ),
             IconButton(
+              padding: const EdgeInsets.fromLTRB(8, 8, 0, 8),
               tooltip: pending == 0 ? 'Resumen del día' : 'Resumen del día · $pending por aprobar',
               icon: Badge(
                 isLabelVisible: pending > 0,

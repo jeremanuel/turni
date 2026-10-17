@@ -15,6 +15,7 @@ import '../../../../domain/repositories/club_partition_admin_repository.dart';
 import '../widgets/club_partition_card.dart';
 import '../widgets/club_partition_form_dialog.dart';
 import '../widgets/partition_physical_form_dialog.dart';
+import '../../../../core/utils/responsive_builder.dart';
 
 class ClubPartitionsTab extends StatefulWidget {
   const ClubPartitionsTab({
@@ -304,7 +305,7 @@ class _ClubPartitionsTabState extends State<ClubPartitionsTab> {
     final colorScheme = Theme.of(context).colorScheme;
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(24),
+      padding: EdgeInsets.all(ResponsiveBuilder.isMobile(context) ? 16 : 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

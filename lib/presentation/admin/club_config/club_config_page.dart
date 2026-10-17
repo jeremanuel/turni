@@ -227,6 +227,8 @@ class _ClubConfigSectionPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: scheme.surfaceContainer,
       appBar: AppBar(
+        // Igual que la barra del resto de las pantallas del celular.
+        titleSpacing: 0,
         title: Text(section.title),
         leading: IconButton(
           icon: Icon(modal ? Icons.close : Icons.arrow_back),

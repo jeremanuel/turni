@@ -8,6 +8,7 @@ import '../../../../core/presentation/components/inputs/snackbars/snackbars_func
 import '../../../../core/utils/domain_error.dart';
 import '../../../../core/utils/either.dart';
 import '../../../../domain/repositories/club_info_repository.dart';
+import '../../../../core/utils/responsive_builder.dart';
 
 class ClubInfoTab extends StatefulWidget {
   const ClubInfoTab({super.key});
@@ -129,7 +130,7 @@ class _ClubInfoTabState extends State<ClubInfoTab> {
     final colorScheme = Theme.of(context).colorScheme;
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(24),
+      padding: EdgeInsets.all(ResponsiveBuilder.isMobile(context) ? 16 : 24),
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 560),
         child: Column(

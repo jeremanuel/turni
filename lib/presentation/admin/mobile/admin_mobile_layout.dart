@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/config/router/app_routes.dart';
 import 'admin_bottom_nav.dart';
+import 'admin_mobile_sub_page.dart';
 
 /// Layout del admin en el celular (diseño "Admin mobile — layout y
 /// navegación"). Tres niveles de pantalla:
@@ -58,25 +59,38 @@ class AdminMobileLayout extends StatelessWidget {
     final isTopLevel = topTitle != null;
     final pageHasAppBar = _pagesWithOwnAppBar.contains(routeName);
 
-    return Scaffold(
-      backgroundColor: scheme.surfaceContainer,
-      appBar: pageHasAppBar ? null : AppBar(
-        backgroundColor: scheme.surface,
-        surfaceTintColor: Colors.transparent,
-        automaticallyImplyLeading: false,
-        titleSpacing: isTopLevel ? 16 : 0,
-        leading: isTopLevel
-            ? null
-            : IconButton(
-                tooltip: 'Volver',
-                icon: const Icon(Icons.arrow_back),
-                onPressed: () => goBack(context, definition),
-              ),
-        title: Text(topTitle ?? definition?.mobileAppBar?.title ?? ''),
-        shape: Border(bottom: BorderSide(color: scheme.outlineVariant)),
-      ),
-      body: shell,
-      bottomNavigationBar: isTopLevel ? AdminBottomNav(shell: shell) : null,
+    return ValueListenableBuilder<AdminMobileSubPage?>(
+      valueListenable: AdminMobileSubPage.current,
+      builder: (context, registered, _) {
+        final subPage = registered?.location == state.uri.path ? registered : null;
+        return PopScope(
+        // Atrás (del sistema o de la barra) cierra primero la sub-pantalla.
+        canPop: subPage == null,
+        onPopInvokedWithResult: (didPop, _) {
+          if (!didPop) subPage?.onBack();
+        },
+        child: Scaffold(
+          backgroundColor: scheme.surfaceContainer,
+          appBar: pageHasAppBar ? null : AppBar(
+            backgroundColor: scheme.surface,
+            surfaceTintColor: Colors.transparent,
+            automaticallyImplyLeading: false,
+            titleSpacing: isTopLevel && subPage == null ? 16 : 0,
+            leading: isTopLevel && subPage == null
+                ? null
+                : IconButton(
+                    tooltip: subPage?.backTooltip ?? 'Volver',
+                    icon: const Icon(Icons.arrow_back),
+                    onPressed: subPage?.onBack ?? () => goBack(context, definition),
+                  ),
+            title: Text(subPage?.title ?? topTitle ?? definition?.mobileAppBar?.title ?? ''),
+            shape: Border(bottom: BorderSide(color: scheme.outlineVariant)),
+          ),
+          body: shell,
+          bottomNavigationBar: isTopLevel && subPage == null ? AdminBottomNav(shell: shell) : null,
+        ),
+      );
+      },
     );
   }
 

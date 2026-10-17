@@ -281,7 +281,17 @@ class _AddNewSessionState extends State<AddNewSession> {
     );
   }
 
-  Stack buildHeader(BuildContext context) {
+  Widget buildHeader(BuildContext context) {
+    // En el celular el título y la flecha atrás están en la barra superior.
+    if (ResponsiveBuilder.isMobile(context)) {
+      return Padding(
+        padding: const EdgeInsets.only(top: 16),
+        child: Text(
+          "${widget.selectedTimeInterval.getInitialTextString()} | ${widget.selectedTimeInterval.toStringTime()}",
+          style: const TextStyle(fontSize: 16),
+        ),
+      );
+    }
     return Stack(
       children: [
         SizedBox(

@@ -71,29 +71,20 @@ class _AgendaContainerState extends State<AgendaContainer> {
                   child: SizedBox(
                       height: 50,
                       child: SessionManagerDayCarrousel(
-                        width: MediaQuery.of(context).size.width * 0.9,
+                        // Celular: alineado con la agenda (16 de margen de cada lado).
+                        width: MediaQuery.of(context).size.width - 32,
                       )),
                 ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
+                padding: EdgeInsets.symmetric(horizontal: isMobile ? 0 : 8),
                 height: 56,
                 child: ListView(
                   scrollDirection: Axis.horizontal,
                   children: [
-                    if (ResponsiveBuilder.isMobile(context))
-                      const SizedBox(
-                        width: 8,
-                      ),
-                    ...state.clubPartitions.expand((e) => [
-                          buildChip(e, context, state),
-                          const SizedBox(
-                            width: 16,
-                          ),
-                        ]),
-                    if (ResponsiveBuilder.isMobile(context))
-                      const SizedBox(
-                        width: 8,
-                      ),
+                    for (final (i, e) in state.clubPartitions.indexed) ...[
+                      if (i > 0) SizedBox(width: isMobile ? 8 : 16),
+                      buildChip(e, context, state),
+                    ],
                   ],
                 ),
               ),
@@ -102,7 +93,6 @@ class _AgendaContainerState extends State<AgendaContainer> {
                   height: 48,
                   child: ListView(
                     scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
                     children: [
                       for (final court in _courts(state)) ...[
                         ChoiceChip(
