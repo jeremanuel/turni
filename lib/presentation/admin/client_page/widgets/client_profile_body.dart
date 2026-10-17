@@ -22,7 +22,7 @@ import 'client_fixed_sessions.dart';
 ///
 /// [payments], [subscription] y [labels] son los componentes de siempre de la
 /// ficha; acá solo se acomodan. [editor] reemplaza al encabezado mientras se
-/// editan los datos.
+/// editan los datos. [categories] (torneos) va debajo de los pagos.
 class ClientProfileBody extends StatefulWidget {
   const ClientProfileBody({
     super.key,
@@ -33,6 +33,7 @@ class ClientProfileBody extends StatefulWidget {
     required this.payments,
     required this.subscription,
     required this.labels,
+    this.categories,
   });
 
   final Client client;
@@ -42,6 +43,7 @@ class ClientProfileBody extends StatefulWidget {
   final Widget payments;
   final Widget subscription;
   final Widget labels;
+  final Widget? categories;
 
   @override
   State<ClientProfileBody> createState() => _ClientProfileBodyState();
@@ -80,6 +82,7 @@ class _ClientProfileBodyState extends State<ClientProfileBody> {
       ClientFixedSessions(key: ValueKey('fixed-${widget.client.clientId}'), client: widget.client, onChanged: _loadSummary),
       _UpcomingCard(summary: _summary, error: _summaryError),
       Card(margin: EdgeInsets.zero, child: SizedBox(height: 380, child: widget.payments)),
+      if (widget.categories != null) widget.categories!,
     ];
     final side = <Widget>[
       _SideCard(title: 'Abono', child: widget.subscription),

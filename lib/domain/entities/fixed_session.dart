@@ -211,7 +211,11 @@ enum FixedSessionOccurrenceStatus {
   @JsonValue('PAID')
   paid,
   @JsonValue('OCCUPIED')
-  occupied;
+  occupied,
+
+  /// Hay un partido de torneo en ese horario (`clientName` = el torneo).
+  @JsonValue('TOURNAMENT')
+  tournament;
 
   bool get isConflict => this != created && this != freeSession;
 }
