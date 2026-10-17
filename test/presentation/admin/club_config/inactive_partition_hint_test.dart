@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:turni/domain/entities/partition_vocabulary.dart';
 import 'package:turni/presentation/admin/club_config/club_config_focus.dart';
 import 'package:turni/presentation/admin/club_config/widgets/inactive_partition_hint.dart';
 
@@ -10,7 +11,7 @@ void main() {
           body: Center(
             child: InactivePartitionHint(
               inactive: inactive,
-              message: InactivePartitionHint.physicalPartitionMessage,
+              message: InactivePartitionHint.physicalPartitionMessage(PartitionVocabulary.court),
               focus: const ClubConfigFocus.physicalPartition(
                 clubPartitionId: 1,
                 partitionPhysicalId: 10,
@@ -24,18 +25,18 @@ void main() {
   testWidgets('una opción inactiva muestra el aviso con el enlace a la configuración', (tester) async {
     await tester.pumpWidget(host(inactive: true));
 
-    expect(find.text(InactivePartitionHint.physicalPartitionMessage), findsNothing);
+    expect(find.text(InactivePartitionHint.physicalPartitionMessage(PartitionVocabulary.court)), findsNothing);
 
     await tester.tap(find.text('Cancha 1'));
     await tester.pump();
 
-    expect(find.text(InactivePartitionHint.physicalPartitionMessage), findsOneWidget);
+    expect(find.text(InactivePartitionHint.physicalPartitionMessage(PartitionVocabulary.court)), findsOneWidget);
     expect(find.text('Abrir configuración'), findsOneWidget);
 
     // Tocar afuera lo cierra.
     await tester.tapAt(const Offset(5, 5));
     await tester.pump();
-    expect(find.text(InactivePartitionHint.physicalPartitionMessage), findsNothing);
+    expect(find.text(InactivePartitionHint.physicalPartitionMessage(PartitionVocabulary.court)), findsNothing);
   });
 
   testWidgets('una opción activa no agrega ningún aviso', (tester) async {
@@ -44,6 +45,6 @@ void main() {
     await tester.tap(find.text('Cancha 1'));
     await tester.pump();
 
-    expect(find.text(InactivePartitionHint.physicalPartitionMessage), findsNothing);
+    expect(find.text(InactivePartitionHint.physicalPartitionMessage(PartitionVocabulary.court)), findsNothing);
   });
 }

@@ -103,7 +103,7 @@ class _AddSubscriptionContainerState extends State<AddSubscriptionContainer> {
                   "\$${subscription.getCurrentPrice()!.price}",
                   style: Theme.of(context).textTheme.bodyLarge,
                 ),
-                subtitle: Text(clubPartition.clubType!.name),
+                subtitle: Text(clubPartition.displayName),
                 title: Text(
                   subscription.name,
                   style: Theme.of(context).textTheme.bodyLarge,

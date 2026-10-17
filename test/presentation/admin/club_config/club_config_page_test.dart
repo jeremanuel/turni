@@ -141,8 +141,8 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Configuración'), findsOneWidget);
-    expect(find.text('Información del club'), findsWidgets);
-    expect(find.text('Deportes y canchas'), findsWidgets);
+    expect(find.text('Información del establecimiento'), findsWidgets);
+    expect(find.text('Servicios y espacios'), findsWidgets);
     expect(find.text('Tarifas por horario'), findsWidgets);
     expect(find.text('Productos'), findsWidgets);
     expect(find.text('Solicitudes de turno'), findsWidgets);

@@ -43,14 +43,24 @@ class ClubPartitionAdminRepositoryImpl extends BaseRepository
   Future<RepositoryResponse<ClubPartition>> createClubPartition({
     required int clubTypeId,
     String? phone,
+    String? name,
     String? physicalPartitionName,
+    String? physicalPartitionPlural,
+    String? participantSingular,
+    String? participantPlural,
   }) {
     return safeCall(() async {
       final response = await dioInstance.post('/admin/club_partition', data: {
         'club_type_id': clubTypeId,
         if (phone != null) 'phone': phone,
+        if (name != null) 'name': name,
         if (physicalPartitionName != null)
           'physical_partition_name': physicalPartitionName,
+        if (physicalPartitionPlural != null)
+          'physical_partition_plural': physicalPartitionPlural,
+        if (participantSingular != null)
+          'participant_singular': participantSingular,
+        if (participantPlural != null) 'participant_plural': participantPlural,
       });
 
       return ClubPartition.fromJson(response.data as Map<String, dynamic>);
@@ -62,7 +72,11 @@ class ClubPartitionAdminRepositoryImpl extends BaseRepository
     int clubPartitionId, {
     int? clubTypeId,
     String? phone,
+    String? name,
     String? physicalPartitionName,
+    String? physicalPartitionPlural,
+    String? participantSingular,
+    String? participantPlural,
   }) {
     return safeCall(() async {
       final response = await dioInstance.put(
@@ -70,8 +84,14 @@ class ClubPartitionAdminRepositoryImpl extends BaseRepository
         data: {
           if (clubTypeId != null) 'club_type_id': clubTypeId,
           if (phone != null) 'phone': phone,
+          if (name != null) 'name': name,
           if (physicalPartitionName != null)
             'physical_partition_name': physicalPartitionName,
+          if (physicalPartitionPlural != null)
+            'physical_partition_plural': physicalPartitionPlural,
+          if (participantSingular != null)
+            'participant_singular': participantSingular,
+          if (participantPlural != null) 'participant_plural': participantPlural,
         },
       );
 

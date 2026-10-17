@@ -120,7 +120,7 @@ class _AddNewSessionState extends State<AddNewSession> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         InputChip(
-                          label: Text(widget.clubPartition.clubType!.name),
+                          label: Text(widget.clubPartition.displayName),
                         ),
                         const SizedBox(width: 8),
                         InputChip(

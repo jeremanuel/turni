@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/utils/admin_vocabulary.dart';
 import '../../../../domain/entities/bulk_sessions.dart';
 import '../widgets/bulk_widgets.dart';
 
@@ -93,7 +94,7 @@ class _BulkConfirmDeleteDialogState extends State<BulkConfirmDeleteDialog> {
                     row('Período', widget.period),
                     row('Días', widget.days),
                     row('Horario', widget.hours),
-                    row('Canchas', widget.courts),
+                    row(adminVocabulary().space.plural, widget.courts),
                   ],
                 ),
               ),

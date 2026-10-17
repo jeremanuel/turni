@@ -103,7 +103,7 @@ class _ClubInfoTabState extends State<ClubInfoTab> {
         setState(() {
           _isSaving = false;
         });
-        SnackbarsFunctions.showSuccessSnackbar(context, "Datos del club guardados.");
+        SnackbarsFunctions.showSuccessSnackbar(context, "Datos del establecimiento guardados.");
       },
     );
   }
@@ -137,7 +137,7 @@ class _ClubInfoTabState extends State<ClubInfoTab> {
           mainAxisSize: MainAxisSize.min,
           children: [
             const Text(
-              "Datos generales que ven tus clientes al buscar el club.",
+              "Datos generales que ven tus clientes al buscar tu establecimiento.",
             ),
             const SizedBox(height: 20),
             const ReadOnlyNotice(permissions: [Permissions.CONFIGURACION_CLUB]),
@@ -152,7 +152,7 @@ class _ClubInfoTabState extends State<ClubInfoTab> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text("Datos del club", style: Theme.of(context).textTheme.titleMedium),
+                      Text("Datos del establecimiento", style: Theme.of(context).textTheme.titleMedium),
                       const SizedBox(height: 4),
                       Text(
                         "Nombre, dirección y ubicación en el mapa.",
@@ -163,7 +163,7 @@ class _ClubInfoTabState extends State<ClubInfoTab> {
                       TextFormField(
                         controller: _nameController,
                         decoration: const InputDecoration(
-                          labelText: "Nombre del club",
+                          labelText: "Nombre del establecimiento",
                           border: OutlineInputBorder(),
                         ),
                         validator: (value) => (value == null || value.trim().isEmpty)

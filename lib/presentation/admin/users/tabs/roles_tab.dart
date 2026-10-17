@@ -101,7 +101,7 @@ class _RolesTabState extends State<RolesTab> {
               Expanded(
                 child: Text(
                   'Cada rol define qué pantallas ve un administrador y qué puede hacer en ellas. '
-                  'El super administrador es quien arrancó el club y puede todo.',
+                  'El super administrador es quien dio de alta el establecimiento y puede todo.',
                   style: Theme.of(context).textTheme.bodyMedium,
                 ),
               ),

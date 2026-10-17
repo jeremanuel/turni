@@ -203,7 +203,7 @@ class _ModalityChip extends StatelessWidget {
       child: Center(
         widthFactor: 1,
         child: Text(
-          partition.clubType?.name ?? 'Modalidad',
+          partition.displayName,
           style: TextStyle(
             fontSize: 14,
             fontWeight: on ? FontWeight.w500 : FontWeight.w400,

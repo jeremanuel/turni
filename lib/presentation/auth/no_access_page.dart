@@ -24,14 +24,14 @@ class NoAccessPage extends StatelessWidget {
           Icon(disabled ? Icons.block : Icons.lock_outline, size: 36, color: Theme.of(context).colorScheme.primary),
           const SizedBox(height: 16),
           Text(
-            disabled ? 'Tu usuario está deshabilitado' : 'Esta cuenta no administra ningún club',
+            disabled ? 'Tu usuario está deshabilitado' : 'Esta cuenta no administra ningún establecimiento',
             style: textTheme.titleLarge,
           ),
           const SizedBox(height: 8),
           Text(
             disabled
-                ? 'Un administrador de tu club deshabilitó tu acceso al panel. Si es un error, pedile que te vuelva a habilitar.'
-                : 'Para entrar al panel necesitás que un administrador de tu club te invite. Abrí el link que te pasaron con esta cuenta de Google.',
+                ? 'Un administrador de tu establecimiento deshabilitó tu acceso al panel. Si es un error, pedile que te vuelva a habilitar.'
+                : 'Para entrar al panel necesitás que un administrador de tu establecimiento te invite. Abrí el link que te pasaron con esta cuenta de Google.',
             style: textTheme.bodyMedium,
           ),
           if (email != null) ...[

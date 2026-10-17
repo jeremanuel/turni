@@ -114,7 +114,7 @@ class _AdminInvitePageState extends State<AdminInvitePage> {
       children.addAll([
         Text('No pudimos abrir la invitación', style: textTheme.titleLarge),
         const SizedBox(height: 8),
-        Text(_error ?? 'Revisá el link o pedile al club uno nuevo.', style: textTheme.bodyMedium),
+        Text(_error ?? 'Revisá el link o pedí uno nuevo a quien te invitó.', style: textTheme.bodyMedium),
       ]);
     } else if (invitation.status != AdminInvitationStatus.pending) {
       children.addAll([
@@ -125,7 +125,7 @@ class _AdminInvitePageState extends State<AdminInvitePage> {
     } else {
       children.addAll([
         Text(
-          'Te invitaron a administrar ${invitation.clubName ?? 'un club'} en Turni',
+          'Te invitaron a administrar ${invitation.clubName ?? 'un establecimiento'} en Turni',
           style: textTheme.titleLarge,
         ),
         const SizedBox(height: 16),

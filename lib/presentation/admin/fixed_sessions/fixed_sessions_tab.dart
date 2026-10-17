@@ -8,6 +8,7 @@ import '../../../core/utils/either.dart';
 import '../../../core/utils/permissions.dart';
 import '../../../domain/entities/fixed_session.dart';
 import '../../../domain/repositories/fixed_session_repository.dart';
+import '../../../core/utils/admin_vocabulary.dart';
 import '../club_config/widgets/admin_data_table.dart';
 import 'widgets/fixed_session_actions.dart';
 import 'widgets/fixed_session_texts.dart';
@@ -253,7 +254,7 @@ class _FixedSessionsTabState extends State<FixedSessionsTab> {
               child: ConstrainedBox(
                 constraints: BoxConstraints(minWidth: constraints.maxWidth),
                 child: AdminDataTable(
-                  columns: const ['Día y hora', 'Cancha', 'Titular', 'Integrantes', 'Próximo turno', ''],
+                  columns: ['Día y hora', adminVocabulary().space.singular, 'Titular', 'Integrantes', 'Próximo turno', ''],
                   columnWidths: const {3: FlexColumnWidth()},
                   rows: [
                     for (final item in visible)

@@ -4,12 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../core/config/service_locator.dart';
+import '../../../../core/utils/admin_vocabulary.dart';
 import '../../../../core/utils/either.dart';
 import '../../../../core/utils/physical_partition_naming.dart';
 import '../../../../core/utils/thousands_format.dart';
 import '../../../../domain/entities/client.dart';
 import '../../../../domain/entities/club_partition.dart';
 import '../../../../domain/entities/fixed_session.dart';
+import '../../../../domain/entities/partition_vocabulary.dart';
 import '../../../../domain/entities/physical_partition.dart';
 import '../../../../domain/repositories/fixed_session_repository.dart';
 import '../../../core/cubit/auth/auth_cubit.dart';
@@ -17,7 +19,7 @@ import '../../club_config/widgets/time_field.dart';
 import 'client_search_field.dart';
 import 'fixed_session_texts.dart';
 
-/// Cancha elegible para un turno fijo: "Pádel · Cancha 2".
+/// Espacio elegible para un turno fijo: "Pádel · Cancha 2".
 class FixedSessionCourtOption {
   FixedSessionCourtOption(this.clubPartition, this.court);
 
@@ -26,22 +28,21 @@ class FixedSessionCourtOption {
 
   int get id => court.partitionPhysicalId;
 
-  String get sport => clubPartition.clubType?.name ?? 'Cancha';
+  PartitionVocabulary get vocabulary => PartitionVocabulary.of(clubPartition);
+
+  String get sport => clubPartition.displayName;
 
   String get name => PhysicalPartitionNaming.labelFromPhysicalPartition(court, fallbackClubPartition: clubPartition);
 
   String get label => '$sport · $name';
 
-  /// "Cubierta · 4 jug."
-  String get detail {
-    final parts = <String>[
-      if (court.isCover != null) court.isCover == '1' ? 'Cubierta' : 'Descubierta',
-      if (court.maxPlayers != null) '${court.maxPlayers} jug.',
-    ];
-    return parts.join(' · ');
-  }
+  /// "Cubierta · 4 jugadores"
+  String get detail => [
+        if (court.isCover != null) vocabulary.coverLabel(court.isCover == '1'),
+        vocabulary.capacityLabel(court.maxPlayers),
+      ].nonNulls.join(' · ');
 
-  /// Canchas activas de los sectores del admin.
+  /// Espacios activos de las modalidades del admin.
   static List<FixedSessionCourtOption> fromAdmin() {
     final partitions = sl<AuthCubit>().state.userCredential?.admin?.clubPartitions ?? const <ClubPartition>[];
     return [
@@ -172,7 +173,7 @@ class _FixedSessionSheetState extends State<FixedSessionSheet> {
   Future<void> _submit() async {
     final draft = _draft;
     if (draft == null) {
-      setState(() => _error = 'Completá titular, cancha, día y hora.');
+      setState(() => _error = 'Completá titular, ${adminVocabulary().space.lower}, día y hora.');
       return;
     }
     setState(() {
@@ -237,7 +238,7 @@ class _FixedSessionSheetState extends State<FixedSessionSheet> {
                       children: [
                         Text('Nuevo turno fijo', style: textTheme.titleLarge),
                         Text(
-                          'Mismo día, hora y cancha todas las semanas. Se cargan 8 semanas y se van sumando solas.',
+                          'Mismo día, hora y ${adminVocabulary().space.lower} todas las semanas. Se cargan 8 semanas y se van sumando solas.',
                           style: textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
                         ),
                       ],
@@ -507,7 +508,7 @@ class _FixedSessionSheetState extends State<FixedSessionSheet> {
     final Widget body;
     if (_draft == null) {
       body = Text(
-        'Elegí titular, cancha, día y hora para ver cómo quedan las próximas semanas.',
+        'Elegí titular, ${adminVocabulary().space.lower}, día y hora para ver cómo quedan las próximas semanas.',
         style: textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
       );
     } else if (_previewError != null) {

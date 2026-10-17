@@ -4,6 +4,7 @@ import '../../../../core/config/service_locator.dart';
 import '../../../../core/utils/domain_error.dart';
 import '../../../../core/utils/either.dart';
 import '../../../../core/utils/thousands_format.dart';
+import '../../../../domain/entities/partition_vocabulary.dart';
 import '../../../../domain/entities/physical_partition.dart';
 import '../../../../domain/repositories/club_partition_admin_repository.dart';
 import 'duration_minutes_field.dart';
@@ -16,11 +17,15 @@ class PartitionPhysicalFormDialog extends StatefulWidget {
   const PartitionPhysicalFormDialog({
     super.key,
     required this.clubPartitionId,
+    this.vocabulary = PartitionVocabulary.court,
     this.existing,
     this.suggestedIdentifier,
   });
 
   final int clubPartitionId;
+
+  /// Vocabulario de la modalidad ("Nueva cancha" / "Nuevo profesional").
+  final PartitionVocabulary vocabulary;
   final PhysicalPartition? existing;
   /// Próximo número sugerido para "Identificador" al crear (ej: si ya hay
   /// canchas 1-4, sugiere 5). Se ignora si `existing` no es null.
@@ -64,6 +69,11 @@ class _PartitionPhysicalFormDialogState
       _isCover = existing.isCover == '1';
     } else if (widget.suggestedIdentifier != null) {
       _identifierController.text = widget.suggestedIdentifier.toString();
+    }
+    // Sin cupo (atención personal): un turno es para una persona.
+    if (existing == null && !widget.vocabulary.features.capacity) {
+      _minPlayersController.text = '1';
+      _maxPlayersController.text = '1';
     }
   }
 
@@ -137,7 +147,7 @@ class _PartitionPhysicalFormDialogState
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(_isEditing ? 'Editar cancha' : 'Nueva cancha'),
+      title: Text(_isEditing ? 'Editar ${widget.vocabulary.space.lower}' : widget.vocabulary.space.nuevo),
       content: SizedBox(
         width: 460,
         child: Form(
@@ -163,23 +173,27 @@ class _PartitionPhysicalFormDialogState
                     Expanded(
                       child: TextFormField(
                         controller: _descriptionController,
-                        decoration: const InputDecoration(
-                          labelText: 'Descripción',
-                          border: OutlineInputBorder(),
+                        decoration: InputDecoration(
+                          labelText: 'Nombre (opcional)',
+                          // Vacío se llama por su número: "Cancha 2".
+                          hintText: widget.vocabulary.space.label(int.tryParse(_identifierController.text.trim())),
+                          floatingLabelBehavior: FloatingLabelBehavior.always,
+                          border: const OutlineInputBorder(),
                         ),
                       ),
                     ),
                   ],
                 ),
+                if (widget.vocabulary.features.capacity) ...[
                 const SizedBox(height: 16),
                 Row(
                   children: [
                     Expanded(
                       child: TextFormField(
                         controller: _minPlayersController,
-                        decoration: const InputDecoration(
-                          labelText: 'Min. jugadores',
-                          border: OutlineInputBorder(),
+                        decoration: InputDecoration(
+                          labelText: 'Mín. ${widget.vocabulary.participant.lowerPlural}',
+                          border: const OutlineInputBorder(),
                         ),
                         keyboardType: TextInputType.number,
                         validator: (value) {
@@ -194,15 +208,16 @@ class _PartitionPhysicalFormDialogState
                     Expanded(
                       child: TextFormField(
                         controller: _maxPlayersController,
-                        decoration: const InputDecoration(
-                          labelText: 'Max. jugadores',
-                          border: OutlineInputBorder(),
+                        decoration: InputDecoration(
+                          labelText: 'Máx. ${widget.vocabulary.participant.lowerPlural}',
+                          border: const OutlineInputBorder(),
                         ),
                         keyboardType: TextInputType.number,
                       ),
                     ),
                   ],
                 ),
+                ],
                 const SizedBox(height: 16),
                 Row(
                   children: [
@@ -227,13 +242,15 @@ class _PartitionPhysicalFormDialogState
                     ),
                   ],
                 ),
+                if (widget.vocabulary.features.cover) ...[
                 const SizedBox(height: 4),
                 SwitchListTile.adaptive(
                   contentPadding: EdgeInsets.zero,
-                  title: const Text('¿Cancha cubierta?'),
+                  title: Text('¿${widget.vocabulary.space.singular} ${widget.vocabulary.space.g('cubierta', 'cubierto')}?'),
                   value: _isCover,
                   onChanged: (value) => setState(() => _isCover = value),
                 ),
+                ],
                 if (_errorMessage != null) ...[
                   const SizedBox(height: 8),
                   Text(

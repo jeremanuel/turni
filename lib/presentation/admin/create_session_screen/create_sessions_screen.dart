@@ -10,10 +10,11 @@ import '../../../core/config/service_locator.dart';
 import '../../../core/presentation/components/inputs/chips/filter_chip_interval_date.dart';
 import '../../../core/presentation/components/inputs/dropdown_widget.dart';
 import '../../../core/presentation/components/inputs/snackbars/snackbars_functions.dart';
-import '../../../core/utils/physical_partition_naming.dart';
+import '../../../core/utils/admin_vocabulary.dart';
 import '../../../core/utils/types/time_interval.dart';
 import '../../../domain/entities/club_partition.dart';
 import '../../../domain/entities/create_sessions_result.dart';
+import '../../../domain/entities/partition_vocabulary.dart';
 import '../../../domain/entities/physical_partition.dart';
 import '../../../domain/entities/session.dart';
 import '../../../domain/use_case/price/session_price_resolver.dart';
@@ -59,11 +60,15 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
 
   static const int _customDurationOption = -1;
 
-  static const _steps = [
-    _WizardStep(label: 'Horarios', title: 'Horarios', subtitle: 'Definí los bloques base que se van a repetir cada día.'),
-    _WizardStep(label: 'Canchas', title: 'Modalidades y canchas', subtitle: 'Elegí dónde se van a crear los turnos.'),
-    _WizardStep(label: 'Fechas', title: 'Rango de fechas', subtitle: 'Elegí el período en el que se repite la plantilla.'),
-    _WizardStep(label: 'Confirmar', title: 'Confirmación', subtitle: 'Revisá el total antes de crear los turnos.'),
+  List<_WizardStep> get _steps => [
+    const _WizardStep(label: 'Horarios', title: 'Horarios', subtitle: 'Definí los bloques base que se van a repetir cada día.'),
+    _WizardStep(
+      label: adminVocabulary().space.plural,
+      title: 'Servicios y ${adminVocabulary().space.lowerPlural}',
+      subtitle: 'Elegí dónde se van a crear los turnos.',
+    ),
+    const _WizardStep(label: 'Fechas', title: 'Rango de fechas', subtitle: 'Elegí el período en el que se repite la plantilla.'),
+    const _WizardStep(label: 'Confirmar', title: 'Confirmación', subtitle: 'Revisá el total antes de crear los turnos.'),
   ];
 
   static const int _firstWizardStep = 0;
@@ -427,15 +432,13 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
     final defaultClubPartition = state.selectedClubPartitions.isNotEmpty
         ? state.selectedClubPartitions.first
         : (clubPartitions.isNotEmpty ? clubPartitions.first : null);
-    final pluralPartitionLabel = PhysicalPartitionNaming.pluralFromClubPartition(
-      defaultClubPartition,
-    );
-    final singularPartitionLabel =
-        PhysicalPartitionNaming.singularFromClubPartition(defaultClubPartition);
+    final space = _space(state);
+    final pluralPartitionLabel = space.plural;
+    final singularPartitionLabel = space.singular;
 
     return ListView(
       children: [
-        Text('Modalidades', style: RW.tLabel),
+        Text('Servicios', style: RW.tLabel),
         const SizedBox(height: 10),
         Wrap(
           spacing: 8,
@@ -450,7 +453,7 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
                   child: _RWChip(
                     enabled: partition.active,
                     selected: state.selectedClubPartitions.contains(partition),
-                    label: partition.clubType?.name ?? 'Modalidad',
+                    label: partition.displayName,
                     onSelected: (value) => formBloc.add(
                       ChangeSelectionClubPartition(partition, value),
                     ),
@@ -464,7 +467,7 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
         const SizedBox(height: 10),
         if (physicalPartitions.isEmpty)
           Text(
-            'Seleccioná al menos una modalidad para habilitar ${pluralPartitionLabel.toLowerCase()}.',
+            'Seleccioná al menos un servicio para habilitar ${space.definitePlural}.',
             style: RW.tSmall,
           ),
         if (physicalPartitions.isNotEmpty)
@@ -476,7 +479,13 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
                   (physicalPartition) => InactivePartitionHint(
                     key: ValueKey(physicalPartition.partitionPhysicalId),
                     inactive: !physicalPartition.active,
-                    message: InactivePartitionHint.physicalPartitionMessage,
+                    message: InactivePartitionHint.physicalPartitionMessage(
+                      PartitionVocabulary.of(_resolveClubPartitionForPhysicalPartition(
+                            state.selectedClubPartitions,
+                            physicalPartition.partitionPhysicalId,
+                          ) ??
+                          defaultClubPartition),
+                    ),
                     focus: ClubConfigFocus.physicalPartition(
                       clubPartitionId: physicalPartition.clubPartitionId,
                       partitionPhysicalId: physicalPartition.partitionPhysicalId,
@@ -487,19 +496,21 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
                     selected: state.selectedPhysicalPartitions.contains(
                       physicalPartition,
                     ),
-                    label: PhysicalPartitionNaming.labelFromIdentifier(
-                      physicalIdentifier: physicalPartition.physicalIdentifier,
-                      partitionPhysicalId:
-                          physicalPartition.partitionPhysicalId,
-                      clubPartition: _resolveClubPartitionForPhysicalPartition(
+                    label: physicalPartition.spaceLabel(
+                      fallback: _resolveClubPartitionForPhysicalPartition(
                             state.selectedClubPartitions,
                             physicalPartition.partitionPhysicalId,
                           ) ??
                           defaultClubPartition,
                     ),
-                    helper: physicalPartition.minPlayers > 0
-                        ? '${physicalPartition.minPlayers}–${physicalPartition.maxPlayers ?? physicalPartition.minPlayers} jug.'
-                        : null,
+                    helper: _capacityHelper(
+                      physicalPartition,
+                      _resolveClubPartitionForPhysicalPartition(
+                            state.selectedClubPartitions,
+                            physicalPartition.partitionPhysicalId,
+                          ) ??
+                          defaultClubPartition,
+                    ),
                     onSelected: (value) => formBloc.add(
                       ChangeSelectionPhysicalPartition(
                         physicalPartition,
@@ -518,7 +529,7 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
         ),
         const SizedBox(height: 10),
         Text(
-          'La plantilla repetida en cada cancha — ajustá cada una por separado en la vista previa: clic en una hora libre de esa columna agrega un turno solo ahí, clic en la × lo quita solo de esa cancha.',
+          'La plantilla repetida en cada ${space.lower} — ajustá cada ${space.g('una', 'uno')} por separado en la vista previa: clic en una hora libre de esa columna agrega un turno solo ahí, clic en la × lo quita solo de ${space.este}.',
           style: RW.tSmall,
         ),
       ],
@@ -585,7 +596,7 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
         const SizedBox(height: 10),
         _SummaryTile(
           title:
-              '${PhysicalPartitionNaming.pluralFromClubPartition(_defaultClubPartitionFromState(context, state))} seleccionadas',
+              '${_space(state).plural} seleccionad${_space(state).g('a', 'o')}s',
           value: '$partitionsCount',
         ),
         const SizedBox(height: 10),
@@ -637,16 +648,17 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
           ],
         );
       case 1:
+        final space = _space(state);
         return _PreviewHeader(
-          title: 'Cómo se reparte entre canchas',
-          subtitle: 'La plantilla repetida en cada cancha — clic en una hora libre de esa columna agrega un turno solo ahí. '
-              'Cada turno muestra su precio según la tarifa por horario de la cancha; clic en el turno para ver qué regla aplica o cambiarlo a mano.',
-          legend: const [
-            _LegendDot(color: RW.accent60min, label: 'de la plantilla'),
-            _LegendDot(color: RW.accentExtra, label: 'agregado en esta cancha'),
-            _LegendIcon(icon: Icons.sell_outlined, label: 'tarifa por horario'),
-            _LegendIcon(icon: Icons.sports_tennis_outlined, label: 'precio base'),
-            _LegendIcon(icon: Icons.edit_outlined, label: 'precio manual'),
+          title: 'Cómo se reparte entre ${space.lowerPlural}',
+          subtitle: 'La plantilla repetida en cada ${space.lower} — clic en una hora libre de esa columna agrega un turno solo ahí. '
+              'Cada turno muestra su precio según la tarifa por horario ${space.ofDefinite}; clic en el turno para ver qué regla aplica o cambiarlo a mano.',
+          legend: [
+            const _LegendDot(color: RW.accent60min, label: 'de la plantilla'),
+            _LegendDot(color: RW.accentExtra, label: 'agregado en ${space.este}'),
+            const _LegendIcon(icon: Icons.sell_outlined, label: 'tarifa por horario'),
+            const _LegendIcon(icon: Icons.sports_tennis_outlined, label: 'precio base'),
+            const _LegendIcon(icon: Icons.edit_outlined, label: 'precio manual'),
           ],
           trailing: PriceDayOfWeekSelector(
             selected: state.priceDayOfWeek,
@@ -698,10 +710,8 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
                 : null,
           );
         },
-        partitionLabelBuilder: (physicalPartition) =>
-            PhysicalPartitionNaming.labelFromPhysicalPartition(
-          physicalPartition,
-        ),
+        // Columna única de la plantilla, todavía sin espacio elegido.
+        partitionLabelBuilder: (_) => 'Plantilla',
         physicalPartitions: [
           PhysicalPartition(
             partitionPhysicalId: 1,
@@ -733,7 +743,8 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
 
   Widget _buildCourtsPreview(CreateSesssionsFormState state) {
     if (state.selectedPhysicalPartitions.isEmpty) {
-      return _RWEmptyBox(message: 'Seleccioná al menos una cancha para previsualizarla aquí.');
+      final space = _space(state);
+      return _RWEmptyBox(message: 'Seleccioná al menos ${space.indefinite} para previsualizarl${space.g('a', 'o')} aquí.');
     }
 
     final today = DateTime.now();
@@ -860,14 +871,12 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
       state.selectedClubPartitions,
       p.partitionPhysicalId,
     );
-    final unitLabel = PhysicalPartitionNaming.labelFromIdentifier(
-      physicalIdentifier: p.physicalIdentifier,
-      partitionPhysicalId: p.partitionPhysicalId,
-      clubPartition: clubPartition,
-    );
-    final modality = clubPartition?.clubType?.name;
-    if (modality == null || modality.isEmpty) return unitLabel;
-    return '$modality ${unitLabel.toLowerCase()}';
+    final unitLabel = p.spaceLabel(fallback: clubPartition);
+    final modality = clubPartition?.displayName;
+    if (modality == null) return unitLabel;
+    // Con nombre propio ("Lucía") no se pasa a minúscula.
+    final hasOwnName = p.description?.trim().isNotEmpty ?? false;
+    return hasOwnName ? '$modality · $unitLabel' : '$modality ${unitLabel.toLowerCase()}';
   }
 
   Session _toPreviewSession(Session s, PhysicalPartition p, DateTime today) {
@@ -1004,7 +1013,7 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '${DateFormat('EEE dd/MM', 'es').format(day)} — $perDayTotal turno(s) en ${state.selectedPhysicalPartitions.length} cancha(s)',
+                      '${DateFormat('EEE dd/MM', 'es').format(day)} — $perDayTotal turno(s) en ${state.selectedPhysicalPartitions.length} ${_space(state).lower}(s)',
                       style: RW.tLabel,
                     ),
                     const SizedBox(height: 4),
@@ -1048,10 +1057,7 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
     }
 
     if (_currentStep == 1 && state.selectedPhysicalPartitions.isEmpty) {
-      final singularPartitionLabel = PhysicalPartitionNaming
-          .singularFromClubPartition(_defaultClubPartitionFromState(context, state))
-          .toLowerCase();
-      return 'Selecciona al menos una $singularPartitionLabel para continuar.';
+      return 'Seleccioná al menos ${_space(state).indefinite} para continuar.';
     }
 
     if (_currentStep == 2 && state.interval?.initialDate == null) {
@@ -1081,11 +1087,7 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
 
           for (final partition in currentPhysicalPartitions) {
             map[partition.partitionPhysicalId] =
-                PhysicalPartitionNaming.labelFromIdentifier(
-              physicalIdentifier: partition.physicalIdentifier,
-              partitionPhysicalId: partition.partitionPhysicalId,
-              clubPartition: clubPartition,
-            );
+                partition.spaceLabel(fallback: clubPartition);
           }
 
           return map;
@@ -1096,11 +1098,8 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
     final fromSelection = state.selectedPhysicalPartitions.fold<Map<int, String>>(
       Map<int, String>.from(fromManager),
       (map, partition) {
-        map[partition.partitionPhysicalId] =
-            PhysicalPartitionNaming.labelFromIdentifier(
-          physicalIdentifier: partition.physicalIdentifier,
-          partitionPhysicalId: partition.partitionPhysicalId,
-          clubPartition: _resolveClubPartitionForPhysicalPartition(
+        map[partition.partitionPhysicalId] = partition.spaceLabel(
+          fallback: _resolveClubPartitionForPhysicalPartition(
                 state.selectedClubPartitions,
                 partition.partitionPhysicalId,
               ) ??
@@ -1290,6 +1289,24 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
     }
 
     return null;
+  }
+
+  /// Nombre de los espacios de las modalidades elegidas (o de todas, si
+  /// todavía no hay ninguna): "cancha" si lo comparten, si no "espacio".
+  SpaceTerm _space(CreateSesssionsFormState state) {
+    final partitions = state.selectedClubPartitions.isNotEmpty
+        ? state.selectedClubPartitions
+        : context.read<SessionManagerBloc>().state.clubPartitions;
+    return PartitionVocabulary.common(partitions).space;
+  }
+
+  /// "2–4 jugadores" / "1–10 alumnos". null si la modalidad no usa cupo.
+  String? _capacityHelper(PhysicalPartition partition, ClubPartition? clubPartition) {
+    final vocabulary = PartitionVocabulary.of(clubPartition);
+    if (!vocabulary.features.capacity || partition.minPlayers <= 0) return null;
+    final max = partition.maxPlayers ?? partition.minPlayers;
+    if (max == partition.minPlayers) return vocabulary.participant.count(max);
+    return '${partition.minPlayers}–$max ${vocabulary.participant.lowerPlural}';
   }
 
   ClubPartition? _defaultClubPartitionFromState(
@@ -1939,7 +1956,7 @@ class _CourtSessionEditCardState extends State<_CourtSessionEditCard> {
         SessionPriceSource.tariffRule =>
           'Tarifa «${resolved.tariff!.name}» · franja ${formatDaysOfWeek(resolved.rule!.daysOfWeek)} '
               '${resolved.rule!.startTime}–${resolved.rule!.endTime}',
-        SessionPriceSource.partitionDefault => 'Precio base de la cancha',
+        SessionPriceSource.partitionDefault => 'Precio base ${adminVocabulary().space.ofDefinite}',
         SessionPriceSource.manual => 'Precio manual',
       },
       if (varies) 'Según el día: ${formatWeekPrices(widget.weekPrices)}',

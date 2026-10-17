@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../domain/entities/club_map/club_map.dart';
+import '../../../../domain/entities/partition_vocabulary.dart';
 import 'court_tile.dart';
 import 'plan_canvas.dart';
 
@@ -23,7 +24,7 @@ class _ClubMapSportPickerState extends State<ClubMapSportPicker> {
   late final Set<int> _picked = _initialPick();
   String _sizeId = ClubMapSizePreset.defaultPreset;
 
-  List<ClubMapPartition> get _sports => widget.view.partitions.where((p) => p.courts.isNotEmpty).toList();
+  List<ClubMapPartition> get _sports => widget.view.mappablePartitions;
 
   /// Si falta un solo deporte, viene tildado.
   Set<int> _initialPick() {
@@ -47,16 +48,16 @@ class _ClubMapSportPickerState extends State<ClubMapSportPicker> {
             const SizedBox(height: 12),
             Text('PASO 1 DE 2', style: theme.textTheme.labelMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
             const SizedBox(height: 4),
-            Text('¿Qué canchas vas a ubicar en el plano?', style: theme.textTheme.headlineMedium),
+            Text('¿Qué ${widget.view.vocabulary.space.lowerPlural} vas a ubicar en el plano?', style: theme.textTheme.headlineMedium),
             const SizedBox(height: 4),
-            Text('Todas van en el mismo plano del club. Cada deporte se suma una sola vez.', style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
+            Text('${widget.view.vocabulary.space.g('Todas', 'Todos')} van en el mismo plano. Cada servicio se suma una sola vez.', style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
             const SizedBox(height: 20),
             Wrap(spacing: 12, runSpacing: 12, children: [for (final p in _sports) _sportCard(context, p)]),
             if (askSize) ...[
               const SizedBox(height: 32),
               Text('¿Qué tamaño tiene el predio?', style: theme.textTheme.titleMedium),
               const SizedBox(height: 4),
-              Text('Es aproximado y se puede cambiar después. Las canchas se dibujan con su medida real.', style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
+              Text('Es aproximado y se puede cambiar después. ${capitalizeFirst(widget.view.vocabulary.space.lowerPlural)} se dibujan con su medida real.', style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
               const SizedBox(height: 12),
               Wrap(spacing: 12, runSpacing: 12, children: [for (final preset in ClubMapSizePreset.all) _sizeCard(context, preset)]),
             ],
@@ -86,10 +87,16 @@ class _ClubMapSportPickerState extends State<ClubMapSportPicker> {
     final uncovered = partition.courts.length - covered;
     final count = partition.courts.length;
 
-    String coverText() {
-      if (covered == 0) return 'Todas descubiertas';
-      if (uncovered == 0) return 'Todas techadas';
-      return '$covered ${covered == 1 ? 'techada' : 'techadas'}, $uncovered ${uncovered == 1 ? 'descubierta' : 'descubiertas'}';
+    final space = partition.vocabulary.space;
+    String? coverText() {
+      if (!partition.vocabulary.features.cover) return null;
+      final cubiertas = space.g('cubiertas', 'cubiertos');
+      final descubiertas = space.g('descubiertas', 'descubiertos');
+      if (covered == 0) return '${space.g('Todas', 'Todos')} $descubiertas';
+      if (uncovered == 0) return '${space.g('Todas', 'Todos')} $cubiertas';
+      String one(String plural) => plural.substring(0, plural.length - 1);
+      return '$covered ${covered == 1 ? one(cubiertas) : cubiertas}, '
+          '$uncovered ${uncovered == 1 ? one(descubiertas) : descubiertas}';
     }
 
     return SizedBox(
@@ -128,8 +135,8 @@ class _ClubMapSportPickerState extends State<ClubMapSportPicker> {
           subtitle: Padding(
             padding: const EdgeInsets.only(top: 4),
             child: Text(
-              '$count ${count == 1 ? 'cancha' : 'canchas'}: ${partition.courts.map((c) => c.name).join(', ')}\n'
-              '${coverText()} · ${partition.courtSize.label}',
+              '${partition.vocabulary.space.count(count)}: ${partition.courts.map((c) => c.name).join(', ')}\n'
+              '${[coverText(), partition.courtSize.label].nonNulls.join(' · ')}',
             ),
           ),
         ),
