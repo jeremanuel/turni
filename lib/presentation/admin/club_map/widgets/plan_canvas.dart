@@ -174,6 +174,9 @@ class _PlanCanvasState extends State<PlanCanvas> {
       name: found.court.name,
       style: SportStyle.of(found.partition.clubTypeId),
       isCover: found.court.isCover,
+      showCover: found.partition.vocabulary.features.cover,
+      showLines: found.partition.vocabulary.category == 'COURT',
+      coverText: found.partition.vocabulary.coverLabel(found.court.isCover),
       width: fp.w * scale,
       height: fp.h * scale,
       ringColor: hasIssue ? colors.error : (selected ? colors.primary : null),
@@ -186,10 +189,10 @@ class _PlanCanvasState extends State<PlanCanvas> {
     final label = [
       found.partition.sport,
       found.court.name,
-      found.court.isCover ? 'techada' : 'descubierta',
+      found.partition.vocabulary.coverLabel(found.court.isCover)?.toLowerCase(),
       if (status != null) status.label.toLowerCase(),
       if (widget.usage != null) 'uso ${widget.usage!.byCourt[element.courtId]?.percentLabel ?? 'sin turnos'}',
-    ].join(', ');
+    ].nonNulls.join(', ');
 
     return Positioned(
       left: element.xM * scale,

@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+
+import '../../../../../core/presentation/components/links/entity_links.dart';
 import '../../../../../core/utils/permissions.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -13,6 +15,9 @@ import '../../../../../core/utils/physical_partition_naming.dart';
 import '../../../../../domain/entities/client.dart';
 import '../../../../../domain/entities/club_partition.dart';
 import '../../../../../domain/entities/extra.dart';
+import '../../../../../domain/entities/fixed_session.dart';
+import '../../../../../domain/entities/partition_vocabulary.dart';
+import '../../../fixed_sessions/widgets/fixed_session_actions.dart';
 import '../../../../../domain/entities/physical_partition.dart';
 import '../../../../../domain/entities/session.dart';
 import '../../../../../domain/repositories/admin_repository.dart';
@@ -79,6 +84,7 @@ class _SessionPanelState extends State<SessionPanel> {
           session: session,
           subtitle: '$_clientName · ${panelRange(session)}',
           players: widget.physicalPartition.maxPlayers ?? widget.physicalPartition.minPlayers,
+          vocabulary: PartitionVocabulary.of(widget.clubPartition),
           onBack: back,
         ),
       _PanelView.consumo => ConsumoView(
@@ -122,12 +128,18 @@ class _SessionPanelState extends State<SessionPanel> {
                 foreground: scheme.onPrimaryContainer,
               );
 
+    final fixedTag = session.fixedSession != null
+        ? PanelStatusChip(label: 'Turno fijo', background: scheme.tertiaryContainer, foreground: scheme.onTertiaryContainer)
+        : session.cancelledFixed != null
+            ? PanelStatusChip(label: 'Fijo cancelado hoy', foreground: scheme.tertiary, dashedBorder: scheme.tertiary)
+            : null;
+
     return PanelSessionHeader(
-      status: status,
+      status: fixedTag == null ? status : Row(mainAxisSize: MainAxisSize.min, children: [status, const SizedBox(width: 8), fixedTag]),
       title: panelRange(session),
       subtitle: [
         panelDayTitle(session.startTime),
-        widget.clubPartition.clubType?.name,
+        widget.clubPartition.displayName,
         _courtLabel,
         '${session.duration} min',
       ].whereType<String>().where((t) => t.isNotEmpty).join(' · '),
@@ -156,7 +168,7 @@ class _BookedDetail extends StatelessWidget {
     final ok = await confirmPanelAction(
       context,
       title: 'Cancelar reserva',
-      message: 'El turno vuelve a quedar libre. Los pagos y consumos cargados se pierden.',
+      message: 'El turno vuelve a quedar libre. Los pagos y adicionales cargados se pierden.',
       confirmLabel: 'Cancelar reserva',
     );
     if (!ok || !context.mounted) return;
@@ -198,11 +210,130 @@ class _BookedDetail extends StatelessWidget {
       children: [
         header,
         if (session.client != null) _ClientCard(client: session.client!),
+        if (session.fixedSession != null) _FixedSessionBanner(session: session),
         if (session.isPending) _PendingBanner(session: session),
         if (!session.isPending) _AccountCard(session: session, onCharge: onCharge, onAddConsumo: onAddConsumo),
         _NotesField(session: session),
         _Activity(session: session),
       ],
+    );
+  }
+}
+
+/// El turno es de un turno fijo: horario, titular e integrantes, próximos
+/// días, cancelar (este día o todo) y el acceso a la lista de turnos fijos.
+class _FixedSessionBanner extends StatelessWidget {
+  const _FixedSessionBanner({required this.session});
+
+  final Session session;
+
+  Future<void> _cancel(BuildContext context) async {
+    final fixed = session.fixedSession!;
+    final cancelled = await cancelFixedSession(
+      context,
+      FixedSessionRef(
+        id: fixed.id,
+        dayOfWeek: fixed.dayOfWeek,
+        startTime: fixed.startTime,
+        clientName: fixed.ownerName ?? session.client?.person?.fullName.trim() ?? 'El cliente',
+      ),
+      date: session.startTime,
+    );
+    if (!cancelled || !context.mounted) return;
+    context.read<SessionManagerBloc>().add(ReloadSessionsEvent());
+    context.go(AppRoutes.SESSION_MANAGER_ROUTE.path);
+  }
+
+  static String _initials(String name) =>
+      name.trim().split(RegExp(r'\s+')).where((p) => p.isNotEmpty).take(2).map((p) => p[0].toUpperCase()).join();
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final fixed = session.fixedSession!;
+    final owner = fixed.ownerName ?? session.client?.person?.fullName.trim() ?? 'Titular';
+    final ownerId = fixed.ownerClientId ?? int.tryParse(session.client?.clientId ?? '');
+    final members = [
+      (ownerId, owner, 'Titular', true),
+      for (final p in fixed.participants) (p.clientId, p.fullName, 'Integrante', false),
+    ];
+    final cancelled = fixed.cancelledDates.toSet();
+    final next = fixed.nextDates.map((d) {
+      final local = d.toLocal();
+      final key = DateFormat('yyyy-MM-dd').format(local);
+      return '${DateFormat('EEE dd/MM', 'es').format(local)}${cancelled.contains(key) ? ' (cancelado)' : ''}';
+    }).join(' · ');
+
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(color: scheme.surfaceContainerHigh, borderRadius: BorderRadius.circular(12)),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.event_repeat, size: 18, color: scheme.tertiary),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  'Todos los ${fixed.dayName.toLowerCase()} a las ${fixed.startTime}',
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: scheme.onSurface),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          for (final (id, name, role, isOwner) in members)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    radius: 14,
+                    backgroundColor: isOwner ? scheme.primaryContainer : scheme.secondaryContainer,
+                    child: Text(
+                      _initials(name),
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: isOwner ? scheme.onPrimaryContainer : scheme.onSecondaryContainer,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(child: ClientLink(clientId: id, name: name, style: TextStyle(fontSize: 13, color: scheme.onSurface))),
+                  Text(role, style: TextStyle(fontSize: 11, color: scheme.onSurfaceVariant)),
+                ],
+              ),
+            ),
+          if (next.isNotEmpty) ...[
+            Text('Próximos: $next', style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant)),
+            const SizedBox(height: 12),
+          ],
+          Row(
+            children: [
+              if (Permissions.can(Permissions.TURNOS_FIJOS_CANCELAR)) ...[
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => _cancel(context),
+                    style: OutlinedButton.styleFrom(minimumSize: const Size(0, 40)),
+                    child: const Text('Cancelar este día'),
+                  ),
+                ),
+                const SizedBox(width: 8),
+              ],
+              if (Permissions.can(Permissions.TURNOS_FIJOS_VER))
+                Expanded(
+                  child: FilledButton.tonal(
+                    onPressed: () => context.go('${AppRoutes.BULK_SESSIONS_ROUTE.path}?tab=fixed'),
+                    style: FilledButton.styleFrom(minimumSize: const Size(0, 40)),
+                    child: const Text('Ver turno fijo'),
+                  ),
+                ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }
@@ -231,10 +362,9 @@ class _ClientCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  person?.fullName ?? 'Cliente',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+                ClientLink(
+                  clientId: int.tryParse(client.clientId ?? ''),
+                  name: person?.fullName ?? 'Cliente',
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: scheme.onSurface),
                 ),
                 if (contact.isNotEmpty)
@@ -372,7 +502,7 @@ class _AccountCardState extends State<_AccountCard> {
     final payments = [
       for (final p in session.payments ?? const []) (p.paymentMethod.name, p.paymentDate, p.amount),
       for (final e in extras)
-        if (e.payment != null) ('${e.payment!.paymentMethod.name} (consumo)', e.payment!.paymentDate, e.payment!.amount),
+        if (e.payment != null) ('${e.payment!.paymentMethod.name} (adicional)', e.payment!.paymentDate, e.payment!.amount),
     ]..sort((a, b) => a.$2.compareTo(b.$2));
     final remaining = session.remainingTotalPrice;
     final settled = remaining <= 0;
@@ -394,14 +524,14 @@ class _AccountCardState extends State<_AccountCard> {
               Expanded(
                 child: Text('Cuenta', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: scheme.onSurface)),
               ),
-              Text('Turno + consumos', style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant)),
+              Text('Turno + adicionales', style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant)),
             ],
           ),
           const SizedBox(height: 10),
           line(Text('Turno', style: body), Text(panelPrice(session.price), style: body)),
           if (extras.isNotEmpty) ...[
             const SizedBox(height: 12),
-            Text('Consumos', style: group),
+            Text('Adicionales', style: group),
             for (final extra in extras) ...[
               const SizedBox(height: 10),
               line(
@@ -428,7 +558,7 @@ class _AccountCardState extends State<_AccountCard> {
                                   child: SizedBox(width: 12, height: 12, child: CircularProgressIndicator(strokeWidth: 2)),
                                 )
                               : IconButton(
-                                  tooltip: 'Quitar consumo',
+                                  tooltip: 'Quitar adicional',
                                   padding: EdgeInsets.zero,
                                   iconSize: 16,
                                   style: IconButton.styleFrom(
@@ -489,7 +619,7 @@ class _AccountCardState extends State<_AccountCard> {
                     textStyle: panelButtonText(context),
                   ),
                   icon: const Icon(Icons.add, size: 18),
-                  label: const Text('Agregar consumo', maxLines: 1, overflow: TextOverflow.ellipsis),
+                  label: const Text('Agregar adicional', maxLines: 1, overflow: TextOverflow.ellipsis),
                 ),
               ),
             ],
@@ -673,7 +803,7 @@ class _Activity extends StatelessWidget {
           (
             e.payment!.paymentDate,
             true,
-            'Cobro de consumo',
+            'Cobro de adicional',
             ' ${extraQuantity(e).$2} · ${panelPrice(e.payment!.amount)} en ${e.payment!.paymentMethod.name.toLowerCase()}',
           ),
       (session.createdAt, false, 'Turno creado', ''),

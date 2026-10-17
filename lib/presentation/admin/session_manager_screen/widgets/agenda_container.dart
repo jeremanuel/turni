@@ -103,6 +103,7 @@ class AgendaContainer extends StatelessWidget {
 
         return Agenda(
           columnWidth: 200,
+          focusSession: state.selectedSession,
           heightPerMinute: ResponsiveBuilder.isDesktop(context) ? 1.35 : 1.1,
           fromDate:
               state.currentDate.applied(const TimeOfDay(hour: 8, minute: 0)),
@@ -152,7 +153,7 @@ class AgendaContainer extends StatelessWidget {
             .read<SessionManagerBloc>()
             .add(ReloadClubPartitionsEvent()),
         child: FilterChip(
-          label: Text(e.clubType!.name),
+          label: Text(e.displayName),
           onSelected: e.active ? onSelectChip(context, e) : null,
           showCheckmark: false,
           selected: e.club_partition_id ==

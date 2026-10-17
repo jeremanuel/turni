@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../core/utils/physical_partition_naming.dart';
 import '../../../core/utils/types/time_interval.dart';
+import '../../../domain/entities/partition_vocabulary.dart';
 import '../../core/agenda/agenda.dart';
 import 'bloc/session_manager_bloc.dart';
 import 'bloc/session_manager_state.dart';
@@ -36,7 +37,14 @@ class SessionManagerDesktop extends StatelessWidget {
               const Expanded(
                 child: Padding(
                   padding: EdgeInsets.all(20),
-                  child: _DesktopAgenda(),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _AgendaLegend(),
+                      SizedBox(height: 12),
+                      Expanded(child: _DesktopAgenda()),
+                    ],
+                  ),
                 ),
               ),
               Container(
@@ -49,6 +57,36 @@ class SessionManagerDesktop extends StatelessWidget {
             ],
           ),
         ),
+      ],
+    );
+  }
+}
+
+/// Qué significa cada tipo de tarjeta de la agenda.
+class _AgendaLegend extends StatelessWidget {
+  const _AgendaLegend();
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    Widget item(String label, BoxDecoration swatch) => Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(width: 14, height: 14, decoration: swatch),
+            const SizedBox(width: 6),
+            Text(label, style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant)),
+          ],
+        );
+    final radius = BorderRadius.circular(4);
+    return Wrap(
+      spacing: 16,
+      runSpacing: 8,
+      children: [
+        item('Reservado', BoxDecoration(color: scheme.primaryContainer, borderRadius: radius)),
+        item('Turno fijo', BoxDecoration(color: scheme.primaryContainer, borderRadius: radius, border: Border.all(color: scheme.tertiary, width: 2))),
+        item('Libre', BoxDecoration(borderRadius: radius, border: Border.all(color: scheme.outline))),
+        item('Fijo cancelado este día', BoxDecoration(color: scheme.tertiaryContainer.withValues(alpha: 0.25), borderRadius: radius, border: Border.all(color: scheme.tertiary))),
+        item('Por aprobar', BoxDecoration(color: scheme.tertiaryContainer, borderRadius: radius)),
       ],
     );
   }
@@ -83,6 +121,7 @@ class _DesktopAgenda extends StatelessWidget {
             columnWidth: 200,
             heightPerMinute: 1.35,
             showNowIndicator: true,
+            focusSession: state.selectedSession,
             fromDate: state.currentDate.applied(const TimeOfDay(hour: 8, minute: 0)),
             lastDate: state.currentDate.applied(const TimeOfDay(hour: 22, minute: 0)),
             buildCard: (session, physicalPartition, height) => SessionManagerCard(
@@ -96,12 +135,14 @@ class _DesktopAgenda extends StatelessWidget {
               fallbackClubPartition: state.selectedClubPartition,
             ),
             partitionSubtitleBuilder: (p) {
-              final cover = p.isCover == '1' || p.isCover == 'true' ? 'Cubierta' : 'Descubierta';
-              final players = p.maxPlayers ?? p.minPlayers;
-              return players > 0 ? '$cover · $players jug.' : cover;
+              final vocabulary = PartitionVocabulary.of(p.clubPartition ?? state.selectedClubPartition);
+              return [
+                vocabulary.coverLabel(p.isCover == '1' || p.isCover == 'true'),
+                vocabulary.capacityLabel(p.maxPlayers ?? p.minPlayers),
+              ].nonNulls.join(' · ');
             },
             sessions: state.sessions,
-            // Las canchas inactivas no se muestran como columna, salvo que ese
+            // Los espacios inactivos no se muestran como columna, salvo que ese
             // día tengan turnos (dar de baja no borra los turnos ya creados).
             physicalPartitions: (state.selectedClubPartition?.physicalPartitions ?? [])
                 .where((p) => p.active || state.sessions.any((s) => s.partitionPhysicalId == p.partitionPhysicalId))

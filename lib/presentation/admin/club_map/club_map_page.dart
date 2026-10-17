@@ -126,7 +126,7 @@ class _ClubMapPageState extends State<ClubMapPage> {
           _view = view;
           _step = _Step.overview;
         });
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Plano del club guardado')));
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Plano guardado')));
       },
     );
     return error;
@@ -143,7 +143,7 @@ class _ClubMapPageState extends State<ClubMapPage> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text('No se pudo cargar el mapa del club.', style: Theme.of(context).textTheme.titleMedium),
+            Text('No se pudo cargar el mapa.', style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 4),
             Text(_loadError!, textAlign: TextAlign.center),
             const SizedBox(height: 12),

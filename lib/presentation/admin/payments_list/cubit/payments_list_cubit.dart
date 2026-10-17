@@ -1,3 +1,4 @@
+import '../../../../core/presentation/components/links/entity_links.dart';
 import 'dart:math';
 
 import 'package:bloc/bloc.dart';
@@ -36,7 +37,13 @@ class PaymentsListCubit extends Cubit<PaymentsListState> {
     return TrinaRow(
       cells: {
         'id': TrinaCell(value: payment.paymentId.toString()),
-        'cliente': TrinaCell(value: payment.clientName),
+        'cliente': TrinaCell(
+          value: payment.clientName,
+          renderer: (_) => Align(
+            alignment: Alignment.centerLeft,
+            child: ClientLink(clientId: payment.clientId, name: payment.clientName),
+          ),
+        ),
         'fecha': TrinaCell(value: _formatDate(payment.paymentDate)),
         'monto': TrinaCell(value: _formatAmount(payment.amount)),
         'metodo': TrinaCell(value: payment.paymentMethodName),

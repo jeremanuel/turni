@@ -57,6 +57,32 @@ nueva, no solo a esa.
   formulario inline embebido en la card de la lista — salvo un caso ya
   confirmado explícitamente con el usuario (las franjas horarias de Tarifas sí
   quedaron con alta inline, edición por diálogo).
+- **Todo nombre de cliente es un link a su ficha**, con subrayado al pasar
+  el mouse: `ClientLink` (o `ClientLinksText` si el nombre va dentro de una
+  frase, ej. "Con Juan y Ana"), en
+  `lib/core/presentation/components/links/entity_links.dart`. Aplica a
+  tablas, cards, paneles y listas; no a buscadores/selectores de cliente ni
+  al texto de diálogos de confirmación. Si el dato no trae el `client_id`,
+  se agrega al endpoint, no se deja el nombre como texto plano.
+- **Todo turno que aparezca en la ficha del cliente abre ese turno en la
+  agenda** (`openSession` / `HoverLink`, misma regla de hover). La ruta del
+  turno (`SESSION_MANAGER_RESERVE_ROUTE`) centra la agenda en él vía
+  `Agenda.focusSession`.
+- **Nunca hardcodear "cancha", "jugadores" ni "deporte" en un texto.** El
+  vocabulario es por modalidad (`club_partition`): una puede tener canchas y
+  jugadores, otra salas y alumnos, otra profesionales y clientes. Usar
+  `PartitionVocabulary` (`lib/domain/entities/partition_vocabulary.dart`):
+  `PartitionVocabulary.of(partition)` para un texto de una modalidad
+  (`.space.nuevo` → "Nueva cancha" / "Nuevo profesional", `.space.label(2)`,
+  `.participant.count(4)`), `PartitionVocabulary.common(partitions)` para uno
+  que mezcla varias ("Todas las canchas" si todas se llaman igual, si no
+  "Todos los espacios"), y `physicalPartition.spaceLabel()` para "Cancha 2".
+  Las funciones propias de un rubro (plano, cubierta, cupo) se muestran según
+  `.features`. Palabras de nivel club, fijas y genéricas: Establecimiento,
+  Cliente, Turno, Turno fijo, Servicio.
+  El título de un servicio es `clubPartition.displayName` (su nombre propio
+  o el de su tipo), nunca `physicalPartitionName`: ese es el nombre de sus
+  espacios ("Sala", "Box").
 - **Una sola jerarquía de navegación lateral por pantalla.** No agregar un
   segundo `NavigationRail`/menú dentro de una sección interna.
 

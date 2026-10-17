@@ -22,6 +22,10 @@ class Permissions {
   static const CLIENTES_ABONOS = 'clientes.abonos';
   static const CLIENTES_CATEGORIAS = 'clientes.categorias';
 
+  static const TURNOS_FIJOS_VER = 'turnos_fijos.ver';
+  static const TURNOS_FIJOS_CREAR = 'turnos_fijos.crear';
+  static const TURNOS_FIJOS_CANCELAR = 'turnos_fijos.cancelar';
+
   static const PAGOS_VER = 'pagos.ver';
   static const PAGOS_REGISTRAR = 'pagos.registrar';
 

@@ -4,6 +4,7 @@ import '../../../core/utils/physical_partition_naming.dart';
 import '../../../core/utils/thousands_format.dart';
 import '../../../domain/entities/bulk_sessions.dart';
 import '../../../domain/entities/club_partition.dart';
+import '../../../domain/entities/partition_vocabulary.dart';
 import '../../../domain/entities/physical_partition.dart';
 import 'cubit/bulk_edit_cubit.dart';
 
@@ -24,6 +25,14 @@ class BulkEditTexts {
 
   static String hm(DateTime value) => DateFormat('HH:mm').format(value);
 
+  /// Nombre de los espacios de las modalidades elegidas (todas si no hay
+  /// ninguna elegida): "cancha" si todas lo comparten, si no "espacio".
+  late final SpaceTerm space = PartitionVocabulary.common(() {
+    final selected = clubPartitions.where((p) => state.clubPartitionIds.contains(p.club_partition_id));
+    return selected.isEmpty ? clubPartitions : selected;
+  }())
+      .space;
+
   late final Map<int, (ClubPartition, PhysicalPartition)> _courtsById = {
     for (final partition in clubPartitions)
       for (final court in partition.physicalPartitions ?? const <PhysicalPartition>[])
@@ -33,15 +42,15 @@ class BulkEditTexts {
   /// "Pádel · Cancha 1".
   String courtLabel(int partitionPhysicalId) {
     final match = _courtsById[partitionPhysicalId];
-    if (match == null) return 'Cancha sin identificador';
+    if (match == null) return '${space.singular} sin identificador';
     final (partition, court) = match;
     return courtChipLabel(partition, court, withModality: true);
   }
 
   String courtChipLabel(ClubPartition partition, PhysicalPartition court, {required bool withModality}) {
     final unit = PhysicalPartitionNaming.labelFromPhysicalPartition(court, fallbackClubPartition: partition);
-    final modality = partition.clubType?.name;
-    if (!withModality || modality == null || modality.isEmpty) return unit;
+    if (!withModality) return unit;
+    final modality = partition.displayName;
     return '$modality · $unit';
   }
 
@@ -84,6 +93,8 @@ class BulkEditTexts {
 
   static String excludedLabel(BulkRowResult result) {
     switch (result) {
+      case BulkRowResult.fixed:
+        return 'Turno fijo · excluido';
       case BulkRowResult.booked:
         return 'Reservado · excluido';
       case BulkRowResult.pending:
@@ -101,7 +112,7 @@ class BulkEditTexts {
 
   /// Qué falta para poder calcular la vista previa (null = nada).
   String? get missingRequirement {
-    if (state.physicalIds.isEmpty) return 'Elegí al menos una cancha para ver qué turnos se alcanzan.';
+    if (state.physicalIds.isEmpty) return 'Elegí al menos ${space.indefinite} para ver qué turnos se alcanzan.';
     if (state.daysOfWeek.isEmpty) return 'Elegí al menos un día de la semana.';
     if (state.to.isBefore(state.from)) return 'La fecha "Hasta" no puede ser anterior a "Desde".';
     switch (state.action.type) {
@@ -169,8 +180,7 @@ class BulkEditTexts {
       final list = labels.length == 1
           ? labels.single
           : '${labels.sublist(0, labels.length - 1).join(', ')} y ${labels.last}';
-      final modality = entry.key.clubType?.name;
-      return modality == null ? list : '$modality · $list';
+      return '${entry.key.displayName} · $list';
     }).join(' / ');
   }
 

@@ -46,8 +46,8 @@ class ClubConfigPage extends StatelessWidget {
           bottom: const TabBar(
             isScrollable: true,
             tabs: [
-              Tab(text: "Información del club"),
-              Tab(text: "Deportes y canchas"),
+              Tab(text: "Información del establecimiento"),
+              Tab(text: "Servicios y espacios"),
               Tab(text: "Tarifas por horario"),
               Tab(text: "Productos"),
               Tab(text: "Solicitudes de turno"),

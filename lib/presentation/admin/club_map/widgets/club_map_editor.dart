@@ -58,7 +58,8 @@ class _ClubMapEditorState extends State<ClubMapEditor> {
 
   List<ClubMapPartition> get _groups => widget.view.partitions.where((p) => _partitionIds.contains(p.id) && p.courts.isNotEmpty).toList();
 
-  List<ClubMapPartition> get _addable => widget.view.partitions.where((p) => !_partitionIds.contains(p.id) && p.courts.isNotEmpty).toList();
+  List<ClubMapPartition> get _addable =>
+      widget.view.mappablePartitions.where((p) => !_partitionIds.contains(p.id)).toList();
 
   bool _isPlaced(int courtId) => _elements.any((e) => e.courtId == courtId);
 
@@ -94,7 +95,7 @@ class _ClubMapEditorState extends State<ClubMapEditor> {
   String _nodeName(ClubMapNodeRef ref) {
     if (ref.spaceIndex != null) return _view.spaceName(_spaces[ref.spaceIndex!]);
     final found = _view.findCourt(ref.courtId!);
-    return found == null ? 'Cancha' : '${found.court.name} (${found.partition.sport})';
+    return found == null ? _view.vocabulary.space.singular : '${found.court.name} (${found.partition.sport})';
   }
 
   /// Un toque en una cancha o un espacio: en modo "Conectar con…" une (o
@@ -261,9 +262,9 @@ class _ClubMapEditorState extends State<ClubMapEditor> {
             children: [
               Text(widget.isNewMap ? 'PASO 2 DE 2' : 'EDITANDO EL PLANO', style: theme.textTheme.labelMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
               const SizedBox(height: 4),
-              Text('Plano del club', style: theme.textTheme.headlineMedium),
+              Text('Plano', style: theme.textTheme.headlineMedium),
               const SizedBox(height: 4),
-              Text('Arrastrá cada cancha a su lugar. La cuadrícula está a escala: cada cuadro chico es 1 m.', style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
+              Text('Arrastrá cada ${_view.vocabulary.space.lower} a su lugar. La cuadrícula está a escala: cada cuadro chico es 1 m.', style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
             ],
           ),
           Row(
@@ -329,7 +330,7 @@ class _ClubMapEditorState extends State<ClubMapEditor> {
     final children = <Widget>[
       Row(
         children: [
-          Expanded(child: Text('Canchas', style: theme.textTheme.titleMedium)),
+          Expanded(child: Text(_view.vocabulary.space.plural, style: theme.textTheme.titleMedium)),
           Text('$placed de $total en el plano', style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
         ],
       ),
@@ -353,12 +354,12 @@ class _ClubMapEditorState extends State<ClubMapEditor> {
         OutlinedButton.icon(onPressed: () => setState(() => _partitionIds = {..._partitionIds, partition.id}), icon: const Icon(Icons.add), label: Text('Sumar ${partition.sport} al plano')),
       ],
       const SizedBox(height: 12),
-      Text('Arrastrá una cancha al plano o tocala para sumarla. Ya en el plano, arrastrala para moverla.', style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
+      Text('Arrastrá ${_view.vocabulary.space.indefinite} al plano o tocal${_view.vocabulary.space.g('a', 'o')} para sumarl${_view.vocabulary.space.g('a', 'o')}. Ya en el plano, arrastral${_view.vocabulary.space.g('a', 'o')} para moverl${_view.vocabulary.space.g('a', 'o')}.', style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
       if (_view.spaceTypes.isNotEmpty) ...[
         const SizedBox(height: 20),
-        Text('Otros espacios', style: theme.textTheme.titleMedium),
+        Text('Instalaciones', style: theme.textTheme.titleMedium),
         const SizedBox(height: 4),
-        Text('Lo que no es cancha: la entrada, los vestuarios, el bar... y la calle, como referencia para ubicarse.', style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
+        Text('Lo que no se reserva: la entrada, los vestuarios, el bar... y la calle, como referencia para ubicarse.', style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
         const SizedBox(height: 10),
         Wrap(
           spacing: 8,
@@ -472,7 +473,7 @@ class _ClubMapEditorState extends State<ClubMapEditor> {
     } else {
       toolbar = Align(
         alignment: Alignment.centerLeft,
-        child: Text('Tocá una cancha o un espacio del plano para editarlo o conectarlo con un camino.', style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
+        child: Text('Tocá ${_view.vocabulary.space.indefinite} o una instalación del plano para editarla o conectarla con un camino.', style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
       );
     }
 
@@ -494,8 +495,8 @@ class _ClubMapEditorState extends State<ClubMapEditor> {
             _heightM = preset.heightM;
           }),
         ),
-        if (issues.hasOutside) ...[const SizedBox(height: 10), const _IssueBanner('Con este tamaño, algunas canchas o espacios quedan afuera del predio. Movelos o elegí un predio más grande.')],
-        if (issues.hasOverlap) ...[const SizedBox(height: 10), const _IssueBanner('Hay canchas o espacios encimados. Separalos para poder guardar.')],
+        if (issues.hasOutside) ...[const SizedBox(height: 10), _IssueBanner('Con este tamaño, ${_view.vocabulary.space.g('algunas', 'algunos')} ${_view.vocabulary.space.lowerPlural} o instalaciones quedan afuera del predio. Movelos o elegí un predio más grande.')],
+        if (issues.hasOverlap) ...[const SizedBox(height: 10), _IssueBanner('Hay ${_view.vocabulary.space.lowerPlural} o instalaciones encimados. Separalos para poder guardar.')],
         const SizedBox(height: 10),
         Expanded(
           child: LayoutBuilder(
@@ -556,7 +557,7 @@ class _ClubMapEditorState extends State<ClubMapEditor> {
                                           padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
                                           decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.9), borderRadius: BorderRadius.circular(8)),
                                           // El predio es siempre claro: el texto no sigue el tema.
-                                          child: const Text('Arrastrá acá la primera cancha', style: TextStyle(color: Color(0xFF49454F))),
+                                          child: Text('Arrastrá acá ${_view.vocabulary.space.g('la primera', 'el primer')} ${_view.vocabulary.space.lower}', style: const TextStyle(color: Color(0xFF49454F))),
                                         ),
                                       ),
                                     ),
@@ -621,7 +622,11 @@ class _PaletteCourt extends StatelessWidget {
             children: [
               Text(court.name, style: theme.textTheme.titleSmall, maxLines: 1, overflow: TextOverflow.ellipsis),
               Text(
-                '${court.isCover ? 'Techada' : 'Descubierta'}${court.maxPlayers != null ? ' · ${court.maxPlayers} jugadores' : ''}${court.ownSize != null ? ' · ${court.ownSize!.label}' : ''}',
+                [
+                  partition.vocabulary.coverLabel(court.isCover),
+                  partition.vocabulary.capacityLabel(court.maxPlayers),
+                  court.ownSize?.label,
+                ].nonNulls.join(' · '),
                 style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
               ),
             ],
@@ -831,7 +836,7 @@ class _CourtSizeDialogState extends State<_CourtSizeDialog> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'La medida del deporte es ${widget.sportSize.label}. Cambiala si esta cancha mide distinto.',
+              'La medida de referencia es ${widget.sportSize.label}. Cambiala si mide distinto.',
               style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant),
             ),
             const SizedBox(height: 16),
@@ -868,7 +873,7 @@ class _CourtSizeDialogState extends State<_CourtSizeDialog> {
         if (widget.ownSize != null)
           TextButton(
             onPressed: () => Navigator.of(context).pop(const _CourtSizeResult(null)),
-            child: const Text('Usar la del deporte'),
+            child: const Text('Usar la de referencia'),
           ),
         TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Cancelar')),
         FilledButton(onPressed: _submit, child: const Text('Aplicar')),

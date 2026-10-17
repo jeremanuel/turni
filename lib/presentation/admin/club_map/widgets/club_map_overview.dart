@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/presentation/components/links/entity_links.dart';
+import '../../../../core/utils/admin_vocabulary.dart';
+
 import '../../../../domain/entities/club_map/club_map.dart';
 import '../../../../core/utils/either.dart';
 import '../../../../core/utils/repository_response.dart';
@@ -121,9 +124,9 @@ class _ClubMapOverviewState extends State<ClubMapOverview> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text('Mapa del club', style: theme.textTheme.headlineMedium),
+                    Text('Mapa', style: theme.textTheme.headlineMedium),
                     const SizedBox(height: 4),
-                    Text('Así están ubicadas las canchas en el club y cuáles están ocupadas ahora.', style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
+                    Text('Así están ubicad${widget.view.vocabulary.space.g('a', 'o')}s ${widget.view.vocabulary.space.definitePlural} y cuáles están ocupad${widget.view.vocabulary.space.g('a', 'o')}s ahora.', style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
                   ],
                 ),
                 if (map != null && widget.onEdit != null) FilledButton.icon(onPressed: widget.onEdit, icon: const Icon(Icons.edit_outlined), label: const Text('Editar plano')),
@@ -146,8 +149,8 @@ class _ClubMapOverviewState extends State<ClubMapOverview> {
     if (map == null) return const [];
     final inMap = widget.view.partitionIdsInMap(map.elements);
     return [
-      for (final p in widget.view.partitions)
-        if (p.courts.isNotEmpty && !inMap.contains(p.id)) p.sport,
+      for (final p in widget.view.mappablePartitions)
+        if (!inMap.contains(p.id)) p.sport,
     ];
   }
 
@@ -225,7 +228,7 @@ class _ClubMapOverviewState extends State<ClubMapOverview> {
       child: selectedSpace != null
           ? _SpaceDetail(space: selectedSpace, name: widget.view.spaceName(selectedSpace), typeName: widget.view.spaceTypeName(selectedSpace.type))
           : selected == null
-          ? Text('Tocá una cancha del plano para ver sus datos.', style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant))
+          ? Text('Tocá ${widget.view.vocabulary.space.indefinite} del plano para ver sus datos.', style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant))
           : _CourtDetail(
               partition: selected.partition,
               court: selected.court,
@@ -263,9 +266,9 @@ class _ClubMapOverviewState extends State<ClubMapOverview> {
       children: [
         SegmentedButton<ClubMapMode>(
           showSelectedIcon: false,
-          segments: const [
-            ButtonSegment(value: ClubMapMode.live, icon: Icon(Icons.schedule), label: Text('Ocupación ahora')),
-            ButtonSegment(value: ClubMapMode.usage, icon: Icon(Icons.bar_chart), label: Text('Uso por cancha')),
+          segments: [
+            const ButtonSegment(value: ClubMapMode.live, icon: Icon(Icons.schedule), label: Text('Ocupación ahora')),
+            ButtonSegment(value: ClubMapMode.usage, icon: const Icon(Icons.bar_chart), label: Text('Uso por ${widget.view.vocabulary.space.lower}')),
           ],
           selected: {_mode},
           onSelectionChanged: (modes) => _setMode(modes.first),
@@ -319,7 +322,7 @@ class _ClubMapOverviewState extends State<ClubMapOverview> {
                 decoration: BoxDecoration(color: SportStyle.of(p.clubTypeId).fill, borderRadius: BorderRadius.circular(3)),
               ),
               const SizedBox(width: 6),
-              Text('${p.sport} · ${counts[p.id]} ${counts[p.id] == 1 ? 'cancha' : 'canchas'}', style: textStyle),
+              Text('${p.sport} · ${p.vocabulary.space.count(counts[p.id] ?? 0)}', style: textStyle),
             ],
           ),
     ];
@@ -372,8 +375,10 @@ class _CourtDetail extends StatelessWidget {
           spacing: 24,
           runSpacing: 12,
           children: [
-            SizedBox(width: 110, child: field('Cubierta', court.isCover ? 'Techada' : 'Descubierta')),
-            SizedBox(width: 110, child: field('Jugadores', court.maxPlayers?.toString() ?? '-')),
+            if (partition.vocabulary.features.cover)
+              SizedBox(width: 110, child: field('Techo', partition.vocabulary.coverLabel(court.isCover)!)),
+            if (partition.vocabulary.features.capacity)
+              SizedBox(width: 110, child: field(partition.vocabulary.participant.plural, court.maxPlayers?.toString() ?? '-')),
             SizedBox(width: 110, child: field('Turno', court.defaultSessionDuration != null ? '${court.defaultSessionDuration} min' : '-')),
             SizedBox(width: 110, child: field(court.ownSize != null ? 'Medidas (propias)' : 'Medidas', (court.ownSize ?? partition.courtSize).label)),
           ],
@@ -511,7 +516,9 @@ String _openLabel(CourtOccupancy occupancy) {
 
 String _hhmm(DateTime time) => '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
 
-String _whoText(Session session) => session.isPending ? 'Solicitud pendiente' : (session.client?.person?.fullName.trim() ?? 'Cliente');
+LinkSegment _who(Session session) => session.isPending
+    ? const LinkSegment.text('Solicitud pendiente')
+    : LinkSegment.client(int.tryParse(session.client?.clientId ?? ''), session.client?.person?.fullName.trim() ?? 'Cliente');
 
 /// "Ahora" en el detalle: si se está jugando (quién y hasta qué hora), si hay
 /// un turno libre para reservar en el momento, y el próximo turno del día.
@@ -529,13 +536,13 @@ class _NowSection extends StatelessWidget {
     final freeNow = occupancy.freeNow;
     final next = occupancy.next;
 
-    final String nowText;
+    final List<LinkSegment> nowText;
     if (current != null) {
-      nowText = '${_whoText(current)} · hasta las ${_hhmm(current.endTime as DateTime)}';
+      nowText = [_who(current), LinkSegment.text(' · hasta las ${_hhmm(current.endTime as DateTime)}')];
     } else if (freeNow != null) {
-      nowText = 'Turno libre hasta las ${_hhmm(freeNow.endTime as DateTime)}';
+      nowText = [LinkSegment.text('Turno libre hasta las ${_hhmm(freeNow.endTime as DateTime)}')];
     } else {
-      nowText = 'No hay un turno cargado ahora';
+      nowText = [const LinkSegment.text('No hay un turno cargado ahora')];
     }
 
     return Column(
@@ -549,12 +556,14 @@ class _NowSection extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 4),
-        Text(nowText, style: theme.textTheme.bodyMedium),
+        ClientLinksText(nowText, style: theme.textTheme.bodyMedium),
         const SizedBox(height: 12),
         Text('Próximo turno', style: muted),
         const SizedBox(height: 2),
-        Text(
-          next == null ? 'No hay más turnos reservados hoy' : '${_hhmm(next.startTime)} · ${_whoText(next)}',
+        ClientLinksText(
+          next == null
+              ? [const LinkSegment.text('No hay más turnos reservados hoy')]
+              : [LinkSegment.text('${_hhmm(next.startTime)} · '), _who(next)],
           style: theme.textTheme.bodyMedium,
         ),
       ],
@@ -646,10 +655,12 @@ class _EmptyState extends StatelessWidget {
         children: [
           Icon(Icons.map_outlined, size: 40, color: theme.colorScheme.outline),
           const SizedBox(height: 12),
-          Text('El club todavía no tiene plano', style: theme.textTheme.headlineSmall, textAlign: TextAlign.center),
+          Text('Todavía no hay plano', style: theme.textTheme.headlineSmall, textAlign: TextAlign.center),
           const SizedBox(height: 8),
           Text(
-            hasCourts ? 'Ubicá las canchas en el plano para que el club y los jugadores vean dónde está cada una.' : 'Para armar el plano, primero cargá las canchas del club.',
+            hasCourts
+                ? 'Ubicá ${adminVocabulary().space.definitePlural} en el plano para que el equipo y tus clientes vean dónde está cada ${adminVocabulary().space.g('una', 'uno')}.'
+                : 'Para armar el plano, primero cargá ${adminVocabulary().space.definitePlural}.',
             textAlign: TextAlign.center,
             style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant),
           ),

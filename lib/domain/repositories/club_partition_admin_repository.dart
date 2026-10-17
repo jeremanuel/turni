@@ -16,14 +16,22 @@ abstract class ClubPartitionAdminRepository {
   Future<RepositoryResponse<ClubPartition>> createClubPartition({
     required int clubTypeId,
     String? phone,
+    String? name,
     String? physicalPartitionName,
+    String? physicalPartitionPlural,
+    String? participantSingular,
+    String? participantPlural,
   });
 
   Future<RepositoryResponse<ClubPartition>> updateClubPartition(
     int clubPartitionId, {
     int? clubTypeId,
     String? phone,
+    String? name,
     String? physicalPartitionName,
+    String? physicalPartitionPlural,
+    String? participantSingular,
+    String? participantPlural,
   });
 
   Future<RepositoryResponse<ClubPartition>> setClubPartitionActive(

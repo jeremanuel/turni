@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+
+import '../../../../core/presentation/components/links/entity_links.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -92,10 +94,16 @@ class _CardShell extends StatelessWidget {
     required this.onTap,
     required this.child,
     this.tooltip,
+    this.borderWidth = 1,
+    this.ringColor,
   });
 
   final Color background;
   final Color borderColor;
+  final double borderWidth;
+
+  /// Color del anillo de selección (por defecto `primary`).
+  final Color? ringColor;
   final bool dashed;
   final bool selected;
   final VoidCallback onTap;
@@ -111,7 +119,7 @@ class _CardShell extends StatelessWidget {
       color: background,
       shape: RoundedRectangleBorder(
         borderRadius: radius,
-        side: dashed ? BorderSide.none : BorderSide(color: borderColor),
+        side: dashed ? BorderSide.none : BorderSide(color: borderColor, width: borderWidth),
       ),
       clipBehavior: Clip.antiAlias,
       child: InkWell(onTap: onTap, child: child),
@@ -130,7 +138,7 @@ class _CardShell extends StatelessWidget {
         decoration: BoxDecoration(
           borderRadius: radius,
           boxShadow: [
-            BoxShadow(color: scheme.primary, spreadRadius: 4),
+            BoxShadow(color: ringColor ?? scheme.primary, spreadRadius: 4),
             BoxShadow(color: scheme.surface, spreadRadius: 2),
           ],
         ),
@@ -282,9 +290,22 @@ class _NotReservedSessionCardState extends State<NotReservedSessionCard> {
           ],
         ),
       );
-      final detail = Text(
-        'Libre · ${_price(session.price)}',
-        style: TextStyle(fontSize: 12, height: 16 / 12, color: scheme.onSurfaceVariant),
+      final cancelledFixed = session.cancelledFixed;
+      final detail = ClientLinksText(
+        cancelledFixed == null
+            ? [LinkSegment.text('Libre · ${_price(session.price)}')]
+            : [
+                const LinkSegment.text('Fijo de '),
+                LinkSegment.client(cancelledFixed.clientId, cancelledFixed.clientName),
+                const LinkSegment.text(' cancelado hoy · libre'),
+              ],
+        maxLines: 2,
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(
+          fontSize: 12,
+          height: 16 / 12,
+          color: cancelledFixed == null ? scheme.onSurfaceVariant : scheme.onTertiaryContainer,
+        ),
       );
 
       content = Padding(
@@ -329,8 +350,12 @@ class _NotReservedSessionCardState extends State<NotReservedSessionCard> {
       onEnter: (_) => setState(() => _hover = true),
       onExit: (_) => setState(() => _hover = false),
       child: _CardShell(
-        background: _hover ? scheme.surfaceContainerHighest : scheme.surfaceContainerHigh,
-        borderColor: _hover ? scheme.primary : scheme.outline,
+        background: _hover
+            ? scheme.surfaceContainerHighest
+            : session.cancelledFixed != null
+                ? scheme.tertiaryContainer.withValues(alpha: 0.25)
+                : scheme.surfaceContainerHigh,
+        borderColor: _hover ? scheme.primary : (session.cancelledFixed != null ? scheme.tertiary : scheme.outline),
         dashed: !_hover,
         selected: widget.hasFocus,
         onTap: _reserve,
@@ -353,7 +378,7 @@ class ReservedSessionCard extends StatelessWidget {
   final bool hasFocus;
   final double height;
 
-  bool get isFixedReservedSession => session.clubTypeName == "FIXED_SESSION";
+  bool get isFixedReservedSession => session.fixedSession != null || session.clubTypeName == "FIXED_SESSION";
 
   _PayState get _payState {
     final total = session.totalPrice;
@@ -387,17 +412,37 @@ class ReservedSessionCard extends StatelessWidget {
     final clientName = session.client?.person?.fullName ?? 'Cliente';
     final clientId = session.client?.clientId;
 
-    final name = Text(
-      clientName,
-      maxLines: 1,
-      overflow: TextOverflow.ellipsis,
+    final name = ClientLink(
+      clientId: int.tryParse(clientId ?? ''),
+      name: clientName,
       style: TextStyle(fontSize: size == _CardSize.line ? 12 : 13, color: fg),
     );
 
     final fixedIcon = isFixedReservedSession
         ? Padding(
-            padding: const EdgeInsets.only(left: 4),
-            child: Tooltip(message: 'Turno fijo', child: Icon(Icons.event_repeat, size: 14, color: fg)),
+            padding: const EdgeInsets.only(left: 6),
+            child: Tooltip(
+              message: session.fixedSession == null
+                  ? 'Turno fijo'
+                  : 'Turno fijo · todos los ${session.fixedSession!.dayName.toLowerCase()} ${session.fixedSession!.startTime}',
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                decoration: BoxDecoration(color: scheme.tertiaryContainer, borderRadius: BorderRadius.circular(6)),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.event_repeat, size: 11, color: scheme.onTertiaryContainer),
+                    if (size != _CardSize.line) ...[
+                      const SizedBox(width: 3),
+                      Text(
+                        'FIJO',
+                        style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: 0.4, color: scheme.onTertiaryContainer),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ),
           )
         : const SizedBox.shrink();
 
@@ -409,6 +454,7 @@ class ReservedSessionCard extends StatelessWidget {
         child: Row(
           children: [
             Text(_hm(session.startTime), style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: fg)),
+            fixedIcon,
             const SizedBox(width: 6),
             Expanded(child: name),
             const SizedBox(width: 6),
@@ -513,7 +559,10 @@ class ReservedSessionCard extends StatelessWidget {
 
     return _CardShell(
       background: scheme.primaryContainer,
-      borderColor: scheme.primaryContainer,
+      // Turno fijo: borde tertiary (la leyenda de la agenda lo explica).
+      borderColor: isFixedReservedSession ? scheme.tertiary : scheme.primaryContainer,
+      borderWidth: isFixedReservedSession ? 2 : 1,
+      ringColor: isFixedReservedSession ? scheme.tertiary : null,
       dashed: false,
       selected: hasFocus,
       onTap: () => _openSession(context, session),
@@ -624,8 +673,11 @@ class _PendingSessionCardState extends State<PendingSessionCard> {
           _Initials(name: clientName, background: scheme.tertiary, foreground: scheme.onTertiary),
           const SizedBox(width: 6),
           Expanded(
-            child: Text(clientName,
-                maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 13, color: fg)),
+            child: ClientLink(
+              clientId: int.tryParse(session.client?.clientId ?? ''),
+              name: clientName,
+              style: TextStyle(fontSize: 13, color: fg),
+            ),
           ),
         ],
       );

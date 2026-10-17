@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/utils/admin_vocabulary.dart';
 import '../../../../core/utils/permissions.dart';
 import 'package:go_router/go_router.dart';
 
@@ -44,7 +45,8 @@ class BulkSessionsMenuButton extends StatelessWidget {
 
     final canAdd = Permissions.can(Permissions.AGENDA_CREAR);
     final canEdit = Permissions.can(Permissions.AGENDA_GESTION_MASIVA);
-    if (!canAdd && !canEdit) return const SizedBox.shrink();
+    final canFixed = Permissions.can(Permissions.TURNOS_FIJOS_VER);
+    if (!canAdd && !canEdit && !canFixed) return const SizedBox.shrink();
 
     return MenuAnchor(
       alignmentOffset: const Offset(0, 8),
@@ -54,10 +56,13 @@ class BulkSessionsMenuButton extends StatelessWidget {
         shape: WidgetStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadius.circular(4))),
       ),
       menuChildren: [
-        if (canAdd) item(BulkSessionsTab.add, Icons.add, 'Agregar turnos', 'Plantilla repetida en varias canchas y días'),
+        if (canAdd) item(BulkSessionsTab.add, Icons.add, 'Agregar turnos', 'Plantilla repetida en vari${adminVocabulary().space.g('a', 'o')}s ${adminVocabulary().space.lowerPlural} y días'),
         if (canEdit)
           item(BulkSessionsTab.edit, Icons.edit_outlined, 'Editar o eliminar turnos',
               'Precio, duración u horario por reglas'),
+        if (canFixed)
+          item(BulkSessionsTab.fixed, Icons.event_repeat, 'Turnos fijos',
+              'Clientes con el mismo horario todas las semanas'),
       ],
       builder: (context, controller, _) => FilledButton(
         onPressed: () => controller.isOpen ? controller.close() : controller.open(),

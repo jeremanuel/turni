@@ -121,7 +121,7 @@ class _ConsumoViewState extends State<ConsumoView> {
     if (!mounted) return;
     setState(() {
       _saving = false;
-      _error = 'Algunos consumos no se pudieron agregar. Probá de nuevo.';
+      _error = 'Algunos adicionales no se pudieron agregar. Probá de nuevo.';
     });
   }
 
@@ -139,7 +139,7 @@ class _ConsumoViewState extends State<ConsumoView> {
             child: Align(
               alignment: Alignment.centerRight,
               child: PanelFilledButton(
-              label: 'Agregar ${count == 1 ? '1 consumo' : '$count consumos'} · ${panelPrice(_total)}',
+              label: 'Agregar ${count == 1 ? '1 adicional' : '$count adicionales'} · ${panelPrice(_total)}',
               loading: _saving,
               onPressed: count > 0 ? _add : null,
               ),
@@ -148,7 +148,7 @@ class _ConsumoViewState extends State<ConsumoView> {
         ],
       ),
       children: [
-        PanelSubHeader(title: 'Agregar consumo', subtitle: widget.subtitle, onBack: widget.onBack),
+        PanelSubHeader(title: 'Agregar adicional', subtitle: widget.subtitle, onBack: widget.onBack),
         TextField(
           controller: _search,
           onChanged: (_) => setState(() {}),
@@ -193,7 +193,7 @@ class _ConsumoViewState extends State<ConsumoView> {
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 16),
             child: Text(
-              _products!.isEmpty ? 'El club todavía no tiene productos cargados.' : 'No hay productos que coincidan.',
+              _products!.isEmpty ? 'Todavía no hay productos cargados.' : 'No hay productos que coincidan.',
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 13, color: scheme.onSurfaceVariant),
             ),

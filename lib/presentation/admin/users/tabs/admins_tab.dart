@@ -127,7 +127,7 @@ class _AdminsTabState extends State<AdminsTab> {
         context: context,
         builder: (context) => AlertDialog(
           title: Text('¿Deshabilitar a ${admin.fullName}?'),
-          content: const Text('No va a poder entrar al panel ni usar nada del club hasta que lo vuelvas a habilitar.'),
+          content: const Text('No va a poder entrar al panel ni usar nada del establecimiento hasta que lo vuelvas a habilitar.'),
           actions: [
             TextButton(onPressed: () => Navigator.of(context).pop(false), child: const Text('Cancelar')),
             FilledButton(onPressed: () => Navigator.of(context).pop(true), child: const Text('Deshabilitar')),
@@ -199,7 +199,7 @@ class _AdminsTabState extends State<AdminsTab> {
             children: [
               Expanded(
                 child: Text(
-                  'Quiénes pueden entrar al panel del club y con qué rol.',
+                  'Quiénes pueden entrar al panel y con qué rol.',
                   style: textTheme.bodyMedium,
                 ),
               ),

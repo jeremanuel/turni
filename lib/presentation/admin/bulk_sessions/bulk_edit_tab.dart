@@ -13,6 +13,7 @@ import '../../../core/utils/thousands_format.dart';
 import '../../../core/utils/types/time_interval.dart';
 import '../../../domain/entities/bulk_sessions.dart';
 import '../../../domain/entities/club_partition.dart';
+import '../../../domain/entities/partition_vocabulary.dart';
 import '../../../domain/entities/physical_partition.dart';
 import '../../../domain/repositories/bulk_session_repository.dart';
 import '../club_config/club_config_focus.dart';
@@ -173,7 +174,7 @@ class _BulkEditViewState extends State<_BulkEditView> {
                     final right = Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        _buildActionCard(context, state),
+                        _buildActionCard(context, state, texts),
                         const SizedBox(height: 24),
                         _buildPreviewCard(context, state, texts),
                       ],
@@ -344,7 +345,7 @@ class _BulkEditViewState extends State<_BulkEditView> {
             Divider(height: 1, color: scheme.outlineVariant),
             const SizedBox(height: 20),
             section(
-              'Modalidades',
+              'Servicios',
               Wrap(spacing: 8, runSpacing: 8, children: [
                 for (final partition in clubPartitions)
                   InactivePartitionHint(
@@ -354,7 +355,7 @@ class _BulkEditViewState extends State<_BulkEditView> {
                     onConfigClosed: () =>
                         context.read<SessionManagerBloc>().add(ReloadClubPartitionsEvent()),
                     child: BulkChoiceChip(
-                      label: partition.clubType?.name ?? 'Modalidad',
+                      label: partition.displayName,
                       enabled: partition.active,
                       selected: state.clubPartitionIds.contains(partition.club_partition_id),
                       onTap: () => _cubit.toggleClubPartition(partition),
@@ -364,17 +365,17 @@ class _BulkEditViewState extends State<_BulkEditView> {
             ),
             const SizedBox(height: 20),
             section(
-              'Canchas',
+              BulkEditTexts(state: state, clubPartitions: clubPartitions).space.plural,
               courts.isEmpty
                   ? Text(
-                      'Elegí al menos una modalidad.',
+                      'Elegí al menos un servicio.',
                       style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
                     )
                   : Wrap(spacing: 8, runSpacing: 8, children: [
                       for (final (partition, court) in courts)
                         InactivePartitionHint(
                           inactive: !court.active,
-                          message: InactivePartitionHint.physicalPartitionMessage,
+                          message: InactivePartitionHint.physicalPartitionMessage(PartitionVocabulary.of(partition)),
                           focus: ClubConfigFocus.physicalPartition(
                             clubPartitionId: court.clubPartitionId,
                             partitionPhysicalId: court.partitionPhysicalId,
@@ -434,7 +435,7 @@ class _BulkEditViewState extends State<_BulkEditView> {
   // 2. ¿Qué hacer con ellos?
   // ------------------------------------------------------------------
 
-  Widget _buildActionCard(BuildContext context, BulkEditState state) {
+  Widget _buildActionCard(BuildContext context, BulkEditState state, BulkEditTexts texts) {
     final scheme = Theme.of(context).colorScheme;
 
     Widget tile(BulkActionKind kind, String label, String hint) {
@@ -519,9 +520,9 @@ class _BulkEditViewState extends State<_BulkEditView> {
               child: Wrap(
                 crossAxisAlignment: WrapCrossAlignment.center,
                 children: [
-                  const Text(
+                  Text(
                     'Cada turno toma el precio de la franja de su tarifa por horario según día y hora de inicio; '
-                    'fuera de franja, el precio base de la cancha. Útil después de cambiar una tarifa. ',
+                    'fuera de franja, el precio base ${texts.space.ofDefinite}. Útil después de cambiar una tarifa. ',
                   ),
                   InkWell(
                     onTap: () {
@@ -611,7 +612,7 @@ class _BulkEditViewState extends State<_BulkEditView> {
               ),
             ),
             note(
-              'Si la nueva duración pisa el turno siguiente de la misma cancha, ese turno queda excluido.',
+              'Si la nueva duración pisa el turno siguiente en ${texts.space.g('la misma', 'el mismo')} ${texts.space.lower}, ese turno queda excluido.',
               bottom: 28,
             ),
           ],
@@ -728,7 +729,7 @@ class _BulkEditViewState extends State<_BulkEditView> {
                 3: FlexColumnWidth(1.4),
                 4: FlexColumnWidth(1.6),
               },
-              columns: ['Fecha', 'Horario', 'Cancha', texts.valueColumn, 'Resultado'],
+              columns: ['Fecha', 'Horario', texts.space.singular, texts.valueColumn, 'Resultado'],
               rowTextColors: [for (final row in preview.rows) row.result.isExcluded ? scheme.outline : null],
               rows: [for (final row in preview.rows) _previewCells(context, state, texts, row)],
               // Todos los turnos, con scroll propio y el encabezado fijo.
@@ -804,6 +805,13 @@ class _BulkEditViewState extends State<_BulkEditView> {
                       background: scheme.surfaceContainerHighest,
                       foreground: scheme.onSurfaceVariant,
                     ),
+                    if (preview.excluded.fixed > 0)
+                      BulkSummaryChip(
+                        count: preview.excluded.fixed,
+                        label: preview.excluded.fixed == 1 ? 'es turno fijo' : 'son turnos fijos',
+                        background: scheme.tertiaryContainer,
+                        foreground: scheme.onTertiaryContainer,
+                      ),
                     if (preview.excluded.unchanged > 0)
                       BulkSummaryChip(
                         count: preview.excluded.unchanged,

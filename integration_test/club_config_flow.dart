@@ -137,8 +137,8 @@ Future<void> runClubConfigFlow(WidgetTester tester) async {
   await _pumpUntilFound(tester, find.text('Configuración'));
 
   for (final tabLabel in const [
-    'Información del club',
-    'Deportes y canchas',
+    'Información del establecimiento',
+    'Servicios y espacios',
     'Tarifas por horario',
     'Productos',
     'Solicitudes de turno',
@@ -161,22 +161,22 @@ Future<void> runClubConfigFlow(WidgetTester tester) async {
 
   await tester.enterText(addressField, 'Av. Siempre Viva 123 (e2e)');
   await _tap(tester, find.widgetWithText(FilledButton, 'Guardar cambios'));
-  await _pumpUntilFound(tester, find.text('Datos del club guardados.'));
+  await _pumpUntilFound(tester, find.text('Datos del establecimiento guardados.'));
 
   await tester.enterText(addressField, 'Av. Siempre Viva 123');
   await _tap(tester, find.widgetWithText(FilledButton, 'Guardar cambios'));
-  await _pumpUntilFound(tester, find.text('Datos del club guardados.'));
+  await _pumpUntilFound(tester, find.text('Datos del establecimiento guardados.'));
 
   // ------------------------------------------------------------------
   // Tab 2: Deportes y canchas -- crea un sector nuevo y una cancha adentro.
   // ------------------------------------------------------------------
-  await _tap(tester, find.text('Deportes y canchas'));
+  await _tap(tester, find.text('Servicios y espacios'));
   await _settle(tester);
 
   final partitionsScope = find.byType(ClubPartitionsTab);
   await _pumpUntilFound(
     tester,
-    find.descendant(of: partitionsScope, matching: find.text('Alta de nuevo deporte/sector')),
+    find.descendant(of: partitionsScope, matching: find.text('Nuevo servicio')),
   );
 
   await _tap(tester, find.descendant(of: partitionsScope, matching: find.byType(DropdownButtonFormField<int>)));
@@ -184,10 +184,10 @@ Future<void> runClubConfigFlow(WidgetTester tester) async {
   await _tap(tester, find.text('Tenis').last);
   await _settle(tester);
 
-  await tester.enterText(_fieldByLabel(partitionsScope, 'Nombre de la partición física'), sectorName);
-  await _tap(tester, find.descendant(of: partitionsScope, matching: find.widgetWithText(FilledButton, 'Crear sector')));
+  await tester.enterText(_fieldByLabel(partitionsScope, 'Nombre del servicio (opcional)'), sectorName);
+  await _tap(tester, find.descendant(of: partitionsScope, matching: find.widgetWithText(FilledButton, 'Crear servicio')));
   // Buscado DENTRO de una ClubPartitionCard: `find.text` también matchea el
-  // EditableText del propio campo "Nombre de la partición física", así que
+  // EditableText del propio campo "Nombre del servicio", así que
   // sin acotar daba por creado el sector antes de que el backend respondiera.
   final newSectorCard = find.ancestor(of: _label(sectorName), matching: find.byType(ClubPartitionCard));
   await _pumpUntilFound(tester, newSectorCard);
@@ -216,13 +216,13 @@ Future<void> runClubConfigFlow(WidgetTester tester) async {
   // Agregar una cancha adentro del sector nuevo, vía el diálogo (no inline).
   await _tap(
     tester,
-    find.descendant(of: newSectorCard, matching: find.widgetWithText(OutlinedButton, 'Agregar cancha')),
+    find.descendant(of: newSectorCard, matching: find.ancestor(of: find.textContaining('Agregar '), matching: find.byType(OutlinedButton))),
   );
   await _settle(tester);
 
   final courtDialog = find.byType(AlertDialog);
-  await _pumpUntilFound(tester, find.descendant(of: courtDialog, matching: find.text('Nueva cancha')));
-  await tester.enterText(_fieldByLabel(courtDialog, 'Descripción'), courtDescription);
+  await _pumpUntilFound(tester, find.descendant(of: courtDialog, matching: find.textContaining('Nuev')));
+  await tester.enterText(_fieldByLabel(courtDialog, 'Nombre (opcional)'), courtDescription);
   await _tap(tester, find.descendant(of: courtDialog, matching: find.widgetWithText(FilledButton, 'Crear')));
   await _pumpUntilFound(tester, find.descendant(of: partitionsScope, matching: _label(courtDescription)));
 
@@ -251,13 +251,13 @@ Future<void> runClubConfigFlow(WidgetTester tester) async {
   await _pumpUntilFound(tester, find.descendant(of: tariffsScope, matching: _label(tariffName)));
 
   // Agregar la cancha del sector nuevo como miembro de esta tarifa.
-  await _tap(tester, find.descendant(of: tariffsScope, matching: find.widgetWithText(Chip, 'Agregar cancha')));
+  await _tap(tester, find.descendant(of: tariffsScope, matching: find.ancestor(of: find.textContaining('Agregar '), matching: find.byType(Chip))));
   await _settle(tester);
   await _tap(tester, _label(courtDescription).last);
   await _pumpUntilFound(
     tester,
     find.descendant(
-      of: find.ancestor(of: find.text('Canchas incluidas'), matching: find.byType(Card)).first,
+      of: find.ancestor(of: find.textContaining(' incluid'), matching: find.byType(Card)).first,
       matching: _label(courtDescription),
     ),
   );

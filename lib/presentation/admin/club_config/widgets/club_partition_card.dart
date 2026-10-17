@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/utils/thousands_format.dart';
 import '../../../../domain/entities/club_partition.dart';
+import '../../../../domain/entities/partition_vocabulary.dart';
 import '../../../../domain/entities/physical_partition.dart';
 import 'admin_data_table.dart';
 
@@ -44,6 +45,11 @@ class ClubPartitionCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
+    final vocabulary = PartitionVocabulary.of(clubPartition);
+    final features = vocabulary.features;
+    final ownName = clubPartition.name?.trim();
+    // Sin nombre propio se llama como su tipo: el chip del tipo sobraría.
+    final title = ownName == null || ownName.isEmpty ? clubTypeName : ownName;
 
     return Card(
       shape: highlighted
@@ -70,7 +76,7 @@ class ClubPartitionCard extends StatelessWidget {
                       spacing: 12,
                       runSpacing: 8,
                       children: [
-                  Chip(
+                  if (title != clubTypeName) Chip(
                     label: Text(clubTypeName),
                     backgroundColor: colorScheme.secondaryContainer,
                     side: BorderSide.none,
@@ -81,7 +87,7 @@ class ClubPartitionCard extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    clubPartition.physicalPartitionName ?? 'Sector sin nombre',
+                    title,
                     style: textTheme.titleMedium,
                   ),
                   if (clubPartition.phone != null && clubPartition.phone!.isNotEmpty)
@@ -111,7 +117,7 @@ class ClubPartitionCard extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 12),
                   child: Text(
-                    'Todavía no hay canchas en este sector.',
+                    'Todavía no hay ${vocabulary.space.lowerPlural} en este servicio.',
                     style: textTheme.bodyMedium
                         ?.copyWith(color: colorScheme.onSurfaceVariant),
                   ),
@@ -120,13 +126,13 @@ class ClubPartitionCard extends StatelessWidget {
                 SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   child: AdminDataTable(
-                    columns: const [
-                      'Descripción',
-                      'Jugadores',
-                      'Cubierta',
+                    columns: [
+                      'Nombre',
+                      if (features.capacity) vocabulary.participant.plural,
+                      if (features.cover) vocabulary.space.g('Cubierta', 'Cubierto'),
                       'Duración',
                       'Precio default',
-                      'Activa',
+                      vocabulary.space.g('Activa', 'Activo'),
                       '',
                     ],
                     rows: physicalPartitions
@@ -138,7 +144,7 @@ class ClubPartitionCard extends StatelessWidget {
                                     children: [
                                       Icon(Icons.arrow_right, size: 20, color: colorScheme.primary),
                                       Text(
-                                        partition.description ?? '-',
+                                        partition.spaceLabel(fallback: clubPartition),
                                         style: TextStyle(
                                           fontWeight: FontWeight.w700,
                                           color: colorScheme.primary,
@@ -146,13 +152,13 @@ class ClubPartitionCard extends StatelessWidget {
                                       ),
                                     ],
                                   )
-                                : Text(partition.description ?? '-'),
-                            Text(
+                                : Text(partition.spaceLabel(fallback: clubPartition)),
+                            if (features.capacity) Text(
                               partition.maxPlayers != null
                                   ? '${partition.minPlayers}–${partition.maxPlayers}'
                                   : '${partition.minPlayers}',
                             ),
-                            Text(partition.isCover == '1' ? 'Sí' : 'No'),
+                            if (features.cover) Text(partition.isCover == '1' ? 'Sí' : 'No'),
                             Text(
                               partition.defaultSessionDuration != null
                                   ? '${partition.defaultSessionDuration} min'
@@ -182,7 +188,7 @@ class ClubPartitionCard extends StatelessWidget {
                 child: OutlinedButton.icon(
                   onPressed: onAddPhysical,
                   icon: const Icon(Icons.add),
-                  label: const Text('Agregar cancha'),
+                  label: Text('Agregar ${vocabulary.space.lower}'),
                 ),
               ),
             ],

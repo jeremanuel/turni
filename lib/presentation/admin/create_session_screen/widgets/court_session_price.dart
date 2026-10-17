@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/utils/admin_vocabulary.dart';
 import '../../../../core/utils/thousands_format.dart';
+import '../../../../domain/entities/partition_vocabulary.dart';
 import '../../../../domain/use_case/price/session_price_resolver.dart';
 import '../../club_config/widgets/price_field.dart';
 import 'rework_styles.dart';
@@ -242,7 +244,7 @@ class _CourtPriceSectionState extends State<CourtPriceSection> {
           ],
         ),
         const SizedBox(height: 4),
-        const Text('El precio manual aplica a todos los días, solo en esta cancha.', style: RW.tSmall),
+        Text('El precio manual aplica a todos los días, solo en ${adminVocabulary().space.este}.', style: RW.tSmall),
       ],
     );
   }
@@ -252,6 +254,7 @@ class _CourtPriceSectionState extends State<CourtPriceSection> {
     final String detail;
     final String linkLabel;
     final VoidCallback onLink;
+    final space = adminVocabulary().space;
 
     switch (resolved.source) {
       case SessionPriceSource.tariffRule:
@@ -261,20 +264,20 @@ class _CourtPriceSectionState extends State<CourtPriceSection> {
         linkLabel = 'Ver tarifa';
         onLink = widget.onOpenTariff;
       case SessionPriceSource.partitionDefault when resolved.tariff != null:
-        title = 'Precio base de la cancha';
+        title = 'Precio base ${space.ofDefinite}';
         detail = 'Ninguna franja de «${resolved.tariff!.name}» cubre este horario.';
         linkLabel = 'Ver tarifa';
         onLink = widget.onOpenTariff;
       case SessionPriceSource.partitionDefault:
-        title = 'Precio base de la cancha';
-        detail = 'La cancha no tiene tarifa por horario asignada.';
-        linkLabel = 'Ver cancha';
+        title = 'Precio base ${space.ofDefinite}';
+        detail = '${capitalizeFirst(space.definite)} no tiene tarifa por horario asignada.';
+        linkLabel = 'Ver ${space.lower}';
         onLink = widget.onOpenPartition;
       case SessionPriceSource.manual:
         title = 'Precio manual';
         detail = resolved.tariff != null
             ? 'Pisa la tarifa «${resolved.tariff!.name}».'
-            : 'Pisa el precio base de la cancha.';
+            : 'Pisa el precio base ${space.ofDefinite}.';
         linkLabel = 'Volver a la tarifa';
         onLink = () => widget.onSetManualPrice(null);
     }

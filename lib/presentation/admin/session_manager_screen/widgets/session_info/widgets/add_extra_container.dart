@@ -79,9 +79,9 @@ class _AddExtraContainerState extends State<AddExtraContainer> {
         crossAxisAlignment: CrossAxisAlignment.start,
         spacing: 10,
         children: [
-          Text("Nuevo consumo", style: textTheme.titleLarge),
+          Text("Nuevo adicional", style: textTheme.titleLarge),
           Text(
-            "Elegi un consumo del catalogo del club",
+            "Elegí un adicional del catálogo",
             style: textTheme.bodySmall
                 ?.copyWith(color: colorScheme.onSurfaceVariant),
           ),
@@ -92,7 +92,7 @@ class _AddExtraContainerState extends State<AddExtraContainer> {
             autofocus: true,
             decoration: const InputDecoration(
               prefixIcon: Icon(Icons.search),
-              hintText: "Buscar consumo",
+              hintText: "Buscar adicional",
               border: OutlineInputBorder(),
             ),
           ),
@@ -108,7 +108,7 @@ class _AddExtraContainerState extends State<AddExtraContainer> {
                       child: Padding(
                         padding: const EdgeInsets.all(16),
                         child: Text(
-                          "No hay consumos que coincidan",
+                          "No hay adicionales que coincidan",
                           style: textTheme.bodyMedium
                               ?.copyWith(color: colorScheme.onSurfaceVariant),
                         ),
@@ -187,7 +187,7 @@ class _AddExtraContainerState extends State<AddExtraContainer> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text("Total consumo", style: textTheme.titleSmall),
+                Text("Total adicional", style: textTheme.titleSmall),
                 Text(
                   "\$${total.toStringAsFixed(0)}",
                   style: textTheme.titleMedium?.copyWith(
