@@ -89,6 +89,12 @@ class AppRoutes {
     mobileAppBar: MobileAppBarConfig(title: 'Editar torneo', backToPath: '/tournaments'),
   );
 
+  static const TOURNAMENT_SCHEDULE_ROUTE = RouteDefinition(
+    "TOURNAMENT_SCHEDULE",
+    "/tournaments/:tournamentId/schedule",
+    mobileAppBar: MobileAppBarConfig(title: 'Programación', backToPath: '/tournaments'),
+  );
+
   static const ADMIN_SETTINGS_ROUTE = RouteDefinition(
     "ADMIN_SETTINGS",
     "/admin/settings",
@@ -135,6 +141,7 @@ class AppRoutes {
     TOURNAMENT_NEW_ROUTE.name: TOURNAMENT_NEW_ROUTE,
     TOURNAMENT_DETAIL_ROUTE.name: TOURNAMENT_DETAIL_ROUTE,
     TOURNAMENT_EDIT_ROUTE.name: TOURNAMENT_EDIT_ROUTE,
+    TOURNAMENT_SCHEDULE_ROUTE.name: TOURNAMENT_SCHEDULE_ROUTE,
     ADMIN_SETTINGS_ROUTE.name: ADMIN_SETTINGS_ROUTE,
     USERS_ROUTE.name: USERS_ROUTE,
     ADMIN_INVITE_ROUTE.name: ADMIN_INVITE_ROUTE,

@@ -121,13 +121,14 @@ class _TournamentDetailPageState extends State<TournamentDetailPage> {
     await _run(() => _repository.changeStatus(t.id, next), success: next.label);
   }
 
+  /// Sortea y sigue a la programación de los partidos.
   Future<void> _draw() async {
     final t = _t!;
     if (!await confirmAction(
       context,
       title: 'Sortear el cuadro',
       message: '${t.seeding == Seeding.ranking ? 'Los equipos con más puntos de ranking quedan como cabezas de serie. ' : 'El sorteo es al azar. '}'
-          'El torneo pasa a "En juego" y se avisa a los jugadores.',
+          'El torneo pasa a "En juego" y se avisa a los jugadores. Después cargás los días de juego y turni reparte los partidos en las canchas.',
       confirm: 'Sortear',
     )) {
       return;
@@ -136,22 +137,30 @@ class _TournamentDetailPageState extends State<TournamentDetailPage> {
     final result = await _repository.draw(t.id);
     if (!mounted) return;
     setState(() => _busy = false);
-    await result.when(
+    final drawn = await result.when(
       left: (failure) async {
         final code = failure.details is Map ? (failure.details as Map)['code'] : null;
         if (code == 'NOT_ENOUGH_TEAMS' && failure.message.contains('Podés sortear igual')) {
           if (await confirmAction(context, title: 'Faltan equipos', message: failure.message, confirm: 'Sortear igual')) {
-            await _run(() => _repository.draw(t.id, force: true), success: 'Cuadro sorteado');
+            return _run(() => _repository.draw(t.id, force: true), success: 'Cuadro sorteado');
           }
-          return;
+          return false;
         }
         if (mounted) SnackbarsFunctions.showErrorsSnackbar(context, failure.message);
+        return false;
       },
       right: (updated) async {
         setState(() => _t = updated);
         SnackbarsFunctions.showSuccessSnackbar(context, 'Cuadro sorteado');
+        return true;
       },
     );
+    if (drawn && mounted) await _openSchedule();
+  }
+
+  Future<void> _openSchedule() async {
+    await context.pushNamed(AppRoutes.TOURNAMENT_SCHEDULE_ROUTE.name, pathParameters: {'tournamentId': '${_t!.id}'});
+    if (mounted) _load();
   }
 
   Future<void> _sendReminders() async {
@@ -326,7 +335,12 @@ class _TournamentDetailPageState extends State<TournamentDetailPage> {
       case TournamentStatus.open:
         yield FilledButton(onPressed: _busy ? null : () => _changeStatus(TournamentStatus.closed), child: const Text('Cerrar inscripción'));
       case TournamentStatus.closed:
-        yield FilledButton.icon(onPressed: _busy ? null : _draw, icon: const Icon(Icons.shuffle), label: const Text('Sortear y publicar cuadro'));
+        yield FilledButton.icon(onPressed: _busy ? null : _draw, icon: const Icon(Icons.shuffle), label: const Text('Sortear y programar partidos'));
+      case TournamentStatus.inProgress:
+        final unscheduled = t.matches.any((m) => m.session == null && !m.isFinished);
+        yield unscheduled
+            ? FilledButton.icon(onPressed: _busy ? null : _openSchedule, icon: const Icon(Icons.edit_calendar_outlined), label: const Text('Programar partidos'))
+            : OutlinedButton.icon(onPressed: _busy ? null : _openSchedule, icon: const Icon(Icons.edit_calendar_outlined), label: const Text('Programación'));
       default:
         break;
     }
@@ -613,7 +627,8 @@ class _TournamentDetailPageState extends State<TournamentDetailPage> {
             padding: const EdgeInsets.only(bottom: 16),
             child: InfoBanner(
               icon: Icons.event_busy_outlined,
-              text: '$unscheduled partido${unscheduled == 1 ? '' : 's'} sin cancha ni horario. Tocá cada uno para programarlo: bloquea la cancha en la agenda.',
+              text: '$unscheduled partido${unscheduled == 1 ? '' : 's'} sin cancha ni horario. Programalos todos juntos con los días de juego, o tocá cada uno.',
+              action: FilledButton.tonal(onPressed: _openSchedule, child: const Text('Programar')),
             ),
           ),
         for (final entry in sections.entries) ...[
