@@ -215,8 +215,7 @@ class _AdminsTabState extends State<AdminsTab> {
           Card(
             child: Padding(
               padding: const EdgeInsets.all(20),
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
+              child: AdminTableScroll(
                 child: AdminDataTable(
                   columns: const ['Administrador', 'Email', 'Rol', 'Estado', ''],
                   rows: [for (final admin in _admins) _adminRow(admin)],
@@ -239,8 +238,7 @@ class _AdminsTabState extends State<AdminsTab> {
                       style: textTheme.bodySmall,
                     ),
                     const SizedBox(height: 16),
-                    SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
+                    AdminTableScroll(
                       child: AdminDataTable(
                         columns: const ['Nombre', 'Rol', 'Vence', ''],
                         rows: [for (final invitation in _invitations) _invitationRow(invitation)],

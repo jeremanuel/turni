@@ -184,6 +184,8 @@ class _RankingTabState extends State<RankingTab> {
                     ),
                   )
                 : AdminDataTable(
+                    // Tabla de posiciones: se compara entre filas, queda como tabla.
+                    mobileLayout: AdminTableMobileLayout.scroll,
                     columns: [
                       '#',
                       'Jugador',

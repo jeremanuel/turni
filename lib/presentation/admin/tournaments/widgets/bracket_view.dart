@@ -209,6 +209,8 @@ class StandingsTable extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     final diffLabel = scoreMode == ScoreMode.sets ? 'Sets' : 'Goles';
     return AdminDataTable(
+      // Tabla de posiciones: se compara entre filas, queda como tabla.
+      mobileLayout: AdminTableMobileLayout.scroll,
       columns: [
         '#',
         group.label == null ? 'Equipo' : 'Zona ${group.label}',

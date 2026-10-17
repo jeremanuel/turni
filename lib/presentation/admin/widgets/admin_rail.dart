@@ -4,7 +4,15 @@ import 'package:go_router/go_router.dart';
 import '../../../core/config/service_locator.dart';
 import '../../../core/services/app_version/app_version.dart';
 import '../../core/cubit/auth/auth_cubit.dart';
-import '../../../core/utils/permissions.dart';
+import 'admin_destinations.dart';
+
+/// Iniciales del admin logueado (avatar del menú lateral y del menú «Más»).
+String adminInitials() {
+  final person = sl<AuthCubit>().state.userCredential?.admin?.person;
+  if (person == null) return '';
+  String first(String s) => s.trim().isEmpty ? '' : s.trim().substring(0, 1).toUpperCase();
+  return '${first(person.name)}${first(person.lastName)}';
+}
 
 /// Menú lateral del admin (diseño "Gestor de turnos: layout, menú lateral y
 /// panel del turno"): logo, destinos con ícono y texto siempre visibles, y el
@@ -17,30 +25,12 @@ class AdminRail extends StatelessWidget {
 
   final StatefulNavigationShell shell;
 
-  static const _destinations = <(IconData, String, int, List<String>)>[
-    (Icons.space_dashboard_outlined, 'Inicio', 0, []),
-    (Icons.calendar_month_outlined, 'Turnos', 1, [Permissions.AGENDA_VER]),
-    (Icons.groups_outlined, 'Clientes', 2, [Permissions.CLIENTES_VER]),
-    (Icons.credit_card, 'Pagos', 3, [Permissions.PAGOS_VER]),
-    (Icons.map_outlined, 'Mapa', 4, [Permissions.MAPA_VER]),
-    (Icons.emoji_events_outlined, 'Torneos', 7, [Permissions.TORNEOS_VER]),
-    (Icons.settings_outlined, 'Configuración', 5, [Permissions.CONFIGURACION_VER]),
-    (Icons.manage_accounts_outlined, 'Usuarios', 6, [Permissions.ADMINISTRADORES_VER, Permissions.ROLES_VER]),
-  ];
-
-  String _initials() {
-    final person = sl<AuthCubit>().state.userCredential?.admin?.person;
-    if (person == null) return '';
-    String first(String s) => s.trim().isEmpty ? '' : s.trim().substring(0, 1).toUpperCase();
-    return '${first(person.name)}${first(person.lastName)}';
-  }
+  String _initials() => adminInitials();
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final visible = _destinations
-        .where((destination) => destination.$4.isEmpty || Permissions.canAny(destination.$4))
-        .toList();
+    final visible = AdminDestinations.visible(AdminDestinations.rail);
 
     return Container(
       width: 88,
@@ -62,13 +52,13 @@ class AdminRail extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 28),
-          for (final (i, (icon, label, branch, _)) in visible.indexed) ...[
+          for (final (i, destination) in visible.indexed) ...[
             if (i > 0) const SizedBox(height: 12),
             _RailItem(
-              icon: icon,
-              label: label,
-              selected: shell.currentIndex == branch,
-              onTap: () => shell.goBranch(branch, initialLocation: shell.currentIndex == branch),
+              icon: destination.icon,
+              label: destination.label,
+              selected: shell.currentIndex == destination.branch,
+              onTap: () => shell.goBranch(destination.branch, initialLocation: shell.currentIndex == destination.branch),
             ),
           ],
           const Spacer(),

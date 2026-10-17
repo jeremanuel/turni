@@ -288,8 +288,7 @@ class _ProductsTabState extends State<ProductsTab> {
                       child: Text('Todavía no hay productos.'),
                     )
                   else
-                    SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
+                    AdminTableScroll(
                       child: AdminDataTable(
                         columns: const ['Nombre', 'Categoría', 'Precio', 'Activo', ''],
                         rows: _visibleProducts

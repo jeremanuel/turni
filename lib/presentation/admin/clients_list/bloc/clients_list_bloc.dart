@@ -18,7 +18,11 @@ class ClientsListBloc extends Bloc<ClientsListEvent, ClientsListState> {
 
   final filtersFormKey = GlobalKey<FormBuilderState>();
   late AdminRepository adminRepository;
-  late final TrinaGridStateManager stateManager;
+  /// Grilla de escritorio (null en el celular, que usa una lista).
+  TrinaGridStateManager? stateManager;
+
+  /// Lista del celular: la registra para que un cambio de filtros la recargue.
+  VoidCallback? onMobileRefetch;
 
   ClientsListBloc(BuildContext context, this.adminRepository, ClientListFilters filters, String? columnNameSort,bool? isAscending): 
   super(ClientsListState.initial(context, adminRepository, filters, columnNameSort, isAscending))
@@ -32,7 +36,7 @@ class ClientsListBloc extends Bloc<ClientsListEvent, ClientsListState> {
           filters: event.newFilter
       )); 
       
-      stateManager.setFilter((element) => false);
+      refetchClients();
     });
 
 
@@ -58,6 +62,7 @@ class ClientsListBloc extends Bloc<ClientsListEvent, ClientsListState> {
   }
 
   void refetchClients(){
-    stateManager.setFilter((element) => false);
+    stateManager?.setFilter((element) => false);
+    onMobileRefetch?.call();
   }
 }

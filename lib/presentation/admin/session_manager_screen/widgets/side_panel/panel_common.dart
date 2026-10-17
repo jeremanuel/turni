@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import '../../../../../core/utils/responsive_builder.dart';
 
 import '../../../../../core/utils/thousands_format.dart';
 import '../../../../../domain/entities/session.dart';
@@ -133,6 +134,8 @@ class PanelSessionHeader extends StatelessWidget {
           children: [
             status,
             const Spacer(),
+            // En el celular el detalle es una pantalla con flecha atrás.
+            if (!ResponsiveBuilder.isMobile(context))
             IconButton(
               tooltip: 'Cerrar detalle',
               onPressed: onClose,

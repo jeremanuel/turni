@@ -107,6 +107,14 @@ class _ClientpageState extends State<Clientpage> {
       backgroundColor: colorScheme.surfaceContainer,
       appBar: AppBar(
         backgroundColor: colorScheme.surfaceContainer,
+        // Abierta por un link (sin pantalla anterior): atrás vuelve a Clientes.
+        leading: Navigator.of(context).canPop()
+            ? null
+            : IconButton(
+                tooltip: 'Volver a clientes',
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () => context.go(AppRoutes.CLIENTS_LIST_ROUTE.path),
+              ),
         title: Builder(
           builder: (context) {
             return buildBreadcrumb(context);

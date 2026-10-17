@@ -42,6 +42,11 @@ class AppTheme {
         scrolledUnderElevation: 0,
         surfaceTintColor: Colors.transparent,
       ),
+      // Margen chico alrededor de los diálogos: en el celular el formulario
+      // usa casi todo el ancho (en escritorio el ancho lo define el contenido).
+      dialogTheme: const DialogThemeData(
+        insetPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+      ),
       cardTheme: CardThemeData(
         color: colorScheme.surfaceContainerHigh,
         elevation: 0,

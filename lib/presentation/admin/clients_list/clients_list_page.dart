@@ -16,6 +16,7 @@ import '../../../domain/entities/client.dart';
 import '../client_page/widgets/add_payment_button.dart';
 import 'bloc/clients_list_bloc.dart';
 import 'widgets/client_list_filters_container.dart';
+import 'widgets/clients_mobile_list.dart';
 
 
 class ClientsList extends StatefulWidget {
@@ -42,9 +43,13 @@ class _ClientsListState extends State<ClientsList> {
   @override
   Widget build(BuildContext context) {
     final clientsBloc = BlocProvider.of<ClientsListBloc>(context);
+    final isMobile = ResponsiveBuilder.isMobile(context);
     final child = Column(
       children: [
         ClientListFiltersContainer(),
+        if (isMobile)
+          const Expanded(child: ClientsMobileList())
+        else
         Expanded(
           child: CustomTrinaGrid(
             columns: getTrinaColumns(),
@@ -131,9 +136,9 @@ class _ClientsListState extends State<ClientsList> {
     return Scaffold(
       floatingActionButton: !Permissions.can(Permissions.CLIENTES_EDITAR) ? null : FloatingActionButton.extended(
         onPressed: () => context.pushNamed(AppRoutes.NEW_CLIENT_ROUTE.name),
-        label: ResponsiveBuilder.isDesktop(context)
-            ? Row(spacing: 8, mainAxisSize: MainAxisSize.min, children: [Icon(Icons.person_add_alt_1_rounded), Text("Nuevo cliente")])
-            : Icon(Icons.person_add_alt_1_rounded),
+        label: ResponsiveBuilder.isTablet(context)
+            ? Icon(Icons.person_add_alt_1_rounded)
+            : Row(spacing: 8, mainAxisSize: MainAxisSize.min, children: [Icon(Icons.person_add_alt_1_rounded), Text("Nuevo cliente")]),
       ),
       body: child,
     );

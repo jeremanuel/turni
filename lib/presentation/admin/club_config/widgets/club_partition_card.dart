@@ -123,8 +123,7 @@ class ClubPartitionCard extends StatelessWidget {
                   ),
                 )
               else
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
+                AdminTableScroll(
                   child: AdminDataTable(
                     columns: [
                       'Nombre',

@@ -41,6 +41,43 @@ class _PaymentsListHeaderState extends State<PaymentsListHeader> {
   Widget build(BuildContext context) {
     final colorSchenme = Theme.of(context).colorScheme;
 
+    // Celular: solo el período y registrar pago ("Más filtros" todavía no
+    // hace nada, así que no se muestra).
+    if (ResponsiveBuilder.isMobile(context)) {
+      return Container(
+        padding: const EdgeInsets.fromLTRB(16, 12, 8, 12),
+        decoration: BoxDecoration(
+          color: colorSchenme.surface,
+          border: Border(bottom: BorderSide(color: colorSchenme.outlineVariant)),
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: FilterChipIntervalDate(
+                  initialSuggestion: 2,
+                  label: "Fecha de pago",
+                  withSuggesttions: true,
+                  onApply: (i) {
+                    context.read<PaymentsListCubit>().onChangeFilters({
+                      'fechaDesde': i.initialDate,
+                      'fechaHasta': i.endDate,
+                    });
+                  },
+                ),
+              ),
+            ),
+            AddPaymentButton(
+              client: null,
+              shortButton: true,
+              onPaymentCreated: (payment) => context.read<PaymentsListCubit>().refresh(),
+            ),
+          ],
+        ),
+      );
+    }
+
     return CallbackShortcuts(
         bindings: {
           LogicalKeySet(LogicalKeyboardKey.enter): () {},

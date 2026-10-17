@@ -120,8 +120,7 @@ class _RolesTabState extends State<RolesTab> {
             child: Padding(
               padding: const EdgeInsets.all(20),
               child: LayoutBuilder(
-                builder: (context, constraints) => SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
+                builder: (context, constraints) => AdminTableScroll(
                   child: ConstrainedBox(
                     constraints: BoxConstraints(minWidth: constraints.maxWidth),
                     child: AdminDataTable(

@@ -11,6 +11,7 @@ import 'package:trina_grid/trina_grid.dart';
 import '../../../../core/utils/data_source.dart';
 import '../../../../core/utils/either.dart';
 import '../../../../domain/entities/payment/payment_list_item.dart';
+import '../../../../domain/entities/request/payment/payment_list_page_response.dart';
 import '../../../../domain/repositories/payment_repository.dart';
 
 part 'payments_list_state.dart';
@@ -18,7 +19,11 @@ part 'payments_list_cubit.freezed.dart';
 
 class PaymentsListCubit extends Cubit<PaymentsListState> {
   final PaymentRepository _paymentRepository;
-  late final TrinaGridStateManager trinaGridStateManager;
+  /// Grilla de escritorio (null en el celular, que usa una lista).
+  TrinaGridStateManager? trinaGridStateManager;
+
+  /// Lista del celular: la registra para recargarse al cambiar los filtros.
+  VoidCallback? onMobileRefresh;
   final filtersFormKey = GlobalKey<FormBuilderState>();
   ThemeData? themeData;
 
@@ -100,7 +105,7 @@ class PaymentsListCubit extends Cubit<PaymentsListState> {
             totalItems: value.totalCount,
           ));
 
-          trinaGridStateManager.columns.last.footerRenderer = (rend) => Container(
+          trinaGridStateManager?.columns.last.footerRenderer = (rend) => Container(
             alignment: Alignment.center,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(4),
@@ -141,8 +146,23 @@ class PaymentsListCubit extends Cubit<PaymentsListState> {
       currentPage: 1,
     ));
 
-    trinaGridStateManager.setFilter((element) => false);
+    trinaGridStateManager?.setFilter((element) => false);
+    onMobileRefresh?.call();
 
+  }
+
+  /// Celular: una página de pagos con los filtros actuales (la lista mobile
+  /// lleva su propia paginación). null si falla.
+  Future<PaymentListPageResponse?> fetchPage(int page) async {
+    final result = await _paymentRepository.getPayments(
+      page,
+      fechaDesde: state.filters['fechaDesde'],
+      fechaHasta: state.filters['fechaHasta'],
+    );
+    return switch (result) {
+      Right(:final value) => value,
+      Left() => null,
+    };
   }
 
   void resetError() {

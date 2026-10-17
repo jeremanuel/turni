@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import '../../../core/config/service_locator.dart';
 import '../../../core/utils/either.dart';
 import '../../../core/utils/permissions.dart';
+import '../../../core/utils/responsive_builder.dart';
 import '../../../domain/entities/fixed_session.dart';
 import '../../../domain/repositories/fixed_session_repository.dart';
 import '../../../core/utils/admin_vocabulary.dart';
@@ -32,7 +33,9 @@ class _FixedSessionsTabState extends State<FixedSessionsTab> {
   String? _error;
   List<FixedSession> _items = [];
   String? _sport;
-  _View _view = _View.week;
+  /// null = la de default: lista en el celular, semana en pantallas anchas.
+  _View? _selectedView;
+  _View get _view => _selectedView ?? (ResponsiveBuilder.isMobile(context) ? _View.list : _View.week);
 
   bool get _canCreate => Permissions.can(Permissions.TURNOS_FIJOS_CREAR);
   bool get _canCancel => Permissions.can(Permissions.TURNOS_FIJOS_CANCELAR);
@@ -143,7 +146,7 @@ class _FixedSessionsTabState extends State<FixedSessionsTab> {
                   ButtonSegment(value: _View.list, label: Text('Lista'), icon: Icon(Icons.view_list_outlined)),
                 ],
                 selected: {_view},
-                onSelectionChanged: (s) => setState(() => _view = s.first),
+                onSelectionChanged: (s) => setState(() => _selectedView = s.first),
               ),
               if (_canCreate)
                 FilledButton.icon(
@@ -164,6 +167,18 @@ class _FixedSessionsTabState extends State<FixedSessionsTab> {
   }
 
   Widget _week(List<FixedSession> visible) {
+    // Celular: los 7 días no entran a lo ancho; columnas de ancho fijo con
+    // scroll horizontal.
+    if (ResponsiveBuilder.isMobile(context)) {
+      return SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: SizedBox(width: 7 * 260 + 6 * 12, child: _weekRow(visible)),
+      );
+    }
+    return _weekRow(visible);
+  }
+
+  Widget _weekRow(List<FixedSession> visible) {
     final scheme = Theme.of(context).colorScheme;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -249,8 +264,7 @@ class _FixedSessionsTabState extends State<FixedSessionsTab> {
         child: Padding(
           padding: const EdgeInsets.all(20),
           child: LayoutBuilder(
-            builder: (context, constraints) => SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
+            builder: (context, constraints) => AdminTableScroll(
               child: ConstrainedBox(
                 constraints: BoxConstraints(minWidth: constraints.maxWidth),
                 child: AdminDataTable(

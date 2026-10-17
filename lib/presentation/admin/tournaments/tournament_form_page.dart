@@ -1,4 +1,5 @@
 import '../../../core/utils/either.dart';
+import '../../../core/utils/responsive_builder.dart';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -245,7 +246,7 @@ class _TournamentFormPageState extends State<TournamentFormPage> {
 
     return Scaffold(
       backgroundColor: scheme.surfaceContainer,
-      appBar: AppBar(
+      appBar: ResponsiveBuilder.isMobile(context) ? _mobileAppBar() : AppBar(
         title: Text(_isEdit ? 'Editar torneo' : 'Nuevo torneo'),
         actions: [
           TextButton(onPressed: _saving ? null : () => context.pop(), child: const Text('Cancelar')),
@@ -262,6 +263,32 @@ class _TournamentFormPageState extends State<TournamentFormPage> {
       body: body,
     );
   }
+
+  /// Celular (formulario de nivel 3): ✕ para cerrar, la acción principal a
+  /// la derecha y "Guardar borrador" en el menú.
+  AppBar _mobileAppBar() => AppBar(
+        leading: IconButton(
+          tooltip: 'Cerrar',
+          icon: const Icon(Icons.close),
+          onPressed: _saving ? null : () => context.pop(),
+        ),
+        titleSpacing: 0,
+        title: Text(_isEdit ? 'Editar torneo' : 'Nuevo torneo'),
+        actions: [
+          if (!_isEdit) ...[
+            FilledButton(onPressed: _saving ? null : () => _save(publish: true), child: const Text('Publicar')),
+            PopupMenuButton<String>(
+              tooltip: 'Más opciones',
+              enabled: !_saving,
+              onSelected: (_) => _save(),
+              itemBuilder: (_) => const [PopupMenuItem(value: 'draft', child: Text('Guardar borrador'))],
+            ),
+          ] else ...[
+            FilledButton(onPressed: _saving ? null : () => _save(), child: const Text('Guardar')),
+            const SizedBox(width: 12),
+          ],
+        ],
+      );
 
   // -- Secciones ---------------------------------------------------------------
 
