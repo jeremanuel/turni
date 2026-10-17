@@ -3,6 +3,7 @@ import 'package:dio/dio.dart';
 import '../../../core/config/service_locator.dart';
 import '../../../core/utils/repository_response.dart';
 import '../../../domain/entities/tournament/tournament.dart';
+import '../../../domain/entities/tournament/tournament_schedule.dart';
 import '../../../domain/repositories/tournament_repository.dart';
 import 'base/base_repository.dart';
 
@@ -91,6 +92,23 @@ class TournamentRepositoryImpl extends BaseRepository implements TournamentRepos
       final response = await dioInstance.post('$_path/$tournamentId/reminders');
       return (response.data as Map<String, dynamic>)['sent'] as int;
     });
+  }
+
+  TournamentSchedule _schedule(Response response) => TournamentSchedule.fromJson(response.data as Map<String, dynamic>);
+
+  @override
+  Future<RepositoryResponse<TournamentSchedule>> getSchedule(int tournamentId) {
+    return safeCall(() async => _schedule(await dioInstance.get('$_path/$tournamentId/schedule')));
+  }
+
+  @override
+  Future<RepositoryResponse<TournamentSchedule>> previewSchedule(int tournamentId, ScheduleRequest request) {
+    return safeCall(() async => _schedule(await dioInstance.post('$_path/$tournamentId/schedule/preview', data: request.toJson())));
+  }
+
+  @override
+  Future<RepositoryResponse<TournamentSchedule>> confirmSchedule(int tournamentId, ScheduleRequest request) {
+    return safeCall(() async => _schedule(await dioInstance.post('$_path/$tournamentId/schedule/confirm', data: request.toJson())));
   }
 
   @override

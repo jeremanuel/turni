@@ -2,6 +2,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../presentation/admin/tournaments/tournament_detail_page.dart';
 import '../../../../presentation/admin/tournaments/tournament_form_page.dart';
+import '../../../../presentation/admin/tournaments/tournament_schedule_page.dart';
 import '../../../../presentation/admin/tournaments/tournaments_page.dart';
 import '../app_routes.dart';
 
@@ -28,6 +29,11 @@ StatefulShellBranch tournamentShellBranch() {
                 path: 'edit',
                 name: AppRoutes.TOURNAMENT_EDIT_ROUTE.name,
                 builder: (context, state) => TournamentFormPage(tournamentId: int.parse(state.pathParameters['tournamentId']!)),
+              ),
+              GoRoute(
+                path: 'schedule',
+                name: AppRoutes.TOURNAMENT_SCHEDULE_ROUTE.name,
+                builder: (context, state) => TournamentSchedulePage(tournamentId: int.parse(state.pathParameters['tournamentId']!)),
               ),
             ],
           ),

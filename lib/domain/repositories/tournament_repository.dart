@@ -1,5 +1,6 @@
 import '../../core/utils/repository_response.dart';
 import '../entities/tournament/tournament.dart';
+import '../entities/tournament/tournament_schedule.dart';
 
 /// Torneos del club, categorías de los clientes y ranking. Ver `turni_mono_be`,
 /// docs/feature/TORNEOS.md.
@@ -34,6 +35,16 @@ abstract class TournamentRepository {
 
   /// Aviso de pagos pendientes ya. Devuelve a cuántos equipos.
   Future<RepositoryResponse<int>> sendPaymentReminders(int tournamentId);
+
+  /// Programación automática guardada (días de juego, reglas y horarios).
+  Future<RepositoryResponse<TournamentSchedule>> getSchedule(int tournamentId);
+
+  /// Vista previa sin guardar: reparte de cero, o revalida [ScheduleRequest.placements].
+  /// Con [ScheduleRequest.focusKey] trae cómo queda cada lugar libre para ese partido.
+  Future<RepositoryResponse<TournamentSchedule>> previewSchedule(int tournamentId, ScheduleRequest request);
+
+  /// Guarda y publica. 409 SCHEDULE_WARNINGS si rompe una regla y no se aceptó.
+  Future<RepositoryResponse<TournamentSchedule>> confirmSchedule(int tournamentId, ScheduleRequest request);
 
   /// Partidos programados entre [from] y [to], para la agenda.
   Future<RepositoryResponse<List<TournamentAgendaSlot>>> getAgendaSlots(DateTime from, DateTime to);

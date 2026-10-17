@@ -655,7 +655,8 @@ class StandingGroup {
 
 /// Partido programado de un torneo, para la agenda (`GET /admin/tournament/sessions`).
 class TournamentAgendaSlot {
-  final int matchId;
+  /// Null = lugar de la llave agendado antes de que se arme.
+  final int? matchId;
   final int tournamentId;
   final String tournamentName;
   final int courtId;
@@ -674,7 +675,7 @@ class TournamentAgendaSlot {
   });
 
   factory TournamentAgendaSlot.fromJson(Map<String, dynamic> json) => TournamentAgendaSlot(
-        matchId: json['match_id'] as int,
+        matchId: json['match_id'] as int?,
         tournamentId: json['tournament_id'] as int,
         tournamentName: json['tournament_name'] as String,
         courtId: json['partition_physical_id'] as int,
