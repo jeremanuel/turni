@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 import 'app_version_check_stub.dart'
     if (dart.library.js_interop) 'app_version_check_web.dart' as platform;
 
@@ -19,7 +21,12 @@ class AppVersion {
   static const String current = String.fromEnvironment('VERSION');
 
   /// Lo que se muestra en la app. "dev" en builds locales (sin `VERSION`).
-  static String get label => current.isEmpty ? 'dev' : current;
+  /// En web, con el compilador a la derecha: W = WebAssembly, J = JavaScript.
+  static String get label {
+    final version = current.isEmpty ? 'dev' : current;
+    if (!kIsWeb) return version;
+    return '$version ${kIsWasm ? 'W' : 'J'}';
+  }
 
   /// Recarga la app si el servidor tiene una versión más nueva. No-op fuera
   /// de web o sin versión compilada. Nunca tira.
