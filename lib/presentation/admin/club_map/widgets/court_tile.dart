@@ -209,6 +209,8 @@ class SpaceTile extends StatelessWidget {
         return Icons.local_cafe_outlined;
       case 'PARKING':
         return Icons.local_parking;
+      case 'STREET':
+        return Icons.add_road;
       default:
         return Icons.crop_square;
     }
@@ -224,9 +226,11 @@ class SpaceTile extends StatelessWidget {
       width: width,
       height: height,
       decoration: BoxDecoration(
-        color: const Color(0xFFE9E5DD),
+        // La calle es una referencia de afuera: gris asfalto, para que no se
+        // confunda con un espacio del club.
+        color: type == 'STREET' ? const Color(0xFFCFCFCF) : const Color(0xFFE9E5DD),
         borderRadius: BorderRadius.circular(3),
-        border: Border.all(color: const Color(0xFF9C968A), width: 1.5),
+        border: Border.all(color: type == 'STREET' ? const Color(0xFF8E8E8E) : const Color(0xFF9C968A), width: 1.5),
         boxShadow: [
           if (ringColor != null) ...[
             BoxShadow(color: Theme.of(context).colorScheme.surface, spreadRadius: 3),

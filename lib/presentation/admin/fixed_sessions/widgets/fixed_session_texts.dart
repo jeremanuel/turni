@@ -24,6 +24,8 @@ class FixedSessionTexts {
         return 'Tiene pagos: no se toca';
       case FixedSessionOccurrenceStatus.occupied:
         return 'Ocupado por otro turno: no se toca';
+      case FixedSessionOccurrenceStatus.tournament:
+        return 'Hay un partido de torneo$who: no se toca';
     }
   }
 
@@ -36,6 +38,8 @@ class FixedSessionTexts {
         return 'Solicitud pendiente';
       case FixedSessionOccurrenceStatus.paid:
         return 'Con pagos';
+      case FixedSessionOccurrenceStatus.tournament:
+        return o.clientName == null ? 'Partido de torneo' : 'Torneo: ${o.clientName}';
       default:
         return 'Ocupado';
     }

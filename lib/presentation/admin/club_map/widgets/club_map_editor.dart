@@ -8,7 +8,8 @@ import 'plan_canvas.dart';
 /// Paso 2: ubicar las canchas en el plano. Las canchas se arrastran desde la
 /// lista al plano (o se tocan para sumarlas) y dentro del plano se mueven,
 /// se giran, se sacan o se les cambia la medida. También se suman espacios
-/// que no son canchas (entrada, vestuarios, bar...).
+/// que no son canchas (entrada, vestuarios, bar, la calle de referencia...) y
+/// caminos entre canchas y espacios.
 class ClubMapEditor extends StatefulWidget {
   final ClubMapView view;
   final Set<int> partitionIds;
@@ -40,6 +41,11 @@ class _ClubMapEditorState extends State<ClubMapEditor> {
   late ClubMapView _view = widget.view;
   late List<ClubMapElement> _elements = [...?widget.view.map?.elements];
   late List<ClubMapSpace> _spaces = [...?widget.view.map?.spaces];
+  late List<ClubMapConnection> _connections = [...?widget.view.map?.connections];
+
+  /// "Conectar con…": el próximo toque en el plano une este elemento con el
+  /// tocado (o saca el camino, si ya estaban unidos).
+  ClubMapNodeRef? _connectingFrom;
   late Set<int> _partitionIds = {...widget.partitionIds};
   late int _widthM = widget.initialWidthM;
   late int _heightM = widget.initialHeightM;
@@ -81,6 +87,38 @@ class _ClubMapEditorState extends State<ClubMapEditor> {
     _selectedId = null;
   }
 
+  ClubMapNodeRef? get _selectedNode => _selectedId != null
+      ? ClubMapNodeRef.court(_selectedId!)
+      : (_selectedSpace != null ? ClubMapNodeRef.space(_selectedSpace!) : null);
+
+  String _nodeName(ClubMapNodeRef ref) {
+    if (ref.spaceIndex != null) return _view.spaceName(_spaces[ref.spaceIndex!]);
+    final found = _view.findCourt(ref.courtId!);
+    return found == null ? 'Cancha' : '${found.court.name} (${found.partition.sport})';
+  }
+
+  /// Un toque en una cancha o un espacio: en modo "Conectar con…" une (o
+  /// desune) los dos elementos; si no, lo selecciona.
+  void _tapNode(ClubMapNodeRef ref) {
+    setState(() {
+      final from = _connectingFrom;
+      if (from != null && from != ref) {
+        final exists = _connections.any((c) => c.joins(from, ref));
+        _connections = exists
+            ? _connections.where((c) => !c.joins(from, ref)).toList()
+            : [..._connections, ClubMapConnection(from, ref)];
+      }
+      _connectingFrom = null;
+      ref.courtId != null ? _selectCourt(ref.courtId) : _selectSpace(ref.spaceIndex);
+    });
+  }
+
+  void _removeSelectedConnections() {
+    final node = _selectedNode;
+    if (node == null) return;
+    setState(() => _connections = _connections.where((c) => !c.touches(node)).toList());
+  }
+
   void _addSpace(ClubMapSpaceType type) {
     final pos = firstFreeSpot(_view, _elements, type.defaultWidthM.toDouble(), type.defaultHeightM.toDouble(), _widthM, _heightM, spaces: _spaces);
     setState(() {
@@ -111,6 +149,7 @@ class _ClubMapEditorState extends State<ClubMapEditor> {
 
   void _removeSelectedSpace() {
     setState(() {
+      _connections = connectionsWithoutSpace(_connections, _selectedSpace!);
       _spaces = [
         for (var i = 0; i < _spaces.length; i++)
           if (i != _selectedSpace) _spaces[i],
@@ -183,6 +222,8 @@ class _ClubMapEditorState extends State<ClubMapEditor> {
 
   void _removeSelected() {
     setState(() {
+      final removed = ClubMapNodeRef.court(_selectedId!);
+      _connections = _connections.where((c) => !c.touches(removed)).toList();
       _elements = _elements.where((e) => e.courtId != _selectedId).toList();
       _selectedId = null;
     });
@@ -191,7 +232,7 @@ class _ClubMapEditorState extends State<ClubMapEditor> {
   Future<void> _save() async {
     setState(() => _saving = true);
     final error = await widget.onSave(
-      ClubMapLayout(widthM: _widthM, heightM: _heightM, elements: _elements, spaces: _spaces, courtSizes: _changedCourtSizes()),
+      ClubMapLayout(widthM: _widthM, heightM: _heightM, elements: _elements, spaces: _spaces, connections: _connections, courtSizes: _changedCourtSizes()),
     );
     if (!mounted) return;
     setState(() => _saving = false);
@@ -317,7 +358,7 @@ class _ClubMapEditorState extends State<ClubMapEditor> {
         const SizedBox(height: 20),
         Text('Otros espacios', style: theme.textTheme.titleMedium),
         const SizedBox(height: 4),
-        Text('Lo que no es cancha: la entrada, los vestuarios, el bar...', style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
+        Text('Lo que no es cancha: la entrada, los vestuarios, el bar... y la calle, como referencia para ubicarse.', style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
         const SizedBox(height: 10),
         Wrap(
           spacing: 8,
@@ -368,8 +409,28 @@ class _ClubMapEditorState extends State<ClubMapEditor> {
     final selectedSpace = _selectedSpace == null ? null : _spaces[_selectedSpace!];
     final removeStyle = TextStyle(color: theme.colorScheme.error);
 
+    final node = _selectedNode;
+    final nodeConnections = node == null ? 0 : _connections.where((c) => c.touches(node)).length;
+    final connectButtons = <Widget>[
+      if (node != null)
+        OutlinedButton.icon(onPressed: () => setState(() => _connectingFrom = node), icon: const Icon(Icons.timeline), label: const Text('Conectar con…')),
+      if (nodeConnections > 0)
+        TextButton(onPressed: _removeSelectedConnections, child: Text(nodeConnections == 1 ? 'Sacar el camino' : 'Sacar $nodeConnections caminos')),
+    ];
+
     final Widget toolbar;
-    if (selected != null && _isPlaced(_selectedId!)) {
+    if (_connectingFrom != null) {
+      toolbar = Wrap(
+        spacing: 8,
+        runSpacing: 4,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        children: [
+          Icon(Icons.timeline, color: theme.colorScheme.primary),
+          Text('Tocá con qué conectar ${_nodeName(_connectingFrom!)}. Si ya están unidos, se saca el camino.', style: theme.textTheme.titleSmall),
+          TextButton(onPressed: () => setState(() => _connectingFrom = null), child: const Text('Cancelar')),
+        ],
+      );
+    } else if (selected != null && _isPlaced(_selectedId!)) {
       final ownSize = selected.court.ownSize;
       toolbar = Wrap(
         spacing: 8,
@@ -383,6 +444,7 @@ class _ClubMapEditorState extends State<ClubMapEditor> {
             label: Text('Medidas: ${(ownSize ?? selected.partition.courtSize).label}${ownSize != null ? ' (propia)' : ''}'),
           ),
           OutlinedButton.icon(onPressed: _rotateSelected, icon: const Icon(Icons.rotate_right), label: const Text('Girar 90°')),
+          ...connectButtons,
           OutlinedButton.icon(
             onPressed: _removeSelected,
             icon: Icon(Icons.delete_outline, color: theme.colorScheme.error),
@@ -399,6 +461,7 @@ class _ClubMapEditorState extends State<ClubMapEditor> {
           Text('${_view.spaceName(selectedSpace)} · ${selectedSpace.widthM} × ${selectedSpace.heightM} m', style: theme.textTheme.titleSmall),
           OutlinedButton.icon(onPressed: _editSelectedSpace, icon: const Icon(Icons.edit_outlined), label: const Text('Nombre y tamaño')),
           OutlinedButton.icon(onPressed: _rotateSelectedSpace, icon: const Icon(Icons.rotate_right), label: const Text('Girar 90°')),
+          ...connectButtons,
           OutlinedButton.icon(
             onPressed: _removeSelectedSpace,
             icon: Icon(Icons.delete_outline, color: theme.colorScheme.error),
@@ -409,7 +472,7 @@ class _ClubMapEditorState extends State<ClubMapEditor> {
     } else {
       toolbar = Align(
         alignment: Alignment.centerLeft,
-        child: Text('Tocá una cancha o un espacio del plano para editarlo.', style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
+        child: Text('Tocá una cancha o un espacio del plano para editarlo o conectarlo con un camino.', style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
       );
     }
 
@@ -471,15 +534,19 @@ class _ClubMapEditorState extends State<ClubMapEditor> {
                                   heightM: _heightM,
                                   elements: _elements,
                                   spaces: _spaces,
+                                  connections: _connections,
                                   scale: _scale,
                                   selectedCourtId: _selectedId,
                                   selectedSpaceIndex: _selectedSpace,
                                   issues: issues,
-                                  onCourtTap: (id) => setState(() => _selectCourt(id)),
+                                  onCourtTap: (id) => _tapNode(ClubMapNodeRef.court(id)),
                                   onCourtMoved: _move,
-                                  onSpaceTap: (index) => setState(() => _selectSpace(index)),
+                                  onSpaceTap: (index) => _tapNode(ClubMapNodeRef.space(index)),
                                   onSpaceMoved: _moveSpace,
-                                  onBackgroundTap: () => setState(() => _selectCourt(null)),
+                                  onBackgroundTap: () => setState(() {
+                                    _connectingFrom = null;
+                                    _selectCourt(null);
+                                  }),
                                 ),
                                 if (_elements.isEmpty)
                                   Positioned.fill(

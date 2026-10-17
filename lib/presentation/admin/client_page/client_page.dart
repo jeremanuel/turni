@@ -10,6 +10,7 @@ import '../../../domain/entities/client.dart';
 import '../../../domain/entities/payment/payment.dart';
 import '../../../domain/repositories/payment_repository.dart';
 import '../client_feature/wrapper_client_provider.dart';
+import 'widgets/categories_container.dart';
 import 'widgets/add_payment_button.dart';
 import 'widgets/basic_data_container.dart';
 import 'widgets/labels_container.dart';
@@ -89,6 +90,7 @@ class _ClientpageState extends State<Clientpage> {
                 payments: const PaymentsContainer(),
                 subscription: _ActiveSubscriptionWidget(client: client),
                 labels: const LabelsContainer(),
+                categories: client.clientId != null ? CategoriesContainer(clientId: client.intClientId) : null,
               );
             },
           ),

@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../../presentation/admin/club_map/club_map_page.dart';
 import '../../../presentation/admin/payments_list/payments_list_page.dart';
 import 'branches/client_shell_branch.dart';
+import 'branches/tournament_shell_branch.dart';
 import 'branches/profile_shell_branch.dart';
 import '../service_locator.dart';
 
@@ -164,6 +165,9 @@ List<StatefulShellBranch> buildBranches(RouterType routerType) {
         ),
       ],
     ),
+    // Rama 7 (Torneos): va al final para no renumerar las anteriores; el
+    // menú lateral la muestra después de Mapa (ver AdminRail).
+    tournamentShellBranch(),
   ];
 }
  String? setCurrentRoute(BuildContext context, GoRouterState state) {
