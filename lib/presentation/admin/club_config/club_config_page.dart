@@ -141,8 +141,8 @@ List<_ClubConfigSection> _sections(ClubConfigFocus? focus) => [
         icon: Icons.credit_card,
         // Vincular la cuenta de Mercado Pago del club (antes estaba en la
         // vieja AdminSettingsPage, debajo de las solicitudes de turno).
-        builder: () => SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
+        builder: () => Builder(builder: (context) => SingleChildScrollView(
+          padding: EdgeInsets.all(ResponsiveBuilder.isMobile(context) ? 16 : 24),
           child: Align(
             alignment: Alignment.topLeft,
             child: ConstrainedBox(
@@ -159,7 +159,7 @@ List<_ClubConfigSection> _sections(ClubConfigFocus? focus) => [
               ),
             ),
           ),
-        ),
+        )),
       ),
     ];
 
