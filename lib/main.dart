@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localization/flutter_localization.dart';
@@ -9,6 +11,7 @@ import 'core/config/app_theme.dart';
 import 'core/config/router/app_router.dart';
 import 'core/config/environment.dart';
 import 'core/config/service_locator.dart';
+import 'core/services/app_version/app_version.dart';
 import 'core/services/push_notification_service.dart';
 import 'infrastructure/localstorage/provider/local_storage.dart';
 import 'presentation/core/cubit/auth/auth_cubit.dart';
@@ -27,6 +30,9 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await Environment.initEnvironment();
+  // Si el servidor tiene un build más nuevo que el que está corriendo
+  // (caché), recarga la página. No bloquea el arranque.
+  unawaited(AppVersion.ensureLatest());
   ServiceLocator.initializeDependencies();
   await initializeDateFormatting('es');
 
