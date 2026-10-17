@@ -20,6 +20,7 @@ import '../widgets/price_field.dart';
 import '../widgets/price_rule_form_dialog.dart';
 import '../widgets/price_tariff_name_dialog.dart';
 import '../widgets/time_field.dart';
+import '../../../../core/utils/responsive_builder.dart';
 
 const _dayLabels = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
 
@@ -445,7 +446,7 @@ class _PriceTariffsTabState extends State<PriceTariffsTab> {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Padding(
-      padding: const EdgeInsets.all(24),
+      padding: EdgeInsets.all(ResponsiveBuilder.isMobile(context) ? 16 : 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

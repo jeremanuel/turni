@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import '../../../../../core/utils/responsive_builder.dart';
+import '../../../mobile/admin_mobile_sub_page.dart';
 
 import '../../../../../core/utils/thousands_format.dart';
 import '../../../../../domain/entities/session.dart';
@@ -80,6 +82,13 @@ class PanelSubHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    // En el celular el título y la flecha van en la barra superior.
+    if (ResponsiveBuilder.isMobile(context)) {
+      return AdminMobileSubPageScope(
+        subPage: AdminMobileSubPage(title: title, onBack: onBack, backTooltip: backTooltip ?? 'Volver al turno'),
+        child: Text(subtitle, style: TextStyle(fontSize: 13, color: scheme.onSurfaceVariant)),
+      );
+    }
     return Row(
       children: [
         Transform.translate(
@@ -133,6 +142,8 @@ class PanelSessionHeader extends StatelessWidget {
           children: [
             status,
             const Spacer(),
+            // En el celular el detalle es una pantalla con flecha atrás.
+            if (!ResponsiveBuilder.isMobile(context))
             IconButton(
               tooltip: 'Cerrar detalle',
               onPressed: onClose,

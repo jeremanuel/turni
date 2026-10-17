@@ -4,6 +4,8 @@ import '../../../core/utils/permissions.dart';
 import '../fixed_sessions/fixed_sessions_tab.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/utils/responsive_builder.dart';
+
 import '../../../core/config/router/app_routes.dart';
 import '../create_session_screen/create_sessions_screen.dart';
 import 'bulk_edit_tab.dart';
@@ -51,6 +53,7 @@ class BulkSessionsPage extends StatelessWidget {
     ];
     final initialIndex = tabs.contains(initialTab) ? tabs.indexOf(initialTab) : 0;
 
+    final isMobile = ResponsiveBuilder.isMobile(context);
     return DefaultTabController(
       length: tabs.length,
       initialIndex: initialIndex,
@@ -67,12 +70,16 @@ class BulkSessionsPage extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                      // Celular: misma medida que la barra superior del resto
+                      // de las pantallas (flecha a 4, título a 56).
+                      padding: isMobile
+                          ? const EdgeInsets.fromLTRB(4, 4, 16, 4)
+                          : const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                       child: Row(
                         children: [
                           SizedBox(
-                            width: 44,
-                            height: 44,
+                            width: isMobile ? 48 : 44,
+                            height: isMobile ? 48 : 44,
                             child: IconButton(
                               tooltip: 'Volver al gestor de turnos',
                               style: IconButton.styleFrom(
@@ -82,7 +89,10 @@ class BulkSessionsPage extends StatelessWidget {
                               onPressed: () => context.go(AppRoutes.SESSION_MANAGER_ROUTE.path),
                             ),
                           ),
-                          const SizedBox(width: 12),
+                          SizedBox(width: isMobile ? 4 : 12),
+                          if (isMobile)
+                            Expanded(child: Text('Gestión masiva', style: Theme.of(context).textTheme.titleLarge))
+                          else
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -102,22 +112,31 @@ class BulkSessionsPage extends StatelessWidget {
                       ),
                     ),
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      padding: EdgeInsets.symmetric(horizontal: isMobile ? 0 : 24),
                       child: TabBar(
-                        isScrollable: true,
-                        tabAlignment: TabAlignment.start,
+                        // Celular: las tres pestañas a lo ancho, sin scroll
+                        // (quedaba una cortada a la izquierda).
+                        isScrollable: !isMobile,
+                        tabAlignment: isMobile ? TabAlignment.fill : TabAlignment.start,
                         dividerColor: Colors.transparent,
                         indicatorSize: TabBarIndicatorSize.tab,
                         indicator: UnderlineTabIndicator(
                           borderSide: BorderSide(color: scheme.primary, width: 3),
                         ),
-                        labelPadding: const EdgeInsets.symmetric(horizontal: 16),
+                        labelPadding: EdgeInsets.symmetric(horizontal: isMobile ? 4 : 16),
                         labelColor: scheme.primary,
                         unselectedLabelColor: scheme.onSurfaceVariant,
                         labelStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
                         unselectedLabelStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
                         tabs: [
                           for (final t in tabs)
+                            if (isMobile)
+                              Tab(text: switch (t) {
+                                BulkSessionsTab.edit => 'Editar',
+                                BulkSessionsTab.add => 'Agregar',
+                                BulkSessionsTab.fixed => 'Turnos fijos',
+                              })
+                            else
                             switch (t) {
                               BulkSessionsTab.edit => tab(Icons.edit_outlined, 'Editar o eliminar'),
                               BulkSessionsTab.add => tab(Icons.add, 'Agregar turnos'),

@@ -16,6 +16,8 @@ import '../../../presentation/auth/admin_invite_page.dart';
 import '../../../presentation/auth/no_access_page.dart';
 import '../../../presentation/admin/users/users_page.dart';
 import 'route_permissions.dart';
+import '../../utils/responsive_builder.dart';
+import '../../../presentation/admin/widgets/admin_destinations.dart';
 import '../../../presentation/core/cubit/auth/auth_cubit.dart';
 import '../../../presentation/home_layout/widgets/custom_layout.dart';
 
@@ -130,6 +132,14 @@ List<StatefulShellBranch> buildBranches(RouterType routerType) {
       GoRoute(
         path: AppRoutes.DASHBOARD_ROUTE.path,
         name: AppRoutes.DASHBOARD_ROUTE.name,
+        // En el celular Inicio (todavía un placeholder) no está en la barra:
+        // se arranca en el primer destino que el rol puede ver (Turnos).
+        redirect: (context, state) {
+          final width = MediaQuery.maybeSizeOf(context)?.width;
+          if (width == null || width >= ResponsiveBuilder.mobileMaxWidth) return null;
+          final home = AdminDestinations.mobileHomePath();
+          return home == AppRoutes.DASHBOARD_ROUTE.path ? null : home;
+        },
         builder: (context, state) => Center(
           child: FilledButton(onPressed: () {}, child: const Text("data")),
         ),

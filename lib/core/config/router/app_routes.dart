@@ -18,14 +18,18 @@ class AppRoutes {
     "SESSION_MANAGER_RESERVE",
     "/session_manager/reserve/:idSession",
     mobileAppBar: MobileAppBarConfig(
-      title: 'Datos del Turno',
+      title: 'Turno',
       backToPath: '/session_manager',
     ),
   );
 
   static const SESSION_MANAGER_EDIT_ROUTE = RouteDefinition("SESSION_MANAGER_EDIT", "/session_manager/edit");
 
-  static const SESSION_MANAGER_ADD_ROUTE = RouteDefinition("SESSION_MANAGER_ADD", "/session_manager/add/:idPhysicalPartition");
+  static const SESSION_MANAGER_ADD_ROUTE = RouteDefinition(
+    "SESSION_MANAGER_ADD",
+    "/session_manager/add/:idPhysicalPartition",
+    mobileAppBar: MobileAppBarConfig(title: 'Nuevo turno', backToPath: '/session_manager'),
+  );
 
   /// Ruta vieja del agregador masivo: hoy abre Gestión masiva en la tab
   /// "Agregar turnos" (ver [BULK_SESSIONS_ROUTE]).
@@ -86,13 +90,14 @@ class AppRoutes {
   static const TOURNAMENT_EDIT_ROUTE = RouteDefinition(
     "TOURNAMENT_EDIT",
     "/tournaments/:tournamentId/edit",
-    mobileAppBar: MobileAppBarConfig(title: 'Editar torneo', backToPath: '/tournaments'),
+    // Sin backToPath: atrás vuelve al detalle del torneo (ruta padre).
+    mobileAppBar: MobileAppBarConfig(title: 'Editar torneo'),
   );
 
   static const TOURNAMENT_SCHEDULE_ROUTE = RouteDefinition(
     "TOURNAMENT_SCHEDULE",
     "/tournaments/:tournamentId/schedule",
-    mobileAppBar: MobileAppBarConfig(title: 'Programación', backToPath: '/tournaments'),
+    mobileAppBar: MobileAppBarConfig(title: 'Programación'),
   );
 
   static const ADMIN_SETTINGS_ROUTE = RouteDefinition(

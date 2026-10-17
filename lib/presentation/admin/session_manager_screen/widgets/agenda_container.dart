@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/utils/responsive_builder.dart';
 import '../../../../core/utils/physical_partition_naming.dart';
 import '../../../../domain/entities/club_partition.dart';
+import '../../../../domain/entities/physical_partition.dart';
 import '../../../core/agenda/agenda.dart';
 import '../../club_config/club_config_focus.dart';
 import '../../club_config/widgets/inactive_partition_hint.dart';
@@ -14,53 +15,97 @@ import '../../browser/browser.dart';
 import '../../browser/browser_options.dart';
 import 'session_manager_card.dart';
 import 'session_manager_day_carrousel.dart';
+import 'mobile_agenda_actions.dart';
 import 'tournament_agenda_slots.dart';
 import '../../../../core/utils/types/time_interval.dart';
 
-class AgendaContainer extends StatelessWidget {
+class AgendaContainer extends StatefulWidget {
   const AgendaContainer({super.key});
+
+  @override
+  State<AgendaContainer> createState() => _AgendaContainerState();
+}
+
+class _AgendaContainerState extends State<AgendaContainer> {
+  /// Celular: la cancha que se está viendo (una a la vez, diseño "Admin
+  /// mobile"). null = la primera del servicio elegido.
+  int? _mobileCourtId;
+
+  /// Canchas visibles del servicio elegido: las inactivas no se muestran,
+  /// salvo que ese día tengan turnos (dar de baja no borra los turnos ya
+  /// creados).
+  List<PhysicalPartition> _courts(SessionManagerState state) =>
+      (state.selectedClubPartition?.physicalPartitions ?? [])
+          .where((p) => p.active || state.sessions.any((s) => s.partitionPhysicalId == p.partitionPhysicalId))
+          .toList();
+
+  /// Nombre de la cancha en el chip; si dos canchas se llaman igual, se
+  /// agrega su número para poder distinguirlas.
+  String _courtChipLabel(PhysicalPartition court, SessionManagerState state) {
+    String label(PhysicalPartition p) =>
+        PhysicalPartitionNaming.labelFromPhysicalPartition(p, fallbackClubPartition: state.selectedClubPartition);
+    final own = label(court);
+    final repeated = _courts(state).where((p) => label(p) == own).length > 1;
+    return repeated ? '$own · ${court.physicalIdentifier ?? court.partitionPhysicalId}' : own;
+  }
+
+  PhysicalPartition? _mobileCourt(SessionManagerState state) {
+    final courts = _courts(state);
+    if (courts.isEmpty) return null;
+    return courts.firstWhere((p) => p.partitionPhysicalId == _mobileCourtId, orElse: () => courts.first);
+  }
 
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<SessionManagerBloc, SessionManagerState>(
         builder: (context, state) {
-          return TournamentAgendaSlots(
+          final isMobile = ResponsiveBuilder.isMobile(context);
+          final agenda = TournamentAgendaSlots(
             day: state.currentDate,
             child: Column(
             children: [
-         
+              if (isMobile) const MobileAgendaToolbar(),
               if (ResponsiveBuilder.isMobile(context))
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 8),
                   child: SizedBox(
                       height: 50,
                       child: SessionManagerDayCarrousel(
-                        width: MediaQuery.of(context).size.width * 0.9,
+                        // Celular: alineado con la agenda (16 de margen de cada lado).
+                        width: MediaQuery.of(context).size.width - 32,
                       )),
                 ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
+                padding: EdgeInsets.symmetric(horizontal: isMobile ? 0 : 8),
                 height: 56,
                 child: ListView(
                   scrollDirection: Axis.horizontal,
                   children: [
-                    if (ResponsiveBuilder.isMobile(context))
-                      const SizedBox(
-                        width: 8,
-                      ),
-                    ...state.clubPartitions.expand((e) => [
-                          buildChip(e, context, state),
-                          const SizedBox(
-                            width: 16,
-                          ),
-                        ]),
-                    if (ResponsiveBuilder.isMobile(context))
-                      const SizedBox(
-                        width: 8,
-                      ),
+                    for (final (i, e) in state.clubPartitions.indexed) ...[
+                      if (i > 0) SizedBox(width: isMobile ? 8 : 16),
+                      buildChip(e, context, state),
+                    ],
                   ],
                 ),
               ),
+              if (ResponsiveBuilder.isMobile(context) && _courts(state).length > 1)
+                SizedBox(
+                  height: 48,
+                  child: ListView(
+                    scrollDirection: Axis.horizontal,
+                    children: [
+                      for (final court in _courts(state)) ...[
+                        ChoiceChip(
+                          label: Text(_courtChipLabel(court, state)),
+                          selected: court.partitionPhysicalId == _mobileCourt(state)?.partitionPhysicalId,
+                          showCheckmark: false,
+                          onSelected: (_) => setState(() => _mobileCourtId = court.partitionPhysicalId),
+                        ),
+                        const SizedBox(width: 8),
+                      ],
+                    ],
+                  ),
+                ),
               const SizedBox(
                 height: 8,
               ),
@@ -84,6 +129,14 @@ class AgendaContainer extends StatelessWidget {
             ],
           ),
           );
+          if (!isMobile) return agenda;
+          // Celular: botón flotante para cargar turnos, sobre la agenda.
+          return Stack(
+            children: [
+              Positioned.fill(child: agenda),
+              const Positioned(right: 0, bottom: 0, child: MobileAgendaAddButton()),
+            ],
+          );
         });
   }
 
@@ -101,8 +154,11 @@ class AgendaContainer extends StatelessWidget {
           );
         }
 
-        return Agenda(
-          columnWidth: 200,
+        final isMobile = ResponsiveBuilder.isMobile(context);
+        final mobileCourt = isMobile ? _mobileCourt(state) : null;
+        return LayoutBuilder(builder: (context, constraints) => Agenda(
+          // Celular: una cancha a todo el ancho (menos la columna de horas).
+          columnWidth: isMobile ? (constraints.maxWidth - 66).clamp(160, 600).toDouble() : 200,
           focusSession: state.selectedSession,
           heightPerMinute: ResponsiveBuilder.isDesktop(context) ? 1.35 : 1.1,
           fromDate:
@@ -132,14 +188,8 @@ class AgendaContainer extends StatelessWidget {
           sessions: state.sessions,
           // Las canchas inactivas no se muestran como columna, salvo que ese
           // día tengan turnos (dar de baja no borra los turnos ya creados).
-          physicalPartitions: (state.selectedClubPartition?.physicalPartitions ?? [])
-              .where((p) =>
-                  p.active ||
-                  state.sessions.any(
-                    (s) => s.partitionPhysicalId == p.partitionPhysicalId,
-                  ))
-              .toList(),
-        );
+          physicalPartitions: mobileCourt != null ? [mobileCourt] : _courts(state),
+        ));
       },
     );
   }

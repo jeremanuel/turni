@@ -8,6 +8,7 @@ import '../../../../core/presentation/components/inputs/snackbars/snackbars_func
 import '../../../../core/utils/domain_error.dart';
 import '../../../../core/utils/either.dart';
 import '../../../../domain/repositories/admin_repository.dart';
+import '../../../../core/utils/responsive_builder.dart';
 
 /// Contenido de la antigua `AdminSettingsPage`, ahora como una tab dentro de
 /// `ClubConfigPage` en vez de una pantalla propia con su Scaffold/AppBar.
@@ -106,7 +107,7 @@ class _SessionRequestSettingsTabState
     }
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(24),
+      padding: EdgeInsets.all(ResponsiveBuilder.isMobile(context) ? 16 : 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

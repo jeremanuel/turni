@@ -1,9 +1,24 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/utils/responsive_builder.dart';
+
+/// Cómo se muestra una [AdminDataTable] en el celular.
+enum AdminTableMobileLayout {
+  /// Cada fila es una tarjeta: la primera columna como título y el resto como
+  /// pares "columna: valor" (default).
+  cards,
+
+  /// Se mantiene la tabla, con scroll horizontal (tabla de posiciones,
+  /// ranking: comparar filas es el punto de la tabla).
+  scroll,
+}
+
 /// Tabla con grilla completa (header con fondo + bordes en cada celda),
 /// igual al mockup de Ajustes. El `DataTable` nativo de Material solo
 /// dibuja líneas horizontales entre filas, sin bordes verticales ni fondo
 /// de header propio, así que no alcanza para el diseño aprobado.
+///
+/// En el celular se convierte según [mobileLayout] (diseño "Admin mobile").
 class AdminDataTable extends StatelessWidget {
   const AdminDataTable({
     super.key,
@@ -14,7 +29,16 @@ class AdminDataTable extends StatelessWidget {
     this.cellFontSize = 13.5,
     this.rowTextColors,
     this.maxBodyHeight,
+    this.mobileLayout = AdminTableMobileLayout.cards,
+    this.mobileNested = false,
   });
+
+  /// La tabla está dentro de otra tarjeta (ej. los espacios de un servicio):
+  /// en el celular las filas se dibujan con borde en vez de relleno, para
+  /// que se distingan de la tarjeta que las contiene.
+  final bool mobileNested;
+
+  final AdminTableMobileLayout mobileLayout;
 
   /// Si viene, el encabezado queda fijo y las filas scrollean dentro de esa
   /// altura máxima (tablas largas, ej. la vista previa de gestión masiva).
@@ -35,6 +59,21 @@ class AdminDataTable extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (ResponsiveBuilder.isMobile(context)) {
+      if (mobileLayout == AdminTableMobileLayout.cards) return _MobileCards(table: this);
+      return LayoutBuilder(
+        builder: (context, constraints) {
+          final table = _buildTable(context);
+          // Dentro de un scroll horizontal ya no hace falta otro.
+          if (!constraints.hasBoundedWidth) return table;
+          return SingleChildScrollView(scrollDirection: Axis.horizontal, child: table);
+        },
+      );
+    }
+    return _buildTable(context);
+  }
+
+  Widget _buildTable(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final headerStyle = TextStyle(
       fontSize: 12.5,
@@ -116,6 +155,145 @@ class AdminDataTable extends StatelessWidget {
             ),
           ),
       ],
+    );
+  }
+}
+
+/// Scroll horizontal para una tabla ancha en escritorio. En el celular la
+/// tabla ya se muestra como tarjetas a lo ancho, así que no scrollea.
+class AdminTableScroll extends StatelessWidget {
+  const AdminTableScroll({super.key, required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    if (ResponsiveBuilder.isMobile(context)) return child;
+    return SingleChildScrollView(scrollDirection: Axis.horizontal, child: child);
+  }
+}
+
+/// Tarjeta que contiene una [AdminDataTable]. En el celular la tabla ya se
+/// muestra como tarjetas, así que no se dibuja otra tarjeta alrededor (quedaba
+/// doble margen y las filas no se distinguían del fondo).
+class AdminTableCard extends StatelessWidget {
+  const AdminTableCard({super.key, required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    if (ResponsiveBuilder.isMobile(context)) return child;
+    return Card(child: Padding(padding: const EdgeInsets.all(20), child: child));
+  }
+}
+
+/// Celular: una tarjeta por fila.
+class _MobileCards extends StatelessWidget {
+  const _MobileCards({required this.table});
+
+  final AdminDataTable table;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    final columns = table.columns;
+
+    Widget card(int i) {
+      final cells = table.rows[i];
+      final color = table.rowTextColors?[i] ?? scheme.onSurface;
+      final details = <Widget>[];
+      final actions = <Widget>[];
+      for (var c = 1; c < cells.length; c++) {
+        final label = c < columns.length ? columns[c].trim() : '';
+        // Columnas sin encabezado (acciones, íconos): van abajo a la derecha.
+        if (label.isEmpty) {
+          actions.add(cells[c]);
+          continue;
+        }
+        details.add(Padding(
+          padding: const EdgeInsets.only(top: 6),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(
+                width: 96,
+                child: Text(label, style: textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant)),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: DefaultTextStyle.merge(
+                  style: TextStyle(fontSize: table.cellFontSize, color: color),
+                  child: Align(alignment: Alignment.centerLeft, child: cells[c]),
+                ),
+              ),
+            ],
+          ),
+        ));
+      }
+
+      return Card(
+        margin: EdgeInsets.zero,
+        color: table.mobileNested ? Colors.transparent : null,
+        shape: table.mobileNested
+            ? RoundedRectangleBorder(borderRadius: BorderRadius.circular(12), side: BorderSide(color: scheme.outlineVariant))
+            : null,
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(table.mobileNested ? 12 : 16, 12, table.mobileNested ? 12 : 16, 12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Las acciones (íconos, menú ⋮) van arriba a la derecha, junto
+              // al título, en vez de ocupar una fila propia al pie.
+              if (cells.isNotEmpty)
+                Row(
+                  children: [
+                    Expanded(
+                      child: DefaultTextStyle.merge(
+                        style: textTheme.titleSmall?.copyWith(color: color),
+                        child: Align(alignment: Alignment.centerLeft, child: cells.first),
+                      ),
+                    ),
+                    ...actions,
+                  ],
+                ),
+              ...details,
+            ],
+          ),
+        ),
+      );
+    }
+
+    final list = Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        for (var i = 0; i < table.rows.length; i++) ...[
+          if (i > 0) const SizedBox(height: 8),
+          card(i),
+        ],
+      ],
+    );
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        Widget content = list;
+        final maxBodyHeight = table.maxBodyHeight;
+        if (maxBodyHeight != null) {
+          content = ConstrainedBox(
+            constraints: BoxConstraints(maxHeight: maxBodyHeight),
+            child: _ScrollableBody(child: list),
+          );
+        }
+        // Dentro de un scroll horizontal el ancho no está acotado: las
+        // tarjetas toman el ancho de la pantalla.
+        if (!constraints.hasBoundedWidth) {
+          return SizedBox(width: MediaQuery.sizeOf(context).width - 32, child: content);
+        }
+        return content;
+      },
     );
   }
 }
