@@ -40,6 +40,17 @@ class DomainError implements Exception {
       // algunos mandan un código de texto (ej. "CLUB_ACCOUNT_NOT_LINKED").
       // Antes, sin un `code` numérico se perdía el mensaje del backend.
       final code = response['code'];
+      // Otros (torneos, conflictos de turno) mandan `{ error: CÓDIGO, message: texto }`:
+      // el texto para mostrar es `message` y el código queda en `details`.
+      final message = response['message'];
+      if (message is String && message.isNotEmpty) {
+        return DomainError(
+          message: message,
+          internalCode: code is int ? code : unknwonError,
+          details: { "code": response['error'] },
+          date: DateTime.now(),
+        );
+      }
       return DomainError(
         message: response['error'] as String,
         internalCode: code is int ? code : unknwonError,

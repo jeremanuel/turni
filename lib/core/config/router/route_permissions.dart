@@ -14,6 +14,8 @@ class RoutePermissions {
     (AppRoutes.NEW_CLIENT_ROUTE.path, [Permissions.CLIENTES_VER]),
     (AppRoutes.PAYMENTS_LIST.path, [Permissions.PAGOS_VER]),
     (AppRoutes.CLUB_MAP_ROUTE.path, [Permissions.MAPA_VER]),
+    (AppRoutes.TOURNAMENT_NEW_ROUTE.path, [Permissions.TORNEOS_EDITAR]),
+    (AppRoutes.TOURNAMENTS_ROUTE.path, [Permissions.TORNEOS_VER]),
     (AppRoutes.ADMIN_SETTINGS_ROUTE.path, [Permissions.CONFIGURACION_VER]),
     (AppRoutes.USERS_ROUTE.path, [Permissions.ADMINISTRADORES_VER, Permissions.ROLES_VER]),
   ];
