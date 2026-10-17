@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import '../../../core/config/service_locator.dart';
 import '../../../core/utils/either.dart';
 import '../../../core/utils/permissions.dart';
+import '../../../core/utils/responsive_builder.dart';
 import '../../../domain/entities/fixed_session.dart';
 import '../../../domain/repositories/fixed_session_repository.dart';
 import '../../../core/utils/admin_vocabulary.dart';
@@ -32,7 +33,9 @@ class _FixedSessionsTabState extends State<FixedSessionsTab> {
   String? _error;
   List<FixedSession> _items = [];
   String? _sport;
-  _View _view = _View.week;
+  /// null = la de default: lista en el celular, semana en pantallas anchas.
+  _View? _selectedView;
+  _View get _view => _selectedView ?? (ResponsiveBuilder.isMobile(context) ? _View.list : _View.week);
 
   bool get _canCreate => Permissions.can(Permissions.TURNOS_FIJOS_CREAR);
   bool get _canCancel => Permissions.can(Permissions.TURNOS_FIJOS_CANCELAR);
@@ -107,11 +110,68 @@ class _FixedSessionsTabState extends State<FixedSessionsTab> {
     final hours = _items.fold<int>(0, (sum, f) => sum + f.duration) / 60;
     final conflicts = _items.where((f) => f.hasConflicts).length;
 
+    final isMobile = ResponsiveBuilder.isMobile(context);
+    final hoursLabel = '${hours == hours.roundToDouble() ? hours.toInt() : hours.toStringAsFixed(1)} h';
+    final search = TextField(
+      controller: _search,
+      decoration: const InputDecoration(
+        hintText: 'Buscar cliente',
+        prefixIcon: Icon(Icons.search),
+        isDense: true,
+        border: OutlineInputBorder(),
+      ),
+    );
+    final viewToggle = SegmentedButton<_View>(
+      showSelectedIcon: false,
+      segments: const [
+        ButtonSegment(value: _View.week, label: Text('Semana'), icon: Icon(Icons.view_week_outlined)),
+        ButtonSegment(value: _View.list, label: Text('Lista'), icon: Icon(Icons.view_list_outlined)),
+      ],
+      selected: {_view},
+      onSelectionChanged: (s) => setState(() => _selectedView = s.first),
+    );
+    final sportChips = [
+      ChoiceChip(label: const Text('Todos'), selected: _sport == null, onSelected: (_) => setState(() => _sport = null)),
+      for (final sport in _sports)
+        ChoiceChip(label: Text(sport), selected: _sport == sport, onSelected: (_) => setState(() => _sport = sport)),
+    ];
+
+    // Celular: cada bloque a todo el ancho (en el Wrap de escritorio las
+    // stats, el buscador y los botones quedaban desparejos).
+    final mobileHeader = <Widget>[
+      IntrinsicHeight(
+        child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Expanded(child: _StatTile(label: 'Activos', value: '${_items.length}')),
+          const SizedBox(width: 8),
+          Expanded(child: _StatTile(label: 'Horas por semana', value: hoursLabel)),
+          const SizedBox(width: 8),
+          Expanded(child: _StatTile(label: 'Con conflictos', value: '$conflicts', alert: conflicts > 0)),
+        ],
+      ),
+      ),
+      const SizedBox(height: 12),
+      search,
+      const SizedBox(height: 12),
+      Wrap(spacing: 8, runSpacing: 8, children: sportChips),
+      const SizedBox(height: 12),
+      Row(
+        children: [
+          viewToggle,
+          const Spacer(),
+          if (_canCreate)
+            FilledButton.icon(onPressed: () => _create(), icon: const Icon(Icons.add), label: const Text('Nuevo')),
+        ],
+      ),
+    ];
+
     return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
+      padding: isMobile ? const EdgeInsets.all(16) : const EdgeInsets.fromLTRB(24, 20, 24, 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          if (isMobile) ...mobileHeader else
           Wrap(
             spacing: 12,
             runSpacing: 12,
@@ -143,7 +203,7 @@ class _FixedSessionsTabState extends State<FixedSessionsTab> {
                   ButtonSegment(value: _View.list, label: Text('Lista'), icon: Icon(Icons.view_list_outlined)),
                 ],
                 selected: {_view},
-                onSelectionChanged: (s) => setState(() => _view = s.first),
+                onSelectionChanged: (s) => setState(() => _selectedView = s.first),
               ),
               if (_canCreate)
                 FilledButton.icon(
@@ -164,6 +224,18 @@ class _FixedSessionsTabState extends State<FixedSessionsTab> {
   }
 
   Widget _week(List<FixedSession> visible) {
+    // Celular: los 7 días no entran a lo ancho; columnas de ancho fijo con
+    // scroll horizontal.
+    if (ResponsiveBuilder.isMobile(context)) {
+      return SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: SizedBox(width: 7 * 260 + 6 * 12, child: _weekRow(visible)),
+      );
+    }
+    return _weekRow(visible);
+  }
+
+  Widget _weekRow(List<FixedSession> visible) {
     final scheme = Theme.of(context).colorScheme;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -245,12 +317,9 @@ class _FixedSessionsTabState extends State<FixedSessionsTab> {
       );
     }
     return SingleChildScrollView(
-      child: Card(
-        child: Padding(
-          padding: const EdgeInsets.all(20),
+      child: AdminTableCard(
           child: LayoutBuilder(
-            builder: (context, constraints) => SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
+            builder: (context, constraints) => AdminTableScroll(
               child: ConstrainedBox(
                 constraints: BoxConstraints(minWidth: constraints.maxWidth),
                 child: AdminDataTable(
@@ -273,7 +342,6 @@ class _FixedSessionsTabState extends State<FixedSessionsTab> {
               ),
             ),
           ),
-        ),
       ),
     );
   }

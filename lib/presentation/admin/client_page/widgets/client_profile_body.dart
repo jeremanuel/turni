@@ -177,6 +177,59 @@ class _HeaderCard extends StatelessWidget {
       ],
     );
 
+    // Celular: avatar y datos en una fila, acciones abajo alineadas a la
+    // izquierda (el Wrap de escritorio dejaba todo desparejo).
+    if (ResponsiveBuilder.isMobile(context)) {
+      return Card(
+        margin: EdgeInsets.zero,
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  CircleAvatar(
+                    radius: 28,
+                    backgroundColor: scheme.primaryContainer,
+                    child: Text(_initials(name), style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500, color: scheme.onPrimaryContainer)),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(name, style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w500)),
+                        if (client.userId != null || labels.isNotEmpty) ...[
+                          const SizedBox(height: 6),
+                          Wrap(
+                            spacing: 6,
+                            runSpacing: 6,
+                            children: [
+                              if (client.userId != null) _Tag(label: 'Usa la app', filled: true),
+                              for (final label in labels.take(3)) _Tag(label: label.value),
+                            ],
+                          ),
+                        ],
+                        const SizedBox(height: 6),
+                        Text(
+                          facts.isEmpty ? 'Sin datos de contacto' : facts.join('\n'),
+                          style: textTheme.bodyMedium?.copyWith(color: scheme.onSurfaceVariant),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Wrap(spacing: 8, runSpacing: 8, children: actions.children),
+            ],
+          ),
+        ),
+      );
+    }
+
     return Card(
       margin: EdgeInsets.zero,
       child: Padding(

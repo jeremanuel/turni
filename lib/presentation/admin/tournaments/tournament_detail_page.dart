@@ -13,6 +13,7 @@ import '../../../domain/repositories/tournament_repository.dart';
 import '../club_config/widgets/admin_data_table.dart';
 import 'widgets/bracket_view.dart';
 import 'widgets/match_dialogs.dart';
+import '../../../core/utils/responsive_builder.dart';
 import 'widgets/tournament_ui.dart';
 
 /// Un torneo del club: estado, inscripciones con pagos, cuadro y partidos.
@@ -290,6 +291,8 @@ class _TournamentDetailPageState extends State<TournamentDetailPage> {
       if (hasMatches) ('Partidos', _matchesTab(t)),
     ];
 
+    if (ResponsiveBuilder.isMobile(context)) return _mobileScaffold(t, tabs, hasMatches);
+
     return DefaultTabController(
       length: tabs.length,
       initialIndex: hasMatches ? 1 : 0,
@@ -319,6 +322,91 @@ class _TournamentDetailPageState extends State<TournamentDetailPage> {
         ),
         body: TabBarView(children: [for (final (_, tab) in tabs) tab]),
       ),
+    );
+  }
+
+  /// Celular: la barra superior lleva solo el nombre y el menú; estado,
+  /// avance y la acción principal van debajo, a todo el ancho.
+  Widget _mobileScaffold(Tournament t, List<(String, Widget)> tabs, bool hasMatches) {
+    final scheme = Theme.of(context).colorScheme;
+    final primary = _primaryActions(t).toList();
+    return DefaultTabController(
+      length: tabs.length,
+      initialIndex: hasMatches ? 1 : 0,
+      child: Scaffold(
+        backgroundColor: scheme.surfaceContainer,
+        appBar: AppBar(
+          titleSpacing: 0,
+          title: Text(t.name, overflow: TextOverflow.ellipsis),
+          actions: [
+            if (_busy) const Padding(padding: EdgeInsets.all(16), child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))),
+            ..._menu(t),
+            const SizedBox(width: 4),
+          ],
+        ),
+        body: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Container(
+              color: scheme.surface,
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _header(t),
+                  const SizedBox(height: 12),
+                  _mobileProgress(t),
+                  if (primary.isNotEmpty) ...[
+                    const SizedBox(height: 12),
+                    Wrap(spacing: 8, runSpacing: 8, children: primary),
+                  ],
+                ],
+              ),
+            ),
+            Material(
+              color: scheme.surface,
+              child: TabBar(isScrollable: true, tabAlignment: TabAlignment.start, tabs: [for (final (label, _) in tabs) Tab(text: label)]),
+            ),
+            Expanded(child: TabBarView(children: [for (final (_, tab) in tabs) tab])),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Avance del torneo en una barra de pasos (el stepper de escritorio no
+  /// entra a lo ancho del celular).
+  Widget _mobileProgress(Tournament t) {
+    final scheme = Theme.of(context).colorScheme;
+    const steps = [TournamentStatus.draft, TournamentStatus.open, TournamentStatus.closed, TournamentStatus.inProgress, TournamentStatus.finished];
+    final current = steps.indexOf(t.status);
+    if (current < 0) return _stepper(t);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            for (final (i, _) in steps.indexed) ...[
+              if (i > 0) const SizedBox(width: 4),
+              Expanded(
+                child: Container(
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: i <= current ? scheme.primary : scheme.outlineVariant,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ),
+        const SizedBox(height: 6),
+        Text(
+          'Paso ${current + 1} de ${steps.length}'
+          '${current + 1 < steps.length ? ' · sigue: ${steps[current + 1].label}' : ''}',
+          style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
+        ),
+      ],
     );
   }
 
@@ -438,7 +526,7 @@ class _TournamentDetailPageState extends State<TournamentDetailPage> {
     final showSummary = s != null && t.hasFee && (t.status == TournamentStatus.open || t.status == TournamentStatus.closed);
 
     return ListView(
-      padding: const EdgeInsets.all(24),
+      padding: EdgeInsets.all(ResponsiveBuilder.isMobile(context) ? 16 : 24),
       children: [
         if (showSummary) ...[
           Wrap(
@@ -569,7 +657,7 @@ class _TournamentDetailPageState extends State<TournamentDetailPage> {
     final disputed = t.matches.where((m) => m.status == MatchStatus.disputed).toList();
 
     return ListView(
-      padding: const EdgeInsets.all(24),
+      padding: EdgeInsets.all(ResponsiveBuilder.isMobile(context) ? 16 : 24),
       children: [
         for (final m in disputed)
           Padding(
@@ -620,7 +708,7 @@ class _TournamentDetailPageState extends State<TournamentDetailPage> {
     final unscheduled = t.matches.where((m) => m.session == null && !m.isFinished && m.hasBothTeams).length;
 
     return ListView(
-      padding: const EdgeInsets.all(24),
+      padding: EdgeInsets.all(ResponsiveBuilder.isMobile(context) ? 16 : 24),
       children: [
         if (unscheduled > 0 && _canEdit && t.status == TournamentStatus.inProgress)
           Padding(

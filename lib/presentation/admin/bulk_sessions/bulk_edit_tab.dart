@@ -30,6 +30,7 @@ import 'cubit/bulk_edit_cubit.dart';
 import 'dialogs/bulk_confirm_delete_dialog.dart';
 import 'dialogs/bulk_result_dialog.dart';
 import 'widgets/bulk_widgets.dart';
+import '../../../core/utils/responsive_builder.dart';
 
 /// Tab "Editar o eliminar" de Gestión masiva de turnos: reglas (qué turnos),
 /// acción (qué hacer) y vista previa, con la barra de aplicar fija abajo.
@@ -167,7 +168,7 @@ class _BulkEditViewState extends State<_BulkEditView> {
           children: [
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.all(24),
+                padding: EdgeInsets.all(ResponsiveBuilder.isMobile(context) ? 16 : 24),
                 child: LayoutBuilder(
                   builder: (context, constraints) {
                     final rules = _buildRulesCard(context, state, clubPartitions);

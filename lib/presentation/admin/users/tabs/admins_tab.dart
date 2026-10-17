@@ -13,6 +13,7 @@ import '../../../../domain/repositories/admin_access_repository.dart';
 import '../../club_config/widgets/admin_data_table.dart';
 import '../users_access.dart';
 import '../widgets/invite_admin_dialog.dart';
+import '../../../../core/utils/responsive_builder.dart';
 
 /// Administradores del club: cambiar rol, habilitar/deshabilitar, invitar y
 /// los links de invitación pendientes.
@@ -187,7 +188,7 @@ class _AdminsTabState extends State<AdminsTab> {
     final textTheme = Theme.of(context).textTheme;
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(24),
+      padding: EdgeInsets.all(ResponsiveBuilder.isMobile(context) ? 16 : 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -212,24 +213,18 @@ class _AdminsTabState extends State<AdminsTab> {
             ],
           ),
           const SizedBox(height: 16),
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: AdminDataTable(
-                  columns: const ['Administrador', 'Email', 'Rol', 'Estado', ''],
-                  rows: [for (final admin in _admins) _adminRow(admin)],
-                ),
+          AdminTableCard(
+            child: AdminTableScroll(
+              child: AdminDataTable(
+                columns: const ['Administrador', 'Email', 'Rol', 'Estado', ''],
+                rows: [for (final admin in _admins) _adminRow(admin)],
               ),
             ),
           ),
           if (_invitations.isNotEmpty) ...[
             const SizedBox(height: 24),
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(20),
-                child: Column(
+            AdminTableCard(
+              child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text('Invitaciones pendientes', style: textTheme.titleMedium),
@@ -239,8 +234,7 @@ class _AdminsTabState extends State<AdminsTab> {
                       style: textTheme.bodySmall,
                     ),
                     const SizedBox(height: 16),
-                    SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
+                    AdminTableScroll(
                       child: AdminDataTable(
                         columns: const ['Nombre', 'Rol', 'Vence', ''],
                         rows: [for (final invitation in _invitations) _invitationRow(invitation)],
@@ -248,7 +242,6 @@ class _AdminsTabState extends State<AdminsTab> {
                     ),
                   ],
                 ),
-              ),
             ),
           ],
         ],

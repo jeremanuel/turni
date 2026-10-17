@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
 
+/// Cortes de pantalla del admin (ver diseño "Admin mobile — layout y
+/// navegación"):
+/// - celular: menos de [mobileMaxWidth] → barra de navegación inferior;
+/// - tablet: hasta [desktopMinWidth] → menú lateral, paneles a pantalla completa;
+/// - escritorio: desde [desktopMinWidth] → layout completo con panel lateral.
 class ResponsiveBuilder extends StatelessWidget {
   const ResponsiveBuilder({
     required this.mobileBuilder,
@@ -7,6 +12,9 @@ class ResponsiveBuilder extends StatelessWidget {
     required this.desktopBuilder,
     super.key,
   });
+
+  static const double mobileMaxWidth = 600;
+  static const double desktopMinWidth = 1240;
 
   final Widget Function(
     BuildContext context,
@@ -24,22 +32,23 @@ class ResponsiveBuilder extends StatelessWidget {
   ) desktopBuilder;
 
   static bool isMobile(BuildContext context) =>
-      MediaQuery.of(context).size.width < 650;
+      MediaQuery.sizeOf(context).width < mobileMaxWidth;
 
-  static bool isTablet(BuildContext context) =>
-      MediaQuery.of(context).size.width < 1250 &&
-      MediaQuery.of(context).size.width >= 650;
+  static bool isTablet(BuildContext context) {
+    final width = MediaQuery.sizeOf(context).width;
+    return width >= mobileMaxWidth && width < desktopMinWidth;
+  }
 
   static bool isDesktop(BuildContext context) =>
-      MediaQuery.of(context).size.width >= 1250;
+      MediaQuery.sizeOf(context).width >= desktopMinWidth;
 
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        if (constraints.maxWidth >= 1250) {
+        if (constraints.maxWidth >= desktopMinWidth) {
           return desktopBuilder(context, constraints);
-        } else if (constraints.maxWidth >= 650) {
+        } else if (constraints.maxWidth >= mobileMaxWidth) {
           return tabletBuilder(context, constraints);
         } else {
           return mobileBuilder(context, constraints);

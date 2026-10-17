@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/utils/responsive_builder.dart';
 
 import '../../../../core/presentation/components/links/entity_links.dart';
 import '../../../../core/utils/admin_vocabulary.dart';
@@ -124,8 +125,11 @@ class _ClubMapOverviewState extends State<ClubMapOverview> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text('Mapa', style: theme.textTheme.headlineMedium),
-                    const SizedBox(height: 4),
+                    // En el celular el título ya está en la barra superior.
+                    if (!ResponsiveBuilder.isMobile(context)) ...[
+                      Text('Mapa', style: theme.textTheme.headlineMedium),
+                      const SizedBox(height: 4),
+                    ],
                     Text('Así están ubicad${widget.view.vocabulary.space.g('a', 'o')}s ${widget.view.vocabulary.space.definitePlural} y cuáles están ocupad${widget.view.vocabulary.space.g('a', 'o')}s ahora.', style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
                   ],
                 ),

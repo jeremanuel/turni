@@ -123,9 +123,9 @@ class ClubPartitionCard extends StatelessWidget {
                   ),
                 )
               else
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
+                AdminTableScroll(
                   child: AdminDataTable(
+                    mobileNested: true,
                     columns: [
                       'Nombre',
                       if (features.capacity) vocabulary.participant.plural,

@@ -8,6 +8,7 @@ import '../../../../domain/repositories/admin_access_repository.dart';
 import '../../club_config/widgets/admin_data_table.dart';
 import '../users_access.dart';
 import '../widgets/role_form_dialog.dart';
+import '../../../../core/utils/responsive_builder.dart';
 
 /// Roles del club: qué pantallas ve y qué puede hacer cada uno.
 class RolesTab extends StatefulWidget {
@@ -88,7 +89,7 @@ class _RolesTabState extends State<RolesTab> {
     if (_isLoading) return const Center(child: CircularProgressIndicator());
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(24),
+      padding: EdgeInsets.all(ResponsiveBuilder.isMobile(context) ? 16 : 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -116,12 +117,9 @@ class _RolesTabState extends State<RolesTab> {
             ],
           ),
           const SizedBox(height: 16),
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: LayoutBuilder(
-                builder: (context, constraints) => SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
+          AdminTableCard(
+            child: LayoutBuilder(
+                builder: (context, constraints) => AdminTableScroll(
                   child: ConstrainedBox(
                     constraints: BoxConstraints(minWidth: constraints.maxWidth),
                     child: AdminDataTable(
@@ -136,7 +134,6 @@ class _RolesTabState extends State<RolesTab> {
                     ),
                   ),
                 ),
-              ),
             ),
           ),
         ],

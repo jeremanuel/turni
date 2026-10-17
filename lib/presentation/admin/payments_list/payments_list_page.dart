@@ -10,6 +10,8 @@ import '../../../domain/entities/payment/payment_provider_status.dart';
 import '../../../domain/repositories/payment_repository.dart';
 import 'cubit/payments_list_cubit.dart';
 import 'widgets/payments_list_header.dart';
+import 'widgets/payments_mobile_list.dart';
+import '../../../core/utils/responsive_builder.dart';
 
 class PaymentsListPage extends StatelessWidget {
   const PaymentsListPage({super.key});
@@ -30,6 +32,9 @@ class PaymentsListPage extends StatelessWidget {
             return Column(
               children: [
                 const PaymentsListHeader(),
+                if (ResponsiveBuilder.isMobile(context))
+                  const Expanded(child: PaymentsMobileList())
+                else
                 Expanded(
                   child: CustomTrinaGrid(
                     onLoaded: (event) => context.read<PaymentsListCubit>().trinaGridStateManager = event.stateManager..setShowColumnFooter(true),
