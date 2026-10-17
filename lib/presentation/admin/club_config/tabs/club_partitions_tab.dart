@@ -8,6 +8,7 @@ import '../../../../core/presentation/components/inputs/snackbars/snackbars_func
 import '../../../../core/utils/domain_error.dart';
 import '../../../../core/utils/either.dart';
 import '../../../../domain/entities/club_partition.dart';
+import '../../../../domain/entities/partition_vocabulary.dart';
 import '../../../../domain/entities/club_type.dart';
 import '../../../../domain/entities/physical_partition.dart';
 import '../../../../domain/repositories/club_partition_admin_repository.dart';
@@ -165,8 +166,7 @@ class _ClubPartitionsTabState extends State<ClubPartitionsTab> {
     final result = await _repository.createClubPartition(
       clubTypeId: _newSectorClubTypeId!,
       phone: _newSectorPhoneController.text.trim().isEmpty ? null : _newSectorPhoneController.text.trim(),
-      physicalPartitionName:
-          _newSectorNameController.text.trim().isEmpty ? null : _newSectorNameController.text.trim(),
+      name: _newSectorNameController.text.trim().isEmpty ? null : _newSectorNameController.text.trim(),
     );
 
     if (!mounted) return;
@@ -241,6 +241,7 @@ class _ClubPartitionsTabState extends State<ClubPartitionsTab> {
       context: context,
       builder: (_) => PartitionPhysicalFormDialog(
         clubPartitionId: id,
+        vocabulary: PartitionVocabulary.of(partition),
         suggestedIdentifier: suggested,
       ),
     );
@@ -254,6 +255,9 @@ class _ClubPartitionsTabState extends State<ClubPartitionsTab> {
       context: context,
       builder: (_) => PartitionPhysicalFormDialog(
         clubPartitionId: partition.clubPartitionId,
+        vocabulary: PartitionVocabulary.of(
+          _clubPartitions.where((p) => p.club_partition_id == partition.clubPartitionId).firstOrNull,
+        ),
         existing: partition,
       ),
     );
@@ -305,7 +309,7 @@ class _ClubPartitionsTabState extends State<ClubPartitionsTab> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Dar de baja nunca borra turnos ya tomados: solo oculta el sector/cancha para reservas nuevas.',
+            'Dar de baja nunca borra turnos ya tomados: solo oculta el servicio o el espacio para reservas nuevas.',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant),
           ),
           const SizedBox(height: 20),
@@ -313,7 +317,7 @@ class _ClubPartitionsTabState extends State<ClubPartitionsTab> {
           if (_clubPartitions.isEmpty)
             const Padding(
               padding: EdgeInsets.symmetric(vertical: 12),
-              child: Text('Todavía no hay deportes/sectores creados.'),
+              child: Text('Todavía no hay servicios creados.'),
             )
           else
             ...(_clubPartitions.map((partition) {
@@ -352,10 +356,10 @@ class _ClubPartitionsTabState extends State<ClubPartitionsTab> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text('Alta de nuevo deporte/sector', style: Theme.of(context).textTheme.titleMedium),
+                    Text('Nuevo servicio', style: Theme.of(context).textTheme.titleMedium),
                     const SizedBox(height: 4),
                     Text(
-                      'Así se ve el formulario para crear un sector nuevo.',
+                      'Así se ve el formulario para crear un servicio nuevo.',
                       style: Theme.of(context)
                           .textTheme
                           .bodySmall
@@ -397,7 +401,7 @@ class _ClubPartitionsTabState extends State<ClubPartitionsTab> {
                           child: TextFormField(
                             controller: _newSectorNameController,
                             decoration: const InputDecoration(
-                              labelText: 'Nombre de la partición física',
+                              labelText: 'Nombre del servicio (opcional)',
                               border: OutlineInputBorder(),
                             ),
                           ),
@@ -416,7 +420,7 @@ class _ClubPartitionsTabState extends State<ClubPartitionsTab> {
                                   width: 16,
                                   child: CircularProgressIndicator(strokeWidth: 2),
                                 )
-                              : const Text('Crear sector'),
+                              : const Text('Crear servicio'),
                         ),
                       ],
                     ),

@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/utils/responsive_builder.dart';
 import '../../../../core/utils/types/time_interval.dart';
 import '../../../../domain/entities/club_partition.dart';
+import '../../../../domain/entities/partition_vocabulary.dart';
 import '../../../../domain/entities/physical_partition.dart';
 import '../../../../domain/entities/session.dart';
 import '../../../core/pick_client/pick_client.dart';
@@ -62,13 +63,13 @@ class _ReservateSessionState extends State<ReservateSession> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         InputChip(
-                          label: Text(widget.clubPartition.clubType!.name)
+                          label: Text(widget.clubPartition.displayName)
                         ),
                         const SizedBox(
                           width: 8,
                         ),
                         InputChip(
-                            label: Text("Cancha ${widget.physicalPartition.physicalIdentifier}")
+                            label: Text(widget.physicalPartition.spaceLabel(fallback: widget.clubPartition))
                         ),
                       ],
                     ),

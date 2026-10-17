@@ -13,7 +13,7 @@ class SnackbarsFunctions {
             children: [
               Icon(Icons.error, color: Theme.of(context).colorScheme.onErrorContainer,),
               const SizedBox(width: 8,),
-              Text(error, style: TextStyle(color: Theme.of(context).colorScheme.onErrorContainer),)
+              Flexible(child: Text(error, style: TextStyle(color: Theme.of(context).colorScheme.onErrorContainer),))
             ],
           )
       )
@@ -31,7 +31,7 @@ class SnackbarsFunctions {
             children: [
               Icon(Icons.check, color: Theme.of(context).colorScheme.onPrimaryContainer,),
               const SizedBox(width: 8,),
-              Text(error, style: TextStyle(color: Theme.of(context).colorScheme.onPrimaryContainer),)
+              Flexible(child: Text(error, style: TextStyle(color: Theme.of(context).colorScheme.onPrimaryContainer),))
             ],
           )
       )

@@ -69,6 +69,16 @@ class CourtTile extends StatelessWidget {
   final String name;
   final SportStyle style;
   final bool isCover;
+
+  /// El servicio usa cubierta: si no, no se muestra el cartel ni el rayado.
+  final bool showCover;
+
+  /// Líneas de juego: solo en una cancha.
+  final bool showLines;
+
+  /// Texto del cartel ("Cubierta" / "Descubierto"), del vocabulario del
+  /// servicio. `null`: el de una cancha.
+  final String? coverText;
   final double width;
   final double height;
 
@@ -88,6 +98,9 @@ class CourtTile extends StatelessWidget {
     required this.name,
     required this.style,
     required this.isCover,
+    this.showCover = true,
+    this.showLines = true,
+    this.coverText,
     required this.width,
     required this.height,
     this.ringColor,
@@ -98,6 +111,7 @@ class CourtTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isCover = this.isCover && showCover;
     final borderWidth = isCover ? 3.0 : 2.0;
     final showBadge = width >= 64 && height >= 44;
     final showName = width >= 44 && height >= 28;
@@ -121,7 +135,7 @@ class CourtTile extends StatelessWidget {
         borderRadius: BorderRadius.circular(2),
         child: Stack(
           children: [
-            if (usageColor == null) Positioned.fill(child: CustomPaint(painter: CourtLinesPainter(style.lines))),
+            if (usageColor == null && showLines) Positioned.fill(child: CustomPaint(painter: CourtLinesPainter(style.lines))),
             if (isCover) const Positioned.fill(child: CustomPaint(painter: RoofStripesPainter())),
             // El % va arriba del rayado de techada.
             if (usageLabel != null)
@@ -132,7 +146,7 @@ class CourtTile extends StatelessWidget {
                   child: Text(usageLabel!, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF1D1B20))),
                 ),
               ),
-            if (showBadge) Positioned(left: 4, top: 4, child: _Badge(isCover: isCover)),
+            if (showBadge && showCover) Positioned(left: 4, top: 4, child: _Badge(isCover: isCover, text: coverText)),
             if (liveStatus != null) Positioned(right: 4, top: 4, child: _LiveStatusBadge(status: liveStatus!, compact: width < 150)),
             if (showName)
               Positioned(
@@ -161,8 +175,9 @@ class CourtTile extends StatelessWidget {
 
 class _Badge extends StatelessWidget {
   final bool isCover;
+  final String? text;
 
-  const _Badge({required this.isCover});
+  const _Badge({required this.isCover, this.text});
 
   @override
   Widget build(BuildContext context) {
@@ -175,7 +190,7 @@ class _Badge extends StatelessWidget {
           Icon(isCover ? Icons.roofing : Icons.wb_sunny_outlined, size: 12, color: const Color(0xFF1D1B20)),
           const SizedBox(width: 3),
           Text(
-            isCover ? 'Techada' : 'Descubierta',
+            text ?? (isCover ? 'Cubierta' : 'Descubierta'),
             style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: Color(0xFF1D1B20)),
           ),
         ],

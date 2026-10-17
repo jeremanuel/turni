@@ -90,7 +90,7 @@ void main() {
     });
 
     await pumpPage(tester);
-    expect(find.text('El club todavía no tiene plano'), findsOneWidget);
+    expect(find.text('Todavía no hay plano'), findsOneWidget);
 
     await tester.tap(find.text('Diseñar el plano'));
     await tester.pumpAndSettle();
@@ -104,7 +104,7 @@ void main() {
     await tester.pumpAndSettle();
 
     // Paso 2: solo pádel en la lista, y se puede sumar fútbol después.
-    expect(find.text('Plano del club'), findsOneWidget);
+    expect(find.text('Plano'), findsOneWidget);
     expect(find.text('Sumar Fútbol al plano'), findsOneWidget);
     expect(find.text('0 de 2 en el plano'), findsOneWidget);
 
@@ -123,8 +123,8 @@ void main() {
     // Se ubicaron sin encimarse.
     expect(findIssues(const ClubMapView(map: null, partitions: [_padel, _futbol]), saved!.elements, 40, 30).isEmpty, isTrue);
 
-    expect(find.text('Plano del club guardado'), findsOneWidget);
-    expect(find.text('Mapa del club'), findsOneWidget);
+    expect(find.text('Plano guardado'), findsOneWidget);
+    expect(find.text('Mapa'), findsOneWidget);
     expect(find.text('Fútbol todavía no está en el plano.'), findsOneWidget);
   });
 
@@ -166,7 +166,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('PÁDEL'), findsOneWidget);
-    expect(find.text('Techada'), findsWidgets);
+    expect(find.text('Cubierta'), findsWidgets);
     expect(find.text('90 min'), findsOneWidget);
     expect(find.text('20 × 10 m'), findsOneWidget);
   });
@@ -357,7 +357,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('Medidas: 30 × 18 m (propia)'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Usar la del deporte'));
+    await tester.tap(find.text('Usar la de referencia'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Guardar plano'));
     await tester.pumpAndSettle();
@@ -383,7 +383,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Padel A (Pádel) queda afuera del predio.'), findsOneWidget);
-    expect(find.text('Plano del club'), findsOneWidget);
+    expect(find.text('Plano'), findsOneWidget);
   });
 
   testWidgets('error al cargar: permite reintentar', (tester) async {
@@ -395,10 +395,10 @@ void main() {
     });
 
     await pumpPage(tester);
-    expect(find.text('No se pudo cargar el mapa del club.'), findsOneWidget);
+    expect(find.text('No se pudo cargar el mapa.'), findsOneWidget);
 
     await tester.tap(find.text('Reintentar'));
     await tester.pumpAndSettle();
-    expect(find.text('El club todavía no tiene plano'), findsOneWidget);
+    expect(find.text('Todavía no hay plano'), findsOneWidget);
   });
 }

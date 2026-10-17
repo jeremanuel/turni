@@ -9,6 +9,7 @@ import '../../../../core/utils/domain_error.dart';
 import '../../../../core/utils/either.dart';
 import '../../../../core/utils/thousands_format.dart';
 import '../../../../domain/entities/club_partition.dart';
+import '../../../../domain/entities/partition_vocabulary.dart';
 import '../../../../domain/entities/club_type.dart';
 import '../../../../domain/entities/physical_partition.dart';
 import '../../../../domain/entities/price_rule.dart';
@@ -213,15 +214,21 @@ class _PriceTariffsTabState extends State<PriceTariffsTab> {
     return match.isEmpty ? null : match.first;
   }
 
+  /// Vocabulario de la modalidad elegida ("cancha", "sala", "profesional").
+  SpaceTerm get _space {
+    final match = _clubPartitions.where((p) => p.club_partition_id == _selectedClubPartitionId);
+    return PartitionVocabulary.of(match.isEmpty ? null : match.first).space;
+  }
+
   String _partitionLabel(int partitionPhysicalId) {
     final match = _physicalPartitions.where((p) => p.partitionPhysicalId == partitionPhysicalId);
-    if (match.isEmpty) return 'Cancha sin datos';
+    if (match.isEmpty) return '${_space.singular} sin datos';
     final p = match.first;
     if (p.description != null && p.description!.isNotEmpty) return p.description!;
-    if (p.physicalIdentifier != null) return 'Cancha ${p.physicalIdentifier}';
+    if (p.physicalIdentifier != null) return _space.label(p.physicalIdentifier);
     // Nunca mostrar el id interno de la fila (partitionPhysicalId): no es el
     // "identificador" que ve el admin, es la PK de la base.
-    return 'Cancha sin identificador';
+    return '${_space.singular} sin identificador';
   }
 
   double? _defaultPriceFor(int partitionPhysicalId) {
@@ -281,7 +288,7 @@ class _PriceTariffsTabState extends State<PriceTariffsTab> {
       context: context,
       builder: (_) => AlertDialog(
         title: const Text('Eliminar tarifa'),
-        content: Text('¿Eliminar "${tariff.name}"? Esto borra también sus canchas asignadas y franjas.'),
+        content: Text('¿Eliminar "${tariff.name}"? Esto borra también sus ${_space.lowerPlural} asignad${_space.g('a', 'o')}s y franjas.'),
         actions: [
           TextButton(onPressed: () => Navigator.of(context).pop(false), child: const Text('Cancelar')),
           FilledButton(onPressed: () => Navigator.of(context).pop(true), child: const Text('Eliminar')),
@@ -432,7 +439,7 @@ class _PriceTariffsTabState extends State<PriceTariffsTab> {
     }
 
     if (_clubPartitions.isEmpty) {
-      return const Center(child: Text('No hay deportes/sectores activos todavía.'));
+      return const Center(child: Text('No hay servicios activos todavía.'));
     }
 
     final colorScheme = Theme.of(context).colorScheme;
@@ -443,7 +450,7 @@ class _PriceTariffsTabState extends State<PriceTariffsTab> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Agrupá canchas en una tarifa con nombre y definí precios distintos según el horario y el día de la semana.',
+            'Agrupá ${_space.lowerPlural} en una tarifa con nombre y definí precios distintos según el horario y el día de la semana.',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant),
           ),
           const SizedBox(height: 16),
@@ -516,7 +523,7 @@ class _PriceTariffsTabState extends State<PriceTariffsTab> {
           child: _tariffs.isEmpty
               ? const Padding(
                   padding: EdgeInsets.only(top: 12),
-                  child: Text('Todavía no hay tarifas para este sector.'),
+                  child: Text('Todavía no hay tarifas para este servicio.'),
                 )
               : ListView.separated(
                   itemCount: _tariffs.length,
@@ -613,7 +620,7 @@ class _PriceTariffsTabState extends State<PriceTariffsTab> {
               ],
             ),
             const SizedBox(height: 16),
-            Text('Canchas incluidas', style: Theme.of(context).textTheme.labelLarge),
+            Text('${_space.plural} incluid${_space.g('a', 'o')}s', style: Theme.of(context).textTheme.labelLarge),
             const SizedBox(height: 8),
             Wrap(
               spacing: 8,
@@ -633,7 +640,7 @@ class _PriceTariffsTabState extends State<PriceTariffsTab> {
                     // el `showMenu` manual anterior usaba una posición fija
                     // en pantalla (300,300), por eso el menú aparecía
                     // "en cualquier lado" sin relación con el botón.
-                    tooltip: 'Agregar cancha',
+                    tooltip: 'Agregar ${_space.lower}',
                     onSelected: (selected) => _addMember(tariff, selected),
                     itemBuilder: (context) => availableToAdd
                         .map((p) => PopupMenuItem<int>(
@@ -641,9 +648,9 @@ class _PriceTariffsTabState extends State<PriceTariffsTab> {
                               child: Text(_partitionLabel(p.partitionPhysicalId)),
                             ))
                         .toList(),
-                    child: const Chip(
-                      avatar: Icon(Icons.add, size: 18),
-                      label: Text('Agregar cancha'),
+                    child: Chip(
+                      avatar: const Icon(Icons.add, size: 18),
+                      label: Text('Agregar ${_space.lower}'),
                     ),
                   ),
               ],
@@ -655,7 +662,7 @@ class _PriceTariffsTabState extends State<PriceTariffsTab> {
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 child: Text(
-                  'Sin franjas: se usa el precio fijo de cada cancha todo el día.',
+                  'Sin franjas: se usa el precio fijo de cada ${_space.lower} todo el día.',
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
               )
@@ -678,7 +685,7 @@ class _PriceTariffsTabState extends State<PriceTariffsTab> {
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
-                        'Fuera de estas franjas se cobra el precio fijo de cada cancha: '
+                        'Fuera de estas franjas se cobra el precio fijo de cada ${_space.lower}: '
                         '${defaultPrices.map((p) => '\$${ThousandsFormat.formatPrice(p)}').join(', ')}.',
                         style: Theme.of(context)
                             .textTheme

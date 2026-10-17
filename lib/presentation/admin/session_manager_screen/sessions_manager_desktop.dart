@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../core/utils/physical_partition_naming.dart';
 import '../../../core/utils/types/time_interval.dart';
+import '../../../domain/entities/partition_vocabulary.dart';
 import '../../core/agenda/agenda.dart';
 import 'bloc/session_manager_bloc.dart';
 import 'bloc/session_manager_state.dart';
@@ -134,12 +135,14 @@ class _DesktopAgenda extends StatelessWidget {
               fallbackClubPartition: state.selectedClubPartition,
             ),
             partitionSubtitleBuilder: (p) {
-              final cover = p.isCover == '1' || p.isCover == 'true' ? 'Cubierta' : 'Descubierta';
-              final players = p.maxPlayers ?? p.minPlayers;
-              return players > 0 ? '$cover · $players jug.' : cover;
+              final vocabulary = PartitionVocabulary.of(p.clubPartition ?? state.selectedClubPartition);
+              return [
+                vocabulary.coverLabel(p.isCover == '1' || p.isCover == 'true'),
+                vocabulary.capacityLabel(p.maxPlayers ?? p.minPlayers),
+              ].nonNulls.join(' · ');
             },
             sessions: state.sessions,
-            // Las canchas inactivas no se muestran como columna, salvo que ese
+            // Los espacios inactivos no se muestran como columna, salvo que ese
             // día tengan turnos (dar de baja no borra los turnos ya creados).
             physicalPartitions: (state.selectedClubPartition?.physicalPartitions ?? [])
                 .where((p) => p.active || state.sessions.any((s) => s.partitionPhysicalId == p.partitionPhysicalId))

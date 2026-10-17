@@ -16,6 +16,7 @@ import '../../../../../domain/entities/client.dart';
 import '../../../../../domain/entities/club_partition.dart';
 import '../../../../../domain/entities/extra.dart';
 import '../../../../../domain/entities/fixed_session.dart';
+import '../../../../../domain/entities/partition_vocabulary.dart';
 import '../../../fixed_sessions/widgets/fixed_session_actions.dart';
 import '../../../../../domain/entities/physical_partition.dart';
 import '../../../../../domain/entities/session.dart';
@@ -83,6 +84,7 @@ class _SessionPanelState extends State<SessionPanel> {
           session: session,
           subtitle: '$_clientName · ${panelRange(session)}',
           players: widget.physicalPartition.maxPlayers ?? widget.physicalPartition.minPlayers,
+          vocabulary: PartitionVocabulary.of(widget.clubPartition),
           onBack: back,
         ),
       _PanelView.consumo => ConsumoView(
@@ -137,7 +139,7 @@ class _SessionPanelState extends State<SessionPanel> {
       title: panelRange(session),
       subtitle: [
         panelDayTitle(session.startTime),
-        widget.clubPartition.clubType?.name,
+        widget.clubPartition.displayName,
         _courtLabel,
         '${session.duration} min',
       ].whereType<String>().where((t) => t.isNotEmpty).join(' · '),
@@ -166,7 +168,7 @@ class _BookedDetail extends StatelessWidget {
     final ok = await confirmPanelAction(
       context,
       title: 'Cancelar reserva',
-      message: 'El turno vuelve a quedar libre. Los pagos y consumos cargados se pierden.',
+      message: 'El turno vuelve a quedar libre. Los pagos y adicionales cargados se pierden.',
       confirmLabel: 'Cancelar reserva',
     );
     if (!ok || !context.mounted) return;
@@ -500,7 +502,7 @@ class _AccountCardState extends State<_AccountCard> {
     final payments = [
       for (final p in session.payments ?? const []) (p.paymentMethod.name, p.paymentDate, p.amount),
       for (final e in extras)
-        if (e.payment != null) ('${e.payment!.paymentMethod.name} (consumo)', e.payment!.paymentDate, e.payment!.amount),
+        if (e.payment != null) ('${e.payment!.paymentMethod.name} (adicional)', e.payment!.paymentDate, e.payment!.amount),
     ]..sort((a, b) => a.$2.compareTo(b.$2));
     final remaining = session.remainingTotalPrice;
     final settled = remaining <= 0;
@@ -522,14 +524,14 @@ class _AccountCardState extends State<_AccountCard> {
               Expanded(
                 child: Text('Cuenta', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: scheme.onSurface)),
               ),
-              Text('Turno + consumos', style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant)),
+              Text('Turno + adicionales', style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant)),
             ],
           ),
           const SizedBox(height: 10),
           line(Text('Turno', style: body), Text(panelPrice(session.price), style: body)),
           if (extras.isNotEmpty) ...[
             const SizedBox(height: 12),
-            Text('Consumos', style: group),
+            Text('Adicionales', style: group),
             for (final extra in extras) ...[
               const SizedBox(height: 10),
               line(
@@ -556,7 +558,7 @@ class _AccountCardState extends State<_AccountCard> {
                                   child: SizedBox(width: 12, height: 12, child: CircularProgressIndicator(strokeWidth: 2)),
                                 )
                               : IconButton(
-                                  tooltip: 'Quitar consumo',
+                                  tooltip: 'Quitar adicional',
                                   padding: EdgeInsets.zero,
                                   iconSize: 16,
                                   style: IconButton.styleFrom(
@@ -617,7 +619,7 @@ class _AccountCardState extends State<_AccountCard> {
                     textStyle: panelButtonText(context),
                   ),
                   icon: const Icon(Icons.add, size: 18),
-                  label: const Text('Agregar consumo', maxLines: 1, overflow: TextOverflow.ellipsis),
+                  label: const Text('Agregar adicional', maxLines: 1, overflow: TextOverflow.ellipsis),
                 ),
               ),
             ],
@@ -801,7 +803,7 @@ class _Activity extends StatelessWidget {
           (
             e.payment!.paymentDate,
             true,
-            'Cobro de consumo',
+            'Cobro de adicional',
             ' ${extraQuantity(e).$2} · ${panelPrice(e.payment!.amount)} en ${e.payment!.paymentMethod.name.toLowerCase()}',
           ),
       (session.createdAt, false, 'Turno creado', ''),

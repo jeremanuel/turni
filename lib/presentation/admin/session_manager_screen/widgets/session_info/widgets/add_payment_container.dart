@@ -451,7 +451,7 @@ class _AddPaymentContainerState extends State<AddPaymentContainer> {
                         text: TextSpan(
                           children: [
                             TextSpan(
-                                text: "Consumos \n",
+                                text: "Adicionales \n",
                                 style: textTheme.titleMedium),
                             TextSpan(
                                 text:
@@ -696,7 +696,7 @@ class _AddPaymentContainerState extends State<AddPaymentContainer> {
           onChanged: (_) => setState(() {}),
           decoration: const InputDecoration(
             prefixIcon: Icon(Icons.search),
-            hintText: "Buscar consumo",
+            hintText: "Buscar adicional",
             border: OutlineInputBorder(),
           ),
         ),
@@ -711,7 +711,7 @@ class _AddPaymentContainerState extends State<AddPaymentContainer> {
             child: _filteredConsumos.isEmpty
                 ? Center(
                     child: Text(
-                      "No hay consumos pendientes",
+                      "No hay adicionales pendientes",
                       style: textTheme.bodyMedium
                           ?.copyWith(color: colorScheme.onSurfaceVariant),
                     ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/utils/admin_vocabulary.dart';
 import '../../../../core/utils/permissions.dart';
 import 'package:go_router/go_router.dart';
 
@@ -55,7 +56,7 @@ class BulkSessionsMenuButton extends StatelessWidget {
         shape: WidgetStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadius.circular(4))),
       ),
       menuChildren: [
-        if (canAdd) item(BulkSessionsTab.add, Icons.add, 'Agregar turnos', 'Plantilla repetida en varias canchas y días'),
+        if (canAdd) item(BulkSessionsTab.add, Icons.add, 'Agregar turnos', 'Plantilla repetida en vari${adminVocabulary().space.g('a', 'o')}s ${adminVocabulary().space.lowerPlural} y días'),
         if (canEdit)
           item(BulkSessionsTab.edit, Icons.edit_outlined, 'Editar o eliminar turnos',
               'Precio, duración u horario por reglas'),

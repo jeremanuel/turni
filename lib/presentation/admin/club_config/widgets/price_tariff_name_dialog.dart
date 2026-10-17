@@ -87,7 +87,7 @@ class _PriceTariffNameDialogState extends State<PriceTariffNameDialog> {
                 autofocus: true,
                 decoration: const InputDecoration(
                   labelText: 'Nombre de la tarifa',
-                  hintText: 'Canchas 1 y 2',
+                  hintText: 'Horario central',
                   border: OutlineInputBorder(),
                 ),
                 validator: (value) =>

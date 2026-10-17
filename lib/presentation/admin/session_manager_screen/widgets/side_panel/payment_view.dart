@@ -6,6 +6,7 @@ import '../../../../../core/config/service_locator.dart';
 import '../../../../../core/utils/either.dart';
 import '../../../../../core/utils/thousands_format.dart';
 import '../../../../../domain/entities/extra.dart';
+import '../../../../../domain/entities/partition_vocabulary.dart';
 import '../../../../../domain/entities/payment/payment.dart';
 import '../../../../../domain/entities/payment/payment_method.dart';
 import '../../../../../domain/entities/session.dart';
@@ -41,12 +42,16 @@ class PaymentView extends StatefulWidget {
     required this.session,
     required this.subtitle,
     required this.players,
+    this.vocabulary = PartitionVocabulary.court,
     required this.onBack,
   });
 
   final Session session;
   final String subtitle;
   final int players;
+
+  /// Para "Por jugador" / "Por alumno".
+  final PartitionVocabulary vocabulary;
   final VoidCallback onBack;
 
   @override
@@ -206,7 +211,7 @@ class _PaymentViewState extends State<PaymentView> {
                 const SizedBox(width: 8),
                 Expanded(
                   child: _ConceptCard(
-                    label: 'Consumos',
+                    label: 'Adicionales',
                     amount: session.remainingExtrasPrice.clamp(0, double.infinity).toDouble(),
                     selected: _concept == _Concept.consumos,
                     onTap: () => setState(() => _concept = _Concept.consumos),
@@ -228,7 +233,7 @@ class _PaymentViewState extends State<PaymentView> {
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      'Los consumos se cobran completos.',
+                      'Los adicionales se cobran completos.',
                       style: TextStyle(fontSize: 12, height: 16 / 12, color: scheme.outline),
                     ),
                   ),
@@ -261,7 +266,7 @@ class _PaymentViewState extends State<PaymentView> {
                 children: [
                   Expanded(
                     child: _AmountTile(
-                      label: 'Por jugador ($_players)',
+                      label: 'Por ${widget.vocabulary.participant.lower} ($_players)',
                       amount: (_pending / _players).roundToDouble(),
                       selected: _amount == _Amount.player,
                       onTap: () => setState(() => _amount = _Amount.player),

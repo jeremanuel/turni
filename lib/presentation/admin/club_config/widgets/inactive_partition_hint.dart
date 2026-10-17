@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../../../domain/entities/partition_vocabulary.dart';
 import '../club_config_focus.dart';
 
 /// Envuelve una opción (chip, ítem de combo, fila) que representa un sector o
@@ -38,8 +39,11 @@ class InactivePartitionHint extends StatefulWidget {
   final VoidCallback? onConfigClosed;
 
   /// Mensajes estándar, para que todas las pantallas digan lo mismo.
-  static const clubPartitionMessage = 'Esta modalidad se encuentra inactiva.';
-  static const physicalPartitionMessage = 'Esta cancha se encuentra inactiva.';
+  static const clubPartitionMessage = 'Este servicio se encuentra inactivo.';
+  static String physicalPartitionMessage(PartitionVocabulary vocabulary) {
+    final space = vocabulary.space;
+    return '${capitalizeFirst(space.este)} se encuentra ${space.g('inactiva', 'inactivo')}.';
+  }
 
   @override
   State<InactivePartitionHint> createState() => _InactivePartitionHintState();

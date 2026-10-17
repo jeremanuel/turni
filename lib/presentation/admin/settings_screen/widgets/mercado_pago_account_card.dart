@@ -168,7 +168,7 @@ class _MercadoPagoAccountCardState extends State<MercadoPagoAccountCard> with Wi
         const Text("Cobros online", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
         const SizedBox(height: 8),
         const Text(
-          "Vinculá la cuenta de Mercado Pago del club para que los clientes puedan pagar sus turnos "
+          "Vinculá la cuenta de Mercado Pago del establecimiento para que los clientes puedan pagar sus turnos "
           "desde la app. La plata se acredita directo en esa cuenta.",
         ),
         const SizedBox(height: 16),
@@ -233,7 +233,7 @@ class _MercadoPagoAccountCardState extends State<MercadoPagoAccountCard> with Wi
           icon: Icons.warning_amber_rounded,
           color: theme.colorScheme.error,
           title: "Hay que volver a vincular la cuenta",
-          description: "Mercado Pago dejó de aceptar el permiso del club. Mientras tanto, los clientes no pueden pagar online.",
+          description: "Mercado Pago dejó de aceptar el permiso del establecimiento. Mientras tanto, los clientes no pueden pagar online.",
           actions: [_linkButton(label: "Volver a vincular")],
         );
       case ClubPaymentAccountState.notLinked:

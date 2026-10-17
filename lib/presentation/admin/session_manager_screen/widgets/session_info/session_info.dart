@@ -130,7 +130,7 @@ class _SessionInfoState extends State<SessionInfo> {
                             materialTapTargetSize: isMobile
                                 ? MaterialTapTargetSize.shrinkWrap
                                 : null,
-                            label: Text(widget.clubPartition.clubType!.name)),
+                            label: Text(widget.clubPartition.displayName)),
                         Chip(
                             visualDensity: isMobile
                                 ? const VisualDensity(

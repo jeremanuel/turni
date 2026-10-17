@@ -3,6 +3,8 @@
 /// pantalla elige la escala.
 library;
 
+import '../partition_vocabulary.dart';
+
 /// Medida de una cancha (largo x ancho, en metros): la de referencia del
 /// deporte o la propia de una cancha.
 class CourtSize {
@@ -143,6 +145,9 @@ class ClubMapPartition {
   final int id;
   final int clubTypeId;
   final String sport;
+
+  /// Cómo se llaman sus espacios ("Cancha", "Sala") y qué funciones usa.
+  final PartitionVocabulary vocabulary;
   final CourtSize courtSize;
   final List<ClubMapCourt> courts;
 
@@ -150,17 +155,19 @@ class ClubMapPartition {
     required this.id,
     required this.clubTypeId,
     required this.sport,
+    this.vocabulary = PartitionVocabulary.court,
     required this.courtSize,
     required this.courts,
   });
 
-  ClubMapPartition withCourts(List<ClubMapCourt> courts) =>
-      ClubMapPartition(id: id, clubTypeId: clubTypeId, sport: sport, courtSize: courtSize, courts: courts);
+  ClubMapPartition withCourts(List<ClubMapCourt> courts) => ClubMapPartition(
+      id: id, clubTypeId: clubTypeId, sport: sport, vocabulary: vocabulary, courtSize: courtSize, courts: courts);
 
   factory ClubMapPartition.fromJson(Map<String, dynamic> json) => ClubMapPartition(
         id: json['club_partition_id'] as int,
         clubTypeId: (json['club_type_id'] as num).toInt(),
         sport: json['sport'] as String,
+        vocabulary: PartitionVocabulary.fromJsonNullable(json['vocabulary']) ?? PartitionVocabulary.court,
         courtSize: CourtSize.fromJson(json['court_size'] as Map<String, dynamic>),
         courts: (json['courts'] as List).map((c) => ClubMapCourt.fromJson(c as Map<String, dynamic>)).toList(),
       );
@@ -394,6 +401,15 @@ class ClubMapView {
   final List<ClubMapSpaceType> spaceTypes;
 
   const ClubMapView({required this.map, required this.partitions, this.spaceTypes = const []});
+
+  /// Vocabulario común de las modalidades del plano ("canchas" si todas lo
+  /// son, si no "espacios").
+  PartitionVocabulary get vocabulary => PartitionVocabulary.merge(
+      partitions.where((p) => p.vocabulary.features.map).map((p) => p.vocabulary));
+
+  /// Modalidades que se pueden ubicar en el plano: con espacios y que usan plano.
+  List<ClubMapPartition> get mappablePartitions =>
+      partitions.where((p) => p.courts.isNotEmpty && p.vocabulary.features.map).toList();
 
   factory ClubMapView.fromJson(Map<String, dynamic> json) => ClubMapView(
         map: json['map'] == null ? null : ClubMapLayout.fromJson(json['map'] as Map<String, dynamic>),

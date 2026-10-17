@@ -96,7 +96,7 @@ class ClientUpcomingSession {
         startTime: DateTime.parse(json['start_time'] as String).toLocal(),
         duration: (json['duration'] as num?)?.toInt() ?? 60,
         sport: json['sport'] as String?,
-        courtName: json['court_name'] as String? ?? 'Cancha',
+        courtName: json['court_name'] as String? ?? 'Espacio',
         status: json['status'] as String?,
         isFixed: json['is_fixed'] as bool? ?? false,
         isOwner: json['is_owner'] as bool? ?? true,

@@ -104,7 +104,7 @@ class _PaymentContainerState extends State<PaymentContainer> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text("Consumos", style: textTheme.titleLarge),
+                    Text("Adicionales", style: textTheme.titleLarge),
                     Text(
                       "Ticket del turno y extras",
                       style: textTheme.bodySmall?.copyWith(
@@ -218,7 +218,7 @@ class _PaymentContainerState extends State<PaymentContainer> {
                       extraDropdownController.toggle!();
                     },
                     icon: const Icon(Icons.add),
-                    label: const Text("Nuevo Consumo"),
+                    label: const Text("Nuevo Adicional"),
                   ),
                 ),
               ],
@@ -268,7 +268,7 @@ class _PaymentContainerState extends State<PaymentContainer> {
                     if (hasExtras)
                       _buildSectionHeader(
                         context,
-                        title: "Consumos extras",
+                        title: "Adicionales",
                         total: widget.session.extrasTotalPrice,
                         info: "No incluidos en el turno",
                       ),
@@ -551,7 +551,7 @@ class _ExtraActionBottomSheetRow extends StatelessWidget {
                       Icons.payments_outlined,
                       color: colorScheme.primary,
                     ),
-                    title: const Text("Pagar consumo"),
+                    title: const Text("Pagar adicional"),
                     onTap: () {
                       Navigator.of(sheetContext).pop();
                       onPay();
@@ -563,7 +563,7 @@ class _ExtraActionBottomSheetRow extends StatelessWidget {
                     color: colorScheme.error,
                   ),
                   title: Text(
-                    "Eliminar consumo",
+                    "Eliminar adicional",
                     style: TextStyle(color: colorScheme.error),
                   ),
                   onTap: () {
@@ -725,13 +725,13 @@ class _ExtraActionsMenu extends StatelessWidget {
         if (!extra.payed)
           ListTile(
             dense: true,
-            title: const Text("Pagar consumo"),
+            title: const Text("Pagar adicional"),
             onTap: onPay,
           ),
         ListTile(
           dense: true,
           title: Text(
-            "Eliminar consumo",
+            "Eliminar adicional",
             style: TextStyle(color: colorScheme.error),
           ),
           onTap: onDelete,
