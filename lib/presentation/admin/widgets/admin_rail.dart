@@ -22,6 +22,7 @@ class AdminRail extends StatelessWidget {
     (Icons.groups_outlined, 'Clientes', 2, [Permissions.CLIENTES_VER]),
     (Icons.credit_card, 'Pagos', 3, [Permissions.PAGOS_VER]),
     (Icons.map_outlined, 'Mapa', 4, [Permissions.MAPA_VER]),
+    (Icons.emoji_events_outlined, 'Torneos', 7, [Permissions.TORNEOS_VER]),
     (Icons.settings_outlined, 'Configuración', 5, [Permissions.CONFIGURACION_VER]),
     (Icons.manage_accounts_outlined, 'Usuarios', 6, [Permissions.ADMINISTRADORES_VER, Permissions.ROLES_VER]),
   ];
