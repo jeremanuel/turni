@@ -65,24 +65,24 @@ import 'package:go_router/go_router.dart';
 import '../config/router/app_routes.dart';
 import '../config/service_locator.dart';
 
-/// Config del proyecto Firebase `turnibeta`, app Web "com.turni.admin".
+/// Config del proyecto Firebase `turni-48aa4`, app Web "com.turni.admin".
 /// Solo se usa en `kIsWeb` — Android/iOS toman su config de
 /// `google-services.json`/`GoogleService-Info.plist` automáticamente.
 const _webFirebaseOptions = FirebaseOptions(
-  apiKey: 'AIzaSyCuetMWR3LtuEP9Eq9Fc0t3NAr0lNV5rLc',
-  authDomain: 'turnibeta.firebaseapp.com',
-  projectId: 'turnibeta',
-  storageBucket: 'turnibeta.firebasestorage.app',
-  messagingSenderId: '458036544256',
-  appId: '1:458036544256:web:6481b1f7ee5cebe071a9e5',
-  measurementId: 'G-B5VG4SFY3F',
+  apiKey: 'AIzaSyBj2EK2zMLZorcSeZSAnULi0lhbhYdwLiw',
+  authDomain: 'turni-48aa4.firebaseapp.com',
+  projectId: 'turni-48aa4',
+  storageBucket: 'turni-48aa4.firebasestorage.app',
+  messagingSenderId: '843039300029',
+  appId: '1:843039300029:web:d6677caff072f70e2a9ad4',
+  measurementId: 'G-QLB6SCJTYE',
 );
 
-/// Web Push certificate (VAPID key) del proyecto `turnibeta` — Project
+/// Web Push certificate (VAPID key) del proyecto `turni-48aa4` — Project
 /// Settings → Cloud Messaging → Web configuration. Necesaria para que
 /// `FirebaseMessaging.instance.getToken()` funcione en el navegador.
 const _webVapidKey =
-    'BI5Tu5SWMap7OlPF2bQqZBcJ1NQFb8SoFRgjY9_SiZuNKLljXW37Aa0R5uxzhUfzkCWEomR8PrNBzmHdqRsYnk4';
+    'BCqeeAeFy2DFJLHHYiElrNAGQSux8I5dnk3SctH2QhnBPw12Gyb0Bk8OL1KD5mGqYFWnusiKjvCQzXcCLFlrx-c';
 
 /// Maneja el ciclo de vida de Firebase Cloud Messaging (FCM) en la app
 /// admin: inicialización, permisos, obtención de token y manejo de tap en

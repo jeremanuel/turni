@@ -9,13 +9,13 @@ importScripts('https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js
 importScripts('https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js');
 
 firebase.initializeApp({
-  apiKey: 'AIzaSyCuetMWR3LtuEP9Eq9Fc0t3NAr0lNV5rLc',
-  authDomain: 'turnibeta.firebaseapp.com',
-  projectId: 'turnibeta',
-  storageBucket: 'turnibeta.firebasestorage.app',
-  messagingSenderId: '458036544256',
-  appId: '1:458036544256:web:6481b1f7ee5cebe071a9e5',
-  measurementId: 'G-B5VG4SFY3F',
+  apiKey: 'AIzaSyBj2EK2zMLZorcSeZSAnULi0lhbhYdwLiw',
+  authDomain: 'turni-48aa4.firebaseapp.com',
+  projectId: 'turni-48aa4',
+  storageBucket: 'turni-48aa4.firebasestorage.app',
+  messagingSenderId: '843039300029',
+  appId: '1:843039300029:web:d6677caff072f70e2a9ad4',
+  measurementId: 'G-QLB6SCJTYE',
 });
 
 const messaging = firebase.messaging();
