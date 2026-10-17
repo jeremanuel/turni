@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/config/service_locator.dart';
+import '../../../core/services/app_version/app_version.dart';
 import '../../core/cubit/auth/auth_cubit.dart';
 import '../../../core/utils/permissions.dart';
 
@@ -78,14 +79,19 @@ class AdminRail extends StatelessWidget {
             onSelected: (value) {
               if (value == 'logout') sl<AuthCubit>().signOutGoogle();
             },
-            itemBuilder: (_) => const [
-              PopupMenuItem(
+            itemBuilder: (_) => [
+              const PopupMenuItem(
                 value: 'logout',
                 child: ListTile(
                   contentPadding: EdgeInsets.zero,
                   leading: Icon(Icons.logout),
                   title: Text('Cerrar sesión'),
                 ),
+              ),
+              PopupMenuItem(
+                enabled: false,
+                height: 32,
+                child: Text('Versión ${AppVersion.label}', style: Theme.of(context).textTheme.bodySmall),
               ),
             ],
             child: Container(
