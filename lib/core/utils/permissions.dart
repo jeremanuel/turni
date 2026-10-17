@@ -20,6 +20,7 @@ class Permissions {
   static const CLIENTES_VER = 'clientes.ver';
   static const CLIENTES_EDITAR = 'clientes.editar';
   static const CLIENTES_ABONOS = 'clientes.abonos';
+  static const CLIENTES_CATEGORIAS = 'clientes.categorias';
 
   static const TURNOS_FIJOS_VER = 'turnos_fijos.ver';
   static const TURNOS_FIJOS_CREAR = 'turnos_fijos.crear';
@@ -35,6 +36,10 @@ class Permissions {
   static const CONFIGURACION_PRODUCTOS = 'configuracion.productos';
   static const CONFIGURACION_SOLICITUDES = 'configuracion.solicitudes';
   static const CONFIGURACION_COBROS_ONLINE = 'configuracion.cobros_online';
+
+  static const TORNEOS_VER = 'torneos.ver';
+  static const TORNEOS_EDITAR = 'torneos.editar';
+  static const TORNEOS_RESULTADOS = 'torneos.resultados';
 
   static const MAPA_VER = 'mapa.ver';
   static const MAPA_EDITAR = 'mapa.editar';
