@@ -14,6 +14,7 @@ import '../../browser/browser.dart';
 import '../../browser/browser_options.dart';
 import 'session_manager_card.dart';
 import 'session_manager_day_carrousel.dart';
+import 'tournament_agenda_slots.dart';
 import '../../../../core/utils/types/time_interval.dart';
 
 class AgendaContainer extends StatelessWidget {
@@ -23,7 +24,9 @@ class AgendaContainer extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<SessionManagerBloc, SessionManagerState>(
         builder: (context, state) {
-          return Column(
+          return TournamentAgendaSlots(
+            day: state.currentDate,
+            child: Column(
             children: [
          
               if (ResponsiveBuilder.isMobile(context))
@@ -61,6 +64,7 @@ class AgendaContainer extends StatelessWidget {
               const SizedBox(
                 height: 8,
               ),
+              const TournamentAgendaBanner(),
               Expanded(
                 child: Container(
                     decoration: BoxDecoration(
@@ -78,6 +82,7 @@ class AgendaContainer extends StatelessWidget {
                     child: buildAgenda(context)),
               ),
             ],
+          ),
           );
         });
   }
@@ -104,8 +109,10 @@ class AgendaContainer extends StatelessWidget {
           lastDate:
               state.currentDate.applied(const TimeOfDay(hour: 22, minute: 0)),
           buildCard: (session, physicalPartition, height) {
-            if(state.selectedSession == session){
-            }
+            // Turno libre que se pisa con un partido de torneo: la cancha
+            // está ocupada (no se puede reservar, ver tournament_session).
+            final blocking = session.isFree ? TournamentAgendaSlots.blocking(context, session) : null;
+            if (blocking != null) return TournamentBlockedCard(slot: blocking, height: height);
             return SessionManagerCard(
               height:height,
              hasFocus: state.selectedSession == session, 

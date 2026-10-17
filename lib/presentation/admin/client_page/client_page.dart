@@ -12,6 +12,7 @@ import '../../../domain/entities/payment/payment.dart';
 import '../../../domain/repositories/admin_repository.dart';
 import '../../../domain/repositories/payment_repository.dart';
 import '../client_feature/wrapper_client_provider.dart';
+import 'widgets/categories_container.dart';
 import 'widgets/add_payment_button.dart';
 import 'widgets/basic_data_container.dart';
 import 'widgets/labels_container.dart';
@@ -136,6 +137,11 @@ class _ClientpageState extends State<Clientpage> {
                           ],
                         ),
                       ),
+                      if (client.clientId != null)
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
+                          child: CategoriesContainer(clientId: int.parse(client.clientId!)),
+                        ),
                     ],
                   ),
                 );
@@ -175,6 +181,10 @@ class _ClientpageState extends State<Clientpage> {
             const SizedBox(height: 24),
             const LabelsContainer(),
             const SizedBox(height: 24),
+            if (client.clientId != null) ...[
+              CategoriesContainer(clientId: int.parse(client.clientId!)),
+              const SizedBox(height: 24),
+            ],
           ],
         ),
       ],

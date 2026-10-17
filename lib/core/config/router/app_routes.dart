@@ -64,6 +64,31 @@ class AppRoutes {
 
   static const CLUB_MAP_ROUTE = RouteDefinition("CLUB_MAP", '/club_map');
 
+  /// Torneos del club, ranking y deportes que categoriza.
+  static const TOURNAMENTS_ROUTE = RouteDefinition(
+    "TOURNAMENTS",
+    "/tournaments",
+    mobileAppBar: MobileAppBarConfig(title: 'Torneos'),
+  );
+
+  static const TOURNAMENT_NEW_ROUTE = RouteDefinition(
+    "TOURNAMENT_NEW",
+    "/tournaments/new",
+    mobileAppBar: MobileAppBarConfig(title: 'Nuevo torneo', backToPath: '/tournaments'),
+  );
+
+  static const TOURNAMENT_DETAIL_ROUTE = RouteDefinition(
+    "TOURNAMENT_DETAIL",
+    "/tournaments/:tournamentId",
+    mobileAppBar: MobileAppBarConfig(title: 'Torneo', backToPath: '/tournaments'),
+  );
+
+  static const TOURNAMENT_EDIT_ROUTE = RouteDefinition(
+    "TOURNAMENT_EDIT",
+    "/tournaments/:tournamentId/edit",
+    mobileAppBar: MobileAppBarConfig(title: 'Editar torneo', backToPath: '/tournaments'),
+  );
+
   static const ADMIN_SETTINGS_ROUTE = RouteDefinition(
     "ADMIN_SETTINGS",
     "/admin/settings",
@@ -106,6 +131,10 @@ class AppRoutes {
     PROFILE_SECURITY_ROUTE.name: PROFILE_SECURITY_ROUTE,
     PAYMENTS_LIST.name: PAYMENTS_LIST,
     CLUB_MAP_ROUTE.name: CLUB_MAP_ROUTE,
+    TOURNAMENTS_ROUTE.name: TOURNAMENTS_ROUTE,
+    TOURNAMENT_NEW_ROUTE.name: TOURNAMENT_NEW_ROUTE,
+    TOURNAMENT_DETAIL_ROUTE.name: TOURNAMENT_DETAIL_ROUTE,
+    TOURNAMENT_EDIT_ROUTE.name: TOURNAMENT_EDIT_ROUTE,
     ADMIN_SETTINGS_ROUTE.name: ADMIN_SETTINGS_ROUTE,
     USERS_ROUTE.name: USERS_ROUTE,
     ADMIN_INVITE_ROUTE.name: ADMIN_INVITE_ROUTE,
