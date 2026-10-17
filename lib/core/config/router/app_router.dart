@@ -39,7 +39,10 @@ GoRouter buildGoRouter(RouterType routerType) {
     redirect: (context, state) {
       final authCubit = sl<AuthCubit>();
       if (authCubit.getLoadingStatus()) {
-        if (state.matchedLocation != AppRoutes.ROOT_ROUTE.path) {
+        // Ni "/" ni "/login" sirven como destino post-login: si la app se
+        // abre (o recarga) parada en /login, volver ahí después de loguear
+        // deja al usuario trabado en la pantalla de login.
+        if (!_isAuthRoute(state.matchedLocation)) {
           authCubit.initialRoute = state.uri.toString();
         }
 
@@ -56,8 +59,9 @@ GoRouter buildGoRouter(RouterType routerType) {
       }
 
       if (location == AppRoutes.ROOT_ROUTE.path || location == AppRoutes.LOGIN_ROUTE.path) {
-        if (authCubit.initialRoute != null) {
-          return authCubit.initialRoute;
+        final initialRoute = authCubit.initialRoute;
+        if (initialRoute != null && !_isAuthRoute(Uri.parse(initialRoute).path)) {
+          return initialRoute;
         }
 
         return routerType == RouterType.adminRoute
@@ -175,3 +179,8 @@ List<StatefulShellBranch> buildBranches(RouterType routerType) {
   return null;
 }
 
+
+/// Rutas de autenticación: no son un destino válido al que volver después
+/// de loguear.
+bool _isAuthRoute(String path) =>
+    path == AppRoutes.ROOT_ROUTE.path || path == AppRoutes.LOGIN_ROUTE.path;
