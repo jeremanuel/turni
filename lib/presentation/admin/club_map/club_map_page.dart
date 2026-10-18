@@ -16,6 +16,8 @@ import '../../../domain/repositories/session_repository.dart';
 import 'widgets/club_map_editor.dart';
 import 'widgets/club_map_overview.dart';
 import 'widgets/club_map_sport_picker.dart';
+import '../../../core/services/data_changes.dart';
+import '../../../core/services/realtime/realtime_service.dart';
 
 enum _Step { overview, pickSports, editor }
 
@@ -46,7 +48,7 @@ class ClubMapPage extends StatefulWidget {
   State<ClubMapPage> createState() => _ClubMapPageState();
 }
 
-class _ClubMapPageState extends State<ClubMapPage> {
+class _ClubMapPageState extends State<ClubMapPage> with ReloadOnDataChange {
   late final ClubMapRepository _repository = widget.repository ?? sl<ClubMapRepository>();
   late final SessionRepository _sessionRepository = widget.sessionRepository ?? sl<SessionRepository>();
 
@@ -68,7 +70,20 @@ class _ClubMapPageState extends State<ClubMapPage> {
     super.initState();
     _load();
     _loadSessions();
-    _refreshTimer = Timer.periodic(widget.refreshEvery, (_) => _loadSessions());
+    // Respaldo: con el canal en tiempo real conectado la ocupación se
+    // actualiza sola (onDataChanged); sin canal, se consulta cada tanto.
+    _refreshTimer = Timer.periodic(widget.refreshEvery, (_) {
+      if (!RealtimeService.instance.isConnected) _loadSessions();
+    });
+  }
+
+  @override
+  Set<DataTopic> get refreshTopics => const {DataTopic.sessions, DataTopic.availability, DataTopic.clubConfig};
+
+  @override
+  void onDataChanged(DataChange change) {
+    if (change.topics.contains(DataTopic.clubConfig)) _load();
+    _loadSessions();
   }
 
   @override

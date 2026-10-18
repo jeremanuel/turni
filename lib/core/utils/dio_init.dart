@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import '../config/environment.dart';
+import '../services/realtime/realtime_service.dart';
 
 class DioInit {
   static Dio init() {
@@ -32,9 +33,14 @@ class DioInit {
     );
 
     dio.interceptors.add(_authInterceptor!);
+
+    // Con sesión, el canal en tiempo real se conecta con el mismo token. Si
+    // no anda, el admin sigue igual (ver RealtimeService).
+    RealtimeService.instance.connect(token);
   }
 
   static removeTokenInterceptor(Dio dio) {
+    RealtimeService.instance.disconnect();
     dio.interceptors.remove(_authInterceptor);
   }
 

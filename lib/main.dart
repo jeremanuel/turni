@@ -15,6 +15,7 @@ import 'core/services/app_version/app_version.dart';
 import 'core/services/push_notification_service.dart';
 import 'infrastructure/localstorage/provider/local_storage.dart';
 import 'presentation/core/cubit/auth/auth_cubit.dart';
+import 'core/services/data_changes.dart';
 
 // Token de un admin real de dev, impreso por `npm run seed:dev` en
 // turni_mono_be (bloque "--dart-define flag (para arrancar la app admin
@@ -42,6 +43,10 @@ void main() async {
   if (_devAdminToken.isNotEmpty) {
     await LocalStorage.save(LocalStorage.TOKEN_KEY, _devAdminToken);
   }
+
+  // Al volver a la pestaña: reintenta el canal en tiempo real y recarga lo
+  // visible (ver DataChanges).
+  DataChanges.watchAppLifecycle();
 
   // Sin credenciales reales de Firebase todavía (ver instrucciones en
   // push_notification_service.dart), esto es un no-op silencioso: no

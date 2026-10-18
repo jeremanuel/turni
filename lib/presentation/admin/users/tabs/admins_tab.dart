@@ -14,6 +14,7 @@ import '../../club_config/widgets/admin_data_table.dart';
 import '../users_access.dart';
 import '../widgets/invite_admin_dialog.dart';
 import '../../../../core/utils/responsive_builder.dart';
+import '../../../../core/services/data_changes.dart';
 
 /// Administradores del club: cambiar rol, habilitar/deshabilitar, invitar y
 /// los links de invitación pendientes.
@@ -24,7 +25,14 @@ class AdminsTab extends StatefulWidget {
   State<AdminsTab> createState() => _AdminsTabState();
 }
 
-class _AdminsTabState extends State<AdminsTab> {
+class _AdminsTabState extends State<AdminsTab> with ReloadOnDataChange {
+  @override
+  Set<DataTopic> get refreshTopics => const {DataTopic.admins};
+
+  /// En vivo (otro admin cambió algo): sin spinner.
+  @override
+  void onDataChanged(DataChange change) => _load(silent: true);
+
   final _repository = sl<AdminAccessRepository>();
   final _access = UsersAccess.current();
 
@@ -43,11 +51,13 @@ class _AdminsTabState extends State<AdminsTab> {
     _load();
   }
 
-  Future<void> _load() async {
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-    });
+  Future<void> _load({bool silent = false}) async {
+    if (!silent) {
+      setState(() {
+        _isLoading = true;
+        _errorMessage = null;
+      });
+    }
 
     final results = await Future.wait([
       _repository.listAdmins(),

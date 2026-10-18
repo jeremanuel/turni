@@ -1,4 +1,5 @@
 import '../../../../core/presentation/components/links/entity_links.dart';
+import 'dart:async';
 import 'dart:math';
 
 import 'package:bloc/bloc.dart';
@@ -8,6 +9,7 @@ import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:trina_grid/trina_grid.dart';
 
+import '../../../../core/services/data_changes.dart';
 import '../../../../core/utils/data_source.dart';
 import '../../../../core/utils/either.dart';
 import '../../../../domain/entities/payment/payment_list_item.dart';
@@ -75,7 +77,26 @@ class PaymentsListCubit extends Cubit<PaymentsListState> {
       'fechaHasta': DateTime.now(),
       'fechaDesde': DateTime.now().subtract(const Duration(days: 30))
     }
-  ));
+  )) {
+    // En vivo: un pago nuevo aparece solo. Solo en la primera página, para
+    // no sacar al usuario de la que está mirando.
+    _liveChanges = DataChanges.on(const {DataTopic.payments}).listen((_) {
+      _liveDebounce?.cancel();
+      _liveDebounce = Timer(const Duration(milliseconds: 500), () {
+        if (!isClosed && state.currentPage == 1) refresh();
+      });
+    });
+  }
+
+  StreamSubscription<DataChange>? _liveChanges;
+  Timer? _liveDebounce;
+
+  @override
+  Future<void> close() {
+    _liveDebounce?.cancel();
+    _liveChanges?.cancel();
+    return super.close();
+  }
 
   Future<TrinaInfinityScrollRowsResponse> loadClientPayments([bool reset = false]) async {
       emit(state.copyWith(

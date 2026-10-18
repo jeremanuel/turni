@@ -5,6 +5,7 @@ import '../../../core/config/service_locator.dart';
 import '../../../core/services/app_version/app_version.dart';
 import '../../core/cubit/auth/auth_cubit.dart';
 import 'admin_destinations.dart';
+import '../../../core/presentation/components/realtime_indicator.dart';
 
 /// Iniciales del admin logueado (avatar del menú lateral y del menú «Más»).
 String adminInitials() {
@@ -62,42 +63,53 @@ class AdminRail extends StatelessWidget {
             ),
           ],
           const Spacer(),
-          PopupMenuButton<String>(
-            tooltip: 'Cuenta',
-            position: PopupMenuPosition.over,
-            offset: const Offset(72, -8),
-            onSelected: (value) {
-              if (value == 'logout') sl<AuthCubit>().signOutGoogle();
-            },
-            itemBuilder: (_) => [
-              const PopupMenuItem(
-                value: 'logout',
-                child: ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  leading: Icon(Icons.logout),
-                  title: Text('Cerrar sesión'),
+          // Avatar con el punto de conexión en vivo (ver RealtimeIndicator).
+          Stack(
+            clipBehavior: Clip.none,
+            children: [
+              PopupMenuButton<String>(
+                tooltip: 'Cuenta',
+                position: PopupMenuPosition.over,
+                offset: const Offset(72, -8),
+                onSelected: (value) {
+                  if (value == 'logout') sl<AuthCubit>().signOutGoogle();
+                },
+                itemBuilder: (_) => [
+                  const PopupMenuItem(
+                    value: 'logout',
+                    child: ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: Icon(Icons.logout),
+                      title: Text('Cerrar sesión'),
+                    ),
+                  ),
+                  PopupMenuItem(
+                    enabled: false,
+                    height: 32,
+                    child: Text('Versión ${AppVersion.label}', style: Theme.of(context).textTheme.bodySmall),
+                  ),
+                ],
+                child: Container(
+                  width: 44,
+                  height: 44,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: scheme.primaryContainer,
+                    border: Border.all(color: scheme.outlineVariant, width: 2),
+                  ),
+                  child: Text(
+                    _initials(),
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: scheme.onPrimaryContainer),
+                  ),
                 ),
               ),
-              PopupMenuItem(
-                enabled: false,
-                height: 32,
-                child: Text('Versión ${AppVersion.label}', style: Theme.of(context).textTheme.bodySmall),
+              Positioned(
+                right: -6,
+                bottom: -6,
+                child: RealtimeIndicator(size: 12, borderColor: scheme.surface),
               ),
             ],
-            child: Container(
-              width: 44,
-              height: 44,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: scheme.primaryContainer,
-                border: Border.all(color: scheme.outlineVariant, width: 2),
-              ),
-              child: Text(
-                _initials(),
-                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: scheme.onPrimaryContainer),
-              ),
-            ),
           ),
         ],
       ),
