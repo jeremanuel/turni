@@ -71,6 +71,16 @@ Future<void> _tap(WidgetTester tester, Finder finder) async {
   await tester.tap(finder);
 }
 
+/// `enterText` que antes toca el campo. En web, escribir en un campo que no
+/// tiene el foco a veces no llega (el campo queda como estaba, ej. vacío
+/// después de que la pantalla lo limpió por código) y el paso siguiente falla
+/// sin motivo aparente. En la VM no pasa.
+Future<void> _enterText(WidgetTester tester, Finder finder, String text) async {
+  await _tap(tester, finder);
+  await tester.pump();
+  await tester.enterText(finder, text);
+}
+
 /// Como `find.text`, pero solo widgets `Text`: `find.text` también matchea el
 /// `EditableText` del campo donde se tipeó ese mismo texto, así que esperar
 /// "a que aparezca X en la lista" daba positivo al instante, antes de que el
@@ -159,11 +169,17 @@ Future<void> runClubConfigFlow(WidgetTester tester) async {
     reason: 'Dato sembrado por seed-dev.ts para el club 800001',
   );
 
-  await tester.enterText(addressField, 'Av. Siempre Viva 123 (e2e)');
+  await _enterText(tester, addressField, 'Av. Siempre Viva 123 (e2e)');
   await _tap(tester, find.widgetWithText(FilledButton, 'Guardar cambios'));
   await _pumpUntilFound(tester, find.text('Datos del establecimiento guardados.'));
 
-  await tester.enterText(addressField, 'Av. Siempre Viva 123');
+  // Revertir. Antes de guardar se cierra el aviso del primer guardado: si
+  // no, "guardados" ya estaba en pantalla y el test seguía sin esperar al
+  // segundo (la dirección quedaba con "(e2e)" y la corrida siguiente
+  // fallaba).
+  tester.state<ScaffoldMessengerState>(find.byType(ScaffoldMessenger).first).clearSnackBars();
+  await _settle(tester);
+  await _enterText(tester, addressField, 'Av. Siempre Viva 123');
   await _tap(tester, find.widgetWithText(FilledButton, 'Guardar cambios'));
   await _pumpUntilFound(tester, find.text('Datos del establecimiento guardados.'));
 
@@ -184,7 +200,7 @@ Future<void> runClubConfigFlow(WidgetTester tester) async {
   await _tap(tester, find.text('Tenis').last);
   await _settle(tester);
 
-  await tester.enterText(_fieldByLabel(partitionsScope, 'Nombre del servicio (opcional)'), sectorName);
+  await _enterText(tester, _fieldByLabel(partitionsScope, 'Nombre del servicio (opcional)'), sectorName);
   await _tap(tester, find.descendant(of: partitionsScope, matching: find.widgetWithText(FilledButton, 'Crear servicio')));
   // Buscado DENTRO de una ClubPartitionCard: `find.text` también matchea el
   // EditableText del propio campo "Nombre del servicio", así que
@@ -222,7 +238,7 @@ Future<void> runClubConfigFlow(WidgetTester tester) async {
 
   final courtDialog = find.byType(AlertDialog);
   await _pumpUntilFound(tester, find.descendant(of: courtDialog, matching: find.textContaining('Nuev')));
-  await tester.enterText(_fieldByLabel(courtDialog, 'Nombre (opcional)'), courtDescription);
+  await _enterText(tester, _fieldByLabel(courtDialog, 'Nombre (opcional)'), courtDescription);
   await _tap(tester, find.descendant(of: courtDialog, matching: find.widgetWithText(FilledButton, 'Crear')));
   await _pumpUntilFound(tester, find.descendant(of: partitionsScope, matching: _label(courtDescription)));
 
@@ -246,7 +262,7 @@ Future<void> runClubConfigFlow(WidgetTester tester) async {
 
   final tariffDialog = find.byType(AlertDialog);
   await _pumpUntilFound(tester, find.descendant(of: tariffDialog, matching: find.text('Nueva tarifa')));
-  await tester.enterText(_fieldByLabel(tariffDialog, 'Nombre de la tarifa'), tariffName);
+  await _enterText(tester, _fieldByLabel(tariffDialog, 'Nombre de la tarifa'), tariffName);
   await _tap(tester, find.descendant(of: tariffDialog, matching: find.widgetWithText(FilledButton, 'Crear')));
   await _pumpUntilFound(tester, find.descendant(of: tariffsScope, matching: _label(tariffName)));
 
@@ -263,7 +279,7 @@ Future<void> runClubConfigFlow(WidgetTester tester) async {
   );
 
   // Primera franja: toda la semana, 00:00-23:59.
-  await tester.enterText(_fieldByLabel(tariffsScope, 'Precio'), '15000');
+  await _enterText(tester, _fieldByLabel(tariffsScope, 'Precio'), '15000');
   await _tap(
     tester,
     find.descendant(of: tariffsScope, matching: find.widgetWithText(OutlinedButton, 'Agregar franja')),
@@ -274,7 +290,7 @@ Future<void> runClubConfigFlow(WidgetTester tester) async {
   // Segunda franja: se solapa por completo con la anterior -> el backend
   // la rechaza (409) y el front tiene que mostrar el error (bug ya
   // arreglado: el SnackBar de error salía fuera de pantalla).
-  await tester.enterText(_fieldByLabel(tariffsScope, 'Precio'), '5000');
+  await _enterText(tester, _fieldByLabel(tariffsScope, 'Precio'), '5000');
   await _tap(
     tester,
     find.descendant(of: tariffsScope, matching: find.widgetWithText(OutlinedButton, 'Agregar franja')),
@@ -290,19 +306,19 @@ Future<void> runClubConfigFlow(WidgetTester tester) async {
   final productsScope = find.byType(ProductsTab);
   await _pumpUntilFound(tester, find.descendant(of: productsScope, matching: find.text('Categorías')));
 
-  await tester.enterText(_fieldByLabel(productsScope, 'Nueva categoría'), categoryName);
+  await _enterText(tester, _fieldByLabel(productsScope, 'Nueva categoría'), categoryName);
   await _tap(
     tester,
     find.descendant(of: productsScope, matching: find.widgetWithText(OutlinedButton, 'Crear categoría')),
   );
   await _pumpUntilFound(tester, find.descendant(of: productsScope, matching: _label(categoryName)));
 
-  await tester.enterText(_fieldByLabel(productsScope, 'Nombre'), productName);
+  await _enterText(tester, _fieldByLabel(productsScope, 'Nombre'), productName);
   await _tap(tester, find.descendant(of: productsScope, matching: find.byType(DropdownButtonFormField<int?>)));
   await _settle(tester);
   await _tap(tester, _label(categoryName).last);
   await _settle(tester);
-  await tester.enterText(_fieldByLabel(productsScope, 'Precio'), '2500');
+  await _enterText(tester, _fieldByLabel(productsScope, 'Precio'), '2500');
   await _tap(
     tester,
     find.descendant(of: productsScope, matching: find.widgetWithText(OutlinedButton, 'Agregar producto')),

@@ -106,20 +106,25 @@ class _ClientsListState extends State<ClientsList> {
                             if(ResponsiveBuilder.isMobile(context)) {
                               return editClientIcon;
                             }
-                            return Row(
-                              spacing: 4,
-                              children: [
-                                AddPaymentButton(
-                                  shortButton: true,
-                                  client: e, 
-                                  onPaymentCreated: (payment) {
-    
-                                    Future.delayed(const Duration(seconds: 3)).then((value) => clientsBloc.refetchClients());
-                                    
-                                  }
+                            // Cobrar y editar entran siempre en la celda (se
+                            // achican si la columna queda angosta).
+                            return FittedBox(
+                              fit: BoxFit.scaleDown,
+                              alignment: Alignment.centerLeft,
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                spacing: 4,
+                                children: [
+                                  AddPaymentButton(
+                                    shortButton: true,
+                                    client: e,
+                                    onPaymentCreated: (payment) {
+                                      Future.delayed(const Duration(seconds: 3)).then((value) => clientsBloc.refetchClients());
+                                    }
                                   ),
-                                editClientIcon
-                              ],
+                                  editClientIcon
+                                ],
+                              ),
                             );
                           },)
                         }
@@ -147,7 +152,7 @@ class _ClientsListState extends State<ClientsList> {
     final mobileColumns = [
       TrinaColumn(title: "Cliente", field: "name", type: TrinaColumnType.text(), enableEditingMode: false, enableContextMenu: false),
       TrinaColumn(title: "Telefono", field: "phone", type: TrinaColumnType.text(), width: 150, enableEditingMode: false, enableContextMenu: false),
-      TrinaColumn(title: "", field: "action", type: TrinaColumnType.boolean(), width: 115, enableDropToResize: false)
+      TrinaColumn(title: "", field: "action", type: TrinaColumnType.boolean(), width: 140, enableDropToResize: false)
     ];
 
     final desktopColumns = [
@@ -156,7 +161,7 @@ class _ClientsListState extends State<ClientsList> {
       TrinaColumn(title: "Telefono", field: "phone", type: TrinaColumnType.text(), width: 300, enableEditingMode: false, enableContextMenu: false),
       TrinaColumn(title: "Email", field: "email", type: TrinaColumnType.text(), width: 400, enableEditingMode: false, enableContextMenu: false),
       TrinaColumn(title: "Etiquetas", field: "labels", type: TrinaColumnType.text(),  minWidth: 500, enableEditingMode: false, enableContextMenu: false),
-      TrinaColumn(title: "", field: "action", type: TrinaColumnType.boolean(), width: 115, enableDropToResize: false, frozen: TrinaColumnFrozen.end)
+      TrinaColumn(title: "", field: "action", type: TrinaColumnType.boolean(), width: 140, enableDropToResize: false, frozen: TrinaColumnFrozen.end)
     ];
 
     return ResponsiveBuilder.isMobile(context) ? mobileColumns : desktopColumns;
