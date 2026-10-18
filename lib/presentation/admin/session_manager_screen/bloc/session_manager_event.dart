@@ -19,6 +19,8 @@ sealed class SessionManagerEvent with _$SessionManagerEvent {
   factory SessionManagerEvent.changeClubPartition(ClubPartition newClubPartition) = ChangeClubPartitionEvent;
 
   factory SessionManagerEvent.reloadSessionsEvent() = ReloadSessionsEvent;
+  /// Cambió algo en el servidor (canal en tiempo real): recarga el día sin spinner.
+  factory SessionManagerEvent.liveReloadEvent() = LiveReloadEvent;
 
   /// Vuelve a traer los sectores/canchas (ej. al cerrar la configuración,
   /// donde se pudo activar/desactivar alguno).

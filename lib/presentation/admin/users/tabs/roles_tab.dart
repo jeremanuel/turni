@@ -9,6 +9,7 @@ import '../../club_config/widgets/admin_data_table.dart';
 import '../users_access.dart';
 import '../widgets/role_form_dialog.dart';
 import '../../../../core/utils/responsive_builder.dart';
+import '../../../../core/services/data_changes.dart';
 
 /// Roles del club: qué pantallas ve y qué puede hacer cada uno.
 class RolesTab extends StatefulWidget {
@@ -18,7 +19,14 @@ class RolesTab extends StatefulWidget {
   State<RolesTab> createState() => _RolesTabState();
 }
 
-class _RolesTabState extends State<RolesTab> {
+class _RolesTabState extends State<RolesTab> with ReloadOnDataChange {
+  @override
+  Set<DataTopic> get refreshTopics => const {DataTopic.admins};
+
+  /// En vivo (otro admin cambió algo): sin spinner.
+  @override
+  void onDataChanged(DataChange change) => _load(silent: true);
+
   final _repository = sl<AdminAccessRepository>();
   final _access = UsersAccess.current();
 
@@ -35,11 +43,13 @@ class _RolesTabState extends State<RolesTab> {
     _load();
   }
 
-  Future<void> _load() async {
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-    });
+  Future<void> _load({bool silent = false}) async {
+    if (!silent) {
+      setState(() {
+        _isLoading = true;
+        _errorMessage = null;
+      });
+    }
 
     final catalogResult = await _repository.getCatalog();
     final rolesResult = await _repository.listRoles();

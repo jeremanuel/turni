@@ -1,9 +1,11 @@
 import 'dart:io';
 
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:turni/core/services/realtime/realtime_service.dart';
 
 import '../../integration_test/club_config_flow.dart';
 
@@ -45,5 +47,11 @@ void main() {
     addTearDown(tester.view.reset);
 
     await runClubConfigFlow(tester);
+
+    // Con la sesión iniciada la app abre el canal en tiempo real: se cierra
+    // para que no queden timers del socket pendientes al terminar.
+    RealtimeService.instance.disconnect();
+    await tester.pumpWidget(const SizedBox());
+    await tester.pump(const Duration(seconds: 5));
   });
 }
