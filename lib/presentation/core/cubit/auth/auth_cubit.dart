@@ -243,8 +243,11 @@ class AuthCubit extends Cubit<AuthState> with ChangeNotifier {
   /// Admin deshabilitado por otro admin del club: no puede usar la app.
   bool isDisabledAdmin() => state.userCredential?.adminAccess?.active == false;
 
+  /// Club del admin. Un club recién dado de alta todavía no tiene servicios,
+  /// así que va primero el `club_id` de su acceso.
   int getClubId() {
-    return state.userCredential!.admin!.clubPartitions.first.club_id;
+    final user = state.userCredential!;
+    return user.adminAccess?.clubId ?? user.admin!.clubPartitions.first.club_id;
   }
 
   /*   void setInitialRoute(String? route){
