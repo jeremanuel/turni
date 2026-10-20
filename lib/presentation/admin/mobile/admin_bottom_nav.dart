@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/config/router/app_routes.dart';
 import '../../../core/config/service_locator.dart';
 import '../../../core/services/app_version/app_version.dart';
 import '../../core/cubit/auth/auth_cubit.dart';
@@ -88,6 +89,15 @@ Future<void> showAdminMoreSheet(
                 },
               ),
             const Divider(height: 1),
+            if (sl<AuthCubit>().isPlatformOperator())
+              ListTile(
+                leading: const Icon(Icons.add_business_outlined),
+                title: const Text('Alta de establecimiento'),
+                onTap: () {
+                  Navigator.of(sheetContext).pop();
+                  context.push(AppRoutes.PLATFORM_CLUBS_ROUTE.path);
+                },
+              ),
             ListTile(
               leading: Icon(Icons.logout, color: scheme.error),
               title: Text('Cerrar sesión', style: TextStyle(color: scheme.error)),

@@ -14,6 +14,7 @@ import '../../../presentation/auth/check_status_page.dart';
 import '../../../presentation/auth/login_page.dart';
 import '../../../presentation/auth/admin_invite_page.dart';
 import '../../../presentation/auth/no_access_page.dart';
+import '../../../presentation/platform/platform_clubs_page.dart';
 import '../../../presentation/admin/users/users_page.dart';
 import 'route_permissions.dart';
 import '../../utils/permissions.dart';
@@ -87,8 +88,15 @@ GoRouter buildGoRouter(RouterType routerType) {
       if (isInvite) return null;
 
       if (routerType == RouterType.adminRoute) {
+        // El alta de clubes no depende de ser admin de un club.
+        if (location == AppRoutes.PLATFORM_CLUBS_ROUTE.path) {
+          return authCubit.isPlatformOperator() ? null : AppRoutes.DASHBOARD_ROUTE.path;
+        }
+
         final hasAccess = authCubit.isAdmin() && !authCubit.isDisabledAdmin();
         if (!hasAccess) {
+          // Un operador sin club propio solo tiene el alta de clubes.
+          if (authCubit.isPlatformOperator()) return AppRoutes.PLATFORM_CLUBS_ROUTE.path;
           return location == AppRoutes.NO_ACCESS_ROUTE.path ? null : AppRoutes.NO_ACCESS_ROUTE.path;
         }
         if (location == AppRoutes.NO_ACCESS_ROUTE.path) return AppRoutes.DASHBOARD_ROUTE.path;
@@ -121,6 +129,11 @@ GoRouter buildGoRouter(RouterType routerType) {
         path: AppRoutes.NO_ACCESS_ROUTE.path,
         name: AppRoutes.NO_ACCESS_ROUTE.name,
         builder: (context, state) => const NoAccessPage(),
+      ),
+      GoRoute(
+        path: AppRoutes.PLATFORM_CLUBS_ROUTE.path,
+        name: AppRoutes.PLATFORM_CLUBS_ROUTE.name,
+        builder: (context, state) => const PlatformClubsPage(),
       ),
       StatefulShellRoute.indexedStack(
         branches: buildBranches(routerType),
