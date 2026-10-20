@@ -16,6 +16,7 @@ import '../../../presentation/auth/admin_invite_page.dart';
 import '../../../presentation/auth/no_access_page.dart';
 import '../../../presentation/admin/users/users_page.dart';
 import 'route_permissions.dart';
+import '../../utils/permissions.dart';
 import '../../utils/responsive_builder.dart';
 import '../../../presentation/admin/widgets/admin_destinations.dart';
 import '../../../presentation/core/cubit/auth/auth_cubit.dart';
@@ -62,7 +63,18 @@ GoRouter buildGoRouter(RouterType routerType) {
 
       if (location == AppRoutes.ROOT_ROUTE.path || location == AppRoutes.LOGIN_ROUTE.path) {
         final initialRoute = authCubit.initialRoute;
-        if (initialRoute != null && !_isAuthRoute(Uri.parse(initialRoute).path)) {
+        final initialPath = initialRoute == null ? null : Uri.parse(initialRoute).path;
+
+        // Antes que la ruta pedida (que al abrir la app es `/clients`, el
+        // initialLocation): sin servicios no hay otra pantalla que sirva.
+        if (routerType == RouterType.adminRoute &&
+            _isNewClub(authCubit) &&
+            !(initialPath?.startsWith('/invite/') ?? false)) {
+          authCubit.initialRoute = null;
+          return AppRoutes.ADMIN_SETTINGS_ROUTE.path;
+        }
+
+        if (initialRoute != null && !_isAuthRoute(initialPath!)) {
           return initialRoute;
         }
 
@@ -120,6 +132,15 @@ GoRouter buildGoRouter(RouterType routerType) {
   );
 
   return goRouter;
+}
+
+/// Club recién dado de alta: todavía sin servicios no se puede usar nada más
+/// que la configuración, así que el dueño arranca ahí (con su recorrido).
+bool _isNewClub(AuthCubit authCubit) {
+  final user = authCubit.state.userCredential;
+  return authCubit.isAdmin() &&
+      (user?.admin?.clubPartitions.isEmpty ?? false) &&
+      authCubit.can(Permissions.CONFIGURACION_CLUB);
 }
 
 List<StatefulShellBranch> buildBranches(RouterType routerType) {

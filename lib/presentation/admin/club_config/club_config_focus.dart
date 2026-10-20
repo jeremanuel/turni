@@ -10,6 +10,8 @@ abstract final class ClubConfigTab {
   static const products = 3;
   static const sessionRequests = 4;
   static const onlinePayments = 5;
+
+  static const count = 6;
 }
 
 /// A qué parte de la configuración apunta un acceso directo desde otra
