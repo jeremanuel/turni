@@ -43,9 +43,11 @@ import '../../domain/repositories/auth_repository.dart';
 import '../../domain/usercases/auth_user_cases.dart';
 import '../../infrastructure/api/providers/auth_provider.dart';
 import '../../domain/repositories/admin_access_repository.dart';
+import '../../domain/repositories/platform_repository.dart';
 import '../../domain/repositories/fixed_session_repository.dart';
 import '../../infrastructure/api/repositories/fixed_session_repository_impl.dart';
 import '../../infrastructure/api/repositories/admin_access_repository_impl.dart';
+import '../../infrastructure/api/repositories/platform_repository_impl.dart';
 import '../../infrastructure/api/repositories/auth_repository_impl.dart';
 import '../../presentation/core/cubit/auth/auth_cubit.dart';
 
@@ -92,6 +94,8 @@ class ServiceLocator {
     sl.registerSingleton<ProductAdminRepository>(ProductAdminRepositoryImpl());
 
     sl.registerSingleton<AdminAccessRepository>(AdminAccessRepositoryImpl());
+
+    sl.registerSingleton<PlatformRepository>(PlatformRepositoryImpl());
 
     sl.registerSingleton<FixedSessionRepository>(FixedSessionRepositoryImpl());
 

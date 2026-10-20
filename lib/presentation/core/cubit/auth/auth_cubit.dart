@@ -240,11 +240,17 @@ class AuthCubit extends Cubit<AuthState> with ChangeNotifier {
   bool canAny(Iterable<String> permissions) =>
       state.userCredential?.adminAccess?.canAny(permissions) ?? false;
 
+  /// Cuenta del equipo de Turni: ve el alta de clubes.
+  bool isPlatformOperator() => state.userCredential?.platformOperator ?? false;
+
   /// Admin deshabilitado por otro admin del club: no puede usar la app.
   bool isDisabledAdmin() => state.userCredential?.adminAccess?.active == false;
 
+  /// Club del admin. Un club recién dado de alta todavía no tiene servicios,
+  /// así que va primero el `club_id` de su acceso.
   int getClubId() {
-    return state.userCredential!.admin!.clubPartitions.first.club_id;
+    final user = state.userCredential!;
+    return user.adminAccess?.clubId ?? user.admin!.clubPartitions.first.club_id;
   }
 
   /*   void setInitialRoute(String? route){

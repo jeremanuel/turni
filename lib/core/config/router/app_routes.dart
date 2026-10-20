@@ -122,6 +122,9 @@ class AppRoutes {
   /// Usuario logueado que no es admin, o admin deshabilitado.
   static const NO_ACCESS_ROUTE = RouteDefinition("NO_ACCESS", "/sin-acceso", usesScaffold: false);
 
+  /// Alta de clubes. Solo para operadores de Turni, sean o no admins de un club.
+  static const PLATFORM_CLUBS_ROUTE = RouteDefinition("PLATFORM_CLUBS", "/platform/clubs", usesScaffold: false);
+
   static final routesMap = {
     ROOT_ROUTE.name: ROOT_ROUTE,
     LOGIN_ROUTE.name: LOGIN_ROUTE,
@@ -151,6 +154,7 @@ class AppRoutes {
     USERS_ROUTE.name: USERS_ROUTE,
     ADMIN_INVITE_ROUTE.name: ADMIN_INVITE_ROUTE,
     NO_ACCESS_ROUTE.name: NO_ACCESS_ROUTE,
+    PLATFORM_CLUBS_ROUTE.name: PLATFORM_CLUBS_ROUTE,
   };
 }
 
