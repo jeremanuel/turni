@@ -15,7 +15,8 @@ import '../core/cubit/auth/auth_cubit.dart';
 /// Alta de un club con su dueño (`/platform/clubs`). Solo la ven los
 /// operadores de Turni. El dueño queda vinculado la primera vez que entra al
 /// panel con la cuenta de Google de ese email: no hay código, el mail de
-/// invitación solo lleva la URL del panel.
+/// invitación solo lleva la URL del panel. El back lo manda solo al dar de
+/// alta; si no pudo, el operador lo manda desde acá.
 class PlatformClubsPage extends StatefulWidget {
   const PlatformClubsPage({super.key});
 
@@ -35,6 +36,7 @@ class _PlatformClubsPageState extends State<PlatformClubsPage> {
   bool _saving = false;
   String? _error;
   ClubOwnerInvite? _invite;
+  bool _inviteSent = false;
   bool _copied = false;
 
   @override
@@ -78,6 +80,7 @@ class _PlatformClubsPageState extends State<PlatformClubsPage> {
       }),
       right: (club) => setState(() {
         _saving = false;
+        _inviteSent = club.inviteSent;
         _invite = ClubOwnerInvite(
           clubName: clubName,
           ownerName: ownerName,
@@ -94,6 +97,7 @@ class _PlatformClubsPageState extends State<PlatformClubsPage> {
     }
     setState(() {
       _invite = null;
+      _inviteSent = false;
       _copied = false;
     });
   }
@@ -208,18 +212,27 @@ class _PlatformClubsPageState extends State<PlatformClubsPage> {
         Text('${invite.clubName} quedó dado de alta', style: textTheme.titleLarge),
         const SizedBox(height: 8),
         Text(
-          'Mandale la invitación a ${invite.email}: tiene que entrar al panel con esa cuenta de Google. '
-          'Va a arrancar en Configuración para cargar los datos del establecimiento.',
+          _inviteSent
+              ? 'Le mandamos la invitación a ${invite.email}. Tiene que entrar al panel con esa cuenta de Google; '
+                  'va a arrancar en Configuración para cargar los datos del establecimiento.'
+              : 'Mandale la invitación a ${invite.email}: tiene que entrar al panel con esa cuenta de Google. '
+                  'Va a arrancar en Configuración para cargar los datos del establecimiento.',
           style: textTheme.bodyMedium,
         ),
         const SizedBox(height: 16),
         SizedBox(
           width: double.infinity,
-          child: FilledButton.icon(
-            onPressed: () => _sendInvite(invite),
-            icon: const Icon(Icons.mail_outline),
-            label: const Text('Enviar invitación'),
-          ),
+          child: _inviteSent
+              ? OutlinedButton.icon(
+                  onPressed: () => _sendInvite(invite),
+                  icon: const Icon(Icons.mail_outline),
+                  label: const Text('Reenviar por mail'),
+                )
+              : FilledButton.icon(
+                  onPressed: () => _sendInvite(invite),
+                  icon: const Icon(Icons.mail_outline),
+                  label: const Text('Enviar invitación'),
+                ),
         ),
         const SizedBox(height: 4),
         Center(

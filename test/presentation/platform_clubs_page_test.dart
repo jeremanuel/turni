@@ -94,6 +94,24 @@ void main() {
     expect(find.text('Alta de establecimiento'), findsOneWidget);
   });
 
+  testWidgets('si el back ya mandó la invitación, lo dice y ofrece reenviarla', (tester) async {
+    await pumpPage(tester, Either.right(const CreatedClub(clubId: 5, email: 'ana@gmail.com', inviteSent: true)));
+
+    await fill(tester);
+    await tester.tap(find.text('Dar de alta'));
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('Le mandamos la invitación a ana@gmail.com'), findsOneWidget);
+    expect(find.text('Reenviar por mail'), findsOneWidget);
+    expect(find.text('Enviar invitación'), findsNothing);
+  });
+
+  test('CreatedClub lee invite.sent de la respuesta', () {
+    expect(CreatedClub.fromJson({'club_id': 5, 'email': 'a@b.com', 'invite': {'sent': true}}).inviteSent, isTrue);
+    expect(CreatedClub.fromJson({'club_id': 5, 'email': 'a@b.com', 'invite': {'sent': false}}).inviteSent, isFalse);
+    expect(CreatedClub.fromJson({'club_id': 5, 'email': 'a@b.com'}).inviteSent, isFalse);
+  });
+
   testWidgets('muestra el error del back', (tester) async {
     await pumpPage(
       tester,
