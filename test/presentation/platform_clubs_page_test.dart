@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:turni/core/config/service_locator.dart';
 import 'package:turni/core/utils/domain_error.dart';
@@ -30,6 +32,7 @@ class _FakePlatformRepository implements PlatformRepository {
 void main() {
   Future<_FakePlatformRepository> pumpPage(WidgetTester tester, RepositoryResponse<CreatedClub> response) async {
     registerLoggedAdmin();
+    dotenv.loadFromString(envString: 'ADMIN_WEB_URL=https://panel.example.com');
     final repository = _FakePlatformRepository(response);
     if (sl.isRegistered<PlatformRepository>()) sl.unregister<PlatformRepository>();
     sl.registerSingleton<PlatformRepository>(repository);
@@ -60,7 +63,7 @@ void main() {
     expect(repository.calls, isEmpty);
   });
 
-  testWidgets('da de alta el club y muestra a quién avisarle', (tester) async {
+  testWidgets('da de alta el club y arma el mail de invitación', (tester) async {
     final repository = await pumpPage(tester, Either.right(const CreatedClub(clubId: 5, email: 'ana@gmail.com')));
 
     await fill(tester);
@@ -71,9 +74,42 @@ void main() {
     expect(find.text('Club Norte quedó dado de alta'), findsOneWidget);
     expect(find.textContaining('ana@gmail.com'), findsOneWidget);
 
+    expect(find.text('Enviar invitación'), findsOneWidget);
+
+    String? copied;
+    tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(SystemChannels.platform, (call) async {
+      if (call.method == 'Clipboard.setData') copied = (call.arguments as Map)['text'] as String;
+      return null;
+    });
+    addTearDown(() => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(SystemChannels.platform, null));
+    await tester.tap(find.text('Copiar el mail'));
+    await tester.pump();
+    expect(copied, startsWith('Para: ana@gmail.com\nAsunto: Tu acceso a Turni para Club Norte'));
+    expect(copied, contains('Hola Ana:'));
+    expect(copied, contains('entrá a https://panel.example.com/ y tocá'));
+    expect(find.text('Mail copiado'), findsOneWidget);
+
     await tester.tap(find.text('Dar de alta otro'));
     await tester.pumpAndSettle();
     expect(find.text('Alta de establecimiento'), findsOneWidget);
+  });
+
+  testWidgets('si el back ya mandó la invitación, lo dice y ofrece reenviarla', (tester) async {
+    await pumpPage(tester, Either.right(const CreatedClub(clubId: 5, email: 'ana@gmail.com', inviteSent: true)));
+
+    await fill(tester);
+    await tester.tap(find.text('Dar de alta'));
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('Le mandamos la invitación a ana@gmail.com'), findsOneWidget);
+    expect(find.text('Reenviar por mail'), findsOneWidget);
+    expect(find.text('Enviar invitación'), findsNothing);
+  });
+
+  test('CreatedClub lee invite.sent de la respuesta', () {
+    expect(CreatedClub.fromJson({'club_id': 5, 'email': 'a@b.com', 'invite': {'sent': true}}).inviteSent, isTrue);
+    expect(CreatedClub.fromJson({'club_id': 5, 'email': 'a@b.com', 'invite': {'sent': false}}).inviteSent, isFalse);
+    expect(CreatedClub.fromJson({'club_id': 5, 'email': 'a@b.com'}).inviteSent, isFalse);
   });
 
   testWidgets('muestra el error del back', (tester) async {
