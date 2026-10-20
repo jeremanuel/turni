@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/config/router/app_routes.dart';
 import '../../../core/config/service_locator.dart';
 import '../../../core/services/app_version/app_version.dart';
 import '../../core/cubit/auth/auth_cubit.dart';
@@ -68,8 +69,18 @@ class AdminRail extends StatelessWidget {
             offset: const Offset(72, -8),
             onSelected: (value) {
               if (value == 'logout') sl<AuthCubit>().signOutGoogle();
+              if (value == 'platform_clubs') context.push(AppRoutes.PLATFORM_CLUBS_ROUTE.path);
             },
             itemBuilder: (_) => [
+              if (sl<AuthCubit>().isPlatformOperator())
+                const PopupMenuItem(
+                  value: 'platform_clubs',
+                  child: ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: Icon(Icons.add_business_outlined),
+                    title: Text('Alta de establecimiento'),
+                  ),
+                ),
               const PopupMenuItem(
                 value: 'logout',
                 child: ListTile(

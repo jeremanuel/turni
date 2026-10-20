@@ -23,6 +23,7 @@ class User {
     this.userInterest,
     this.templateMessage,
     this.adminAccess,
+    this.platformOperator = false,
   });
 
   @JsonKey(name: "user_id", fromJson: ValueTransformers.fromJsonString)
@@ -45,6 +46,11 @@ class User {
   /// Rol y permisos si es admin (null si no lo es).
   @JsonKey(name: "admin_access")
   final AdminAccess? adminAccess;
+
+  /// Cuenta del equipo de Turni: puede dar de alta clubes (no depende de
+  /// ningún club).
+  @JsonKey(name: "platform_operator", defaultValue: false)
+  final bool platformOperator;
 
   Coordinate? location;
 
