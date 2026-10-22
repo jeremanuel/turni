@@ -19,6 +19,12 @@ class _GoogleWebButton extends StatefulWidget {
 }
 
 class _GoogleWebButtonState extends State<_GoogleWebButton> {
+  /// `GoogleSignIn.initialize` se puede llamar una sola vez por carga de la
+  /// página (el plugin web tira "init() has already been called"). El login
+  /// se puede montar más de una vez (al arrancar mientras se valida el token,
+  /// al cerrar sesión y volver), así que se inicializa una vez y se reusa.
+  static Future<void>? _initialization;
+
   final GoogleSignIn _googleSignIn = GoogleSignIn.instance;
   late final Future<void> _initializeGoogleSignIn;
   StreamSubscription<GoogleSignInAuthenticationEvent>? _authSubscription;
@@ -27,7 +33,7 @@ class _GoogleWebButtonState extends State<_GoogleWebButton> {
   void initState() {
     super.initState();
     final clientId = Environment.googleClientId.trim();
-    _initializeGoogleSignIn = _googleSignIn.initialize(
+    _initializeGoogleSignIn = _initialization ??= _googleSignIn.initialize(
       clientId: clientId.isEmpty || clientId.startsWith('KEY ')
           ? null
           : clientId,
