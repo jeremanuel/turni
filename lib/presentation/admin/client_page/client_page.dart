@@ -1,3 +1,4 @@
+import '../../../core/utils/admin_features.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'widgets/client_profile_body.dart';
@@ -11,10 +12,8 @@ import '../../../domain/entities/payment/payment.dart';
 import '../../../domain/repositories/payment_repository.dart';
 import '../client_feature/wrapper_client_provider.dart';
 import 'widgets/categories_container.dart';
-import 'widgets/add_payment_button.dart';
 import 'widgets/basic_data_container.dart';
 import 'widgets/labels_container.dart';
-import 'widgets/payments/payments_list.dart';
 import 'widgets/subscriptions_container.dart';
 import 'widgets/subscriptions_container/add_subscription_button.dart';
 
@@ -87,7 +86,6 @@ class _ClientpageState extends State<Clientpage> {
                   onToggleEditing: (c) => toggleEditing(),
                   isEditing: isEditingMode,
                 ),
-                payments: const PaymentsContainer(),
                 subscription: _ActiveSubscriptionWidget(client: client),
                 labels: const LabelsContainer(),
                 categories: client.clientId != null ? CategoriesContainer(clientId: client.intClientId) : null,
@@ -316,124 +314,6 @@ class _ClientpageState extends State<Clientpage> {
   }
 }
 
-class PaymentsContainer extends StatefulWidget {
-  const PaymentsContainer({super.key});
-
-  @override
-  State<PaymentsContainer> createState() => _PaymentsContainerState();
-}
-
-class _PaymentsContainerState extends State<PaymentsContainer> {
-  String? alertMessage;
-  String? infoMessage;
-  PaymentRepository? paymentRepository;
-  TrinaGridStateManager? stateManager;
-
-  void setAlertBasedOnLastPayment(Payment? payment) {
-    final now = DateTime.now();
-
-    if (payment == null) return;
-
-    final differenceInDaysFromLastPayment = now
-        .difference(payment.paymentDate)
-        .inDays;
-
-    if (differenceInDaysFromLastPayment < 30) {
-      return setState(() {
-        infoMessage = "Pago al dia";
-        alertMessage = null;
-      });
-    }
-
-    if (differenceInDaysFromLastPayment > 30) {
-      setState(() {
-        alertMessage = "$differenceInDaysFromLastPayment desde el ultimo pago";
-        infoMessage = null;
-      });
-    } else {
-      setState(() {
-        infoMessage = "$differenceInDaysFromLastPayment desde el ultimo pago";
-        alertMessage = null;
-      });
-    }
-  }
-
-  @override
-  void initState() {
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-      paymentRepository = sl<PaymentRepository>();
-      setState(() {});
-    });
-    super.initState();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (paymentRepository == null) return const SizedBox();
-
-    final textTheme = Theme.of(context).textTheme;
-    final colorScheme = Theme.of(context).colorScheme;
-    final client = ClientInherited.of(context)!.client;
-
-    return Container(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Text("Pagos", style: textTheme.headlineSmall),
-              const Spacer(),
-              if (alertMessage != null || infoMessage != null)
-                Row(
-                  spacing: 8,
-                  children: [
-                    Container(
-                      width: 12,
-                      height: 12,
-                      decoration: BoxDecoration(
-                        color: getMessageColor(),
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                    Text(
-                      alertMessage ?? infoMessage!,
-                      style: const TextStyle(color: Colors.white),
-                    ),
-                  ],
-                ),
-              const SizedBox(width: 16),
-              AddPaymentButton(
-                client: client,
-                onPaymentCreated: (p0) {
-                  stateManager!.setFilter((element) => true);
-                },
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Expanded(
-            child: Paymentslist(
-              clientId: int.parse(client.clientId!),
-              onPaymentsLoad: setAlertBasedOnLastPayment,
-              paymentRepository: paymentRepository!,
-              onLoaded: (event) => setState(() {
-                stateManager = event.stateManager;
-              }),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  dynamic getMessageColor() {
-    if (alertMessage != null) return const Color.fromARGB(255, 189, 126, 44);
-
-    return const Color.fromARGB(255, 114, 155, 111);
-  }
-}
-
 class _ActiveSubscriptionWidget extends StatelessWidget {
   const _ActiveSubscriptionWidget({required this.client});
 
@@ -446,7 +326,7 @@ class _ActiveSubscriptionWidget extends StatelessWidget {
     // Obtener la suscripción activa
     // Los turnos fijos se ven en su propia sección (ClientFixedSessions).
     final activeSubscription = client.clientSubscriptions?.firstWhereOrNull(
-      (sub) => sub.isActive && sub.subscription.subscriptionType != "FIXED_SESSION",
+      (sub) => sub.isActive && sub.subscription.subscriptionType != "FIXED_SESSION" && !AdminFeatures.isMembershipPartition(sub.subscription.clubPartitionId),
     );
 
     final hasActiveSubscription =

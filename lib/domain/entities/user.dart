@@ -11,6 +11,14 @@ import 'user_interest.dart';
 
 part 'user.g.dart';
 
+/// El backend manda `template_message` como lista de plantillas (antes era un
+/// texto): se usa la primera. Con el `as String?` del generado, el login del
+/// admin fallaba en silencio y volvía a la pantalla de entrar.
+String? _templateMessageFromJson(Object? value) {
+  if (value is List) return value.isEmpty ? null : '${value.first}';
+  return value as String?;
+}
+
 @JsonSerializable()
 class User {
   User({
@@ -40,7 +48,7 @@ class User {
   @JsonKey(name: "user_interest")
   final List<UserInterest>? userInterest;
 
-  @JsonKey(name: "template_message")
+  @JsonKey(name: "template_message", fromJson: _templateMessageFromJson)
   final String? templateMessage;
 
   /// Rol y permisos si es admin (null si no lo es).

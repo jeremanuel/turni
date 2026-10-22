@@ -5,7 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/config/router/app_routes.dart';
 import '../../../../core/presentation/components/inputs/label_chip.dart';
 import '../../../../domain/entities/client.dart';
-import '../../client_page/widgets/add_payment_button.dart';
+import '../../memberships/register_payment_dialog.dart';
 import '../bloc/clients_list_bloc.dart';
 
 /// Celular: los clientes como tarjetas con scroll infinito (en lugar de la
@@ -189,7 +189,7 @@ class _ClientCard extends StatelessWidget {
                   ],
                 ),
               ),
-              AddPaymentButton(shortButton: true, client: client, onPaymentCreated: (_) => onPaymentCreated()),
+              RegisterPaymentButton(compact: true, client: client, onPaid: onPaymentCreated),
             ],
           ),
         ),
