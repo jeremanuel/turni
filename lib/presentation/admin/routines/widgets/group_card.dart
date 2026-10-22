@@ -159,7 +159,7 @@ class GroupCard extends StatelessWidget {
                               physics: const NeverScrollableScrollPhysics(),
                               buildDefaultDragHandles: false,
                               itemCount: group.exercises.length,
-                              onReorderItem: (oldIndex, newIndex) => draft.moveExercise(group, oldIndex, newIndex),
+                              onReorder: (oldIndex, newIndex) => draft.moveExercise(group, oldIndex, newIndex > oldIndex ? newIndex - 1 : newIndex),
                               itemBuilder: (context, i) {
                                 final exercise = group.exercises[i];
                                 return ExerciseRow(

@@ -198,7 +198,7 @@ class RoutineDraft extends ChangeNotifier {
     _changed();
   }
 
-  /// [newIndex] ya corregido (como lo da `onReorderItem`).
+  /// [newIndex] ya corregido: sin contar el ítem que se mueve.
   void moveGroup(int oldIndex, int newIndex) {
     groups.insert(newIndex, groups.removeAt(oldIndex));
     _changed();
