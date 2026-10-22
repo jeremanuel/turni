@@ -6,6 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/config/router/app_routes.dart';
 import '../../../../core/config/service_locator.dart';
 import '../../../../core/presentation/components/links/entity_links.dart';
+import '../../../../core/utils/admin_features.dart';
 import '../../../../core/utils/either.dart';
 import '../../../../core/utils/permissions.dart';
 import '../../../../core/utils/responsive_builder.dart';
@@ -13,16 +14,21 @@ import '../../../../core/utils/thousands_format.dart';
 import '../../../../domain/entities/client.dart';
 import '../../../../domain/entities/client_summary.dart';
 import '../../../../domain/repositories/fixed_session_repository.dart';
-import 'add_payment_button.dart';
+import '../../memberships/client_membership_card.dart';
+import '../../memberships/register_payment_dialog.dart';
+import 'client_payments_card.dart';
 import 'client_fixed_sessions.dart';
+import 'client_routine_card.dart';
 
 /// Cuerpo de la ficha del cliente (rediseño): encabezado con datos y
 /// acciones, indicadores, turnos fijos, próximos turnos, pagos y, al costado,
-/// abono, etiquetas, notas y actividad. Las rutinas no se muestran.
+/// abono, etiquetas, notas y actividad. Cada sección aparece solo si tiene
+/// sentido para lo que ve el admin ([AdminFeatures]): la rutina, si ve algún
+/// gimnasio; el abono con cuotas, si ve algún servicio con abonos.
 ///
-/// [payments], [subscription] y [labels] son los componentes de siempre de la
-/// ficha; acá solo se acomodan. [editor] reemplaza al encabezado mientras se
-/// editan los datos. [categories] (torneos) va debajo de los pagos.
+/// [subscription] y [labels] son los componentes de siempre de la ficha; acá
+/// solo se acomodan. [editor] reemplaza al encabezado mientras se editan los
+/// datos. [categories] (torneos) va debajo de los pagos.
 class ClientProfileBody extends StatefulWidget {
   const ClientProfileBody({
     super.key,
@@ -30,7 +36,6 @@ class ClientProfileBody extends StatefulWidget {
     required this.isEditing,
     required this.onEdit,
     required this.editor,
-    required this.payments,
     required this.subscription,
     required this.labels,
     this.categories,
@@ -40,7 +45,6 @@ class ClientProfileBody extends StatefulWidget {
   final bool isEditing;
   final VoidCallback onEdit;
   final Widget editor;
-  final Widget payments;
   final Widget subscription;
   final Widget labels;
   final Widget? categories;
@@ -53,6 +57,23 @@ class _ClientProfileBodyState extends State<ClientProfileBody> {
   final _repository = sl<FixedSessionRepository>();
   ClientSummary? _summary;
   String? _summaryError;
+
+  /// Sube cuando cambia algo de plata (un pago, una pausa): recarga las cards.
+  int _paymentsVersion = 0;
+
+  void _moneyChanged() {
+    _loadSummary();
+    setState(() => _paymentsVersion++);
+  }
+
+  /// La card "Abono" de siempre, para abonos que no son con cuotas (o si el
+  /// admin no ve ningún servicio con cuotas).
+  bool get _showLegacySubscription {
+    if (!AdminFeatures.memberships) return true;
+    return widget.client.clientSubscriptions?.any((s) =>
+            s.isActive && s.subscription.subscriptionType != 'FIXED_SESSION' && !AdminFeatures.isMembershipPartition(s.subscription.clubPartitionId)) ??
+        false;
+  }
 
   @override
   void initState() {
@@ -80,12 +101,15 @@ class _ClientProfileBodyState extends State<ClientProfileBody> {
 
     final main = <Widget>[
       ClientFixedSessions(key: ValueKey('fixed-${widget.client.clientId}'), client: widget.client, onChanged: _loadSummary),
+      if (AdminFeatures.routines) ClientRoutineCard(key: ValueKey('routine-${widget.client.clientId}'), client: widget.client),
+      if (AdminFeatures.memberships)
+        ClientMembershipCard(key: ValueKey('membership-${widget.client.clientId}-$_paymentsVersion'), client: widget.client, onChanged: _moneyChanged),
       _UpcomingCard(summary: _summary, error: _summaryError),
-      Card(margin: EdgeInsets.zero, child: SizedBox(height: 380, child: widget.payments)),
+      ClientPaymentsCard(key: ValueKey('payments-${widget.client.clientId}-$_paymentsVersion'), client: widget.client, onPaid: _moneyChanged),
       if (widget.categories != null) widget.categories!,
     ];
     final side = <Widget>[
-      _SideCard(title: 'Abono', child: widget.subscription),
+      if (_showLegacySubscription) _SideCard(title: 'Abono', child: widget.subscription),
       Card(margin: EdgeInsets.zero, child: widget.labels),
       _NotesCard(client: widget.client, onEdit: widget.onEdit),
       _ActivityCard(summary: _summary),
@@ -104,7 +128,7 @@ class _ClientProfileBodyState extends State<ClientProfileBody> {
           if (widget.isEditing)
             widget.editor
           else
-            _HeaderCard(client: widget.client, onEdit: widget.onEdit, onPaymentCreated: _loadSummary),
+            _HeaderCard(client: widget.client, onEdit: widget.onEdit, onPaymentCreated: _moneyChanged),
           const SizedBox(height: 20),
           _KpiRow(summary: _summary),
           const SizedBox(height: 20),
@@ -167,7 +191,7 @@ class _HeaderCard extends StatelessWidget {
           OutlinedButton.icon(onPressed: _whatsApp, icon: const Icon(Icons.chat_outlined, size: 18), label: const Text('WhatsApp')),
         if (Permissions.can(Permissions.CLIENTES_EDITAR))
           OutlinedButton.icon(onPressed: onEdit, icon: const Icon(Icons.edit_outlined, size: 18), label: const Text('Editar datos')),
-        AddPaymentButton(client: client, onPaymentCreated: (_) => onPaymentCreated()),
+        RegisterPaymentButton(client: client, onPaid: onPaymentCreated),
         if (Permissions.can(Permissions.AGENDA_RESERVAR))
           FilledButton.icon(
             onPressed: () => context.go(AppRoutes.SESSION_MANAGER_ROUTE.path),

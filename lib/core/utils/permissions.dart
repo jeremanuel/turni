@@ -34,6 +34,7 @@ class Permissions {
   static const CONFIGURACION_CANCHAS = 'configuracion.canchas';
   static const CONFIGURACION_TARIFAS = 'configuracion.tarifas';
   static const CONFIGURACION_PRODUCTOS = 'configuracion.productos';
+  static const CONFIGURACION_ABONOS = 'configuracion.abonos';
   static const CONFIGURACION_SOLICITUDES = 'configuracion.solicitudes';
   static const CONFIGURACION_COBROS_ONLINE = 'configuracion.cobros_online';
 

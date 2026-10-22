@@ -13,6 +13,8 @@ import 'tabs/club_partitions_tab.dart';
 import 'tabs/price_tariffs_tab.dart';
 import 'tabs/products_tab.dart';
 import 'tabs/session_request_settings_tab.dart';
+import '../../../core/utils/admin_features.dart';
+import '../memberships/plans_tab.dart';
 import '../settings_screen/widgets/mercado_pago_account_card.dart';
 
 /// Pantalla de configuración de admin para el club (reemplaza la vieja
@@ -226,6 +228,14 @@ List<_ClubConfigSection> _sections(
           ),
         )),
       ),
+      if (AdminFeatures.memberships)
+        _ClubConfigSection(
+          tabLabel: 'Abonos',
+          title: 'Abonos',
+          subtitle: 'Cómo se vende el gimnasio y recordatorios de pago',
+          icon: Icons.card_membership_outlined,
+          builder: () => const MembershipPlansTab(),
+        ),
     ];
 
 /// Celular: la lista de secciones (destino de nivel 1, sin flecha atrás).
