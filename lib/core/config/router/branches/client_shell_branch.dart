@@ -6,13 +6,11 @@ import '../../../../presentation/admin/clients_list/clients_list_page.dart' defe
 import '../../../../presentation/admin/clients_list/bloc/clients_list_bloc.dart';
 import '../../../../domain/repositories/admin_repository.dart';
 import '../../../../presentation/admin/clients_list/list_utils/client_list_filters.dart';
-import '../../../../presentation/admin/routines/new_routine_page.dart';
+import '../../../../presentation/admin/routines/routine_editor_page.dart';
 import '../../service_locator.dart';
 import '../app_router.dart';
 import '../app_routes.dart';
-import '../../../utils/responsive_builder.dart';
 import '../../../../domain/entities/client.dart';
-import '../../../../presentation/admin/states/scaffold_cubit/scaffold_cubit.dart';
 
 final GlobalKey navigatorKey = GlobalKey<NavigatorState>();
 StatefulShellBranch clientShellBranch() {
@@ -90,39 +88,18 @@ StatefulShellBranch clientShellBranch() {
             
           ]
           ),
+          // Editor de rutinas (pantalla completa). extra: {client, routineId}
+          // (con routineId edita esa rutina; sin, arma una nueva).
           GoRoute(
               path: AppRoutes.NEW_ROUTINE_ROUTE.path,
               name: AppRoutes.NEW_ROUTINE_ROUTE.name,
-              redirect: (context, state) {
-               
-                if(ResponsiveBuilder.isMobile(context)) return null;
-
-                scaffoldKey.currentState?.openEndDrawer();
-                final scaffoldCubit = sl<ScaffoldCubit>();
-
-                final extraMap = state.extra as Map?;
-                final client = extraMap?['client'] as Client?;
-
-                final clientId = int.tryParse(
-                  state.pathParameters['clientId'] ?? '',
-                );
-
-                scaffoldCubit.setChild(NewRoutinePage(client: client, clientId: clientId!));
-
-                return currentRoute ?? AppRoutes.CLIENTS_LIST_ROUTE.path;
-              },
               builder: (context, state) {
-                
-                if(ResponsiveBuilder.isDesktop(context)) return const SizedBox();
-
                 final extraMap = state.extra as Map?;
-                final client = extraMap?['client'] as Client?;
-
-                final clientId = int.tryParse(
-                  state.pathParameters['clientId'] ?? '',
+                return RoutineEditorPage(
+                  clientId: int.parse(state.pathParameters['clientId']!),
+                  client: extraMap?['client'] as Client?,
+                  editRoutineId: extraMap?['routineId'] as String?,
                 );
-
-                return NewRoutinePage(client: client, clientId: clientId!);
               },
             )
           ]

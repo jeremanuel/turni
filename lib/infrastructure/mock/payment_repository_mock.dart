@@ -201,7 +201,7 @@ class PaymentRepositoryMock implements PaymentRepository {
   }
 
   @override
-  Future<Either<DomainError, PaymentListPageResponse>> getPayments(int page, {DateTime? fechaDesde, DateTime? fechaHasta}) async {
+  Future<Either<DomainError, PaymentListPageResponse>> getPayments(int page, {DateTime? fechaDesde, DateTime? fechaHasta, String? kind, int? paymentMethodId, String? search}) async {
     // Simular delay de red
     await Future.delayed(const Duration(milliseconds: 600));
 
@@ -273,6 +273,10 @@ class PaymentRepositoryMock implements PaymentRepository {
   List<PaymentMethod> getAllMockPaymentMethods() {
     return List.unmodifiable(_mockPaymentMethods);
   }
+
+  @override
+  Future<Either<DomainError, ClientPaymentsPage>> getClientPaymentRows(int clientId, int page, {String? kind}) async =>
+      Either.right(const ClientPaymentsPage(items: [], total: 0, yearTotal: 0));
 
   @override
   Future<Either<DomainError, List<PaymentMethod>>> getPaymentMethods() async {

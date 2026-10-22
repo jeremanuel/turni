@@ -1,3 +1,4 @@
+import '../../../core/utils/admin_features.dart';
 import 'package:flutter/material.dart';
 
 import 'club_config_page.dart';
@@ -11,7 +12,11 @@ abstract final class ClubConfigTab {
   static const sessionRequests = 4;
   static const onlinePayments = 5;
 
-  static const count = 6;
+  /// Solo si el admin ve algún servicio con abonos con cuotas (va última, así
+  /// los índices de las demás no cambian).
+  static const memberships = 6;
+
+  static int get count => AdminFeatures.memberships ? 7 : 6;
 }
 
 /// A qué parte de la configuración apunta un acceso directo desde otra

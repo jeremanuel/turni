@@ -13,7 +13,7 @@ import '../../../core/presentation/components/custom_trina_grid/custom_trina_gri
 import '../../../core/presentation/components/inputs/label_chip.dart';
 import '../../../core/utils/responsive_builder.dart';
 import '../../../domain/entities/client.dart';
-import '../client_page/widgets/add_payment_button.dart';
+import '../memberships/register_payment_dialog.dart';
 import 'bloc/clients_list_bloc.dart';
 import 'widgets/client_list_filters_container.dart';
 import 'widgets/clients_mobile_list.dart';
@@ -109,10 +109,10 @@ class _ClientsListState extends State<ClientsList> {
                             return Row(
                               spacing: 4,
                               children: [
-                                AddPaymentButton(
-                                  shortButton: true,
-                                  client: e, 
-                                  onPaymentCreated: (payment) {
+                                RegisterPaymentButton(
+                                  compact: true,
+                                  client: e,
+                                  onPaid: () {
     
                                     Future.delayed(const Duration(seconds: 3)).then((value) => clientsBloc.refetchClients());
                                     

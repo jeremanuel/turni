@@ -1,3 +1,4 @@
+import '../../../domain/entities/payment/payment_list_item.dart';
 import 'package:dio/dio.dart';
 
 import '../../../core/config/service_locator.dart';
@@ -31,16 +32,20 @@ class PaymentRepositoryImpl extends BaseRepository implements PaymentRepository 
   Future<Either<DomainError, Payment>> createPayment(Map<String, dynamic> paymentData) {
 
     return safeCall<Payment>(() async {
-      final response = await dioInstance.post("/admin/payment", data: {"payment":paymentData});	
+      final response = await dioInstance.post("/admin/payment", data: {"payment":paymentData});
 
-      return Payment.fromJson(response.data['payment']);
+      // El pago ya se guardó: si la respuesta no trae el medio (pago sin
+      // medio, o un backend viejo), no lo convierte en error.
+      final json = Map<String, dynamic>.from(response.data['payment'] as Map);
+      json['payment_method'] ??= {'payment_method_id': json['payment_method_id'] ?? 0, 'name': 'Sin método'};
+      return Payment.fromJson(json);
 
     });
 
   }
 
   @override
-  Future<Either<DomainError, PaymentListPageResponse>> getPayments(int page, {DateTime? fechaDesde, DateTime? fechaHasta}) {
+  Future<Either<DomainError, PaymentListPageResponse>> getPayments(int page, {DateTime? fechaDesde, DateTime? fechaHasta, String? kind, int? paymentMethodId, String? search}) {
     return safeCall<PaymentListPageResponse>(() async {
       final queryParams = <String, dynamic>{
         'page': page,
@@ -54,9 +59,28 @@ class PaymentRepositoryImpl extends BaseRepository implements PaymentRepository 
         queryParams['fechaHasta'] = fechaHasta.toIso8601String();
       }
 
+      if (kind != null) queryParams['kind'] = kind;
+      if (paymentMethodId != null) queryParams['payment_method_id'] = paymentMethodId;
+      if (search != null && search.trim().isNotEmpty) queryParams['search'] = search.trim();
+
       final response = await dioInstance.get("/payments", queryParameters: queryParams);
 
       return PaymentListPageResponse.fromJson(response.data);
+    });
+  }
+
+  @override
+  Future<Either<DomainError, ClientPaymentsPage>> getClientPaymentRows(int clientId, int page, {String? kind}) {
+    return safeCall<ClientPaymentsPage>(() async {
+      final response = await dioInstance.get("/admin/payments", queryParameters: {"client_id": clientId, "page": page, if (kind != null) "kind": kind});
+      final data = response.data as Map<String, dynamic>;
+      final extra = data['extra'] as Map<String, dynamic>? ?? const {};
+      return ClientPaymentsPage(
+        items: ((data['data'] as List?) ?? const []).whereType<Map<String, dynamic>>().map(PaymentListItem.fromJson).toList(),
+        total: (data['total'] as num?)?.toInt() ?? 0,
+        yearTotal: (extra['year_total'] as num?)?.toDouble() ?? 0,
+        lastPaymentDate: extra['last_payment_date'] == null ? null : DateTime.tryParse('${extra['last_payment_date']}')?.toLocal(),
+      );
     });
   }
 
