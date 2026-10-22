@@ -367,7 +367,9 @@ class _RoutineEditorPageState extends State<RoutineEditorPage> {
           physics: const NeverScrollableScrollPhysics(),
           buildDefaultDragHandles: false,
           itemCount: draft.groups.length,
-          onReorderItem: draft.moveGroup,
+          // onReorder da el índice destino sin corregir (cuenta el ítem que se
+          // mueve): se corrige acá. onReorderItem no existe en Flutter 3.35.
+          onReorder: (oldIndex, newIndex) => draft.moveGroup(oldIndex, newIndex > oldIndex ? newIndex - 1 : newIndex),
           itemBuilder: (context, index) {
             final group = draft.groups[index];
             return Padding(
