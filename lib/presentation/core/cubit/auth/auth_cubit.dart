@@ -17,6 +17,7 @@ import '../../../../infrastructure/localstorage/provider/local_storage.dart';
 import '../../../admin/states/global_data/global_data_cubit.dart';
 
 import '../../../../core/services/push_notification_service.dart';
+import '../../../admin/notifications/notifications_cubit.dart';
 import '../../../../core/utils/entities/coordinate.dart';
 
 part 'auth_state.dart';
@@ -125,6 +126,7 @@ class AuthCubit extends Cubit<AuthState> with ChangeNotifier {
 
   void signOutGoogle() async {
     await _unregisterPushToken();
+    if (sl.isRegistered<NotificationsCubit>()) sl<NotificationsCubit>().clear();
     await GoogleSignIn.instance.signOut();
 
     emit(const AuthNotLogged());

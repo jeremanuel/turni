@@ -62,8 +62,8 @@ import '../../domain/repositories/auth_repository.dart';
 import '../../infrastructure/localstorage/provider/local_storage.dart';
 import 'package:go_router/go_router.dart';
 
-import '../config/router/app_routes.dart';
 import '../config/service_locator.dart';
+import '../../presentation/admin/notifications/notifications_cubit.dart';
 
 /// Config del proyecto Firebase `turni-48aa4`, app Web "com.turni.admin".
 /// Solo se usa en `kIsWeb` — Android/iOS toman su config de
@@ -96,6 +96,12 @@ class PushNotificationService {
   PushNotificationService._();
 
   static bool _firebaseReady = false;
+
+  static final _messages = StreamController<Map<String, dynamic>>.broadcast();
+
+  /// El `data` de cada push que llega o se toca. Lo escucha la bandeja
+  /// (`NotificationsCubit`): todo push es un aviso nuevo.
+  static Stream<Map<String, dynamic>> get messages => _messages.stream;
 
   /// Inicializa Firebase. Debe llamarse una sola vez, antes de `runApp`,
   /// con `WidgetsFlutterBinding.ensureInitialized()` ya invocado.
@@ -139,12 +145,10 @@ class PushNotificationService {
         );
       }
 
-      // Mensaje recibido con la app en foreground. Al ser un data message
-      // (sin bloque "notification"), el SO no muestra nada automáticamente;
-      // por ahora solo lo logueamos. Fase 4 podría mostrar un badge/banner
-      // in-app acá si hace falta.
+      // Mensaje recibido con la app en foreground: el SO no muestra nada,
+      // pero la campanita suma el aviso.
       FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-        print('PushNotificationService: mensaje en foreground: ${message.data}');
+        _messages.add(message.data);
       });
 
       // Tap en la notificación con la app en background (no terminada).
@@ -216,13 +220,17 @@ class PushNotificationService {
     return defaultTargetPlatform == TargetPlatform.iOS ? 'ios' : 'android';
   }
 
+  /// Tap en el push: lleva a lo mismo que el aviso en la bandeja (el turno
+  /// de un `SESSION_REQUESTED` o `SESSION_DEPOSIT_PAID`, el torneo de un
+  /// `TOURNAMENT_*`; si no, la agenda).
   static void _handleNotificationTap(RemoteMessage message) {
-    // TODO(Fase 4): cuando exista la UI de "solicitudes pendientes", si
-    // message.data['type'] == 'SESSION_REQUEST_CREATED' navegar ahí
-    // filtrado por message.data['session_id'] en vez de ir a la agenda
-    // general.
-    print('PushNotificationService: tap en notificación: ${message.data}');
-    navigateToMainAgenda();
+    _messages.add(message.data);
+    try {
+      if (!sl.isRegistered<GoRouter>()) return;
+      sl<GoRouter>().go(adminNotificationLocation(message.data));
+    } catch (error) {
+      print('PushNotificationService: error navegando desde push: $error');
+    }
   }
 }
 
@@ -244,18 +252,3 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   print('PushNotificationService(bg): mensaje en background: ${message.data}');
 }
 
-/// Navega a la pantalla principal de agenda/turnos del admin.
-///
-/// Fase 4 todavía no tiene una pantalla de "solicitudes pendientes"; hasta
-/// que exista, cualquier tap de notificación (de cualquier tipo) navega
-/// acá. Cuando exista esa UI (Fase 4), este destino debería cambiar según
-/// el `type`/`session_id` del payload de la notificación.
-void navigateToMainAgenda() {
-  try {
-    if (!sl.isRegistered<GoRouter>()) return;
-
-    sl<GoRouter>().go(AppRoutes.SESSION_MANAGER_ROUTE.path);
-  } catch (error) {
-    print('PushNotificationService: error navegando desde push: $error');
-  }
-}

@@ -28,7 +28,8 @@ class AuthProvider {
     try {
       await dioInstance.post(
         "/user/device-token",
-        data: {"token": token, "platform": platform},
+        // El back separa los tokens por app: los avisos de clientes no llegan acá.
+        data: {"token": token, "platform": platform, "app": "admin"},
       );
 
       return true;

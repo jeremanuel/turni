@@ -5,6 +5,7 @@ import '../../../core/config/router/app_routes.dart';
 import '../../../core/config/service_locator.dart';
 import '../../../core/services/app_version/app_version.dart';
 import '../../core/cubit/auth/auth_cubit.dart';
+import '../notifications/notifications_panel.dart';
 import 'admin_destinations.dart';
 
 /// Iniciales del admin logueado (avatar del menú lateral y del menú «Más»).
@@ -63,6 +64,8 @@ class AdminRail extends StatelessWidget {
             ),
           ],
           const Spacer(),
+          const NotificationsButton(),
+          const SizedBox(height: 12),
           PopupMenuButton<String>(
             tooltip: 'Cuenta',
             position: PopupMenuPosition.over,
