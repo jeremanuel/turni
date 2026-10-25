@@ -18,6 +18,7 @@ import '../../../../../domain/entities/extra.dart';
 import '../../../../../domain/entities/fixed_session.dart';
 import '../../../../../domain/entities/partition_vocabulary.dart';
 import '../../../fixed_sessions/widgets/fixed_session_actions.dart';
+import '../../../notifications/session_notifications_section.dart';
 import '../../../../../domain/entities/physical_partition.dart';
 import '../../../../../domain/entities/session.dart';
 import '../../../../../domain/repositories/admin_repository.dart';
@@ -215,6 +216,7 @@ class _BookedDetail extends StatelessWidget {
         if (!session.isPending) _AccountCard(session: session, onCharge: onCharge, onAddConsumo: onAddConsumo),
         _NotesField(session: session),
         _Activity(session: session),
+        SessionNotificationsSection(sessionId: session.sessionId),
       ],
     );
   }

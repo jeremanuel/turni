@@ -22,7 +22,8 @@ String notificationTimeLabel(DateTime at, DateTime now) {
   return '${DateFormat('dd/MM').format(at)} · $hhmm';
 }
 
-IconData _iconFor(String category) => switch (category) {
+/// Ícono de la categoría de un aviso (`SESSION`, `PAYMENT`, `TOURNAMENT`, `GYM`).
+IconData notificationIconFor(String category) => switch (category) {
       'SESSION' => Icons.event_outlined,
       'PAYMENT' => Icons.payments_outlined,
       'TOURNAMENT' => Icons.emoji_events_outlined,
@@ -203,7 +204,7 @@ class _NotificationsPanelState extends State<NotificationsPanel> {
           leading: CircleAvatar(
             backgroundColor: unread ? scheme.primaryContainer : scheme.surfaceContainerHighest,
             foregroundColor: unread ? scheme.onPrimaryContainer : scheme.onSurfaceVariant,
-            child: Icon(_iconFor(notification.category), size: 20),
+            child: Icon(notificationIconFor(notification.category), size: 20),
           ),
           title: Text(
             notification.title,
