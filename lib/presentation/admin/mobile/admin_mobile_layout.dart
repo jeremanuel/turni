@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/config/router/app_routes.dart';
+import '../notifications/notifications_panel.dart';
 import 'admin_bottom_nav.dart';
 import 'admin_mobile_sub_page.dart';
 
@@ -84,6 +85,9 @@ class AdminMobileLayout extends StatelessWidget {
                     onPressed: subPage?.onBack ?? () => goBack(context, definition),
                   ),
             title: Text(subPage?.title ?? topTitle ?? definition?.mobileAppBar?.title ?? ''),
+            actions: isTopLevel && subPage == null
+                ? const [NotificationsButton(), SizedBox(width: 8)]
+                : null,
             shape: Border(bottom: BorderSide(color: scheme.outlineVariant)),
           ),
           body: shell,
