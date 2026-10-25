@@ -1,6 +1,8 @@
 import '../../domain/repositories/membership_repository.dart';
 import '../../domain/repositories/notification_repository.dart';
 import '../../infrastructure/api/repositories/notification_repository_impl.dart';
+import '../../domain/repositories/notification_history_repository.dart';
+import '../../infrastructure/api/repositories/notification_history_repository_impl.dart';
 import '../../presentation/admin/notifications/notifications_cubit.dart';
 import '../services/push_notification_service.dart';
 import '../../infrastructure/api/repositories/membership_repository_impl.dart';
@@ -130,6 +132,7 @@ class ServiceLocator {
     sl.registerLazySingleton<GymRepository>(() => GymRepositoryImpl());
     sl.registerLazySingleton<MembershipRepository>(() => MembershipRepositoryImpl());
     sl.registerLazySingleton<NotificationRepository>(() => NotificationRepositoryImpl());
+    sl.registerLazySingleton<NotificationHistoryRepository>(() => NotificationHistoryRepositoryImpl());
     sl.registerLazySingleton<NotificationsCubit>(
         () => NotificationsCubit(pushes: PushNotificationService.messages));
 

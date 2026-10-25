@@ -17,6 +17,7 @@ import '../../../../domain/repositories/fixed_session_repository.dart';
 import '../../memberships/client_membership_card.dart';
 import '../../memberships/register_payment_dialog.dart';
 import 'client_payments_card.dart';
+import 'client_notifications_card.dart';
 import 'client_fixed_sessions.dart';
 import 'client_routine_card.dart';
 
@@ -113,6 +114,7 @@ class _ClientProfileBodyState extends State<ClientProfileBody> {
       Card(margin: EdgeInsets.zero, child: widget.labels),
       _NotesCard(client: widget.client, onEdit: widget.onEdit),
       _ActivityCard(summary: _summary),
+      ClientNotificationsCard(key: ValueKey('notifications-${widget.client.clientId}'), clientId: widget.client.intClientId),
     ];
 
     Widget column(List<Widget> children) => Column(
