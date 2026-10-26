@@ -84,7 +84,9 @@ class Guide {
     final router = sl<GoRouter>();
     final route = this.route;
     if (route != null) {
-      final current = router.routerDelegate.currentConfiguration.uri.toString();
+      // La de arriba de todo: `currentConfiguration.uri` no cuenta lo que
+      // se abrió con `push` (ej. el detalle de un torneo).
+      final current = router.state.uri.toString();
       final stay = stayOn?.hasMatch(Uri.parse(current).path) ?? false;
       if (!stay && current != route) router.go(route);
     }
@@ -126,6 +128,6 @@ Future<void> Function() reveal(String anchor, {required String via}) => () async
 /// `before` de un paso: va a [location] si no está ahí.
 Future<void> Function() goTo(String location) => () async {
       final router = sl<GoRouter>();
-      if (router.routerDelegate.currentConfiguration.uri.toString() != location) router.go(location);
+      if (router.state.uri.toString() != location) router.go(location);
       await WidgetsBinding.instance.endOfFrame;
     };

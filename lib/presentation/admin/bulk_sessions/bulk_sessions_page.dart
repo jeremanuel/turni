@@ -132,19 +132,23 @@ class BulkSessionsPage extends StatelessWidget {
                         labelStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
                         unselectedLabelStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
                         tabs: [
-                          for (final t in tabs)
-                            if (isMobile)
-                              Tab(text: switch (t) {
-                                BulkSessionsTab.edit => 'Editar',
-                                BulkSessionsTab.add => 'Agregar',
-                                BulkSessionsTab.fixed => 'Turnos fijos',
-                              })
-                            else
-                            switch (t) {
-                              BulkSessionsTab.edit => tab(Icons.edit_outlined, 'Editar o eliminar'),
-                              BulkSessionsTab.add => tab(Icons.add, 'Agregar turnos'),
-                              BulkSessionsTab.fixed => tab(Icons.event_repeat, 'Turnos fijos'),
-                            },
+                          for (final (i, t) in tabs.indexed)
+                            // Cambiar de ruta (`?tab=`) no cambia la tab ya abierta: las guías la eligen acá.
+                            TourAnchor(
+                              id: 'bulk.tab.${t.query}',
+                              onActivate: TourAnchor.selectTab(i),
+                              child: isMobile
+                                  ? Tab(text: switch (t) {
+                                      BulkSessionsTab.edit => 'Editar',
+                                      BulkSessionsTab.add => 'Agregar',
+                                      BulkSessionsTab.fixed => 'Turnos fijos',
+                                    })
+                                  : switch (t) {
+                                      BulkSessionsTab.edit => tab(Icons.edit_outlined, 'Editar o eliminar'),
+                                      BulkSessionsTab.add => tab(Icons.add, 'Agregar turnos'),
+                                      BulkSessionsTab.fixed => tab(Icons.event_repeat, 'Turnos fijos'),
+                                    },
+                            ),
                         ],
                       ),
                       ),

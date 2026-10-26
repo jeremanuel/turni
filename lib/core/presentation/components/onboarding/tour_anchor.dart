@@ -82,9 +82,33 @@ class TourAnchors {
   static _TourAnchorState? _first(String id) {
     for (final state in _mounted[id] ?? const <_TourAnchorState>[]) {
       if (!state.mounted) continue;
-      if (TickerMode.getValuesNotifier(state.context).value.enabled) return state;
+      if (TickerMode.getValuesNotifier(state.context).value.enabled && _onCurrentPage(state.context)) return state;
     }
     return null;
+  }
+
+  /// Un `TabBarView` (o `PageView`) deja armada la página de al lado, fuera
+  /// de la pantalla: esa no cuenta como visible. El resto de los scrolls sí,
+  /// porque el recorrido lleva el target a la vista.
+  static bool _onCurrentPage(BuildContext context) {
+    final box = context.findRenderObject();
+    if (box is! RenderBox || !box.attached || !box.hasSize) return true;
+    // Las páginas que se mantienen vivas fuera de pantalla (KeepAlive) se
+    // pintan con una transformación nula.
+    if (box.getTransformTo(null).determinant() == 0) return false;
+    final rect = box.localToGlobal(Offset.zero) & box.size;
+    for (var scrollable = Scrollable.maybeOf(context); scrollable != null; scrollable = Scrollable.maybeOf(scrollable.context)) {
+      if (scrollable.widget.controller is! PageController) continue;
+      final viewport = scrollable.context.findRenderObject();
+      if (viewport is! RenderBox || !viewport.attached || !viewport.hasSize) continue;
+      final page = viewport.localToGlobal(Offset.zero) & viewport.size;
+      final horizontal = axisDirectionToAxis(scrollable.axisDirection) == Axis.horizontal;
+      final visible = horizontal
+          ? rect.right > page.left + 1 && rect.left < page.right - 1
+          : rect.bottom > page.top + 1 && rect.top < page.bottom - 1;
+      if (!visible) return false;
+    }
+    return true;
   }
 
   static BuildContext? contextOf(String id) => _first(id)?.context;

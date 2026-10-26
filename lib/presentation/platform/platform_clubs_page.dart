@@ -11,6 +11,7 @@ import '../../core/utils/either.dart';
 import '../../domain/repositories/platform_repository.dart';
 import '../auth/widgets/auth_card_scaffold.dart';
 import '../core/cubit/auth/auth_cubit.dart';
+import '../../core/presentation/components/onboarding/tour_anchor.dart';
 
 /// Alta de un club con su dueño (`/platform/clubs`). Solo la ven los
 /// operadores de Turni. El dueño queda vinculado la primera vez que entra al
@@ -137,6 +138,7 @@ class _PlatformClubsPageState extends State<PlatformClubsPage> {
             style: textTheme.bodyMedium,
           ),
           const SizedBox(height: 24),
+          TourAnchor(id: 'platform.form', child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
           TextFormField(
             controller: _clubName,
             decoration: const InputDecoration(labelText: 'Nombre del establecimiento'),
@@ -177,6 +179,7 @@ class _PlatformClubsPageState extends State<PlatformClubsPage> {
             validator: _validateEmail,
             onFieldSubmitted: (_) => _saving ? null : _submit(),
           ),
+          ])),
           if (_error != null) ...[
             const SizedBox(height: 16),
             Text(_error!, style: textTheme.bodyMedium?.copyWith(color: Theme.of(context).colorScheme.error)),
@@ -188,11 +191,14 @@ class _PlatformClubsPageState extends State<PlatformClubsPage> {
             runSpacing: 8,
             children: [
               _LeaveButton(),
-              FilledButton(
-                onPressed: _saving ? null : _submit,
-                child: _saving
-                    ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
-                    : const Text('Dar de alta'),
+              TourAnchor(
+                id: 'platform.submit',
+                child: FilledButton(
+                  onPressed: _saving ? null : _submit,
+                  child: _saving
+                      ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
+                      : const Text('Dar de alta'),
+                ),
               ),
             ],
           ),

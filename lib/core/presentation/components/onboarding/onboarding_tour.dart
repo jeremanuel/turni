@@ -114,6 +114,9 @@ class OnboardingTour {
   /// Muestra el recorrido. Termina cuando se completa o se saltea.
   static Future<OnboardingResult> show(BuildContext context, {required String id, required List<OnboardingStep> steps}) async {
     if (_showing || steps.isEmpty) return OnboardingResult.none;
+    // El del Navigator raíz: también sirve su propio context (el de
+    // `rootNavigatorKey`), que no tiene un Overlay arriba.
+    final overlay = Navigator.maybeOf(context, rootNavigator: true)?.overlay ?? Overlay.of(context, rootOverlay: true);
     _showing = true;
 
     final completer = Completer<OnboardingResult>();
@@ -130,7 +133,7 @@ class OnboardingTour {
         },
       ),
     );
-    Overlay.of(context, rootOverlay: true).insert(entry);
+    overlay.insert(entry);
     return completer.future;
   }
 }
@@ -355,10 +358,13 @@ class _OnboardingOverlayState extends State<_OnboardingOverlay> {
     final step = widget.steps[_index];
     final isLast = _index == widget.steps.length - 1;
 
-    // Debajo del target si entra, si no arriba; horizontalmente alineado a
-    // él sin salirse de la pantalla.
-    final spaceBelow = screen.height - target.bottom;
-    final below = spaceBelow >= 220 || spaceBelow >= target.top;
+    // Debajo del target si entra, si no arriba; si no entra en ninguno de
+    // los dos (un target que ocupa casi toda la pantalla, ej. toda la
+    // agenda), adentro, abajo. Horizontalmente alineado a él sin salirse de
+    // la pantalla.
+    const cardRoom = 220.0 + gap;
+    final below = screen.height - target.bottom >= cardRoom;
+    final above = !below && target.top >= cardRoom;
     final left = (target.left).clamp(margin, math.max(margin, screen.width - width - margin)).toDouble();
 
     final card = Material(
@@ -407,15 +413,11 @@ class _OnboardingOverlayState extends State<_OnboardingOverlay> {
       ),
     );
 
-    // Un target más alto que la pantalla (ej. toda la agenda): el globo va
-    // adentro, abajo, en lugar de quedar afuera.
-    final tall = target.top < margin && target.bottom > screen.height - margin;
-
     return Positioned(
       left: left,
       width: width,
-      top: tall ? null : below ? math.min(target.bottom + gap, screen.height - margin) : null,
-      bottom: tall ? margin : below ? null : math.max(screen.height - target.top + gap, margin),
+      top: below ? target.bottom + gap : null,
+      bottom: below ? null : above ? screen.height - target.top + gap : margin,
       child: card,
     );
   }

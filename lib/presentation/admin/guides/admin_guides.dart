@@ -153,7 +153,7 @@ class AdminGuides {
           permissions: const [Permissions.AGENDA_CREAR],
           route: '${AppRoutes.BULK_SESSIONS_ROUTE.path}?tab=add',
           steps: (v) => [
-            const OnboardingStep(anchor: 'bulk.tabs', title: 'Gestión masiva', body: 'Tres herramientas: editar o eliminar por reglas, agregar turnos y los turnos fijos.'),
+            OnboardingStep(anchor: 'bulk.tabs', before: activate('bulk.tab.add'), title: 'Gestión masiva', body: 'Tres herramientas: editar o eliminar por reglas, agregar turnos y los turnos fijos.'),
             const OnboardingStep(anchor: 'addSessions.steps', title: 'Cuatro pasos', body: 'Horarios, dónde, qué fechas y confirmar. Podés volver a cualquier paso antes de crear.'),
             const OnboardingStep(anchor: 'addSessions.wizard', title: 'Armá la plantilla', body: 'Definí los turnos de un día tipo (o usá la carga rápida de mañana o tarde) y después elegí los servicios y las fechas.'),
             OnboardingStep(anchor: 'addSessions.preview', title: 'Vista previa', body: 'Cómo queda el día y cómo se reparte en ${v.space.definitePlural}. Tocá una hora libre para agregar un turno o uno existente para editarlo.'),
@@ -168,11 +168,11 @@ class AdminGuides {
           keywords: const ['masivo', 'precio', 'duracion', 'horario', 'eliminar turnos', 'reglas', 'aumento'],
           permissions: const [Permissions.AGENDA_GESTION_MASIVA],
           route: '${AppRoutes.BULK_SESSIONS_ROUTE.path}?tab=edit',
-          steps: (v) => const [
-            OnboardingStep(anchor: 'bulkEdit.rules', title: '1. ¿Qué turnos?', body: 'Servicio, espacios, fechas, días y horarios: se toman los turnos que cumplan todas las reglas.'),
-            OnboardingStep(anchor: 'bulkEdit.action', title: '2. ¿Qué hacer?', body: 'Cambiar el precio, la duración o el horario, o eliminarlos.'),
-            OnboardingStep(anchor: 'bulkEdit.preview', title: 'Vista previa', body: 'Antes de aplicar ves cuántos turnos cambian y cómo quedan. Los reservados se pueden dejar afuera.'),
-            OnboardingStep(anchor: 'bulkEdit.apply', title: 'Aplicar', body: 'Nada cambia hasta que confirmás acá.'),
+          steps: (v) => [
+            OnboardingStep(anchor: 'bulkEdit.rules', before: activate('bulk.tab.edit'), title: '1. ¿Qué turnos?', body: 'Servicio, espacios, fechas, días y horarios: se toman los turnos que cumplan todas las reglas.'),
+            const OnboardingStep(anchor: 'bulkEdit.action', title: '2. ¿Qué hacer?', body: 'Cambiar el precio, la duración o el horario, o eliminarlos.'),
+            const OnboardingStep(anchor: 'bulkEdit.preview', title: 'Vista previa', body: 'Antes de aplicar ves cuántos turnos cambian y cómo quedan. Los reservados se pueden dejar afuera.'),
+            const OnboardingStep(anchor: 'bulkEdit.apply', title: 'Aplicar', body: 'Nada cambia hasta que confirmás acá.'),
           ],
         ),
         Guide(
@@ -184,12 +184,12 @@ class AdminGuides {
           keywords: const ['fijo', 'semanal', 'recurrente', 'abono', 'todas las semanas'],
           permissions: const [Permissions.TURNOS_FIJOS_VER],
           route: '${AppRoutes.BULK_SESSIONS_ROUTE.path}?tab=fixed',
-          steps: (v) => const [
-            OnboardingStep(anchor: 'fixed.stats', title: 'De un vistazo', body: 'Cuántos turnos fijos hay, cuántas horas por semana ocupan y si alguno choca con otro turno.'),
-            OnboardingStep(anchor: 'fixed.search', title: 'Buscar', body: 'Filtrá por cliente o por servicio.'),
-            OnboardingStep(anchor: 'fixed.view', title: 'Semana o lista', body: 'La semana muestra cada día en una columna; la lista, todos juntos.'),
-            OnboardingStep(anchor: 'fixed.board', title: 'Los turnos fijos', body: 'Desde el menú de cada uno editás sus integrantes o lo cancelás (un día o para siempre).'),
-            OnboardingStep(anchor: 'fixed.new', optional: true, title: 'Nuevo turno fijo', body: 'Elegí al titular, el día, la hora y el espacio: se crea un turno por semana.'),
+          steps: (v) => [
+            OnboardingStep(anchor: 'fixed.stats', before: activate('bulk.tab.fixed'), title: 'De un vistazo', body: 'Cuántos turnos fijos hay, cuántas horas por semana ocupan y si alguno choca con otro turno.'),
+            const OnboardingStep(anchor: 'fixed.search', title: 'Buscar', body: 'Filtrá por cliente o por servicio.'),
+            const OnboardingStep(anchor: 'fixed.view', title: 'Semana o lista', body: 'La semana muestra cada día en una columna; la lista, todos juntos.'),
+            const OnboardingStep(anchor: 'fixed.board', title: 'Los turnos fijos', body: 'Desde el menú de cada uno editás sus integrantes o lo cancelás (un día o para siempre).'),
+            const OnboardingStep(anchor: 'fixed.new', optional: true, title: 'Nuevo turno fijo', body: 'Elegí al titular, el día, la hora y el espacio: se crea un turno por semana.'),
           ],
         ),
 
@@ -224,7 +224,7 @@ class AdminGuides {
           stayOn: RegExp(r'^/client/\d+$'),
           steps: (v) => [
             const OnboardingStep(anchor: 'clients.row', optional: true, title: 'Abrí un cliente', body: 'Vamos a recorrer la ficha de este cliente.'),
-            OnboardingStep(anchor: 'client.header', before: activate('clients.row'), title: 'Datos y acciones', body: 'Contacto y etiquetas. Escribile por WhatsApp, editá sus datos, registrá un pago o reservale un turno.'),
+            OnboardingStep(anchor: 'client.header', before: reveal('client.header', via: 'clients.row'), title: 'Datos y acciones', body: 'Contacto y etiquetas. Escribile por WhatsApp, editá sus datos, registrá un pago o reservale un turno.'),
             const OnboardingStep(anchor: 'client.kpis', title: 'Números del cliente', body: 'Cuántos turnos tuvo, cuánto gastó y si tiene saldo pendiente.'),
             const OnboardingStep(anchor: 'client.fixed', title: 'Turnos fijos', body: 'Los horarios que tiene todas las semanas.'),
             const OnboardingStep(anchor: 'client.routine', optional: true, title: 'Rutina', body: 'La rutina de entrenamiento que le armaste y lo que te comentó de cada ejercicio.'),
@@ -251,10 +251,12 @@ class AdminGuides {
           stayOn: RegExp(r'^/client/\d+$'),
           steps: (v) => [
             const OnboardingStep(anchor: 'clients.row', optional: true, title: 'Abrí un cliente', body: 'Las rutinas se arman desde la ficha del cliente.'),
-            OnboardingStep(anchor: 'client.routine', before: activate('clients.row'), title: 'Rutina del cliente', body: 'Acá ves la rutina activa. Con "Nueva rutina" abrís el editor.'),
-            OnboardingStep(anchor: 'routine.groups', before: activate('client.routine'), title: 'Grupos y ejercicios', body: 'Armá la rutina por grupos (ej. "Día 1", "Tren superior") y sumá ejercicios del catálogo.'),
+            // La card de rutina solo aparece si el cliente es del gimnasio: los pasos del editor dependen de eso.
+            OnboardingStep(anchor: 'client.routine', optional: true, before: reveal('client.routine', via: 'clients.row'), title: 'Rutina del cliente', body: 'Acá ves la rutina activa. Con "Nueva rutina" abrís el editor.'),
+            OnboardingStep(anchor: 'routine.start', optional: true, before: activate('client.routine'), title: 'Cómo empezar', body: 'Copiá la rutina actual, usá otra de base o creala vacía eligiendo cuántos grupos tiene.'),
+            const OnboardingStep(anchor: 'routine.groups', optional: true, title: 'Grupos y ejercicios', body: 'Armá la rutina por grupos (ej. "Día 1", "Tren superior") y sumá ejercicios del catálogo.'),
             const OnboardingStep(anchor: 'routine.copy', optional: true, title: 'Copiar de otra', body: 'Partí de una rutina que ya armaste para otro cliente.'),
-            const OnboardingStep(anchor: 'routine.save', title: 'Guardar', body: 'El cliente la ve en la app y te puede dejar comentarios de cada ejercicio.'),
+            const OnboardingStep(anchor: 'routine.save', optional: true, title: 'Guardar', body: 'El cliente la ve en la app y te puede dejar comentarios de cada ejercicio.'),
           ],
         ),
 
@@ -386,7 +388,7 @@ class AdminGuides {
           keywords: const ['programacion', 'cronograma', 'horarios', 'fixture', 'partidos', 'publicar'],
           permissions: const [Permissions.TORNEOS_EDITAR],
           route: AppRoutes.TOURNAMENTS_ROUTE.path,
-          stayOn: RegExp(r'^/tournaments/\d+(/schedule)?$'),
+          stayOn: RegExp(r'^/tournaments/\d+/schedule$'),
           steps: (v) => [
             OnboardingStep(anchor: 'tournaments.row.playing', optional: true, before: activate('tournaments.tab.list'), title: 'Un torneo en juego', body: 'La programación se arma después del sorteo.'),
             OnboardingStep(anchor: 'tournament.schedule', optional: true, before: activate('tournaments.row.playing'), title: 'Programación', body: 'Abre el armado del cronograma.'),
@@ -427,7 +429,7 @@ class AdminGuides {
           route: _clubConfig,
           steps: (v) => [
             OnboardingStep(anchor: 'tariffs.services', before: reveal('tariffs.services', via: 'clubConfig.tab.tariffs'), title: 'Servicio', body: 'Las tarifas son por servicio: elegí cuál configurar.'),
-            const OnboardingStep(anchor: 'tariffs.new', optional: true, title: 'Nueva tarifa', body: 'Una tarifa agrupa espacios que salen lo mismo.'),
+            const OnboardingStep(anchor: 'tariffs.new', optional: true, waitFor: Duration(seconds: 4), title: 'Nueva tarifa', body: 'Una tarifa agrupa espacios que salen lo mismo.'),
             OnboardingStep(anchor: 'tariffs.card', optional: true, title: 'Una tarifa', body: 'Sus ${v.space.lowerPlural} y sus franjas horarias: cada franja tiene días, horario y precio.'),
           ],
         ),
