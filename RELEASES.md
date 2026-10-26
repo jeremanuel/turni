@@ -2,6 +2,14 @@
 
 Cada versión de Admin que llegó a producción, contada en general: qué features entraron y para quién. El detalle, con los PRs, está en [CHANGELOG.md](CHANGELOG.md). Lo actualiza `/turni:release`; la más nueva va arriba.
 
+## 2026-10-26 — Reservar desde el detalle · v1.1.1
+
+Junto con BE 1.1.1 y Client 1.3.0.
+
+Las notificaciones del panel en la web llegan una sola vez: antes, cada aviso podía aparecer duplicado.
+
+- **Arreglos:** notificaciones web sin duplicar.
+
 ## 2026-10-26 — Guías paso a paso · v1.1.0
 
 El panel suma ayuda paso a paso: desde el signo de pregunta del menú, el admin busca cómo hacer algo (cobrar un turno, armar un torneo, cargar tarifas) y una guía lo acompaña sobre la pantalla real, resaltando cada parte y abriendo lo que haga falta.
