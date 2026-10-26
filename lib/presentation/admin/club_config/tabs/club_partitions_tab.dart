@@ -16,6 +16,7 @@ import '../widgets/club_partition_card.dart';
 import '../widgets/club_partition_form_dialog.dart';
 import '../widgets/partition_physical_form_dialog.dart';
 import '../../../../core/utils/responsive_builder.dart';
+import '../../../../core/presentation/components/onboarding/tour_anchor.dart';
 
 class ClubPartitionsTab extends StatefulWidget {
   const ClubPartitionsTab({
@@ -321,13 +322,14 @@ class _ClubPartitionsTabState extends State<ClubPartitionsTab> {
               child: Text('Todavía no hay servicios creados.'),
             )
           else
+            TourAnchor(id: 'partitions.list', child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
             ...(_clubPartitions.map((partition) {
               final id = partition.club_partition_id!;
               final focused = id == widget.focusClubPartitionId;
               return Padding(
                 key: focused ? _focusedCardKey : null,
                 padding: const EdgeInsets.only(bottom: 16),
-                child: ClubPartitionCard(
+                child: TourAnchor(id: 'partitions.card', child: ClubPartitionCard(
                   clubPartition: partition,
                   highlighted: focused,
                   highlightedPartitionPhysicalId:
@@ -341,14 +343,15 @@ class _ClubPartitionsTabState extends State<ClubPartitionsTab> {
                   onEditPhysical: _openEditPartitionPhysicalDialog,
                   onTogglePhysicalActive: _togglePartitionPhysicalActive,
                   readOnly: !Permissions.can(Permissions.CONFIGURACION_CANCHAS),
-                ),
+                )),
               );
             })),
+            ])),
           const SizedBox(height: 8),
           PermissionLock(
             permissions: const [Permissions.CONFIGURACION_CANCHAS],
             hide: true,
-            child: Card(
+            child: TourAnchor(id: 'partitions.new', child: Card(
             child: Padding(
               padding: const EdgeInsets.all(20),
               child: Form(
@@ -429,7 +432,7 @@ class _ClubPartitionsTabState extends State<ClubPartitionsTab> {
                 ),
               ),
             ),
-          ),
+          )),
           ),
         ],
       ),

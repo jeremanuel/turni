@@ -17,6 +17,7 @@ import '../memberships/register_payment_dialog.dart';
 import 'bloc/clients_list_bloc.dart';
 import 'widgets/client_list_filters_container.dart';
 import 'widgets/clients_mobile_list.dart';
+import '../../../core/presentation/components/onboarding/tour_anchor.dart';
 
 
 class ClientsList extends StatefulWidget {
@@ -48,10 +49,12 @@ class _ClientsListState extends State<ClientsList> {
       children: [
         ClientListFiltersContainer(),
         if (isMobile)
-          const Expanded(child: ClientsMobileList())
+          const Expanded(child: TourAnchor(id: 'clients.list', child: ClientsMobileList()))
         else
         Expanded(
-          child: CustomTrinaGrid(
+          child: TourAnchor(
+            id: 'clients.list',
+            child: CustomTrinaGrid(
             columns: getTrinaColumns(),
             rows: [],
             onLoaded: (event) => clientsBloc.stateManager = event.stateManager..setPageSize(15),
@@ -75,10 +78,15 @@ class _ClientsListState extends State<ClientsList> {
                             value: e.person?.fullName ?? '',
                             renderer: (rendererContext) => Align(
                               alignment: Alignment.centerLeft,
-                              child: ClientLink(
-                                clientId: int.tryParse(e.clientId ?? ''),
-                                name: e.person?.fullName ?? '',
-                                onTap: () => context.goNamed(AppRoutes.CLIENT_ROUTE.name, extra: {"client":e, "bloc":context.read<ClientsListBloc>(), "onUpdateClient": (Client updated) { clientsBloc.refetchClients(); }}, pathParameters: {"clientId":e.clientId!}),
+                              // La guía de la ficha abre el primer cliente de la lista.
+                              child: TourAnchor(
+                                id: 'clients.row',
+                                onActivate: (_) => context.goNamed(AppRoutes.CLIENT_ROUTE.name, extra: {"client":e, "bloc":context.read<ClientsListBloc>(), "onUpdateClient": (Client updated) { clientsBloc.refetchClients(); }}, pathParameters: {"clientId":e.clientId!}),
+                                child: ClientLink(
+                                  clientId: int.tryParse(e.clientId ?? ''),
+                                  name: e.person?.fullName ?? '',
+                                  onTap: () => context.goNamed(AppRoutes.CLIENT_ROUTE.name, extra: {"client":e, "bloc":context.read<ClientsListBloc>(), "onUpdateClient": (Client updated) { clientsBloc.refetchClients(); }}, pathParameters: {"clientId":e.clientId!}),
+                                ),
                               ),
                             ),
                           ),
@@ -109,7 +117,7 @@ class _ClientsListState extends State<ClientsList> {
                             return Row(
                               spacing: 4,
                               children: [
-                                RegisterPaymentButton(
+                                TourAnchor(id: 'clients.pay', child: RegisterPaymentButton(
                                   compact: true,
                                   client: e,
                                   onPaid: () {
@@ -117,7 +125,7 @@ class _ClientsListState extends State<ClientsList> {
                                     Future.delayed(const Duration(seconds: 3)).then((value) => clientsBloc.refetchClients());
                                     
                                   }
-                                  ),
+                                  )),
                                 editClientIcon
                               ],
                             );
@@ -129,16 +137,20 @@ class _ClientsListState extends State<ClientsList> {
               },
             ),
           ),
+          ),
         ),
       ],
     );
 
     return Scaffold(
-      floatingActionButton: !Permissions.can(Permissions.CLIENTES_EDITAR) ? null : FloatingActionButton.extended(
-        onPressed: () => context.pushNamed(AppRoutes.NEW_CLIENT_ROUTE.name),
-        label: ResponsiveBuilder.isTablet(context)
-            ? Icon(Icons.person_add_alt_1_rounded)
-            : Row(spacing: 8, mainAxisSize: MainAxisSize.min, children: [Icon(Icons.person_add_alt_1_rounded), Text("Nuevo cliente")]),
+      floatingActionButton: !Permissions.can(Permissions.CLIENTES_EDITAR) ? null : TourAnchor(
+        id: 'clients.new',
+        child: FloatingActionButton.extended(
+          onPressed: () => context.pushNamed(AppRoutes.NEW_CLIENT_ROUTE.name),
+          label: ResponsiveBuilder.isTablet(context)
+              ? Icon(Icons.person_add_alt_1_rounded)
+              : Row(spacing: 8, mainAxisSize: MainAxisSize.min, children: [Icon(Icons.person_add_alt_1_rounded), Text("Nuevo cliente")]),
+        ),
       ),
       body: child,
     );

@@ -20,6 +20,7 @@ import 'client_payments_card.dart';
 import 'client_notifications_card.dart';
 import 'client_fixed_sessions.dart';
 import 'client_routine_card.dart';
+import '../../../../core/presentation/components/onboarding/tour_anchor.dart';
 
 /// Cuerpo de la ficha del cliente (rediseño): encabezado con datos y
 /// acciones, indicadores, turnos fijos, próximos turnos, pagos y, al costado,
@@ -100,21 +101,32 @@ class _ClientProfileBodyState extends State<ClientProfileBody> {
   Widget build(BuildContext context) {
     final desktop = ResponsiveBuilder.isDesktop(context);
 
+    // Los TourAnchor son los pasos de la guía de la ficha (admin_guides.dart).
+    // El de la rutina va adentro de ClientRoutineCard: abre el editor.
     final main = <Widget>[
-      ClientFixedSessions(key: ValueKey('fixed-${widget.client.clientId}'), client: widget.client, onChanged: _loadSummary),
+      TourAnchor(id: 'client.fixed', child: ClientFixedSessions(key: ValueKey('fixed-${widget.client.clientId}'), client: widget.client, onChanged: _loadSummary)),
       if (AdminFeatures.routines) ClientRoutineCard(key: ValueKey('routine-${widget.client.clientId}'), client: widget.client),
       if (AdminFeatures.memberships)
-        ClientMembershipCard(key: ValueKey('membership-${widget.client.clientId}-$_paymentsVersion'), client: widget.client, onChanged: _moneyChanged),
-      _UpcomingCard(summary: _summary, error: _summaryError),
-      ClientPaymentsCard(key: ValueKey('payments-${widget.client.clientId}-$_paymentsVersion'), client: widget.client, onPaid: _moneyChanged),
-      if (widget.categories != null) widget.categories!,
+        TourAnchor(
+          id: 'client.membership',
+          child: ClientMembershipCard(key: ValueKey('membership-${widget.client.clientId}-$_paymentsVersion'), client: widget.client, onChanged: _moneyChanged),
+        ),
+      TourAnchor(id: 'client.upcoming', child: _UpcomingCard(summary: _summary, error: _summaryError)),
+      TourAnchor(
+        id: 'client.payments',
+        child: ClientPaymentsCard(key: ValueKey('payments-${widget.client.clientId}-$_paymentsVersion'), client: widget.client, onPaid: _moneyChanged),
+      ),
+      if (widget.categories != null) TourAnchor(id: 'client.categories', child: widget.categories!),
     ];
     final side = <Widget>[
       if (_showLegacySubscription) _SideCard(title: 'Abono', child: widget.subscription),
-      Card(margin: EdgeInsets.zero, child: widget.labels),
-      _NotesCard(client: widget.client, onEdit: widget.onEdit),
-      _ActivityCard(summary: _summary),
-      ClientNotificationsCard(key: ValueKey('notifications-${widget.client.clientId}'), clientId: widget.client.intClientId),
+      TourAnchor(id: 'client.labels', child: Card(margin: EdgeInsets.zero, child: widget.labels)),
+      TourAnchor(id: 'client.notes', child: _NotesCard(client: widget.client, onEdit: widget.onEdit)),
+      TourAnchor(id: 'client.activity', child: _ActivityCard(summary: _summary)),
+      TourAnchor(
+        id: 'client.notifications',
+        child: ClientNotificationsCard(key: ValueKey('notifications-${widget.client.clientId}'), clientId: widget.client.intClientId),
+      ),
     ];
 
     Widget column(List<Widget> children) => Column(
@@ -130,9 +142,9 @@ class _ClientProfileBodyState extends State<ClientProfileBody> {
           if (widget.isEditing)
             widget.editor
           else
-            _HeaderCard(client: widget.client, onEdit: widget.onEdit, onPaymentCreated: _moneyChanged),
+            TourAnchor(id: 'client.header', child: _HeaderCard(client: widget.client, onEdit: widget.onEdit, onPaymentCreated: _moneyChanged)),
           const SizedBox(height: 20),
-          _KpiRow(summary: _summary),
+          TourAnchor(id: 'client.kpis', child: _KpiRow(summary: _summary)),
           const SizedBox(height: 20),
           if (desktop)
             Row(

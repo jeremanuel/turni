@@ -14,6 +14,7 @@ import '../../../../domain/repositories/product_admin_repository.dart';
 import '../widgets/admin_data_table.dart';
 import '../widgets/price_field.dart';
 import '../../../../core/utils/responsive_builder.dart';
+import '../../../../core/presentation/components/onboarding/tour_anchor.dart';
 
 class ProductsTab extends StatefulWidget {
   const ProductsTab({super.key});
@@ -260,7 +261,7 @@ class _ProductsTabState extends State<ProductsTab> {
           ),
           const SizedBox(height: 20),
           const ReadOnlyNotice(permissions: [Permissions.CONFIGURACION_PRODUCTOS]),
-          Card(
+          TourAnchor(id: 'products.list', child: Card(
             child: Padding(
               padding: const EdgeInsets.all(20),
               child: Column(
@@ -315,13 +316,13 @@ class _ProductsTabState extends State<ProductsTab> {
                       ),
                     ),
                   const SizedBox(height: 4),
-                  if (_canEdit) _buildInlineProductForm(),
+                  if (_canEdit) TourAnchor(id: 'products.new', child: _buildInlineProductForm()),
                 ],
               ),
             ),
-          ),
+          )),
           const SizedBox(height: 20),
-          Card(
+          TourAnchor(id: 'products.categories', child: Card(
             child: Padding(
               padding: const EdgeInsets.all(20),
               child: Column(
@@ -393,7 +394,7 @@ class _ProductsTabState extends State<ProductsTab> {
                 ],
               ),
             ),
-          ),
+          )),
         ],
       ),
     );

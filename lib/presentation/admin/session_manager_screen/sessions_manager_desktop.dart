@@ -9,6 +9,7 @@ import 'bloc/session_manager_bloc.dart';
 import 'bloc/session_manager_state.dart';
 import 'widgets/session_manager_card.dart';
 import 'widgets/session_manager_top_bar.dart';
+import '../../../core/presentation/components/onboarding/tour_anchor.dart';
 
 /// Gestor de turnos en escritorio: barra superior a todo el ancho, agenda a
 /// la izquierda y el panel lateral derecho (resumen del día o el turno
@@ -40,9 +41,9 @@ class SessionManagerDesktop extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _AgendaLegend(),
+                      TourAnchor(id: 'agenda.legend', child: _AgendaLegend()),
                       SizedBox(height: 12),
-                      Expanded(child: _DesktopAgenda()),
+                      Expanded(child: TourAnchor(id: 'agenda.grid', child: _DesktopAgenda())),
                     ],
                   ),
                 ),

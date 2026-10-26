@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../../core/config/service_locator.dart';
+import '../../../core/presentation/components/onboarding/tour_anchor.dart';
 import '../../../domain/entities/admin_notification.dart';
 import 'notifications_cubit.dart';
 
@@ -57,13 +58,20 @@ class _NotificationsButtonState extends State<NotificationsButton> {
     return BlocSelector<NotificationsCubit, NotificationsState, int>(
       bloc: _cubit,
       selector: (state) => state.unread,
-      builder: (context, unread) => IconButton(
-        tooltip: 'Notificaciones',
-        onPressed: () => showNotificationsPanel(context, cubit: _cubit),
-        icon: Badge.count(
-          count: unread,
-          isLabelVisible: unread > 0,
-          child: const Icon(Icons.notifications_outlined),
+      builder: (context, unread) => TourAnchor(
+        id: 'nav.notifications',
+        // La guía de avisos abre la bandeja (sin esperar a que se cierre).
+        onActivate: (context) {
+          showNotificationsPanel(context, cubit: _cubit);
+        },
+        child: IconButton(
+          tooltip: 'Notificaciones',
+          onPressed: () => showNotificationsPanel(context, cubit: _cubit),
+          icon: Badge.count(
+            count: unread,
+            isLabelVisible: unread > 0,
+            child: const Icon(Icons.notifications_outlined),
+          ),
         ),
       ),
     );
@@ -136,17 +144,19 @@ class _NotificationsPanelState extends State<NotificationsPanel> {
               children: [
                 Expanded(child: Text('Notificaciones', style: text.titleLarge)),
                 // En el celular no entra el texto al lado del título.
-                if (MediaQuery.sizeOf(context).width < 480)
-                  IconButton(
-                    tooltip: 'Marcar todo como leído',
-                    icon: const Icon(Icons.done_all),
-                    onPressed: state.unread > 0 ? _cubit.markAllRead : null,
-                  )
-                else
-                  TextButton(
-                    onPressed: state.unread > 0 ? _cubit.markAllRead : null,
-                    child: const Text('Marcar todo como leído'),
-                  ),
+                TourAnchor(
+                  id: 'notifications.readAll',
+                  child: MediaQuery.sizeOf(context).width < 480
+                      ? IconButton(
+                          tooltip: 'Marcar todo como leído',
+                          icon: const Icon(Icons.done_all),
+                          onPressed: state.unread > 0 ? _cubit.markAllRead : null,
+                        )
+                      : TextButton(
+                          onPressed: state.unread > 0 ? _cubit.markAllRead : null,
+                          child: const Text('Marcar todo como leído'),
+                        ),
+                ),
                 IconButton(
                   tooltip: 'Cerrar',
                   icon: const Icon(Icons.close),
@@ -156,7 +166,7 @@ class _NotificationsPanelState extends State<NotificationsPanel> {
             ),
           ),
           Divider(height: 1, color: scheme.outlineVariant),
-          Flexible(child: _body(context, state)),
+          Flexible(child: TourAnchor(id: 'notifications.panel', child: _body(context, state))),
         ],
       ),
     );

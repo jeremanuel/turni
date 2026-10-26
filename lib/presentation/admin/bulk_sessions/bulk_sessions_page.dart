@@ -9,6 +9,7 @@ import '../../../core/utils/responsive_builder.dart';
 import '../../../core/config/router/app_routes.dart';
 import '../create_session_screen/create_sessions_screen.dart';
 import 'bulk_edit_tab.dart';
+import '../../../core/presentation/components/onboarding/tour_anchor.dart';
 
 /// Tabs de Gestión masiva de turnos.
 enum BulkSessionsTab {
@@ -113,7 +114,9 @@ class BulkSessionsPage extends StatelessWidget {
                     ),
                     Padding(
                       padding: EdgeInsets.symmetric(horizontal: isMobile ? 0 : 24),
-                      child: TabBar(
+                      child: TourAnchor(
+                        id: 'bulk.tabs',
+                        child: TabBar(
                         // Celular: las tres pestañas a lo ancho, sin scroll
                         // (quedaba una cortada a la izquierda).
                         isScrollable: !isMobile,
@@ -143,6 +146,7 @@ class BulkSessionsPage extends StatelessWidget {
                               BulkSessionsTab.fixed => tab(Icons.event_repeat, 'Turnos fijos'),
                             },
                         ],
+                      ),
                       ),
                     ),
                   ],

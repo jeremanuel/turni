@@ -7,6 +7,7 @@ import '../../../../core/presentation/components/inputs/label_chip.dart';
 import '../../../../domain/entities/client.dart';
 import '../../memberships/register_payment_dialog.dart';
 import '../bloc/clients_list_bloc.dart';
+import '../../../../core/presentation/components/onboarding/tour_anchor.dart';
 
 /// Celular: los clientes como tarjetas con scroll infinito (en lugar de la
 /// grilla paginada de escritorio). Usa la misma búsqueda del bloc.
@@ -130,9 +131,13 @@ class _ClientsMobileListState extends State<ClientsMobileList> {
                 ? const Padding(padding: EdgeInsets.all(16), child: Center(child: CircularProgressIndicator()))
                 : const SizedBox.shrink();
           }
-          return _ClientCard(client: _clients[index - 1], onTap: () => _open(_clients[index - 1]), onPaymentCreated: () {
-            Future.delayed(const Duration(seconds: 3)).then((_) => _bloc.refetchClients());
-          });
+          return TourAnchor(
+            id: 'clients.row',
+            onActivate: (_) => _open(_clients[index - 1]),
+            child: _ClientCard(client: _clients[index - 1], onTap: () => _open(_clients[index - 1]), onPaymentCreated: () {
+              Future.delayed(const Duration(seconds: 3)).then((_) => _bloc.refetchClients());
+            }),
+          );
         },
       ),
     );

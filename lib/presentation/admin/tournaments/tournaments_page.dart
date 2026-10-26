@@ -12,6 +12,7 @@ import 'tabs/category_settings_tab.dart';
 import 'tabs/ranking_tab.dart';
 import '../../../core/utils/responsive_builder.dart';
 import 'widgets/tournament_ui.dart';
+import '../../../core/presentation/components/onboarding/tour_anchor.dart';
 
 /// Torneos del club: el listado, el ranking (club y ciudad) y qué deportes
 /// categoriza el club. Cada pestaña aparece según el rol.
@@ -20,10 +21,10 @@ class TournamentsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final tabs = <(String, Widget)>[
-      ('Torneos', const _TournamentsTab()),
-      ('Ranking', const RankingTab()),
-      if (Permissions.can(Permissions.TORNEOS_EDITAR)) ('Categorías', const CategorySettingsTab()),
+    final tabs = <(String, String, Widget)>[
+      ('Torneos', 'tournaments.tab.list', const _TournamentsTab()),
+      ('Ranking', 'tournaments.tab.ranking', const RankingTab()),
+      if (Permissions.can(Permissions.TORNEOS_EDITAR)) ('Categorías', 'tournaments.tab.categories', const CategorySettingsTab()),
     ];
 
     return DefaultTabController(
@@ -34,10 +35,12 @@ class TournamentsPage extends StatelessWidget {
           title: const Text('Torneos'),
           bottom: TabBar(
             isScrollable: true,
-            tabs: [for (final (label, _) in tabs) Tab(text: label)],
+            tabs: [
+              for (final (i, (label, anchor, _)) in tabs.indexed) TourAnchor(id: anchor, onActivate: TourAnchor.selectTab(i), child: Tab(text: label)),
+            ],
           ),
         ),
-        body: TabBarView(children: [for (final (_, tab) in tabs) tab]),
+        body: TabBarView(children: [for (final (_, _, tab) in tabs) tab]),
       ),
     );
   }
@@ -109,11 +112,14 @@ class _TournamentsTabState extends State<_TournamentsTab> {
                 ),
               ),
               if (Permissions.can(Permissions.TORNEOS_EDITAR))
-                FilledButton.icon(onPressed: _create, icon: const Icon(Icons.add), label: const Text('Nuevo torneo')),
+                TourAnchor(
+                  id: 'tournaments.new',
+                  child: FilledButton.icon(onPressed: _create, icon: const Icon(Icons.add), label: const Text('Nuevo torneo')),
+                ),
             ],
           ),
           const SizedBox(height: 16),
-          Wrap(
+          TourAnchor(id: 'tournaments.filters', child: Wrap(
             spacing: 8,
             runSpacing: 8,
             children: [
@@ -136,7 +142,7 @@ class _TournamentsTabState extends State<_TournamentsTab> {
                     onSelected: (_) => setState(() => _filter = _filter == s ? null : s),
                   ),
             ],
-          ),
+          )),
           const SizedBox(height: 16),
           if (shown.isEmpty)
             Padding(
@@ -150,7 +156,7 @@ class _TournamentsTabState extends State<_TournamentsTab> {
               ),
             )
           else
-            AdminDataTable(
+            TourAnchor(id: 'tournaments.table', child: AdminDataTable(
               columns: const ['Torneo', 'Modalidad', 'Categoría', 'Formato', 'Equipos', 'Entrada', 'Estado'],
               columnWidths: const {
                 0: FlexColumnWidth(2.2),
@@ -164,14 +170,23 @@ class _TournamentsTabState extends State<_TournamentsTab> {
               rows: [
                 for (final t in shown)
                   [
-                    InkWell(
-                      onTap: () => _open(t),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(t.name, style: TextStyle(fontWeight: FontWeight.w500, color: scheme.primary)),
-                          Text(datesRange(t.startsAt, t.endsAt), style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant)),
-                        ],
+                    // Las guías abren el primer torneo, o uno en juego.
+                    TourAnchor(
+                      id: 'tournaments.row',
+                      onActivate: (_) => _open(t),
+                      child: TourAnchor(
+                        id: t.status == TournamentStatus.inProgress ? 'tournaments.row.playing' : 'tournaments.row.other',
+                        onActivate: (_) => _open(t),
+                        child: InkWell(
+                          onTap: () => _open(t),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(t.name, style: TextStyle(fontWeight: FontWeight.w500, color: scheme.primary)),
+                              Text(datesRange(t.startsAt, t.endsAt), style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant)),
+                            ],
+                          ),
+                        ),
                       ),
                     ),
                     Text(t.modalityLabel),
@@ -198,7 +213,7 @@ class _TournamentsTabState extends State<_TournamentsTab> {
                     ),
                   ],
               ],
-            ),
+            )),
         ],
       ),
     );
