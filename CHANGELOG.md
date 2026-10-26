@@ -16,6 +16,8 @@ Una línea por entrega, no por PR: si un PR completa una entrada que ya está, s
 
 ### Corregido
 
+- 2026-10-26 — Las notificaciones web ya no llegan dobles ([#70](https://github.com/jeremanuel/turni/pull/70)) — requiere BE #113
+
 ## [1.1.0] - 2026-10-26
 
 ### Agregado
