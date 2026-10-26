@@ -441,7 +441,11 @@ class _SpotlightPainter extends CustomPainter {
     }
 
     final rrect = RRect.fromRectAndRadius(hole, const Radius.circular(12));
-    final path = Path.combine(PathOperation.difference, screen, Path()..addRRect(rrect));
+    // Par-impar y no `Path.combine`: en la web la diferencia no recortaba el
+    // hueco y el target quedaba tan oscuro como el resto.
+    final path = screen
+      ..addRRect(rrect)
+      ..fillType = PathFillType.evenOdd;
     canvas.drawPath(path, Paint()..color = scrim);
     canvas.drawRRect(
       rrect,
