@@ -2,6 +2,13 @@
 
 Cada versión de Admin que llegó a producción, contada en general: qué features entraron y para quién. El detalle, con los PRs, está en [CHANGELOG.md](CHANGELOG.md). Lo actualiza `/turni:release`; la más nueva va arriba.
 
+## 2026-10-26 — Guías paso a paso · v1.1.0
+
+El panel suma ayuda paso a paso: desde el signo de pregunta del menú, el admin busca cómo hacer algo (cobrar un turno, armar un torneo, cargar tarifas) y una guía lo acompaña sobre la pantalla real, resaltando cada parte y abriendo lo que haga falta.
+
+- **Guías desde el signo de pregunta:** 29 guías, una por pantalla o tarea del panel (agenda, cobros, turnos fijos, clientes, pagos, mapa, torneos, configuración, usuarios y avisos), con buscador. Las que no aplican al establecimiento o a los permisos del admin no aparecen.
+- **Recorrido de bienvenida:** el de Configuración para un club recién creado usa las mismas guías.
+
 ## 2026-10-25 — Versión de base · v1.0.0
 
 Desde acá arranca el versionado: v1.0.0 es lo que estaba en producción el 2026-10-25. Antes, las releases eran PRs a `master` sin número:
