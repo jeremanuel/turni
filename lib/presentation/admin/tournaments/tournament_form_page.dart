@@ -15,6 +15,7 @@ import '../club_config/widgets/duration_minutes_field.dart';
 import '../club_config/widgets/price_field.dart';
 import '../club_config/widgets/time_field.dart';
 import 'widgets/tournament_ui.dart';
+import '../../../core/presentation/components/onboarding/tour_anchor.dart';
 
 /// Alta y edición de un torneo. Con [tournamentId] edita.
 ///
@@ -201,26 +202,29 @@ class _TournamentFormPageState extends State<TournamentFormPage> {
             final form = Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                _generalSection(catalog),
+                TourAnchor(id: 'tournamentForm.general', child: _generalSection(catalog)),
                 const SizedBox(height: 16),
-                _categorySection(),
+                TourAnchor(id: 'tournamentForm.category', child: _categorySection()),
                 const SizedBox(height: 16),
-                _formatSection(),
+                TourAnchor(id: 'tournamentForm.format', child: _formatSection()),
                 const SizedBox(height: 16),
-                _matchesSection(),
+                TourAnchor(id: 'tournamentForm.matches', child: _matchesSection()),
                 const SizedBox(height: 16),
-                _registrationSection(),
+                TourAnchor(id: 'tournamentForm.entry', child: _registrationSection()),
                 const SizedBox(height: 16),
-                _resultsSection(),
+                TourAnchor(id: 'tournamentForm.results', child: _resultsSection()),
                 const SizedBox(height: 16),
-                SectionCard(
-                  title: 'Premios',
-                  subtitle: 'Texto libre: se muestra tal cual en la app.',
-                  child: TextFormField(
-                    controller: _prizes,
-                    minLines: 2,
-                    maxLines: 4,
-                    decoration: const InputDecoration(hintText: 'Ej.: 1° Paletas + trofeo · 2° Voucher de 4 turnos'),
+                TourAnchor(
+                  id: 'tournamentForm.prizes',
+                  child: SectionCard(
+                    title: 'Premios',
+                    subtitle: 'Texto libre: se muestra tal cual en la app.',
+                    child: TextFormField(
+                      controller: _prizes,
+                      minLines: 2,
+                      maxLines: 4,
+                      decoration: const InputDecoration(hintText: 'Ej.: 1° Paletas + trofeo · 2° Voucher de 4 turnos'),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 32),
@@ -254,9 +258,15 @@ class _TournamentFormPageState extends State<TournamentFormPage> {
           if (!_isEdit) ...[
             OutlinedButton(onPressed: _saving ? null : () => _save(), child: const Text('Guardar borrador')),
             const SizedBox(width: 8),
-            FilledButton(onPressed: _saving ? null : () => _save(publish: true), child: const Text('Publicar y abrir inscripción')),
+            TourAnchor(
+              id: 'tournamentForm.save',
+              child: FilledButton(onPressed: _saving ? null : () => _save(publish: true), child: const Text('Publicar y abrir inscripción')),
+            ),
           ] else
-            FilledButton(onPressed: _saving ? null : () => _save(), child: const Text('Guardar cambios')),
+            TourAnchor(
+              id: 'tournamentForm.save',
+              child: FilledButton(onPressed: _saving ? null : () => _save(), child: const Text('Guardar cambios')),
+            ),
           const SizedBox(width: 16),
         ],
       ),
@@ -276,7 +286,10 @@ class _TournamentFormPageState extends State<TournamentFormPage> {
         title: Text(_isEdit ? 'Editar torneo' : 'Nuevo torneo'),
         actions: [
           if (!_isEdit) ...[
-            FilledButton(onPressed: _saving ? null : () => _save(publish: true), child: const Text('Publicar')),
+            TourAnchor(
+              id: 'tournamentForm.save',
+              child: FilledButton(onPressed: _saving ? null : () => _save(publish: true), child: const Text('Publicar')),
+            ),
             PopupMenuButton<String>(
               tooltip: 'Más opciones',
               enabled: !_saving,
@@ -284,7 +297,10 @@ class _TournamentFormPageState extends State<TournamentFormPage> {
               itemBuilder: (_) => const [PopupMenuItem(value: 'draft', child: Text('Guardar borrador'))],
             ),
           ] else ...[
-            FilledButton(onPressed: _saving ? null : () => _save(), child: const Text('Guardar')),
+            TourAnchor(
+              id: 'tournamentForm.save',
+              child: FilledButton(onPressed: _saving ? null : () => _save(), child: const Text('Guardar')),
+            ),
             const SizedBox(width: 12),
           ],
         ],

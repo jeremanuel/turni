@@ -9,6 +9,7 @@ import '../../../../domain/repositories/tournament_repository.dart';
 import '../../club_config/widgets/admin_data_table.dart';
 import '../../../../core/utils/responsive_builder.dart';
 import '../widgets/tournament_ui.dart';
+import '../../../../core/presentation/components/onboarding/tour_anchor.dart';
 
 /// Ranking del club o de su ciudad (últimos 12 meses), por deporte, categoría
 /// y rama, con las sugerencias de cambio de categoría.
@@ -228,7 +229,7 @@ class _RankingTabState extends State<RankingTab> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               if (result.categorizes)
-                SectionCard(
+                TourAnchor(id: 'ranking.suggestions', child: SectionCard(
                   title: 'Sugerencias de categoría',
                   subtitle: 'Por títulos en su categoría y votos de los rivales.',
                   child: result.suggestions.isEmpty
@@ -246,7 +247,7 @@ class _RankingTabState extends State<RankingTab> {
                               ),
                           ],
                         ),
-                ),
+                )),
               if (result.categorizes && result.withoutClubCategory > 0) ...[
                 const SizedBox(height: 16),
                 InfoBanner(
@@ -271,7 +272,7 @@ class _RankingTabState extends State<RankingTab> {
               style: text.titleMedium,
             ),
             const SizedBox(height: 16),
-            filters,
+            TourAnchor(id: 'ranking.filters', child: filters),
             const SizedBox(height: 20),
             if (wide)
               Row(

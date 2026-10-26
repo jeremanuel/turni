@@ -9,6 +9,7 @@ import '../../../../core/utils/domain_error.dart';
 import '../../../../core/utils/either.dart';
 import '../../../../domain/repositories/admin_repository.dart';
 import '../../../../core/utils/responsive_builder.dart';
+import '../../../../core/presentation/components/onboarding/tour_anchor.dart';
 
 /// Contenido de la antigua `AdminSettingsPage`, ahora como una tab dentro de
 /// `ClubConfigPage` en vez de una pantalla propia con su Scaffold/AppBar.
@@ -112,7 +113,7 @@ class _SessionRequestSettingsTabState
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
         const ReadOnlyNotice(permissions: [Permissions.CONFIGURACION_SOLICITUDES]),
-        PermissionLock(
+        TourAnchor(id: 'requests.settings', child: PermissionLock(
         permissions: const [Permissions.CONFIGURACION_SOLICITUDES],
         child: Form(
         key: _formKey,
@@ -158,7 +159,7 @@ class _SessionRequestSettingsTabState
                 ),
               ],
               const SizedBox(height: 24),
-              SizedBox(
+              TourAnchor(id: 'requests.save', child: SizedBox(
                 height: 40,
                 child: FilledButton(
                   onPressed: _isSaving ? null : _save,
@@ -170,12 +171,12 @@ class _SessionRequestSettingsTabState
                         )
                       : const Text("Guardar"),
                 ),
-              ),
+              )),
             ],
           ),
         ),
       ),
-      ),
+      )),
         ],
       ),
     );

@@ -15,6 +15,7 @@ import 'widgets/bracket_view.dart';
 import 'widgets/match_dialogs.dart';
 import '../../../core/utils/responsive_builder.dart';
 import 'widgets/tournament_ui.dart';
+import '../../../core/presentation/components/onboarding/tour_anchor.dart';
 
 /// Un torneo del club: estado, inscripciones con pagos, cuadro y partidos.
 class TournamentDetailPage extends StatefulWidget {
@@ -310,11 +311,11 @@ class _TournamentDetailPageState extends State<TournamentDetailPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Padding(padding: const EdgeInsets.fromLTRB(16, 0, 16, 8), child: _header(t)),
-                Padding(padding: const EdgeInsets.fromLTRB(16, 0, 16, 4), child: _stepper(t)),
+                Padding(padding: const EdgeInsets.fromLTRB(16, 0, 16, 8), child: TourAnchor(id: 'tournament.header', child: _header(t))),
+                Padding(padding: const EdgeInsets.fromLTRB(16, 0, 16, 4), child: TourAnchor(id: 'tournament.progress', child: _stepper(t))),
                 Align(
                   alignment: Alignment.centerLeft,
-                  child: TabBar(isScrollable: true, tabs: [for (final (label, _) in tabs) Tab(text: label)]),
+                  child: TabBar(isScrollable: true, tabs: _tabs(tabs)),
                 ),
               ],
             ),
@@ -353,19 +354,19 @@ class _TournamentDetailPageState extends State<TournamentDetailPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _header(t),
+                  TourAnchor(id: 'tournament.header', child: _header(t)),
                   const SizedBox(height: 12),
-                  _mobileProgress(t),
+                  TourAnchor(id: 'tournament.progress', child: _mobileProgress(t)),
                   if (primary.isNotEmpty) ...[
                     const SizedBox(height: 12),
-                    Wrap(spacing: 8, runSpacing: 8, children: primary),
+                    TourAnchor(id: 'tournament.actions', child: Wrap(spacing: 8, runSpacing: 8, children: primary)),
                   ],
                 ],
               ),
             ),
             Material(
               color: scheme.surface,
-              child: TabBar(isScrollable: true, tabAlignment: TabAlignment.start, tabs: [for (final (label, _) in tabs) Tab(text: label)]),
+              child: TabBar(isScrollable: true, tabAlignment: TabAlignment.start, tabs: _tabs(tabs)),
             ),
             Expanded(child: TabBarView(children: [for (final (_, tab) in tabs) tab])),
           ],
@@ -410,8 +411,16 @@ class _TournamentDetailPageState extends State<TournamentDetailPage> {
     );
   }
 
+  /// Equipos, cuadro y partidos, en ese orden (las guías eligen la tab por índice).
+  List<Widget> _tabs(List<(String, Widget)> tabs) {
+    const anchors = ['tournament.tab.entries', 'tournament.tab.bracket', 'tournament.tab.matches'];
+    return [
+      for (final (i, (label, _)) in tabs.indexed) TourAnchor(id: anchors[i], onActivate: TourAnchor.selectTab(i), child: Tab(text: label)),
+    ];
+  }
+
   List<Widget> _actions(Tournament t) => [
-        for (final w in _primaryActions(t)) ...[w, const SizedBox(width: 8)],
+        for (final w in _primaryActions(t)) ...[TourAnchor(id: 'tournament.actions', child: w), const SizedBox(width: 8)],
         ..._menu(t),
       ];
 
@@ -426,9 +435,13 @@ class _TournamentDetailPageState extends State<TournamentDetailPage> {
         yield FilledButton.icon(onPressed: _busy ? null : _draw, icon: const Icon(Icons.shuffle), label: const Text('Sortear y programar partidos'));
       case TournamentStatus.inProgress:
         final unscheduled = t.matches.any((m) => m.session == null && !m.isFinished);
-        yield unscheduled
-            ? FilledButton.icon(onPressed: _busy ? null : _openSchedule, icon: const Icon(Icons.edit_calendar_outlined), label: const Text('Programar partidos'))
-            : OutlinedButton.icon(onPressed: _busy ? null : _openSchedule, icon: const Icon(Icons.edit_calendar_outlined), label: const Text('Programación'));
+        yield TourAnchor(
+          id: 'tournament.schedule',
+          onActivate: (_) => _openSchedule(),
+          child: unscheduled
+              ? FilledButton.icon(onPressed: _busy ? null : _openSchedule, icon: const Icon(Icons.edit_calendar_outlined), label: const Text('Programar partidos'))
+              : OutlinedButton.icon(onPressed: _busy ? null : _openSchedule, icon: const Icon(Icons.edit_calendar_outlined), label: const Text('Programación')),
+        );
       default:
         break;
     }

@@ -11,6 +11,7 @@ import '../club_config/widgets/admin_data_table.dart';
 import 'membership_dialogs.dart';
 import 'register_payment_dialog.dart';
 import 'widgets/membership_widgets.dart';
+import '../../../core/presentation/components/onboarding/tour_anchor.dart';
 
 /// Pagos › Estado de cuotas: quién está al día y quién debe. Las tarjetas de
 /// arriba filtran la lista. Solo existe si el admin ve servicios con abonos.
@@ -100,7 +101,7 @@ class _MembershipBoardViewState extends State<MembershipBoardView> {
       child: ListView(
         padding: EdgeInsets.all(mobile ? 16 : 24),
         children: [
-          LayoutBuilder(builder: (context, constraints) {
+          TourAnchor(id: 'board.kpis', child: LayoutBuilder(builder: (context, constraints) {
             final columns = constraints.maxWidth >= 1000 ? 5 : (constraints.maxWidth >= 600 ? 3 : 2);
             final width = (constraints.maxWidth - 12 * (columns - 1)) / columns;
             return Wrap(spacing: 12, runSpacing: 12, children: [
@@ -120,14 +121,14 @@ class _MembershipBoardViewState extends State<MembershipBoardView> {
                   ),
                 ),
             ]);
-          }),
+          })),
           const SizedBox(height: 16),
           Card(
             margin: EdgeInsets.zero,
             child: Padding(
               padding: const EdgeInsets.all(20),
               child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-                Wrap(spacing: 12, runSpacing: 12, crossAxisAlignment: WrapCrossAlignment.center, children: [
+                TourAnchor(id: 'board.filters', child: Wrap(spacing: 12, runSpacing: 12, crossAxisAlignment: WrapCrossAlignment.center, children: [
                   Text(title(_filter), style: textTheme.titleMedium),
                   SizedBox(
                     width: 240,
@@ -151,7 +152,7 @@ class _MembershipBoardViewState extends State<MembershipBoardView> {
                       onPressed: () => _after(showReminderDialog(context, remindable)),
                       child: Text('Avisar a todos (${remindable.length})'),
                     ),
-                ]),
+                ])),
                 const SizedBox(height: 14),
                 if (rows.isEmpty)
                   Padding(
@@ -162,7 +163,7 @@ class _MembershipBoardViewState extends State<MembershipBoardView> {
                     ),
                   )
                 else
-                  AdminDataTable(
+                  TourAnchor(id: 'board.list', child: AdminDataTable(
                     columns: const ['Cliente', 'Abono', 'Estado', 'Vencimiento', 'Debe', 'Último pago', ''],
                     columnWidths: const {
                       0: FlexColumnWidth(1.4),
@@ -174,7 +175,7 @@ class _MembershipBoardViewState extends State<MembershipBoardView> {
                       6: FixedColumnWidth(232),
                     },
                     rows: [for (final row in rows) _row(context, row)],
-                  ),
+                  )),
               ]),
             ),
           ),

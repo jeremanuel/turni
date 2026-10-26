@@ -16,6 +16,7 @@ import 'tabs/session_request_settings_tab.dart';
 import '../../../core/utils/admin_features.dart';
 import '../memberships/plans_tab.dart';
 import '../settings_screen/widgets/mercado_pago_account_card.dart';
+import '../../../core/presentation/components/onboarding/tour_anchor.dart';
 
 /// Pantalla de configuración de admin para el club (reemplaza la vieja
 /// `AdminSettingsPage`, que ahora vive como la tab "Solicitudes de turno").
@@ -42,7 +43,6 @@ class _ClubConfigPageState extends State<ClubConfigPage> with SingleTickerProvid
     initialIndex: widget.focus?.tab ?? ClubConfigTab.info,
     vsync: this,
   );
-  final _tourKeys = ClubConfigTourKeys();
 
   @override
   void dispose() {
@@ -50,27 +50,20 @@ class _ClubConfigPageState extends State<ClubConfigPage> with SingleTickerProvid
     super.dispose();
   }
 
-  /// Antes del primer paso del recorrido: la tab de información a la vista.
-  Future<void> _showInfoTab() async {
-    if (!mounted || _tabController.index == ClubConfigTab.info) return;
-    _tabController.animateTo(ClubConfigTab.info);
-    await Future<void>.delayed(kTabScrollDuration + const Duration(milliseconds: 50));
-  }
-
-  void _showTour(BuildContext context) => ClubConfigTour.show(context, _tourKeys, showInfoTab: _showInfoTab);
+  void _showTour(BuildContext context) => ClubConfigTour.show(context);
 
   /// Club recién dado de alta (sin dirección o ubicación): la primera vez se
   /// ofrece el recorrido.
   void _onInfoLoaded(BuildContext context, ClubInfo info) {
     if (!ClubConfigTour.isIncomplete(info) || !context.mounted) return;
-    ClubConfigTour.showIfNew(context, _tourKeys, showInfoTab: _showInfoTab);
+    ClubConfigTour.showIfNew(context);
   }
 
   @override
   Widget build(BuildContext context) {
     final focus = widget.focus;
     final modal = widget.modal;
-    final sections = _sections(focus, tourKeys: _tourKeys, onInfoLoaded: _onInfoLoaded, onHelp: _showTour);
+    final sections = _sections(focus, onInfoLoaded: _onInfoLoaded, onHelp: _showTour);
 
     if (ResponsiveBuilder.isMobile(context)) {
       // Abierto apuntando a un ítem (ej. "configurar tarifa" desde la
@@ -105,7 +98,14 @@ class _ClubConfigPageState extends State<ClubConfigPage> with SingleTickerProvid
         bottom: TabBar(
           controller: _tabController,
           isScrollable: true,
-          tabs: [for (final section in sections) Tab(key: section.tabKey, text: section.tabLabel)],
+          tabs: [
+            for (final (i, section) in sections.indexed)
+              TourAnchor(
+                id: section.anchor,
+                onActivate: TourAnchor.selectTab(i, controller: _tabController),
+                child: Tab(text: section.tabLabel),
+              ),
+          ],
         ),
       ),
       body: TabBarView(
@@ -125,7 +125,7 @@ class _ClubConfigSection {
     required this.subtitle,
     required this.icon,
     required this.builder,
-    this.tabKey,
+    required this.anchor,
     this.onHelp,
   });
 
@@ -135,8 +135,8 @@ class _ClubConfigSection {
   final IconData icon;
   final Widget Function() builder;
 
-  /// Para que el recorrido resalte la tab.
-  final GlobalKey? tabKey;
+  /// La tab (o la fila de la lista, en el celular) para las guías.
+  final String anchor;
 
   /// "Ver recorrido" en la barra de la sección (celular).
   final void Function(BuildContext context)? onHelp;
@@ -145,7 +145,6 @@ class _ClubConfigSection {
 /// En el orden de [ClubConfigTab].
 List<_ClubConfigSection> _sections(
   ClubConfigFocus? focus, {
-  required ClubConfigTourKeys tourKeys,
   required void Function(BuildContext context, ClubInfo info) onInfoLoaded,
   required void Function(BuildContext context) onHelp,
 }) =>
@@ -155,10 +154,10 @@ List<_ClubConfigSection> _sections(
         title: 'Club',
         subtitle: 'Nombre, dirección y ubicación',
         icon: Icons.storefront_outlined,
+        anchor: 'clubConfig.tab.info',
         onHelp: onHelp,
         builder: () => Builder(
           builder: (context) => ClubInfoTab(
-            tourKeys: tourKeys,
             onLoaded: (info) => onInfoLoaded(context, info),
           ),
         ),
@@ -168,7 +167,7 @@ List<_ClubConfigSection> _sections(
         title: 'Servicios y espacios',
         subtitle: 'Servicios del club y sus canchas o salas',
         icon: Icons.grid_view_outlined,
-        tabKey: tourKeys.partitionsTab,
+        anchor: 'clubConfig.tab.partitions',
         builder: () => ClubPartitionsTab(
           focusClubPartitionId: focus?.tab == ClubConfigTab.partitions ? focus?.clubPartitionId : null,
           focusPartitionPhysicalId: focus?.partitionPhysicalId,
@@ -179,7 +178,7 @@ List<_ClubConfigSection> _sections(
         title: 'Tarifas por horario',
         subtitle: 'Precios según el día y la hora',
         icon: Icons.attach_money,
-        tabKey: tourKeys.tariffsTab,
+        anchor: 'clubConfig.tab.tariffs',
         builder: () => PriceTariffsTab(
           focusClubPartitionId: focus?.tab == ClubConfigTab.priceTariffs ? focus?.clubPartitionId : null,
           focusPriceTariffId: focus?.priceTariffId,
@@ -191,6 +190,7 @@ List<_ClubConfigSection> _sections(
         title: 'Productos',
         subtitle: 'Bebidas, alquileres y extras que se cobran en el turno',
         icon: Icons.shopping_bag_outlined,
+        anchor: 'clubConfig.tab.products',
         builder: () => const ProductsTab(),
       ),
       _ClubConfigSection(
@@ -198,6 +198,7 @@ List<_ClubConfigSection> _sections(
         title: 'Solicitudes de turno',
         subtitle: 'Vencimiento, cancelación y seña',
         icon: Icons.schedule_outlined,
+        anchor: 'clubConfig.tab.requests',
         builder: () => const SessionRequestSettingsTab(),
       ),
       _ClubConfigSection(
@@ -205,7 +206,7 @@ List<_ClubConfigSection> _sections(
         title: 'Cobros online',
         subtitle: 'Cuenta de Mercado Pago del club',
         icon: Icons.credit_card,
-        tabKey: tourKeys.paymentsTab,
+        anchor: 'clubConfig.tab.payments',
         // Vincular la cuenta de Mercado Pago del club (antes estaba en la
         // vieja AdminSettingsPage, debajo de las solicitudes de turno).
         builder: () => Builder(builder: (context) => SingleChildScrollView(
@@ -218,9 +219,12 @@ List<_ClubConfigSection> _sections(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const ReadOnlyNotice(permissions: [Permissions.CONFIGURACION_COBROS_ONLINE]),
-                  PermissionLock(
-                    permissions: const [Permissions.CONFIGURACION_COBROS_ONLINE],
-                    child: MercadoPagoAccountCard(),
+                  TourAnchor(
+                    id: 'payments.mercadoPago',
+                    child: PermissionLock(
+                      permissions: const [Permissions.CONFIGURACION_COBROS_ONLINE],
+                      child: MercadoPagoAccountCard(),
+                    ),
                   ),
                 ],
               ),
@@ -234,6 +238,7 @@ List<_ClubConfigSection> _sections(
           title: 'Abonos',
           subtitle: 'Cómo se vende el gimnasio y recordatorios de pago',
           icon: Icons.card_membership_outlined,
+          anchor: 'clubConfig.tab.memberships',
           builder: () => const MembershipPlansTab(),
         ),
     ];
@@ -264,7 +269,10 @@ class _ClubConfigMobileList extends StatelessWidget {
               children: [
                 for (final (i, section) in sections.indexed) ...[
                   if (i > 0) Divider(height: 1, color: scheme.outlineVariant),
-                  ListTile(
+                  TourAnchor(
+                    id: section.anchor,
+                    onActivate: (context) => _open(context, section),
+                    child: ListTile(
                     minVerticalPadding: 14,
                     leading: Container(
                       width: 40,
@@ -275,9 +283,8 @@ class _ClubConfigMobileList extends StatelessWidget {
                     title: Text(section.title),
                     subtitle: Text(section.subtitle),
                     trailing: const Icon(Icons.chevron_right),
-                    onTap: () => Navigator.of(context, rootNavigator: true).push(
-                      MaterialPageRoute<void>(builder: (_) => _ClubConfigSectionPage(section: section)),
-                    ),
+                    onTap: () => _open(context, section),
+                  ),
                   ),
                 ],
               ],
@@ -287,6 +294,10 @@ class _ClubConfigMobileList extends StatelessWidget {
       ),
     );
   }
+
+  Future<void> _open(BuildContext context, _ClubConfigSection section) => Navigator.of(context, rootNavigator: true).push(
+        MaterialPageRoute<void>(builder: (_) => _ClubConfigSectionPage(section: section)),
+      );
 }
 
 /// Celular: una sección a pantalla completa (nivel 2).

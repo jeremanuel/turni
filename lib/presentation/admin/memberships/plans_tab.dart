@@ -12,6 +12,7 @@ import '../../../domain/repositories/membership_repository.dart';
 import '../club_config/widgets/admin_data_table.dart';
 import '../club_config/widgets/price_field.dart';
 import 'widgets/membership_widgets.dart';
+import '../../../core/presentation/components/onboarding/tour_anchor.dart';
 
 /// Configuración › Abonos: cómo se vende cada servicio con abonos con cuotas
 /// (gimnasio, funcional). Solo aparece si el admin ve alguno (ver
@@ -105,18 +106,18 @@ class _MembershipPlansTabState extends State<MembershipPlansTab> {
                 ),
               ]),
             ),
-            if (_canEdit) FilledButton.icon(onPressed: () => _edit(), icon: const Icon(Icons.add), label: const Text('Nuevo abono')),
+            if (_canEdit) TourAnchor(id: 'plans.new', child: FilledButton.icon(onPressed: () => _edit(), icon: const Icon(Icons.add), label: const Text('Nuevo abono'))),
           ],
         ),
         const SizedBox(height: 16),
         for (final partition in partitions) ...[
-          _PartitionCard(
+          TourAnchor(id: 'plans.list', child: _PartitionCard(
             partition: partition,
             canEdit: _canEdit,
             onEdit: (plan) => _edit(plan: plan),
             onCreate: () => _edit(partition: partition.partition),
             onArchive: _archive,
-          ),
+          )),
           const SizedBox(height: 16),
         ],
         const _RemindersCard(),
@@ -272,7 +273,7 @@ class _RemindersCardState extends State<_RemindersCard> {
     if (settings == null) return const SizedBox.shrink();
     final textTheme = Theme.of(context).textTheme;
     final scheme = Theme.of(context).colorScheme;
-    return Card(
+    return TourAnchor(id: 'plans.reminders', child: Card(
       margin: EdgeInsets.zero,
       child: Padding(
         padding: const EdgeInsets.all(20),
@@ -307,7 +308,7 @@ class _RemindersCardState extends State<_RemindersCard> {
           ]),
         ),
       ),
-    );
+    ));
   }
 }
 

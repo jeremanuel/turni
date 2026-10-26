@@ -4,7 +4,9 @@ import 'package:go_router/go_router.dart';
 import '../../../core/config/router/app_routes.dart';
 import '../../../core/config/service_locator.dart';
 import '../../../core/services/app_version/app_version.dart';
+import '../../../core/presentation/components/onboarding/tour_anchor.dart';
 import '../../core/cubit/auth/auth_cubit.dart';
+import '../guides/guides_dialog.dart';
 import '../notifications/notifications_panel.dart';
 import 'admin_destinations.dart';
 
@@ -56,14 +58,19 @@ class AdminRail extends StatelessWidget {
           const SizedBox(height: 28),
           for (final (i, destination) in visible.indexed) ...[
             if (i > 0) const SizedBox(height: 12),
-            _RailItem(
-              icon: destination.icon,
-              label: destination.label,
-              selected: shell.currentIndex == destination.branch,
-              onTap: () => shell.goBranch(destination.branch, initialLocation: shell.currentIndex == destination.branch),
+            TourAnchor(
+              id: destination.anchor,
+              child: _RailItem(
+                icon: destination.icon,
+                label: destination.label,
+                selected: shell.currentIndex == destination.branch,
+                onTap: () => shell.goBranch(destination.branch, initialLocation: shell.currentIndex == destination.branch),
+              ),
             ),
           ],
           const Spacer(),
+          const GuidesButton(),
+          const SizedBox(height: 4),
           const NotificationsButton(),
           const SizedBox(height: 12),
           PopupMenuButton<String>(

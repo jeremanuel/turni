@@ -14,6 +14,7 @@ import '../../club_config/widgets/admin_data_table.dart';
 import '../users_access.dart';
 import '../widgets/invite_admin_dialog.dart';
 import '../../../../core/utils/responsive_builder.dart';
+import '../../../../core/presentation/components/onboarding/tour_anchor.dart';
 
 /// Administradores del club: cambiar rol, habilitar/deshabilitar, invitar y
 /// los links de invitación pendientes.
@@ -205,25 +206,28 @@ class _AdminsTabState extends State<AdminsTab> {
                 ),
               ),
               if (_canInvite)
-                FilledButton.icon(
-                  onPressed: _invite,
-                  icon: const Icon(Icons.person_add_alt_1),
-                  label: const Text('Invitar administrador'),
+                TourAnchor(
+                  id: 'admins.invite',
+                  child: FilledButton.icon(
+                    onPressed: _invite,
+                    icon: const Icon(Icons.person_add_alt_1),
+                    label: const Text('Invitar administrador'),
+                  ),
                 ),
             ],
           ),
           const SizedBox(height: 16),
-          AdminTableCard(
+          TourAnchor(id: 'admins.table', child: AdminTableCard(
             child: AdminTableScroll(
               child: AdminDataTable(
                 columns: const ['Administrador', 'Email', 'Rol', 'Estado', ''],
                 rows: [for (final admin in _admins) _adminRow(admin)],
               ),
             ),
-          ),
+          )),
           if (_invitations.isNotEmpty) ...[
             const SizedBox(height: 24),
-            AdminTableCard(
+            TourAnchor(id: 'admins.invitations', child: AdminTableCard(
               child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -242,7 +246,7 @@ class _AdminsTabState extends State<AdminsTab> {
                     ),
                   ],
                 ),
-            ),
+            )),
           ],
         ],
       ),
