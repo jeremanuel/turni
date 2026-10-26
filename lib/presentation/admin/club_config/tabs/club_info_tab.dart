@@ -12,16 +12,15 @@ import '../../../../core/presentation/components/maps/location_picker_map.dart';
 import '../../../../core/services/address_geocoder.dart';
 import '../../../../domain/entities/club_info.dart';
 import '../../../../domain/repositories/club_info_repository.dart';
-import '../club_config_tour.dart';
+import '../../../../core/presentation/components/onboarding/tour_anchor.dart';
 import '../../../../core/utils/responsive_builder.dart';
 
 /// Datos del establecimiento. Es también el alta del club: un club nuevo
 /// llega sin dirección ni ubicación y su dueño los completa acá (con el
-/// recorrido de [ClubConfigTour]).
+/// recorrido de `ClubConfigTour`).
 class ClubInfoTab extends StatefulWidget {
-  const ClubInfoTab({super.key, this.tourKeys, this.onLoaded});
+  const ClubInfoTab({super.key, this.onLoaded});
 
-  final ClubConfigTourKeys? tourKeys;
 
   /// Al cargar los datos del club (ej. para ofrecer el recorrido si está incompleto).
   final ValueChanged<ClubInfo>? onLoaded;
@@ -191,20 +190,23 @@ class _ClubInfoTabState extends State<ClubInfoTab> {
                             ?.copyWith(color: colorScheme.onSurfaceVariant),
                       ),
                       const SizedBox(height: 16),
-                      TextFormField(
-                        key: widget.tourKeys?.name,
-                        controller: _nameController,
-                        decoration: const InputDecoration(
-                          labelText: "Nombre del establecimiento",
-                          border: OutlineInputBorder(),
+                      TourAnchor(
+                        id: 'clubInfo.name',
+                        child: TextFormField(
+                          controller: _nameController,
+                          decoration: const InputDecoration(
+                            labelText: "Nombre del establecimiento",
+                            border: OutlineInputBorder(),
+                          ),
+                          validator: (value) => (value == null || value.trim().isEmpty)
+                              ? "Ingresá un nombre."
+                              : null,
                         ),
-                        validator: (value) => (value == null || value.trim().isEmpty)
-                            ? "Ingresá un nombre."
-                            : null,
                       ),
                       const SizedBox(height: 16),
-                      TextFormField(
-                        key: widget.tourKeys?.address,
+                      TourAnchor(
+                        id: 'clubInfo.address',
+                        child: TextFormField(
                         controller: _addressController,
                         decoration: InputDecoration(
                           labelText: "Dirección",
@@ -230,11 +232,12 @@ class _ClubInfoTabState extends State<ClubInfoTab> {
                             ? "Ingresá una dirección."
                             : null,
                       ),
+                      ),
                       const SizedBox(height: 16),
                       Text("Ubicación en el mapa", style: Theme.of(context).textTheme.labelLarge),
                       const SizedBox(height: 6),
-                      KeyedSubtree(
-                        key: widget.tourKeys?.map,
+                      TourAnchor(
+                        id: 'clubInfo.map',
                         child: LocationPickerMap(
                         key: _mapKey,
                         confirmed: _location,
@@ -260,16 +263,18 @@ class _ClubInfoTabState extends State<ClubInfoTab> {
                             child: const Text("Cancelar"),
                           ),
                           const SizedBox(width: 8),
-                          FilledButton(
-                            key: widget.tourKeys?.save,
-                            onPressed: _isSaving ? null : _save,
-                            child: _isSaving
-                                ? const SizedBox(
-                                    height: 16,
-                                    width: 16,
-                                    child: CircularProgressIndicator(strokeWidth: 2),
-                                  )
-                                : const Text("Guardar cambios"),
+                          TourAnchor(
+                            id: 'clubInfo.save',
+                            child: FilledButton(
+                              onPressed: _isSaving ? null : _save,
+                              child: _isSaving
+                                  ? const SizedBox(
+                                      height: 16,
+                                      width: 16,
+                                      child: CircularProgressIndicator(strokeWidth: 2),
+                                    )
+                                  : const Text("Guardar cambios"),
+                            ),
                           ),
                         ],
                       ),

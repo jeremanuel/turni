@@ -16,6 +16,7 @@ import '../../../domain/entities/request/payment/payment_list_page_response.dart
 import '../../../domain/repositories/payment_repository.dart';
 import '../memberships/membership_board_view.dart';
 import '../memberships/register_payment_dialog.dart';
+import '../../../core/presentation/components/onboarding/tour_anchor.dart';
 
 /// Pagos. Con algún servicio con abonos con cuotas: pestañas "Estado de
 /// cuotas" y "Pagos registrados"; si no, directo los pagos registrados.
@@ -37,10 +38,13 @@ class PaymentsListPage extends StatelessWidget {
             color: scheme.surface,
             child: Container(
               decoration: BoxDecoration(border: Border(bottom: BorderSide(color: scheme.outlineVariant))),
-              child: const TabBar(
+              child: TabBar(
                 isScrollable: true,
                 tabAlignment: TabAlignment.start,
-                tabs: [Tab(text: 'Estado de cuotas'), Tab(text: 'Pagos registrados')],
+                tabs: [
+                  TourAnchor(id: 'payments.tab.board', onActivate: TourAnchor.selectTab(0), child: const Tab(text: 'Estado de cuotas')),
+                  TourAnchor(id: 'payments.tab.registered', onActivate: TourAnchor.selectTab(1), child: const Tab(text: 'Pagos registrados')),
+                ],
               ),
             ),
           ),
@@ -143,7 +147,7 @@ class _PaymentsRegisteredViewState extends State<PaymentsRegisteredView> {
     return ListView(
       padding: EdgeInsets.all(mobile ? 16 : 24),
       children: [
-        Wrap(spacing: 8, runSpacing: 8, crossAxisAlignment: WrapCrossAlignment.center, children: [
+        TourAnchor(id: 'payments.filters', child: Wrap(spacing: 8, runSpacing: 8, crossAxisAlignment: WrapCrossAlignment.center, children: [
           FilterChipIntervalDate(
             initialSuggestion: 2,
             label: 'Fecha de pago',
@@ -190,10 +194,10 @@ class _PaymentsRegisteredViewState extends State<PaymentsRegisteredView> {
               },
             ),
           ),
-          RegisterPaymentButton(filled: true, onPaid: () => _load(reset: true)),
-        ]),
+          TourAnchor(id: 'payments.register', child: RegisterPaymentButton(filled: true, onPaid: () => _load(reset: true))),
+        ])),
         const SizedBox(height: 16),
-        if (last != null) _Totals(response: last, showMemberships: AdminFeatures.memberships && _kind == null),
+        if (last != null) TourAnchor(id: 'payments.totals', child: _Totals(response: last, showMemberships: AdminFeatures.memberships && _kind == null)),
         const SizedBox(height: 16),
         if (_error != null)
           Row(children: [Expanded(child: Text(_error!)), TextButton(onPressed: () => _load(reset: true), child: const Text('Reintentar'))])
@@ -205,7 +209,7 @@ class _PaymentsRegisteredViewState extends State<PaymentsRegisteredView> {
             child: Center(child: Text('No hay pagos en este período.', style: textTheme.bodyMedium?.copyWith(color: scheme.onSurfaceVariant))),
           )
         else
-          Card(
+          TourAnchor(id: 'payments.list', child: Card(
             margin: EdgeInsets.zero,
             clipBehavior: Clip.antiAlias,
             child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
@@ -215,7 +219,7 @@ class _PaymentsRegisteredViewState extends State<PaymentsRegisteredView> {
                 for (final item in entry.value) mobile ? _MobileRow(item: item) : _PaymentRow(item: item),
               ],
             ]),
-          ),
+          )),
         if (last != null && _items.length < last.totalCount) ...[
           const SizedBox(height: 12),
           Center(child: TextButton(onPressed: _loading ? null : () => _load(), child: Text(_loading ? 'Cargando…' : 'Ver más (${_items.length} de ${last.totalCount})'))),

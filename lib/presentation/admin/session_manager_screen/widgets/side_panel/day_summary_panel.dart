@@ -12,6 +12,7 @@ import '../../bloc/session_manager_event.dart';
 import '../../bloc/session_manager_state.dart';
 import '../../utils/pending_request_ttl.dart';
 import 'panel_common.dart';
+import '../../../../../core/presentation/components/onboarding/tour_anchor.dart';
 
 /// Panel derecho del gestor cuando no hay un turno seleccionado: calendario
 /// del mes, resumen del día (de la modalidad elegida) y solicitudes por
@@ -40,10 +41,12 @@ class DaySummaryPanel extends StatelessWidget {
             children: [
               _MonthCalendar(selected: state.currentDate),
               const SizedBox(height: 16),
-              _DaySummary(sessions: sessions),
+              TourAnchor(id: 'agenda.summary', child: _DaySummary(sessions: sessions)),
               if (pending.isNotEmpty) ...[
                 const SizedBox(height: 16),
-                _PendingList(
+                TourAnchor(
+                  id: 'agenda.pending',
+                  child: _PendingList(
                   sessions: pending,
                   courtLabel: (s) {
                     final court = courts.firstWhereOrNull((c) => c.partitionPhysicalId == s.partitionPhysicalId);
@@ -54,6 +57,7 @@ class DaySummaryPanel extends StatelessWidget {
                             fallbackClubPartition: state.selectedClubPartition,
                           );
                   },
+                ),
                 ),
               ],
               const SizedBox(height: 16),
@@ -259,7 +263,7 @@ class _DaySummary extends StatelessWidget {
           const SizedBox(height: 8),
           Row(
             children: [
-              Expanded(child: tile('Por aprobar', '$pending', scheme.tertiary)),
+              Expanded(child: TourAnchor(id: 'agenda.summary.pending', child: tile('Por aprobar', '$pending', scheme.tertiary))),
               const SizedBox(width: 8),
               Expanded(child: tile('Ocupación', '$occupancy %')),
             ],

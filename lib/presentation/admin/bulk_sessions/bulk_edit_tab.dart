@@ -31,6 +31,7 @@ import 'dialogs/bulk_confirm_delete_dialog.dart';
 import 'dialogs/bulk_result_dialog.dart';
 import 'widgets/bulk_widgets.dart';
 import '../../../core/utils/responsive_builder.dart';
+import '../../../core/presentation/components/onboarding/tour_anchor.dart';
 
 /// Tab "Editar o eliminar" de Gestión masiva de turnos: reglas (qué turnos),
 /// acción (qué hacer) y vista previa, con la barra de aplicar fija abajo.
@@ -171,13 +172,13 @@ class _BulkEditViewState extends State<_BulkEditView> {
                 padding: EdgeInsets.all(ResponsiveBuilder.isMobile(context) ? 16 : 24),
                 child: LayoutBuilder(
                   builder: (context, constraints) {
-                    final rules = _buildRulesCard(context, state, clubPartitions);
+                    final rules = TourAnchor(id: 'bulkEdit.rules', child: _buildRulesCard(context, state, clubPartitions));
                     final right = Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        _buildActionCard(context, state, texts),
+                        TourAnchor(id: 'bulkEdit.action', child: _buildActionCard(context, state, texts)),
                         const SizedBox(height: 24),
-                        _buildPreviewCard(context, state, texts),
+                        TourAnchor(id: 'bulkEdit.preview', child: _buildPreviewCard(context, state, texts)),
                       ],
                     );
                     // Reglas de ancho fijo a la izquierda y el resto a la
@@ -208,7 +209,7 @@ class _BulkEditViewState extends State<_BulkEditView> {
                 ),
               ),
             ),
-            _buildFooter(context, state, texts, scheme),
+            TourAnchor(id: 'bulkEdit.apply', child: _buildFooter(context, state, texts, scheme)),
           ],
         );
       },

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../core/utils/permissions.dart';
 import 'tabs/admins_tab.dart';
 import 'tabs/roles_tab.dart';
+import '../../../core/presentation/components/onboarding/tour_anchor.dart';
 
 /// Usuarios del panel: administradores del club (invitar, cambiar rol,
 /// deshabilitar) y roles y permisos. Cada pestaña aparece según el rol.
@@ -11,9 +12,9 @@ class UsersPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final tabs = <(String, Widget)>[
-      if (Permissions.can(Permissions.ADMINISTRADORES_VER)) ('Administradores', const AdminsTab()),
-      if (Permissions.can(Permissions.ROLES_VER)) ('Roles y permisos', const RolesTab()),
+    final tabs = <(String, String, Widget)>[
+      if (Permissions.can(Permissions.ADMINISTRADORES_VER)) ('Administradores', 'users.tab.admins', const AdminsTab()),
+      if (Permissions.can(Permissions.ROLES_VER)) ('Roles y permisos', 'users.tab.roles', const RolesTab()),
     ];
 
     return DefaultTabController(
@@ -24,10 +25,12 @@ class UsersPage extends StatelessWidget {
           title: const Text('Usuarios'),
           bottom: TabBar(
             isScrollable: true,
-            tabs: [for (final (label, _) in tabs) Tab(text: label)],
+            tabs: [
+              for (final (i, (label, anchor, _)) in tabs.indexed) TourAnchor(id: anchor, onActivate: TourAnchor.selectTab(i), child: Tab(text: label)),
+            ],
           ),
         ),
-        body: TabBarView(children: [for (final (_, tab) in tabs) tab]),
+        body: TabBarView(children: [for (final (_, _, tab) in tabs) tab]),
       ),
     );
   }

@@ -13,6 +13,7 @@ import '../../../core/utils/admin_vocabulary.dart';
 import '../club_config/widgets/admin_data_table.dart';
 import 'widgets/fixed_session_actions.dart';
 import 'widgets/fixed_session_texts.dart';
+import '../../../core/presentation/components/onboarding/tour_anchor.dart';
 
 enum _View { week, list }
 
@@ -112,7 +113,7 @@ class _FixedSessionsTabState extends State<FixedSessionsTab> {
 
     final isMobile = ResponsiveBuilder.isMobile(context);
     final hoursLabel = '${hours == hours.roundToDouble() ? hours.toInt() : hours.toStringAsFixed(1)} h';
-    final search = TextField(
+    final search = TourAnchor(id: 'fixed.search', child: TextField(
       controller: _search,
       decoration: const InputDecoration(
         hintText: 'Buscar cliente',
@@ -120,8 +121,8 @@ class _FixedSessionsTabState extends State<FixedSessionsTab> {
         isDense: true,
         border: OutlineInputBorder(),
       ),
-    );
-    final viewToggle = SegmentedButton<_View>(
+    ));
+    final viewToggle = TourAnchor(id: 'fixed.view', child: SegmentedButton<_View>(
       showSelectedIcon: false,
       segments: const [
         ButtonSegment(value: _View.week, label: Text('Semana'), icon: Icon(Icons.view_week_outlined)),
@@ -129,7 +130,7 @@ class _FixedSessionsTabState extends State<FixedSessionsTab> {
       ],
       selected: {_view},
       onSelectionChanged: (s) => setState(() => _selectedView = s.first),
-    );
+    ));
     final sportChips = [
       ChoiceChip(label: const Text('Todos'), selected: _sport == null, onSelected: (_) => setState(() => _sport = null)),
       for (final sport in _sports)
@@ -139,7 +140,7 @@ class _FixedSessionsTabState extends State<FixedSessionsTab> {
     // Celular: cada bloque a todo el ancho (en el Wrap de escritorio las
     // stats, el buscador y los botones quedaban desparejos).
     final mobileHeader = <Widget>[
-      IntrinsicHeight(
+      TourAnchor(id: 'fixed.stats', child: IntrinsicHeight(
         child: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -150,7 +151,7 @@ class _FixedSessionsTabState extends State<FixedSessionsTab> {
           Expanded(child: _StatTile(label: 'Con conflictos', value: '$conflicts', alert: conflicts > 0)),
         ],
       ),
-      ),
+      )),
       const SizedBox(height: 12),
       search,
       const SizedBox(height: 12),
@@ -161,7 +162,7 @@ class _FixedSessionsTabState extends State<FixedSessionsTab> {
           viewToggle,
           const Spacer(),
           if (_canCreate)
-            FilledButton.icon(onPressed: () => _create(), icon: const Icon(Icons.add), label: const Text('Nuevo')),
+            TourAnchor(id: 'fixed.new', child: FilledButton.icon(onPressed: () => _create(), icon: const Icon(Icons.add), label: const Text('Nuevo'))),
         ],
       ),
     ];
@@ -177,39 +178,42 @@ class _FixedSessionsTabState extends State<FixedSessionsTab> {
             runSpacing: 12,
             crossAxisAlignment: WrapCrossAlignment.center,
             children: [
-              _StatTile(label: 'Activos', value: '${_items.length}'),
-              _StatTile(label: 'Horas por semana', value: '${hours == hours.roundToDouble() ? hours.toInt() : hours.toStringAsFixed(1)} h'),
-              _StatTile(label: 'Con conflictos', value: '$conflicts', alert: conflicts > 0),
+              TourAnchor(
+                id: 'fixed.stats',
+                child: Wrap(spacing: 12, runSpacing: 12, children: [
+                  _StatTile(label: 'Activos', value: '${_items.length}'),
+                  _StatTile(label: 'Horas por semana', value: hoursLabel),
+                  _StatTile(label: 'Con conflictos', value: '$conflicts', alert: conflicts > 0),
+                ]),
+              ),
               const SizedBox(width: 12),
-              SizedBox(
-                width: 260,
-                child: TextField(
-                  controller: _search,
-                  decoration: const InputDecoration(
-                    hintText: 'Buscar cliente',
-                    prefixIcon: Icon(Icons.search),
-                    isDense: true,
-                    border: OutlineInputBorder(),
+              TourAnchor(
+                id: 'fixed.search',
+                child: SizedBox(
+                  width: 260,
+                  child: TextField(
+                    controller: _search,
+                    decoration: const InputDecoration(
+                      hintText: 'Buscar cliente',
+                      prefixIcon: Icon(Icons.search),
+                      isDense: true,
+                      border: OutlineInputBorder(),
+                    ),
                   ),
                 ),
               ),
               ChoiceChip(label: const Text('Todos'), selected: _sport == null, onSelected: (_) => setState(() => _sport = null)),
               for (final sport in _sports)
                 ChoiceChip(label: Text(sport), selected: _sport == sport, onSelected: (_) => setState(() => _sport = sport)),
-              SegmentedButton<_View>(
-                showSelectedIcon: false,
-                segments: const [
-                  ButtonSegment(value: _View.week, label: Text('Semana'), icon: Icon(Icons.view_week_outlined)),
-                  ButtonSegment(value: _View.list, label: Text('Lista'), icon: Icon(Icons.view_list_outlined)),
-                ],
-                selected: {_view},
-                onSelectionChanged: (s) => setState(() => _selectedView = s.first),
-              ),
+              viewToggle,
               if (_canCreate)
-                FilledButton.icon(
-                  onPressed: () => _create(),
-                  icon: const Icon(Icons.add),
-                  label: const Text('Nuevo turno fijo'),
+                TourAnchor(
+                  id: 'fixed.new',
+                  child: FilledButton.icon(
+                    onPressed: () => _create(),
+                    icon: const Icon(Icons.add),
+                    label: const Text('Nuevo turno fijo'),
+                  ),
                 ),
             ],
           ),
@@ -217,7 +221,7 @@ class _FixedSessionsTabState extends State<FixedSessionsTab> {
           if (_error != null)
             Text(_error!, style: TextStyle(color: scheme.error))
           else
-            Expanded(child: _view == _View.week ? _week(visible) : _list(visible)),
+            Expanded(child: TourAnchor(id: 'fixed.board', child: _view == _View.week ? _week(visible) : _list(visible))),
         ],
       ),
     );

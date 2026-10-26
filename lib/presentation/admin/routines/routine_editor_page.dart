@@ -17,6 +17,7 @@ import 'widgets/exercise_picker.dart';
 import 'widgets/group_card.dart';
 import 'widgets/mobile_editor.dart' show MobileGroupTabs, MobileRoutineEditor;
 import 'widgets/start_chooser.dart';
+import '../../../core/presentation/components/onboarding/tour_anchor.dart';
 
 /// Editor de rutinas de un cliente. Sin [editRoutineId] arranca eligiendo de
 /// dónde partir (copiar su rutina actual, otra de base o de cero); con
@@ -277,10 +278,13 @@ class _RoutineEditorPageState extends State<RoutineEditorPage> {
               const SizedBox(width: 12),
               TextButton(onPressed: _close, child: const Text('Descartar')),
               const SizedBox(width: 8),
-              FilledButton.icon(
-                onPressed: _saving ? null : _save,
-                icon: _saving ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)) : const Icon(Icons.check),
-                label: const Text('Guardar rutina'),
+              TourAnchor(
+                id: 'routine.save',
+                child: FilledButton.icon(
+                  onPressed: _saving ? null : _save,
+                  icon: _saving ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)) : const Icon(Icons.check),
+                  label: const Text('Guardar rutina'),
+                ),
               ),
               const SizedBox(width: 16),
             ],
@@ -294,19 +298,25 @@ class _RoutineEditorPageState extends State<RoutineEditorPage> {
                   child: Row(
                     children: [
                       Expanded(
-                        child: OutlinedButton.icon(
-                          onPressed: _openCopySheet,
-                          icon: const Icon(Icons.copy_all_outlined),
-                          label: const Text('Copiar de otra'),
-                          style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(48)),
+                        child: TourAnchor(
+                          id: 'routine.copy',
+                          child: OutlinedButton.icon(
+                            onPressed: _openCopySheet,
+                            icon: const Icon(Icons.copy_all_outlined),
+                            label: const Text('Copiar de otra'),
+                            style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(48)),
+                          ),
                         ),
                       ),
                       const SizedBox(width: 8),
                       Expanded(
-                        child: FilledButton(
-                          onPressed: _saving ? null : _save,
-                          style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(48)),
-                          child: Text(_saving ? 'Guardando…' : 'Guardar rutina'),
+                        child: TourAnchor(
+                          id: 'routine.save',
+                          child: FilledButton(
+                            onPressed: _saving ? null : _save,
+                            style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(48)),
+                            child: Text(_saving ? 'Guardando…' : 'Guardar rutina'),
+                          ),
                         ),
                       ),
                     ],
@@ -338,22 +348,25 @@ class _RoutineEditorPageState extends State<RoutineEditorPage> {
     }
     final draft = _draft;
     if (draft == null) {
-      return StartChooser(
+      return TourAnchor(id: 'routine.start', child: StartChooser(
         clientId: widget.clientId,
         clientName: _clientName,
         clientRoutines: _clientRoutines,
         recentRoutines: _recentRoutines,
         onCopy: (routine) => setState(() => _setDraft(RoutineDraft.copyOf(routine))),
         onEmpty: (count) => setState(() => _setDraft(RoutineDraft.empty(count))),
-      );
+      ));
     }
 
     if (mobile) {
-      return MobileRoutineEditor(
-        draft: draft,
-        header: _startDateBar(draft),
-        onAddExercise: _addExercises,
-        onChangeExercise: _changeExercise,
+      return TourAnchor(
+        id: 'routine.groups',
+        child: MobileRoutineEditor(
+          draft: draft,
+          header: _startDateBar(draft),
+          onAddExercise: _addExercises,
+          onChangeExercise: _changeExercise,
+        ),
       );
     }
 
@@ -362,7 +375,7 @@ class _RoutineEditorPageState extends State<RoutineEditorPage> {
       children: [
         _startDateBar(draft),
         const SizedBox(height: 16),
-        ReorderableListView.builder(
+        TourAnchor(id: 'routine.groups', child: ReorderableListView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
           buildDefaultDragHandles: false,
@@ -395,7 +408,7 @@ class _RoutineEditorPageState extends State<RoutineEditorPage> {
               ),
             );
           },
-        ),
+        )),
         Align(
           alignment: Alignment.centerLeft,
           child: OutlinedButton.icon(onPressed: draft.addGroup, icon: const Icon(Icons.add), label: const Text('Agregar grupo')),
@@ -411,7 +424,7 @@ class _RoutineEditorPageState extends State<RoutineEditorPage> {
           width: 440,
           child: Padding(
             padding: const EdgeInsets.fromLTRB(12, 24, 24, 24),
-            child: Card(
+            child: TourAnchor(id: 'routine.copy', child: Card(
               margin: EdgeInsets.zero,
               child: CopyPanel(
                 draft: draft,
@@ -419,7 +432,7 @@ class _RoutineEditorPageState extends State<RoutineEditorPage> {
                 clientRoutines: _clientRoutines,
                 recentRoutines: _recentRoutines,
               ),
-            ),
+            )),
           ),
         ),
       ],

@@ -10,6 +10,7 @@ import '../../../../domain/entities/gym/gym.dart';
 import '../../../../domain/entities/gym/gym_progress.dart';
 import '../../../../domain/repositories/gym_repository.dart';
 import '../../routines/widgets/progress_history.dart';
+import '../../../../core/presentation/components/onboarding/tour_anchor.dart';
 
 /// Card de rutina de la ficha: la rutina actual (grupos y cuándo hizo cada
 /// uno), lo que dijo el cliente (notas para el profe, lo que no le gusta,
@@ -98,7 +99,11 @@ class _ClientRoutineCardState extends State<ClientRoutineCard> {
       return parts.join(' · ');
     }
 
-    return Card(
+    // La guía de rutinas abre el editor (la rutina actual, si tiene).
+    return TourAnchor(
+      id: 'client.routine',
+      onActivate: canEdit ? (_) => _openEditor(routineId: active?.routineId) : null,
+      child: Card(
       margin: EdgeInsets.zero,
       child: Padding(
         padding: const EdgeInsets.all(20),
@@ -202,6 +207,7 @@ class _ClientRoutineCardState extends State<ClientRoutineCard> {
           ],
         ),
       ),
+    ),
     );
   }
 

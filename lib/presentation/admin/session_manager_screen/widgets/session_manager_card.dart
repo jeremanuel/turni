@@ -14,6 +14,7 @@ import '../bloc/session_manager_bloc.dart';
 import '../bloc/session_manager_event.dart';
 import '../utils/pending_request_ttl.dart';
 import 'close_session_dialog.dart';
+import '../../../../core/presentation/components/onboarding/tour_anchor.dart';
 
 /// Card de un turno en la agenda, según el diseño "Cards de turnos de la
 /// agenda" (https://claude.ai/artifact/SySjxAmpiY5MUQa58Efe26):
@@ -42,13 +43,14 @@ class SessionManagerCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (session.isPending) {
-      return PendingSessionCard(session: session, hasFocus: hasFocus, height: height);
-    }
-    if (session.isConfirmed) {
-      return ReservedSessionCard(session: session, hasFocus: hasFocus, height: height);
-    }
-    return NotReservedSessionCard(session: session, onReserve: onReserve, hasFocus: hasFocus, height: height);
+    // Las guías resaltan "un turno libre / reservado / por aprobar" y lo
+    // abren (el primero que se armó de cada tipo).
+    final (anchor, card) = session.isPending
+        ? ('agenda.card.pending', PendingSessionCard(session: session, hasFocus: hasFocus, height: height))
+        : session.isConfirmed
+            ? ('agenda.card.booked', ReservedSessionCard(session: session, hasFocus: hasFocus, height: height))
+            : ('agenda.card.free', NotReservedSessionCard(session: session, onReserve: onReserve, hasFocus: hasFocus, height: height));
+    return TourAnchor(id: anchor, onActivate: (context) => _openSession(context, session), child: card);
   }
 }
 

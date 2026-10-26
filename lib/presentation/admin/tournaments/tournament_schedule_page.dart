@@ -12,6 +12,7 @@ import '../../../domain/repositories/tournament_repository.dart';
 import '../club_config/widgets/time_field.dart';
 import 'widgets/match_dialogs.dart';
 import 'widgets/tournament_ui.dart';
+import '../../../core/presentation/components/onboarding/tour_anchor.dart';
 
 /// Programación de un torneo sorteado: el club carga los días y horarios de
 /// cada fase, turni reparte los partidos en las canchas (en paralelo cuando hay
@@ -420,10 +421,13 @@ class _TournamentSchedulePageState extends State<TournamentSchedulePage> {
         title: Text('Programación · ${t.name}'),
         actions: [
           if (_busy) const Padding(padding: EdgeInsets.all(16), child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))),
-          FilledButton.icon(
-            onPressed: canPublish ? _publish : null,
-            icon: Icon(canPublish ? Icons.event_available : Icons.block, size: 18),
-            label: Text(publishLabel),
+          TourAnchor(
+            id: 'schedule.publish',
+            child: FilledButton.icon(
+              onPressed: canPublish ? _publish : null,
+              icon: Icon(canPublish ? Icons.event_available : Icons.block, size: 18),
+              label: Text(publishLabel),
+            ),
           ),
           const SizedBox(width: 16),
         ],
@@ -436,7 +440,7 @@ class _TournamentSchedulePageState extends State<TournamentSchedulePage> {
         builder: (context, constraints) {
           final wide = constraints.maxWidth >= 1100;
           final config = _configPanel(t, s);
-          final preview = _previewPanel(s);
+          final preview = TourAnchor(id: 'schedule.preview', child: _previewPanel(s));
           if (!wide) {
             return ListView(padding: const EdgeInsets.all(16), children: [config, const SizedBox(height: 16), preview]);
           }
@@ -491,7 +495,7 @@ class _TournamentSchedulePageState extends State<TournamentSchedulePage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        SectionCard(
+        TourAnchor(id: 'schedule.when', child: SectionCard(
           title: 'Cuándo se juega',
           subtitle: 'Turni reparte los partidos en estos horarios.',
           child: Column(
@@ -518,9 +522,9 @@ class _TournamentSchedulePageState extends State<TournamentSchedulePage> {
               ],
             ],
           ),
-        ),
+        )),
         const SizedBox(height: 16),
-        SectionCard(
+        TourAnchor(id: 'schedule.rules', child: SectionCard(
           title: 'Reglas para repartir',
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -558,10 +562,13 @@ class _TournamentSchedulePageState extends State<TournamentSchedulePage> {
               Text('Para cambiar las canchas, editá el torneo. Los turnos ya reservados se respetan: nunca se pisan.', style: TextStyle(fontSize: 12, height: 1.4, color: scheme.onSurfaceVariant)),
               const SizedBox(height: 16),
               Row(children: [
-                FilledButton.tonalIcon(
-                  onPressed: _busy ? null : () => _generate(),
-                  icon: const Icon(Icons.autorenew, size: 18),
-                  label: Text(s.slots.isEmpty && _placements.isEmpty ? 'Generar vista previa' : 'Volver a generar'),
+                TourAnchor(
+                  id: 'schedule.generate',
+                  child: FilledButton.tonalIcon(
+                    onPressed: _busy ? null : () => _generate(),
+                    icon: const Icon(Icons.autorenew, size: 18),
+                    label: Text(s.slots.isEmpty && _placements.isEmpty ? 'Generar vista previa' : 'Volver a generar'),
+                  ),
                 ),
                 const SizedBox(width: 12),
                 if (_manualChanges) Expanded(child: Text('Reemplaza lo que moviste a mano.', style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant))),
@@ -572,7 +579,7 @@ class _TournamentSchedulePageState extends State<TournamentSchedulePage> {
               ],
             ],
           ),
-        ),
+        )),
         if (pending.isNotEmpty) ...[
           const SizedBox(height: 16),
           _pendingCard(pending, matches),

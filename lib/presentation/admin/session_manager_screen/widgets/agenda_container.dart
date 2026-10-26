@@ -18,6 +18,7 @@ import 'session_manager_day_carrousel.dart';
 import 'mobile_agenda_actions.dart';
 import 'tournament_agenda_slots.dart';
 import '../../../../core/utils/types/time_interval.dart';
+import '../../../../core/presentation/components/onboarding/tour_anchor.dart';
 
 class AgendaContainer extends StatefulWidget {
   const AgendaContainer({super.key});
@@ -68,14 +69,19 @@ class _AgendaContainerState extends State<AgendaContainer> {
               if (ResponsiveBuilder.isMobile(context))
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 8),
-                  child: SizedBox(
+                  child: TourAnchor(
+                    id: 'agenda.day',
+                    child: SizedBox(
                       height: 50,
                       child: SessionManagerDayCarrousel(
                         // Celular: alineado con la agenda (16 de margen de cada lado).
                         width: MediaQuery.of(context).size.width - 32,
                       )),
+                  ),
                 ),
-              Container(
+              TourAnchor(
+                id: 'agenda.services',
+                child: Container(
                 padding: EdgeInsets.symmetric(horizontal: isMobile ? 0 : 8),
                 height: 56,
                 child: ListView(
@@ -87,6 +93,7 @@ class _AgendaContainerState extends State<AgendaContainer> {
                     ],
                   ],
                 ),
+              ),
               ),
               if (ResponsiveBuilder.isMobile(context) && _courts(state).length > 1)
                 SizedBox(
@@ -124,7 +131,7 @@ class _AgendaContainerState extends State<AgendaContainer> {
                       ],
                       color: Theme.of(context).colorScheme.surface,
                     ),
-                    child: buildAgenda(context)),
+                    child: TourAnchor(id: 'agenda.grid', child: buildAgenda(context))),
               ),
             ],
           ),

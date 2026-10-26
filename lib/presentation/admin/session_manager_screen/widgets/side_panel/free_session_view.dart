@@ -14,6 +14,7 @@ import '../../../../../domain/repositories/admin_repository.dart';
 import '../../bloc/session_manager_bloc.dart';
 import '../../bloc/session_manager_event.dart';
 import 'panel_common.dart';
+import '../../../../../core/presentation/components/onboarding/tour_anchor.dart';
 
 /// Turno libre: precio y "Reservar para" (buscar o elegir un cliente
 /// reciente, o crear uno nuevo).
@@ -105,101 +106,120 @@ class _FreeSessionViewState extends State<FreeSessionView> {
     return PanelFrame(
       footer: Row(
         children: [
-          if (Permissions.can(Permissions.AGENDA_ELIMINAR))
-            PanelTextButton(label: 'Eliminar turno', color: scheme.error, onPressed: _delete),
+          if (Permissions.can(Permissions.AGENDA_ELIMINAR)) PanelTextButton(label: 'Eliminar turno', color: scheme.error, onPressed: _delete),
           const Spacer(),
-          PanelFilledButton(
-            label: 'Reservar turno',
-            icon: Icons.check,
-            loading: _reserving,
-            onPressed: _picked == null || !Permissions.can(Permissions.AGENDA_RESERVAR) ? null : _reserve,
+          TourAnchor(
+            id: 'session.free.reserve',
+            child: PanelFilledButton(
+              label: 'Reservar turno',
+              icon: Icons.check,
+              loading: _reserving,
+              onPressed: _picked == null || !Permissions.can(Permissions.AGENDA_RESERVAR) ? null : _reserve,
+            ),
           ),
         ],
       ),
       children: [
         widget.header,
-        PanelCard(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Precio del turno', style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant)),
-              Text(
-                panelPrice(widget.session.price),
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500, color: scheme.onSurface),
-              ),
-            ],
+        TourAnchor(
+          id: 'session.free.price',
+          child: PanelCard(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Precio del turno', style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant)),
+                Text(
+                  panelPrice(widget.session.price),
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500, color: scheme.onSurface),
+                ),
+              ],
+            ),
           ),
         ),
         Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text('Reservar para', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: scheme.onSurface)),
-            const SizedBox(height: 10),
-            TextField(
-              controller: _search,
-              onChanged: (text) {
-                setState(() {});
-                _onSearch(text);
-              },
-              style: TextStyle(fontSize: 14, color: scheme.onSurface),
-              decoration: panelInputDecoration(
-                context,
-                hintText: 'Nombre, teléfono o email',
-                prefixIcon: Padding(
-                  padding: const EdgeInsets.only(left: 12, right: 8),
-                  child: Icon(Icons.search, size: 18, color: scheme.onSurfaceVariant),
-                ),
+            TourAnchor(
+              id: 'session.free.client',
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                    'Reservar para',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: scheme.onSurface),
+                  ),
+                  const SizedBox(height: 10),
+                  TextField(
+                    controller: _search,
+                    onChanged: (text) {
+                      setState(() {});
+                      _onSearch(text);
+                    },
+                    style: TextStyle(fontSize: 14, color: scheme.onSurface),
+                    decoration: panelInputDecoration(
+                      context,
+                      hintText: 'Nombre, teléfono o email',
+                      prefixIcon: Padding(
+                        padding: const EdgeInsets.only(left: 12, right: 8),
+                        child: Icon(Icons.search, size: 18, color: scheme.onSurfaceVariant),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(searching ? 'Resultados' : 'Clientes recientes', style: TextStyle(fontSize: 12, color: scheme.outline)),
+                  const SizedBox(height: 10),
+                  if (_clients == null)
+                    const Padding(
+                      padding: EdgeInsets.all(16),
+                      child: Center(child: SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2))),
+                    )
+                  else if (_clients!.isEmpty)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      child: Text(
+                        searching ? 'No hay clientes que coincidan.' : 'Todavía no hay clientes.',
+                        style: TextStyle(fontSize: 13, color: scheme.onSurfaceVariant),
+                      ),
+                    )
+                  else
+                    Semantics(
+                      label: 'Cliente',
+                      child: Column(
+                        children: [
+                          for (final c in _clients!) ...[
+                            _ClientOption(
+                              client: c,
+                              selected: _picked?.clientId == c.clientId,
+                              onTap: () => setState(() => _picked = _picked?.clientId == c.clientId ? null : c),
+                            ),
+                            const SizedBox(height: 4),
+                          ],
+                        ],
+                      ),
+                    ),
+                ],
               ),
             ),
-            const SizedBox(height: 10),
-            Text(searching ? 'Resultados' : 'Clientes recientes', style: TextStyle(fontSize: 12, color: scheme.outline)),
-            const SizedBox(height: 10),
-            if (_clients == null)
-              const Padding(
-                padding: EdgeInsets.all(16),
-                child: Center(child: SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2))),
-              )
-            else if (_clients!.isEmpty)
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                child: Text(
-                  searching ? 'No hay clientes que coincidan.' : 'Todavía no hay clientes.',
-                  style: TextStyle(fontSize: 13, color: scheme.onSurfaceVariant),
-                ),
-              )
-            else
-              Semantics(
-                label: 'Cliente',
-                child: Column(
-                  children: [
-                    for (final c in _clients!) ...[
-                      _ClientOption(
-                        client: c,
-                        selected: _picked?.clientId == c.clientId,
-                        onTap: () => setState(() => _picked = _picked?.clientId == c.clientId ? null : c),
-                      ),
-                      const SizedBox(height: 4),
-                    ],
-                  ],
-                ),
-              ),
             const SizedBox(height: 6),
             Align(
               alignment: Alignment.centerLeft,
               child: Transform.translate(
                 offset: const Offset(-8, 0),
-                child: TextButton.icon(
-                  onPressed: Permissions.can(Permissions.AGENDA_RESERVAR) ? widget.onCreateClient : null,
-                  style: TextButton.styleFrom(
-                    minimumSize: const Size(0, 40),
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
-                    foregroundColor: scheme.primary,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-                    textStyle: panelButtonText(context),
+                child: TourAnchor(
+                  id: 'session.free.newClient',
+                  child: TextButton.icon(
+                    onPressed: Permissions.can(Permissions.AGENDA_RESERVAR) ? widget.onCreateClient : null,
+                    style: TextButton.styleFrom(
+                      minimumSize: const Size(0, 40),
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      foregroundColor: scheme.primary,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                      textStyle: panelButtonText(context),
+                    ),
+                    icon: const Icon(Icons.person_add_alt, size: 18),
+                    label: const Text('Crear cliente nuevo'),
                   ),
-                  icon: const Icon(Icons.person_add_alt, size: 18),
-                  label: const Text('Crear cliente nuevo'),
                 ),
               ),
             ),
@@ -222,10 +242,7 @@ class _ClientOption extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     final person = client.person;
     final fg = selected ? scheme.onSecondaryContainer : scheme.onSurface;
-    final meta = [
-      if (person?.hasPhone() ?? false) person!.phone!,
-      if (person?.hasEmail() ?? false) person!.email!,
-    ].join(' · ');
+    final meta = [if (person?.hasPhone() ?? false) person!.phone!, if (person?.hasEmail() ?? false) person!.email!].join(' · ');
 
     return Semantics(
       inMutuallyExclusiveGroup: true,
@@ -275,9 +292,7 @@ class _ClientOption extends StatelessWidget {
                     height: 18,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      border: selected
-                          ? Border.all(color: scheme.primary, width: 5)
-                          : Border.all(color: scheme.outline, width: 2),
+                      border: selected ? Border.all(color: scheme.primary, width: 5) : Border.all(color: scheme.outline, width: 2),
                     ),
                   ),
                 ],

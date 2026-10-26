@@ -31,6 +31,7 @@ import 'bloc/date_preset.dart';
 import 'widgets/agenda_edit_card.dart';
 import 'widgets/court_session_price.dart';
 import 'widgets/rework_styles.dart';
+import '../../../core/presentation/components/onboarding/tour_anchor.dart';
 
 class CreateSessionScreen extends StatefulWidget {
   const CreateSessionScreen({super.key, this.showBackButton = true});
@@ -113,11 +114,14 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
                   child: Column(
                     children: [
                       if (widget.showBackButton) _buildTopBar(context),
-                      _StepTrackerBar(
-                        steps: _steps,
-                        currentStep: _currentStep,
-                        maxReachable: _maxReachableStep(state),
-                        onStepTap: (index) => setState(() => _currentStep = index),
+                      TourAnchor(
+                        id: 'addSessions.steps',
+                        child: _StepTrackerBar(
+                          steps: _steps,
+                          currentStep: _currentStep,
+                          maxReachable: _maxReachableStep(state),
+                          onStepTap: (index) => setState(() => _currentStep = index),
+                        ),
                       ),
                       const Divider(height: 1, color: RW.divider),
                       Expanded(child: _buildWorkArea(context, state)),
@@ -190,8 +194,8 @@ class _CreateSessionScreenState extends State<CreateSessionScreen> {
     final width = MediaQuery.sizeOf(context).width;
     final isWide = width >= 1000;
 
-    final left = _buildSessionsPreviewPanel(context, state);
-    final right = _buildWizardPanel(context, state);
+    final left = TourAnchor(id: 'addSessions.preview', child: _buildSessionsPreviewPanel(context, state));
+    final right = TourAnchor(id: 'addSessions.wizard', child: _buildWizardPanel(context, state));
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(28, 22, 28, 22),

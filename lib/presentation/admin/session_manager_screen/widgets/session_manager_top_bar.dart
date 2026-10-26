@@ -13,6 +13,7 @@ import '../../club_config/widgets/inactive_partition_hint.dart';
 import '../bloc/session_manager_bloc.dart';
 import '../bloc/session_manager_event.dart';
 import '../bloc/session_manager_state.dart';
+import '../../../../core/presentation/components/onboarding/tour_anchor.dart';
 
 /// Barra superior del gestor de turnos (escritorio): día anterior/siguiente,
 /// "Hoy", la fecha (abre el calendario), modalidades, buscar y gestión
@@ -76,6 +77,11 @@ class _SessionManagerTopBarState extends State<SessionManagerTopBar> {
           ),
           child: Row(
             children: [
+              TourAnchor(
+                id: 'agenda.day',
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
               IconButton(
                 tooltip: 'Día anterior',
                 style: iconButtonStyle,
@@ -142,11 +148,16 @@ class _SessionManagerTopBarState extends State<SessionManagerTopBar> {
                   ),
                 ),
               ),
+                  ],
+                ),
+              ),
               const SizedBox(width: 16),
               Container(width: 1, height: 32, color: scheme.outlineVariant),
               const SizedBox(width: 16),
               Flexible(
-                child: SingleChildScrollView(
+                child: TourAnchor(
+                  id: 'agenda.services',
+                  child: SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   child: Row(
                     children: [
@@ -160,16 +171,20 @@ class _SessionManagerTopBarState extends State<SessionManagerTopBar> {
                     ],
                   ),
                 ),
+                ),
               ),
               const SizedBox(width: 8),
-              IconButton(
-                tooltip: 'Buscar cliente o turno',
-                style: iconButtonStyle,
-                icon: const Icon(Icons.search, size: 20),
-                onPressed: () => _openSearch(state.clubPartitions),
+              TourAnchor(
+                id: 'agenda.search',
+                child: IconButton(
+                  tooltip: 'Buscar cliente o turno',
+                  style: iconButtonStyle,
+                  icon: const Icon(Icons.search, size: 20),
+                  onPressed: () => _openSearch(state.clubPartitions),
+                ),
               ),
               const SizedBox(width: 8),
-              const BulkSessionsMenuButton(),
+              const TourAnchor(id: 'agenda.bulk', child: BulkSessionsMenuButton()),
             ],
           ),
         );
