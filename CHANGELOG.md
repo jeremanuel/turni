@@ -12,6 +12,8 @@ Una línea por entrega, no por PR: si un PR completa una entrada que ya está, s
 
 ### Agregado
 
+- 2026-10-26 — Guías paso a paso de todo el panel desde el signo de pregunta del menú, con buscador ([#68](https://github.com/jeremanuel/turni/pull/68))
+
 ### Cambiado
 
 ### Corregido
