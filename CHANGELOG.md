@@ -20,7 +20,7 @@ Una línea por entrega, no por PR: si un PR completa una entrada que ya está, s
 
 ### Corregido
 
-- 2026-10-26 — El panel vuelve a deployarse: las guías (1.1.0) usaban algo que la versión de Flutter de producción no tiene, y ni 1.1.0 ni 1.1.1 habían llegado a producción
+- 2026-10-26 — El panel vuelve a deployarse: las guías (1.1.0) usaban algo que la versión de Flutter de producción no tiene, y ni 1.1.0 ni 1.1.1 habían llegado a producción ([#72](https://github.com/jeremanuel/turni/pull/72))
 
 ## [1.1.1] - 2026-10-26
 
