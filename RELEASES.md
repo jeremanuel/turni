@@ -2,6 +2,10 @@
 
 Cada versión de Admin que llegó a producción, contada en general: qué features entraron y para quién. El detalle, con los PRs, está en [CHANGELOG.md](CHANGELOG.md). Lo actualiza `/turni:release`; la más nueva va arriba.
 
+## 2026-10-26 — Hotfix: el panel vuelve a deployarse · v1.1.2
+
+Las versiones 1.1.0 (guías paso a paso) y 1.1.1 (notificaciones web sin duplicar) no habían llegado a producción porque el build fallaba. Con este arreglo entran las dos.
+
 ## 2026-10-26 — Reservar desde el detalle · v1.1.1
 
 Junto con BE 1.1.1 y Client 1.3.0.
