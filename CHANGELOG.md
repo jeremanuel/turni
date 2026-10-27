@@ -16,6 +16,12 @@ Una línea por entrega, no por PR: si un PR completa una entrada que ya está, s
 
 ### Corregido
 
+## [1.1.2] - 2026-10-26
+
+### Corregido
+
+- 2026-10-26 — El panel vuelve a deployarse: las guías (1.1.0) usaban algo que la versión de Flutter de producción no tiene, y ni 1.1.0 ni 1.1.1 habían llegado a producción ([#72](https://github.com/jeremanuel/turni/pull/72))
+
 ## [1.1.1] - 2026-10-26
 
 ### Corregido
@@ -32,6 +38,7 @@ Una línea por entrega, no por PR: si un PR completa una entrada que ya está, s
 
 - Versión de base: todo lo liberado hasta el 2026-10-25. Lo anterior está resumido en [RELEASES.md](RELEASES.md).
 
+[1.1.2]: https://github.com/jeremanuel/turni/compare/v1.1.1...v1.1.2
 [1.1.1]: https://github.com/jeremanuel/turni/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/jeremanuel/turni/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/jeremanuel/turni/releases/tag/v1.0.0

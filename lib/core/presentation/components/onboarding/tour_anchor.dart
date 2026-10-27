@@ -82,7 +82,10 @@ class TourAnchors {
   static _TourAnchorState? _first(String id) {
     for (final state in _mounted[id] ?? const <_TourAnchorState>[]) {
       if (!state.mounted) continue;
-      if (TickerMode.getValuesNotifier(state.context).value.enabled && _onCurrentPage(state.context)) return state;
+      // getNotifier y no getValuesNotifier: el proyecto está fijado en
+      // Flutter 3.35 (.fvmrc, y así compila Render), que no lo tiene.
+      // ignore: deprecated_member_use
+      if (TickerMode.getNotifier(state.context).value && _onCurrentPage(state.context)) return state;
     }
     return null;
   }
