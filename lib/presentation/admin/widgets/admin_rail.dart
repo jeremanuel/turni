@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/config/router/app_routes.dart';
@@ -45,14 +46,18 @@ class AdminRail extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(0, 20, 0, 16),
       child: Column(
         children: [
-          Container(
+          // El isotipo de Turni (el mismo del login), en el color primario.
+          SizedBox(
             width: 48,
             height: 48,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(color: scheme.primaryContainer, borderRadius: BorderRadius.circular(12)),
-            child: Text(
-              'T',
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: scheme.onPrimaryContainer),
+            child: Center(
+              child: SvgPicture.asset(
+                'assets/img/isotype_white.svg',
+                width: 40,
+                height: 40,
+                semanticsLabel: 'Turni',
+                colorFilter: ColorFilter.mode(scheme.primary, BlendMode.srcIn),
+              ),
             ),
           ),
           const SizedBox(height: 28),
