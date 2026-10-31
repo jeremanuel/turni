@@ -367,19 +367,17 @@ class _AddPaymentContainerState extends State<AddPaymentContainer> {
                   padding: const EdgeInsets.all(8.0),
                   child: Row(
                     children: [
-                      Radio(
-                        fillColor: WidgetStateProperty.all(
-                            paymentType == PaymentType.session
-                                ? colorScheme.tertiary
-                                : colorScheme.primary),
-                        value: paymentType,
-                        groupValue: PaymentType.session,
-                        onChanged: widget.remainingPrice == 0
-                            ? null
-                            : (value) {
-                                paymentType = PaymentType.session;
-                                setState(() {});
-                              },
+                      RadioGroup<PaymentType>(
+                        groupValue: paymentType,
+                        onChanged: (value) => setState(() => paymentType = value ?? paymentType),
+                        child: Radio<PaymentType>(
+                          fillColor: WidgetStateProperty.all(
+                              paymentType == PaymentType.session
+                                  ? colorScheme.tertiary
+                                  : colorScheme.primary),
+                          value: PaymentType.session,
+                          enabled: !(widget.remainingPrice == 0),
+                        ),
                       ),
                       RichText(
                         text: TextSpan(
@@ -433,19 +431,17 @@ class _AddPaymentContainerState extends State<AddPaymentContainer> {
                   padding: const EdgeInsets.all(8.0),
                   child: Row(
                     children: [
-                      Radio(
-                        fillColor: WidgetStateProperty.all(
-                            paymentType == PaymentType.other
-                                ? colorScheme.tertiary
-                                : colorScheme.primary),
-                        value: paymentType,
-                        groupValue: PaymentType.other,
-                        onChanged: !consumosDisponibles
-                            ? null
-                            : (value) {
-                                paymentType = PaymentType.other;
-                                setState(() {});
-                              },
+                      RadioGroup<PaymentType>(
+                        groupValue: paymentType,
+                        onChanged: (value) => setState(() => paymentType = value ?? paymentType),
+                        child: Radio<PaymentType>(
+                          fillColor: WidgetStateProperty.all(
+                              paymentType == PaymentType.other
+                                  ? colorScheme.tertiary
+                                  : colorScheme.primary),
+                          value: PaymentType.other,
+                          enabled: !(!consumosDisponibles),
+                        ),
                       ),
                       RichText(
                         text: TextSpan(
