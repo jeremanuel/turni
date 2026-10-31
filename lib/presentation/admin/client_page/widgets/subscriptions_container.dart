@@ -188,7 +188,7 @@ class SubscriptionCard extends StatelessWidget {
         color: isActive ? colorScheme.primaryContainer : colorScheme.surface,
         borderRadius: BorderRadius.circular(999),
         border: Border.all(
-          color: isActive ? colorScheme.primary.withOpacity(0.2) : colorScheme.outlineVariant,
+          color: isActive ? colorScheme.primary.withValues(alpha: 0.2) : colorScheme.outlineVariant,
         ),
       ),
       child: Text(
@@ -317,7 +317,7 @@ class SubscriptionCard extends StatelessWidget {
         decoration: BoxDecoration(
       color: Theme.of(context).colorScheme.surfaceContainerHigh,
       borderRadius: BorderRadius.circular(18),
-      border: Border.all(color: colorScheme.outline.withOpacity(0.5))
+      border: Border.all(color: colorScheme.outline.withValues(alpha: 0.5))
     ),
         padding: const EdgeInsets.all(18),
         child: Column(

@@ -163,7 +163,7 @@ class _ClientpageState extends State<Clientpage> {
                   child: Icon(
                     Icons.chevron_right,
                     size: 20,
-                    color: colorScheme.onPrimaryContainer.withOpacity(0.5),
+                    color: colorScheme.onPrimaryContainer.withValues(alpha: 0.5),
                   ),
                 ),
                 // Nombre del cliente o estado de edición

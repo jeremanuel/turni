@@ -102,7 +102,7 @@ class _AdminsTabState extends State<AdminsTab> {
           content: SizedBox(
             width: 360,
             child: DropdownButtonFormField<int>(
-              value: selected,
+              initialValue: selected,
               decoration: const InputDecoration(labelText: 'Rol', border: OutlineInputBorder()),
               items: [for (final role in roles) DropdownMenuItem(value: role.roleId, child: Text(role.name))],
               onChanged: (value) => setDialogState(() => selected = value),

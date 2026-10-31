@@ -47,6 +47,9 @@ class _CloseSessionDialogState extends State<_CloseSessionDialog> {
         width: 400,
         child: Padding(
           padding: const EdgeInsets.all(16),
+          child: RadioGroup<CloseSessionAction>(
+          groupValue: selectedAction,
+          onChanged: (value) => setState(() => selectedAction = value),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             spacing: 4,
@@ -59,14 +62,7 @@ class _CloseSessionDialogState extends State<_CloseSessionDialog> {
               const SizedBox(height: 16),
               RadioListTile<CloseSessionAction>(
                 value: CloseSessionAction.cancelReservation,
-                groupValue: selectedAction,
-                onChanged: widget.isReserved
-                    ? (value) {
-                        setState(() {
-                          selectedAction = value;
-                        });
-                      }
-                    : null,
+                enabled: widget.isReserved,
                 title: const Text("Cancelar Reserva"),
                 subtitle: const Text(
                   "El turno quedara disponible para otros clientes",
@@ -75,12 +71,6 @@ class _CloseSessionDialogState extends State<_CloseSessionDialog> {
               const Divider(height: 1),
               RadioListTile<CloseSessionAction>(
                 value: CloseSessionAction.deleteSession,
-                groupValue: selectedAction,
-                onChanged: (value) {
-                  setState(() {
-                    selectedAction = value;
-                  });
-                },
                 title: const Text("Eliminar Turno"),
                 subtitle: const Text(
                   "El turno sera eliminado de la agenda y no podra ser reservado",
@@ -107,6 +97,7 @@ class _CloseSessionDialogState extends State<_CloseSessionDialog> {
                 ],
               ),
             ],
+          ),
           ),
         ),
       ),

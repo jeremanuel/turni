@@ -40,8 +40,8 @@ class BasicDataContainer extends StatelessWidget {
         color: colorScheme.surfaceContainerHigh,
           borderRadius: isMobile ? BorderRadius.zero : BorderRadius.circular(10),
                 border: isMobile 
-                  ? Border.symmetric(horizontal: BorderSide(color: colorScheme.outline.withOpacity(0.5)))
-                  : Border.all(color: colorScheme.outline.withOpacity(0.5)),
+                  ? Border.symmetric(horizontal: BorderSide(color: colorScheme.outline.withValues(alpha: 0.5)))
+                  : Border.all(color: colorScheme.outline.withValues(alpha: 0.5)),
       ),
       padding: const EdgeInsets.all(24),
       child: (isEditing || client == null) ? EditBasicDataContainer(client: client, onToggleEditing: onToggleEditing) : InfoBasicDataContainer(client: client, onToggleEditing: onToggleEditing),

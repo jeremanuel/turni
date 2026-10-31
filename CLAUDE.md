@@ -91,5 +91,14 @@ nueva, no solo a esa.
 - SDK fijado por FVM — correr todo con `./.fvm/flutter_sdk/bin/flutter ...` o
   `fvm flutter ...`, nunca el `flutter` global del PATH (puede ser otra
   versión y romper hot reload/restart de una sesión ya corriendo).
+- La versión de Flutter es la de `.fvmrc` (hoy 3.47.9) y es **la misma con la
+  que compila Render**: el build de producción es `scripts/render_build.sh`,
+  que instala esa versión. Para subir de versión: cambiar `.fvmrc`,
+  `fvm use <versión>` local, `flutter pub upgrade`, `build_runner`, analyze,
+  test y `flutter build web --release`.
+- `flutter analyze` excluye `*.freezed.dart` / `*.g.dart`: un generado
+  incompatible con el SDK solo aparece al compilar (`flutter test` / build).
+  Por eso el `sdk:` mínimo del pubspec sigue en 3.8: con 3.13 el lenguaje
+  rechaza el `final` en parámetros que genera freezed 3.
 - Backend en `../turni_mono_be` vía `docker compose` (`turni_mono_be-api-1` en
   `:3001`, Postgres en `:5433`).
