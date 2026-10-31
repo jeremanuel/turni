@@ -42,15 +42,19 @@ IconData notificationIconFor(String category) => switch (category) {
 /// (escritorio: la bandeja sale a su derecha y crece hacia arriba) o en la
 /// barra de arriba (celular: baja de la barra).
 class BellAnchor {
-  const BellAnchor(this.rect, this.screen);
+  const BellAnchor(this.rect, this.screen, {this.edge});
 
   final Rect rect;
   final Size screen;
 
+  /// Borde derecho del menú lateral, si la campana sabe cuál es: la bandeja
+  /// sale 12 px a su derecha aunque el menú esté expandido.
+  final double? edge;
+
   bool get inTopBar => rect.center.dy < 120;
 
   /// Escritorio: el borde izquierdo de la bandeja (el menú lateral + 12).
-  double get panelLeft => rect.right + 32;
+  double get panelLeft => edge != null ? edge! + 12 : rect.right + 32;
 
   /// Escritorio: el borde de abajo de la bandeja, 36 por debajo del centro de la campana.
   double get panelBottom => rect.center.dy + 36;
@@ -67,9 +71,13 @@ class BellAnchor {
 /// notificaciones"). Va en el menú lateral (escritorio) y en la barra
 /// superior (celular).
 class NotificationsButton extends StatefulWidget {
-  const NotificationsButton({super.key, this.cubit});
+  const NotificationsButton({super.key, this.cubit, this.edgeKey});
 
   final NotificationsCubit? cubit;
+
+  /// El menú lateral que la contiene: la bandeja y los avisos flotantes se
+  /// ubican a su derecha (ver [BellAnchor.edge]).
+  final GlobalKey? edgeKey;
 
   @override
   State<NotificationsButton> createState() => _NotificationsButtonState();
@@ -109,7 +117,9 @@ class _NotificationsButtonState extends State<NotificationsButton> with SingleTi
     final overlay = Overlay.of(context).context.findRenderObject() as RenderBox?;
     if (box == null || overlay == null || !box.attached) return null;
     final topLeft = box.localToGlobal(Offset.zero, ancestor: overlay);
-    return BellAnchor(topLeft & box.size, overlay.size);
+    final edgeBox = widget.edgeKey?.currentContext?.findRenderObject() as RenderBox?;
+    final edge = edgeBox != null && edgeBox.attached ? edgeBox.localToGlobal(Offset(edgeBox.size.width, 0), ancestor: overlay).dx : null;
+    return BellAnchor(topLeft & box.size, overlay.size, edge: edge);
   }
 
   void _open() {
