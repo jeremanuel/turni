@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../../../core/presentation/components/inputs/keyboard_guard.dart';
 import '../../../../../../domain/entities/extra.dart';
 import '../../../../../../domain/entities/payment/payment.dart';
 import '../../../../../../domain/entities/payment/payment_method.dart';
@@ -86,7 +87,7 @@ class _AddExtraContainerState extends State<AddExtraContainer> {
                 ?.copyWith(color: colorScheme.onSurfaceVariant),
           ),
           const SizedBox(height: 6),
-          TextField(
+          AllowAutoKeyboard(child: TextField(
             controller: searchController,
             onChanged: (_) => setState(() {}),
             autofocus: true,
@@ -95,7 +96,7 @@ class _AddExtraContainerState extends State<AddExtraContainer> {
               hintText: "Buscar adicional",
               border: OutlineInputBorder(),
             ),
-          ),
+          )),
           SizedBox(
             height: 220,
             child: Container(

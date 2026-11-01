@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/presentation/components/inputs/keyboard_guard.dart';
 import '../../../../core/presentation/components/loading/app_skeleton.dart';
 import 'package:flutter/services.dart';
 
@@ -426,7 +427,7 @@ class _InlineExerciseSearchState extends State<InlineExerciseSearch> with _Picke
                     Icon(open ? Icons.search : Icons.add, size: 18, color: colorScheme.onSurfaceVariant),
                     const SizedBox(width: 10),
                     Expanded(
-                      child: TextField(
+                      child: AllowAutoKeyboard(child: TextField(
                         controller: search,
                         focusNode: focus,
                         onChanged: (_) => setState(() => highlighted = 0),
@@ -444,7 +445,7 @@ class _InlineExerciseSearchState extends State<InlineExerciseSearch> with _Picke
                           contentPadding: EdgeInsets.zero,
                           hintText: open ? 'Escribí el nombre del ejercicio' : 'Agregar ejercicio: escribí el nombre…',
                         ),
-                      ),
+                      )),
                     ),
                     Text(
                       open ? '↑↓ elegir · Enter agregar · Esc cerrar' : '',
@@ -582,7 +583,7 @@ class _DialogPickerState extends State<_DialogPicker> with _PickerState<_DialogP
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Focus(
               onKeyEvent: (node, event) => arrows(event),
-              child: TextField(
+              child: AllowAutoKeyboard(child: TextField(
                 controller: search,
                 focusNode: focus,
                 autofocus: true,
@@ -597,7 +598,7 @@ class _DialogPickerState extends State<_DialogPicker> with _PickerState<_DialogP
                   hintText: 'Escribí el nombre del ejercicio',
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(4)),
                 ),
-              ),
+              )),
             ),
           ),
           const SizedBox(height: 4),

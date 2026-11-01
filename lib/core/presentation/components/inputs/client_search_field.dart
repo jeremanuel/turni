@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'keyboard_guard.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:go_router/go_router.dart';
@@ -1211,7 +1212,7 @@ class _ClientSearchSheetState extends State<_ClientSearchSheet> {
             child: Row(children: [
               IconButton(tooltip: 'Volver', onPressed: () => Navigator.of(context).pop(), icon: const Icon(Icons.arrow_back)),
               Expanded(
-                child: TextField(
+                child: AllowAutoKeyboard(child: TextField(
                   controller: _text,
                   autofocus: true,
                   onChanged: (v) => setState(() => widget.search.query = v),
@@ -1221,7 +1222,7 @@ class _ClientSearchSheetState extends State<_ClientSearchSheet> {
                     hintText: 'Buscar por nombre, email o teléfono',
                     hintStyle: TextStyle(fontSize: 16, color: scheme.onSurfaceVariant),
                   ),
-                ),
+                )),
               ),
               if (_text.text.isNotEmpty)
                 IconButton(
