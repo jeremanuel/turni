@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../../core/presentation/components/inputs/keyboard_guard.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -362,7 +363,7 @@ class _PaymentViewState extends State<PaymentView> {
               style: TextStyle(fontSize: 13, color: selected ? scheme.onSecondaryContainer : scheme.onSurfaceVariant),
             ),
             const SizedBox(height: 2),
-            TextField(
+            AllowAutoKeyboard(child: TextField(
               controller: _otherController,
               focusNode: _otherFocus,
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
@@ -374,7 +375,7 @@ class _PaymentViewState extends State<PaymentView> {
                 hintText: '\$ 0',
                 hintStyle: TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: scheme.outline),
               ),
-            ),
+            )),
           ],
         ),
       ),

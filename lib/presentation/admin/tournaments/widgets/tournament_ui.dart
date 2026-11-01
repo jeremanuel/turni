@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/utils/thousands_format.dart';
 import '../../../../domain/entities/tournament/tournament.dart';
+export '../../../../core/presentation/components/loading/app_skeleton.dart' show LoadError, LoadingView, InlineSpinner, SkeletonCard, SkeletonRows;
 
 const _weekdays = ['lun', 'mar', 'mié', 'jue', 'vie', 'sáb', 'dom'];
 const _months = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
@@ -199,24 +200,4 @@ class InfoBanner extends StatelessWidget {
   }
 }
 
-/// Error de carga con reintento.
-class LoadError extends StatelessWidget {
-  const LoadError({super.key, required this.message, required this.onRetry});
 
-  final String message;
-  final VoidCallback onRetry;
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(message, textAlign: TextAlign.center),
-          const SizedBox(height: 12),
-          OutlinedButton(onPressed: onRetry, child: const Text('Reintentar')),
-        ],
-      ),
-    );
-  }
-}

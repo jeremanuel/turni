@@ -294,7 +294,7 @@ class _TournamentDetailPageState extends State<TournamentDetailPage> with Reload
       return Scaffold(
         backgroundColor: scheme.surfaceContainer,
         appBar: AppBar(),
-        body: _error != null ? LoadError(message: _error!, onRetry: _load) : const Center(child: CircularProgressIndicator()),
+        body: _error != null ? LoadError(message: _error!, onRetry: _load, center: true) : const LoadingView(),
       );
     }
 
@@ -315,7 +315,7 @@ class _TournamentDetailPageState extends State<TournamentDetailPage> with Reload
         appBar: AppBar(
           title: Text(t.name),
           actions: [
-            if (_busy) const Padding(padding: EdgeInsets.all(16), child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))),
+            if (_busy) const Padding(padding: EdgeInsets.all(16), child: InlineSpinner(size: 20)),
             ..._actions(t),
             const SizedBox(width: 16),
           ],
@@ -353,7 +353,7 @@ class _TournamentDetailPageState extends State<TournamentDetailPage> with Reload
           titleSpacing: 0,
           title: Text(t.name, overflow: TextOverflow.ellipsis),
           actions: [
-            if (_busy) const Padding(padding: EdgeInsets.all(16), child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))),
+            if (_busy) const Padding(padding: EdgeInsets.all(16), child: InlineSpinner(size: 20)),
             ..._menu(t),
             const SizedBox(width: 4),
           ],

@@ -194,8 +194,6 @@ class _AdminsTabState extends State<AdminsTab> with ReloadOnDataChange {
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) return const Center(child: CircularProgressIndicator());
-
     final textTheme = Theme.of(context).textTheme;
 
     return SingleChildScrollView(
@@ -229,10 +227,12 @@ class _AdminsTabState extends State<AdminsTab> with ReloadOnDataChange {
           const SizedBox(height: 16),
           TourAnchor(id: 'admins.table', child: AdminTableCard(
             child: AdminTableScroll(
-              child: AdminDataTable(
-                columns: const ['Administrador', 'Email', 'Rol', 'Estado', ''],
-                rows: [for (final admin in _admins) _adminRow(admin)],
-              ),
+              child: _isLoading
+                  ? const AdminTableSkeleton(columns: ['Administrador', 'Email', 'Rol', 'Estado', ''], rows: 4)
+                  : AdminDataTable(
+                      columns: const ['Administrador', 'Email', 'Rol', 'Estado', ''],
+                      rows: [for (final admin in _admins) _adminRow(admin)],
+                    ),
             ),
           )),
           if (_invitations.isNotEmpty) ...[

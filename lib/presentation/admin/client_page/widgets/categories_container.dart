@@ -1,6 +1,8 @@
 import '../../../../core/utils/either.dart';
 import 'package:flutter/material.dart';
 
+import '../../../../core/presentation/components/loading/app_skeleton.dart';
+
 import '../../../../core/config/service_locator.dart';
 import '../../../../core/presentation/components/inputs/snackbars/snackbars_functions.dart';
 import '../../../../core/utils/permissions.dart';
@@ -75,7 +77,7 @@ class _CategoriesContainerState extends State<CategoriesContainer> {
     if (_error != null) {
       body = Text(_error!, style: TextStyle(color: scheme.error));
     } else if (sports == null) {
-      body = const Padding(padding: EdgeInsets.all(16), child: Center(child: CircularProgressIndicator()));
+      body = const SkeletonRows(count: 2);
     } else if (sports.isEmpty) {
       body = Text('El club no tiene deportes con categorías.', style: TextStyle(color: scheme.onSurfaceVariant));
     } else {
@@ -109,7 +111,7 @@ class _CategoriesContainerState extends State<CategoriesContainer> {
                 Icon(Icons.workspace_premium_outlined, color: scheme.primary),
                 const SizedBox(width: 8),
                 Expanded(child: Text('Categorías', style: text.titleMedium)),
-                if (_saving) const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2)),
+                if (_saving) const InlineSpinner(),
               ],
             ),
             const SizedBox(height: 4),

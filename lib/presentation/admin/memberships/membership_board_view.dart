@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/presentation/components/loading/app_skeleton.dart';
+
 import '../../../core/config/service_locator.dart';
 import '../../../core/presentation/components/links/entity_links.dart';
 import '../../../core/utils/either.dart';
@@ -78,7 +80,7 @@ class _MembershipBoardViewState extends State<MembershipBoardView> with ReloadOn
     if (_error != null) {
       return Center(child: Column(mainAxisSize: MainAxisSize.min, children: [Text(_error!), TextButton(onPressed: _load, child: const Text('Reintentar'))]));
     }
-    if (board == null) return const Center(child: CircularProgressIndicator());
+    if (board == null) return _skeleton(mobile);
 
     final plans = {for (final row in board.rows) row.plan.name}.toList()..sort();
     final query = _search.trim().toLowerCase();
@@ -171,16 +173,8 @@ class _MembershipBoardViewState extends State<MembershipBoardView> with ReloadOn
                   )
                 else
                   TourAnchor(id: 'board.list', child: AdminDataTable(
-                    columns: const ['Cliente', 'Abono', 'Estado', 'Vencimiento', 'Debe', 'Último pago', ''],
-                    columnWidths: const {
-                      0: FlexColumnWidth(1.4),
-                      1: FlexColumnWidth(1.3),
-                      2: FlexColumnWidth(1.1),
-                      3: FlexColumnWidth(1.1),
-                      4: FlexColumnWidth(0.9),
-                      5: FlexColumnWidth(1.1),
-                      6: FixedColumnWidth(232),
-                    },
+                    columns: _columns,
+                    columnWidths: _widths,
                     rows: [for (final row in rows) _row(context, row)],
                   )),
               ]),
@@ -188,6 +182,48 @@ class _MembershipBoardViewState extends State<MembershipBoardView> with ReloadOn
           ),
         ],
       ),
+    );
+  }
+
+  static const _columns = ['Cliente', 'Abono', 'Estado', 'Vencimiento', 'Debe', 'Último pago', ''];
+  static const _widths = {
+    0: FlexColumnWidth(1.4),
+    1: FlexColumnWidth(1.3),
+    2: FlexColumnWidth(1.1),
+    3: FlexColumnWidth(1.1),
+    4: FlexColumnWidth(0.9),
+    5: FlexColumnWidth(1.1),
+    6: FixedColumnWidth(232),
+  };
+
+  /// Primera carga: los indicadores y la tabla con su forma, sin datos.
+  Widget _skeleton(bool mobile) {
+    return ListView(
+      physics: const NeverScrollableScrollPhysics(),
+      padding: EdgeInsets.all(mobile ? 16 : 24),
+      children: [
+        AppSkeleton(
+          child: LayoutBuilder(builder: (context, constraints) {
+            final columns = constraints.maxWidth >= 1000 ? 5 : (constraints.maxWidth >= 600 ? 3 : 2);
+            final width = (constraints.maxWidth - 12 * (columns - 1)) / columns;
+            return Wrap(spacing: 12, runSpacing: 12, children: [
+              for (final status in const [MembershipStatus.late, MembershipStatus.soon, MembershipStatus.ok, MembershipStatus.pendingFirst, MembershipStatus.paused])
+                SizedBox(
+                  width: width,
+                  child: _KpiCard(status: status, title: skeletonText(2), value: 0, subtitle: skeletonText(3), selected: false, onTap: () {}),
+                ),
+            ]);
+          }),
+        ),
+        const SizedBox(height: 16),
+        const Card(
+          margin: EdgeInsets.zero,
+          child: Padding(
+            padding: EdgeInsets.all(20),
+            child: AdminTableSkeleton(columns: _columns, columnWidths: _widths, rows: 6),
+          ),
+        ),
+      ],
     );
   }
 

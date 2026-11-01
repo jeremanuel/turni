@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/presentation/components/loading/app_skeleton.dart';
 import 'package:flutter/services.dart';
 
 import '../../../../domain/entities/club_map/club_map.dart';
@@ -274,7 +275,7 @@ class _ClubMapEditorState extends State<ClubMapEditor> {
               const SizedBox(width: 8),
               FilledButton.icon(
                 onPressed: canSave ? _save : null,
-                icon: _saving ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2)) : const Icon(Icons.check),
+                icon: _saving ? const InlineSpinner() : const Icon(Icons.check),
                 label: const Text('Guardar plano'),
               ),
             ],

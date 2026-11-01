@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/presentation/components/loading/app_skeleton.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -788,7 +789,7 @@ class _BulkEditViewState extends State<_BulkEditView> {
                         style: TextStyle(fontSize: 16, height: 24 / 16, fontWeight: FontWeight.w500)),
                     if (state.isLoadingPreview && preview != null) ...[
                       const SizedBox(width: 12),
-                      const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)),
+                      const InlineSpinner(size: 16),
                     ],
                   ],
                 ),
@@ -966,7 +967,7 @@ class _BulkEditViewState extends State<_BulkEditView> {
   }
 
   Widget _buttonIcon(BulkEditState state, IconData icon, Color color) => state.isApplying
-      ? SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: color))
+      ? InlineSpinner(color: color)
       : Icon(icon, size: 18);
 }
 

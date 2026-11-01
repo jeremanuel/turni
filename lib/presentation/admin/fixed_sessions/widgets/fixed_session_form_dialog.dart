@@ -1,9 +1,12 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import '../../../../core/presentation/components/loading/app_skeleton.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../core/config/service_locator.dart';
+import '../../../../core/presentation/components/inputs/client_search_field.dart';
+import '../../../../core/presentation/components/inputs/option_chip.dart';
 import '../../../../core/utils/admin_vocabulary.dart';
 import '../../../../core/utils/either.dart';
 import '../../../../core/utils/physical_partition_naming.dart';
@@ -16,7 +19,6 @@ import '../../../../domain/entities/physical_partition.dart';
 import '../../../../domain/repositories/fixed_session_repository.dart';
 import '../../../core/cubit/auth/auth_cubit.dart';
 import '../../club_config/widgets/time_field.dart';
-import 'client_search_field.dart';
 import 'fixed_session_texts.dart';
 
 /// Espacio elegible para un turno fijo: "Pádel · Cancha 2".
@@ -110,11 +112,6 @@ class _FixedSessionSheetState extends State<FixedSessionSheet> {
   List<String> get _sports => {for (final c in _courts) c.sport}.toList();
 
   List<FixedSessionCourtOption> get _sportCourts => _courts.where((c) => c.sport == _sport).toList();
-
-  Set<int> get _takenIds => {
-        if (_client?.clientId != null) _client!.intClientId,
-        for (final p in _participants) p.intClientId,
-      };
 
   bool get _validTime => RegExp(r'^\d{2}:\d{2}$').hasMatch(_time.text.trim());
 
@@ -322,57 +319,21 @@ class _FixedSessionSheetState extends State<FixedSessionSheet> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (_client != null)
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-            decoration: BoxDecoration(color: scheme.surfaceContainerHighest, borderRadius: BorderRadius.circular(12)),
-            child: Row(
-              children: [
-                _Initials(name: _client!.person?.fullName ?? '', background: scheme.primaryContainer, foreground: scheme.onPrimaryContainer),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(_client!.person?.fullName.trim() ?? 'Cliente', style: textTheme.titleSmall),
-                      Text(
-                        ['Titular', if ((_client!.person?.phone ?? '').isNotEmpty) _client!.person!.phone!].join(' · '),
-                        style: textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
-                      ),
-                    ],
-                  ),
-                ),
-                if (widget.initialClient == null)
-                  TextButton(onPressed: () => _update(() => _client = null), child: const Text('Cambiar')),
-              ],
-            ),
-          )
-        else
-          ClientSearchField(
-            label: 'Buscar titular',
-            excludeIds: _takenIds,
-            onSelected: (client) => _update(() => _client = client),
-          ),
-        const SizedBox(height: 12),
-        if (_participants.isNotEmpty) ...[
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              for (final p in _participants)
-                InputChip(
-                  label: Text(p.person?.fullName.trim() ?? 'Cliente'),
-                  onDeleted: () => _update(() => _participants.remove(p)),
-                ),
-            ],
-          ),
-          const SizedBox(height: 8),
-        ],
         ClientSearchField(
-          label: 'Sumar integrante (opcional)',
-          excludeIds: _takenIds,
-          clearOnSelect: true,
-          onSelected: (client) => _update(() => _participants.add(client)),
+          label: 'Titular',
+          value: _client,
+          locked: widget.initialClient != null,
+          rowInfo: (c) => _participants.any((p) => p.clientId == c.clientId) ? const ClientRowInfo('Es integrante', disabled: true) : null,
+          onChanged: (client) => _update(() => _client = client),
+        ),
+        const SizedBox(height: 16),
+        ClientSearchField.multiple(
+          label: 'Integrantes (opcional)',
+          values: _participants,
+          rowInfo: (c) => c.clientId == _client?.clientId ? const ClientRowInfo('Es el titular', disabled: true) : null,
+          onValuesChanged: (clients) => _update(() => _participants
+            ..clear()
+            ..addAll(clients)),
         ),
         const SizedBox(height: 6),
         Text(
@@ -384,7 +345,6 @@ class _FixedSessionSheetState extends State<FixedSessionSheet> {
   }
 
   Widget _whereSection(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
     final custom = !_durations.contains(_duration);
 
@@ -396,10 +356,10 @@ class _FixedSessionSheetState extends State<FixedSessionSheet> {
           runSpacing: 8,
           children: [
             for (final sport in _sports)
-              ChoiceChip(
-                label: Text(sport),
+              OptionChip(
+                label: sport,
                 selected: _sport == sport,
-                onSelected: (_) => _update(() {
+                onTap: () => _update(() {
                   _sport = sport;
                   if (_courts.where((c) => c.id == _courtId).firstOrNull?.sport != sport) _courtId = null;
                 }),
@@ -467,10 +427,10 @@ class _FixedSessionSheetState extends State<FixedSessionSheet> {
                     crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
                       for (final minutes in _durations)
-                        ChoiceChip(
-                          label: Text('$minutes min'),
+                        OptionChip(
+                          label: '$minutes min',
                           selected: _duration == minutes,
-                          onSelected: (_) => _update(() => _duration = minutes),
+                          onTap: () => _update(() => _duration = minutes),
                         ),
                       SizedBox(
                         width: 96,
@@ -556,7 +516,7 @@ class _FixedSessionSheetState extends State<FixedSessionSheet> {
             children: [
               Expanded(child: Text('Próximas 8 semanas', style: textTheme.titleSmall)),
               if (_loadingPreview && preview != null)
-                const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2)),
+                const InlineSpinner(size: 14),
             ],
           ),
           const SizedBox(height: 12),
@@ -584,7 +544,7 @@ class _CourtTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     return Material(
-      color: selected ? scheme.primaryContainer : scheme.surfaceContainer,
+      color: selected ? scheme.primaryContainer : Colors.transparent,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
         side: BorderSide(color: selected ? scheme.primary : scheme.outlineVariant, width: selected ? 2 : 1),
@@ -699,25 +659,6 @@ class _PreviewRow extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-}
-
-class _Initials extends StatelessWidget {
-  const _Initials({required this.name, required this.background, required this.foreground});
-
-  final String name;
-  final Color background;
-  final Color foreground;
-
-  @override
-  Widget build(BuildContext context) {
-    final parts = name.trim().split(RegExp(r'\s+')).where((p) => p.isNotEmpty).toList();
-    final initials = parts.take(2).map((p) => p[0].toUpperCase()).join();
-    return CircleAvatar(
-      radius: 18,
-      backgroundColor: background,
-      child: Text(initials, style: TextStyle(color: foreground, fontSize: 13, fontWeight: FontWeight.w700)),
     );
   }
 }

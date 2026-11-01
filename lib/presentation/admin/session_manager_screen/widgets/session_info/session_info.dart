@@ -14,7 +14,7 @@ import '../../../../../domain/entities/session.dart';
 import '../../../../../domain/repositories/session_repository.dart';
 import '../../../../../domain/usercases/session_user_cases.dart';
 import '../../../../../core/config/service_locator.dart';
-import '../../../../core/pick_client/pick_client.dart';
+import '../../../../../core/presentation/components/inputs/client_search_field.dart';
 import '../../bloc/session_manager_bloc.dart';
 import '../../bloc/session_manager_event.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -167,9 +167,9 @@ class _SessionInfoState extends State<SessionInfo> {
                     SizedBox(height: sectionSpacing),
                     const Divider(),
                     SizedBox(height: sectionSpacing),
-                    PickClient(
+                    ClientSearchFormField(
                       initialValue: widget.session.client,
-                      readOnly: widget.session.client != null,
+                      locked: widget.session.client != null,
                       name: "client",
                       isRequired: true,
                     ),

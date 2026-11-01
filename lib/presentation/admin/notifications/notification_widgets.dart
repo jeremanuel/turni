@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import '../../../core/presentation/components/loading/app_skeleton.dart';
 
 import '../../../domain/entities/admin_notification.dart';
 import 'notification_texts.dart';
@@ -192,7 +193,7 @@ class NotificationActionButton extends StatelessWidget {
     final padding = EdgeInsets.symmetric(horizontal: tonal ? 14 : 12);
     final text = TextStyle(fontSize: large ? 14 : 13, fontWeight: FontWeight.w500);
     final content = busy
-        ? SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: tonal ? scheme.onPrimaryContainer : scheme.onSurface))
+        ? InlineSpinner(size: 16, color: tonal ? scheme.onPrimaryContainer : scheme.onSurface)
         : Row(
             mainAxisSize: MainAxisSize.min,
             children: [

@@ -4,7 +4,9 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/config/router/app_routes.dart';
 import '../../../../core/presentation/components/inputs/label_chip.dart';
+import '../../../../core/presentation/components/loading/app_skeleton.dart';
 import '../../../../domain/entities/client.dart';
+import '../../../../domain/entities/person.dart';
 import '../../memberships/register_payment_dialog.dart';
 import '../bloc/clients_list_bloc.dart';
 import '../../../../core/presentation/components/onboarding/tour_anchor.dart';
@@ -93,7 +95,19 @@ class _ClientsMobileListState extends State<ClientsMobileList> {
     final text = Theme.of(context).textTheme;
 
     if (_clients.isEmpty) {
-      if (_loading) return const Center(child: CircularProgressIndicator());
+      if (_loading) {
+        // Las mismas tarjetas, con datos de mentira.
+        final fake = Client(person: Person(name: skeletonText(1), lastName: skeletonText(1), email: BoneMock.email, phone: BoneMock.phone));
+        return AppSkeleton(
+          child: ListView.separated(
+            physics: const NeverScrollableScrollPhysics(),
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
+            itemCount: 8,
+            separatorBuilder: (_, __) => const SizedBox(height: 8),
+            itemBuilder: (_, __) => _ClientCard(client: fake, onTap: () {}, onPaymentCreated: () {}),
+          ),
+        );
+      }
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(24),
@@ -128,7 +142,7 @@ class _ClientsMobileListState extends State<ClientsMobileList> {
           }
           if (index == _clients.length + 1) {
             return _loading
-                ? const Padding(padding: EdgeInsets.all(16), child: Center(child: CircularProgressIndicator()))
+                ? const Padding(padding: EdgeInsets.all(16), child: LoadingView())
                 : const SizedBox.shrink();
           }
           return TourAnchor(

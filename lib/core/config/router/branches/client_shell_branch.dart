@@ -137,7 +137,7 @@ StatefulShellBranch clientShellBranch() {
 
 
 
-            return Clientpage(clientId: -1, createNewClient: true, onUpdateClient: onUpdateClient);
+            return Clientpage(clientId: -1, createNewClient: true, onUpdateClient: onUpdateClient, initialName: extraMap?['initialName'] as String?);
           },
         ),
 

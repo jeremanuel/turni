@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import '../../../../../core/presentation/components/loading/app_skeleton.dart';
 
 import '../../../../../core/presentation/components/links/entity_links.dart';
 import '../../../../../core/utils/permissions.dart';
@@ -69,6 +70,9 @@ class _SessionPanelState extends State<SessionPanel> {
 
   void _go(_PanelView view) => setState(() => _view = view);
 
+  /// Lo escrito en el buscador al tocar "Crear cliente".
+  String _newClientName = '';
+
   String get _courtLabel => PhysicalPartitionNaming.labelFromPhysicalPartition(
         widget.physicalPartition,
         fallbackClubPartition: widget.clubPartition,
@@ -97,12 +101,16 @@ class _SessionPanelState extends State<SessionPanel> {
       _PanelView.newClient => NewClientView(
           session: session,
           subtitle: 'Para el turno de ${panelRange(session)} · $_courtLabel',
+          initialName: _newClientName,
           onBack: back,
         ),
       _PanelView.detail when session.isFree => FreeSessionView(
           session: session,
           header: _header(context),
-          onCreateClient: () => _go(_PanelView.newClient),
+          onCreateClient: (query) {
+            _newClientName = query;
+            _go(_PanelView.newClient);
+          },
         ),
       _PanelView.detail => _BookedDetail(
           session: session,
@@ -565,7 +573,7 @@ class _AccountCardState extends State<_AccountCard> {
                           height: 20,
                           child: _deleting.contains(extra)
                               ? const Center(
-                                  child: SizedBox(width: 12, height: 12, child: CircularProgressIndicator(strokeWidth: 2)),
+                                  child: InlineSpinner(size: 12),
                                 )
                               : IconButton(
                                   tooltip: 'Quitar adicional',

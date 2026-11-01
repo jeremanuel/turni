@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/presentation/components/loading/app_skeleton.dart';
 import 'package:latlong2/latlong.dart';
 
 import '../../../../core/presentation/components/permission_lock.dart';
@@ -152,13 +153,11 @@ class _ClubInfoTabState extends State<ClubInfoTab> {
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
-    }
-
     final colorScheme = Theme.of(context).colorScheme;
 
-    return SingleChildScrollView(
+    return AppSkeleton(
+      enabled: _isLoading,
+      child: SingleChildScrollView(
       padding: EdgeInsets.all(ResponsiveBuilder.isMobile(context) ? 16 : 24),
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 560),
@@ -215,11 +214,7 @@ class _ClubInfoTabState extends State<ClubInfoTab> {
                           suffixIcon: _isSearchingAddress
                               ? const Padding(
                                   padding: EdgeInsets.all(14),
-                                  child: SizedBox(
-                                    width: 18,
-                                    height: 18,
-                                    child: CircularProgressIndicator(strokeWidth: 2),
-                                  ),
+                                  child: InlineSpinner(),
                                 )
                               : IconButton(
                                   tooltip: "Buscar en el mapa",
@@ -238,7 +233,10 @@ class _ClubInfoTabState extends State<ClubInfoTab> {
                       const SizedBox(height: 6),
                       TourAnchor(
                         id: 'clubInfo.map',
-                        child: LocationPickerMap(
+                        // El mapa no se arma con datos de mentira.
+                        child: _isLoading
+                            ? const Bone(height: 300, width: double.infinity, uniRadius: 8)
+                            : LocationPickerMap(
                         key: _mapKey,
                         confirmed: _location,
                         onConfirmed: (point) => setState(() {
@@ -268,11 +266,7 @@ class _ClubInfoTabState extends State<ClubInfoTab> {
                             child: FilledButton(
                               onPressed: _isSaving ? null : _save,
                               child: _isSaving
-                                  ? const SizedBox(
-                                      height: 16,
-                                      width: 16,
-                                      child: CircularProgressIndicator(strokeWidth: 2),
-                                    )
+                                  ? const InlineSpinner(size: 16)
                                   : const Text("Guardar cambios"),
                             ),
                           ),
@@ -351,6 +345,7 @@ class _ClubInfoTabState extends State<ClubInfoTab> {
           ],
         ),
       ),
+    ),
     );
   }
 }

@@ -97,8 +97,6 @@ class _RolesTabState extends State<RolesTab> with ReloadOnDataChange {
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) return const Center(child: CircularProgressIndicator());
-
     return SingleChildScrollView(
       padding: EdgeInsets.all(ResponsiveBuilder.isMobile(context) ? 16 : 24),
       child: Column(
@@ -136,16 +134,13 @@ class _RolesTabState extends State<RolesTab> with ReloadOnDataChange {
                 builder: (context, constraints) => AdminTableScroll(
                   child: ConstrainedBox(
                     constraints: BoxConstraints(minWidth: constraints.maxWidth),
-                    child: AdminDataTable(
-                      columns: const ['Rol', 'Permisos', 'Administradores', ''],
-                      columnWidths: const {
-                        0: IntrinsicColumnWidth(),
-                        1: FlexColumnWidth(),
-                        2: IntrinsicColumnWidth(),
-                        3: IntrinsicColumnWidth(),
-                      },
-                      rows: [for (final role in _roles) _roleRow(role)],
-                    ),
+                    child: _isLoading
+                        ? const AdminTableSkeleton(columns: _columns, columnWidths: _widths, rows: 4)
+                        : AdminDataTable(
+                            columns: _columns,
+                            columnWidths: _widths,
+                            rows: [for (final role in _roles) _roleRow(role)],
+                          ),
                   ),
                 ),
             ),
@@ -154,6 +149,14 @@ class _RolesTabState extends State<RolesTab> with ReloadOnDataChange {
       ),
     );
   }
+
+  static const _columns = ['Rol', 'Permisos', 'Administradores', ''];
+  static const _widths = {
+    0: IntrinsicColumnWidth(),
+    1: FlexColumnWidth(),
+    2: IntrinsicColumnWidth(),
+    3: IntrinsicColumnWidth(),
+  };
 
   List<Widget> _roleRow(AdminRole role) {
     final textTheme = Theme.of(context).textTheme;

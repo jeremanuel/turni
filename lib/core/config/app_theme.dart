@@ -56,6 +56,14 @@ class AppTheme {
         ),
       ),
       chipTheme: ChipThemeData(
+        // Material 3 pinta los ChoiceChip/FilterChip con `color` y no con
+        // `backgroundColor`: sin esto, sin elegir quedaban con un fondo
+        // oscuro en vez de transparentes como en el diseño.
+        color: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.disabled)) return colorScheme.surfaceContainerHighest;
+          if (states.contains(WidgetState.selected)) return colorScheme.secondaryContainer;
+          return Colors.transparent;
+        }),
         backgroundColor: Colors.transparent,
         selectedColor: colorScheme.secondaryContainer,
         disabledColor: colorScheme.surfaceContainerHighest,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/presentation/components/loading/app_skeleton.dart';
 import '../../../../core/utils/responsive_builder.dart';
 
 import '../../../../core/presentation/components/links/entity_links.dart';
@@ -296,7 +297,7 @@ class _ClubMapOverviewState extends State<ClubMapOverview> {
             selected: {_usageDays},
             onSelectionChanged: (days) => _setUsageDays(days.first),
           ),
-        if (_showUsage && _loadingUsage) const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2)),
+        if (_showUsage && _loadingUsage) const InlineSpinner(),
         if (_showUsage && _usageError != null)
           Row(
             mainAxisSize: MainAxisSize.min,

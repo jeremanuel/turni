@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/presentation/components/loading/app_skeleton.dart';
 
 import '../../../../core/utils/admin_vocabulary.dart';
 import '../../../../core/utils/thousands_format.dart';
@@ -123,11 +124,7 @@ class PriceDayOfWeekSelector extends StatelessWidget {
         if (loading)
           const Padding(
             padding: EdgeInsets.only(left: 8),
-            child: SizedBox(
-              width: 12,
-              height: 12,
-              child: CircularProgressIndicator(strokeWidth: 2, color: RW.primary),
-            ),
+            child: InlineSpinner(size: 12, color: RW.primary),
           ),
       ],
     );

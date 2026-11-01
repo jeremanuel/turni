@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/presentation/components/loading/app_skeleton.dart';
 
 import '../../../../core/presentation/components/permission_lock.dart';
 import '../../../../core/utils/permissions.dart';
@@ -295,11 +296,7 @@ class _ClubPartitionsTabState extends State<ClubPartitionsTab> {
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
-    }
-
-    if (_errorMessage != null && _clubTypes.isEmpty && _clubPartitions.isEmpty) {
+    if (!_isLoading && _errorMessage != null && _clubTypes.isEmpty && _clubPartitions.isEmpty) {
       return Center(child: Text(_errorMessage!));
     }
 
@@ -316,7 +313,9 @@ class _ClubPartitionsTabState extends State<ClubPartitionsTab> {
           ),
           const SizedBox(height: 20),
           const ReadOnlyNotice(permissions: [Permissions.CONFIGURACION_CANCHAS]),
-          if (_clubPartitions.isEmpty)
+          if (_isLoading)
+            for (var i = 0; i < 2; i++) const SkeletonCard(margin: EdgeInsets.only(bottom: 16))
+          else if (_clubPartitions.isEmpty)
             const Padding(
               padding: EdgeInsets.symmetric(vertical: 12),
               child: Text('Todavía no hay servicios creados.'),
@@ -419,11 +418,7 @@ class _ClubPartitionsTabState extends State<ClubPartitionsTab> {
                         FilledButton(
                           onPressed: (_isCreatingSector || _clubTypes.isEmpty) ? null : _createSector,
                           child: _isCreatingSector
-                              ? const SizedBox(
-                                  height: 16,
-                                  width: 16,
-                                  child: CircularProgressIndicator(strokeWidth: 2),
-                                )
+                              ? const InlineSpinner(size: 16)
                               : const Text('Crear servicio'),
                         ),
                       ],
