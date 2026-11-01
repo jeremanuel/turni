@@ -13,6 +13,7 @@ import '../club_config/widgets/admin_data_table.dart';
 import '../club_config/widgets/price_field.dart';
 import 'widgets/membership_widgets.dart';
 import '../../../core/presentation/components/onboarding/tour_anchor.dart';
+import '../../../core/services/data_changes.dart';
 
 /// Configuración › Abonos: cómo se vende cada servicio con abonos con cuotas
 /// (gimnasio, funcional). Solo aparece si el admin ve alguno (ver
@@ -24,7 +25,13 @@ class MembershipPlansTab extends StatefulWidget {
   State<MembershipPlansTab> createState() => _MembershipPlansTabState();
 }
 
-class _MembershipPlansTabState extends State<MembershipPlansTab> {
+class _MembershipPlansTabState extends State<MembershipPlansTab> with ReloadOnDataChange {
+  @override
+  Set<DataTopic> get refreshTopics => const {DataTopic.clubConfig};
+
+  /// En vivo: otro admin creó, editó o archivó un plan (el back emite club_config).
+  @override
+  void onDataChanged(DataChange change) => _load();
   final _repository = sl<MembershipRepository>();
   List<MembershipPlansPartition>? _partitions;
   String? _error;

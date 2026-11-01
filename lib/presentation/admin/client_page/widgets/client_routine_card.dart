@@ -11,6 +11,7 @@ import '../../../../domain/entities/gym/gym_progress.dart';
 import '../../../../domain/repositories/gym_repository.dart';
 import '../../routines/widgets/progress_history.dart';
 import '../../../../core/presentation/components/onboarding/tour_anchor.dart';
+import '../../../../core/services/data_changes.dart';
 
 /// Card de rutina de la ficha: la rutina actual (grupos y cuándo hizo cada
 /// uno), lo que dijo el cliente (notas para el profe, lo que no le gusta,
@@ -25,7 +26,16 @@ class ClientRoutineCard extends StatefulWidget {
   State<ClientRoutineCard> createState() => _ClientRoutineCardState();
 }
 
-class _ClientRoutineCardState extends State<ClientRoutineCard> {
+class _ClientRoutineCardState extends State<ClientRoutineCard> with ReloadOnDataChange {
+  @override
+  Set<DataTopic> get refreshTopics => const {DataTopic.gym};
+
+  @override
+  bool shouldReload(DataChange change) => change.isFor('client_id', _clientId);
+
+  /// En vivo: la rutina o el progreso de este cliente cambió (otro admin, o el cliente entrenando).
+  @override
+  void onDataChanged(DataChange change) => _load();
   final _repository = sl<GymRepository>();
   ClientGymSummary? _summary;
   RoutineProgress? _progress;

@@ -12,6 +12,7 @@ import 'membership_dialogs.dart';
 import 'register_payment_dialog.dart';
 import 'widgets/membership_widgets.dart';
 import '../../../core/presentation/components/onboarding/tour_anchor.dart';
+import '../../../core/services/data_changes.dart';
 
 /// Pagos › Estado de cuotas: quién está al día y quién debe. Las tarjetas de
 /// arriba filtran la lista. Solo existe si el admin ve servicios con abonos.
@@ -22,7 +23,13 @@ class MembershipBoardView extends StatefulWidget {
   State<MembershipBoardView> createState() => _MembershipBoardViewState();
 }
 
-class _MembershipBoardViewState extends State<MembershipBoardView> {
+class _MembershipBoardViewState extends State<MembershipBoardView> with ReloadOnDataChange {
+  @override
+  Set<DataTopic> get refreshTopics => const {DataTopic.gym, DataTopic.payments};
+
+  /// En vivo: cualquier cuota, pausa o abono del club cambia el tablero.
+  @override
+  void onDataChanged(DataChange change) => _load();
   final _repository = sl<MembershipRepository>();
   MembershipBoard? _board;
   String? _error;
