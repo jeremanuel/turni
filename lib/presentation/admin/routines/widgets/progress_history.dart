@@ -47,8 +47,12 @@ class ProgressStepChart extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
-    final values = [for (final point in points) metricValue(point.series, metric)];
-    String label(double v) => metric == ProgressMetric.weight ? '${formatKg(v)} kg' : v.toStringAsFixed(0);
+    final values = [for (final point in points) metricValue(point.series, metric, restSeconds: point.restSeconds)];
+    String label(double v) => switch (metric) {
+          ProgressMetric.weight => '${formatKg(v)} kg',
+          ProgressMetric.rest => formatRest(v.round()),
+          _ => v.toStringAsFixed(0),
+        };
     return Semantics(
       label: 'Evolución de ${metric.label.toLowerCase()}: ${values.map(label).join(', ')}',
       child: ExcludeSemantics(
@@ -181,8 +185,15 @@ class _HistoryDialogState extends State<_HistoryDialog> {
   ProgressMetric _initial() {
     final delta = widget.exercise.totalDelta;
     if (delta == null || delta.kg) return ProgressMetric.weight;
-    return delta.reps ? ProgressMetric.reps : ProgressMetric.sets;
+    if (delta.reps) return ProgressMetric.reps;
+    if (delta.sets) return ProgressMetric.sets;
+    return delta.rest ? ProgressMetric.rest : ProgressMetric.weight;
   }
+
+  /// El gráfico de descanso solo con los puntos que lo tienen.
+  List<ProgressPoint> get _chartPoints => _metric == ProgressMetric.rest
+      ? widget.exercise.points.where((point) => point.restSeconds != null).toList()
+      : widget.exercise.points;
 
   @override
   Widget build(BuildContext context) {
@@ -190,6 +201,8 @@ class _HistoryDialogState extends State<_HistoryDialog> {
     final textTheme = Theme.of(context).textTheme;
     final exercise = widget.exercise;
     final points = exercise.points;
+    final withRest = exercise.hasRests;
+    final metrics = [for (final metric in ProgressMetric.values) if (metric != ProgressMetric.rest || withRest) metric];
 
     Widget value(String text, bool changed) => Text(
           text,
@@ -215,6 +228,7 @@ class _HistoryDialogState extends State<_HistoryDialog> {
               delta?.reps ?? false,
             ),
             value(metricValue(point.series, ProgressMetric.weight) == 0 ? 'Sin peso' : '${formatKg(metricValue(point.series, ProgressMetric.weight))} kg', delta?.kg ?? false),
+            if (withRest) value(point.restSeconds == null ? '—' : formatRest(point.restSeconds!), delta?.rest ?? false),
             Text(point.who(widget.clientFirstName, first: i == 0)),
             DeltaChip(delta: delta, emptyLabel: 'Inicio'),
           ];
@@ -239,7 +253,7 @@ class _HistoryDialogState extends State<_HistoryDialog> {
           Wrap(
             spacing: 8,
             children: [
-              for (final metric in ProgressMetric.values)
+              for (final metric in metrics)
                 ChoiceChip(
                   label: Text(metric.label),
                   selected: metric == _metric,
@@ -256,7 +270,7 @@ class _HistoryDialogState extends State<_HistoryDialog> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              ProgressStepChart(points: points, metric: _metric),
+              ProgressStepChart(points: _chartPoints, metric: _metric),
               const SizedBox(height: 8),
               Text(
                 'Punto lleno: lo cambió ${widget.clientFirstName} entrenando. Punto hueco: una versión del plan.',
@@ -264,8 +278,8 @@ class _HistoryDialogState extends State<_HistoryDialog> {
               ),
               const SizedBox(height: 16),
               AdminDataTable(
-                columns: const ['Fecha', 'Series', 'Reps', 'Peso', 'Quién', 'Cambio'],
-                columnWidths: const {4: FlexColumnWidth()},
+                columns: ['Fecha', 'Series', 'Reps', 'Peso', if (withRest) 'Descanso', 'Quién', 'Cambio'],
+                columnWidths: {withRest ? 5 : 4: const FlexColumnWidth()},
                 rows: rows,
               ),
             ],
@@ -348,7 +362,7 @@ class _RoutineProgressTableState extends State<RoutineProgressTable> {
         const SizedBox(height: 12),
         if (changed.isEmpty)
           Text(
-            'Ningún ejercicio cambió todavía. Cuando ${widget.clientFirstName} cambie series, reps o peso entrenando, o edites el plan, lo vas a ver acá.',
+            'Ningún ejercicio cambió todavía. Cuando ${widget.clientFirstName} cambie series, reps, peso o descanso entrenando, o edites el plan, lo vas a ver acá.',
             style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant),
           )
         else
