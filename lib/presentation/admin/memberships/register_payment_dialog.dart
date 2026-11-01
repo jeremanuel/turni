@@ -1,5 +1,6 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
+import '../../../core/presentation/components/loading/app_skeleton.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_portal/flutter_portal.dart';
 
@@ -17,7 +18,7 @@ import '../../../domain/entities/payment/payment_method.dart';
 import '../../../domain/repositories/membership_repository.dart';
 import '../../../domain/repositories/payment_repository.dart';
 import '../../core/cubit/auth/auth_cubit.dart';
-import '../../core/pick_client/pick_client.dart';
+import '../../../core/presentation/components/inputs/client_search_field.dart';
 import '../club_config/widgets/price_field.dart';
 import 'widgets/membership_widgets.dart';
 
@@ -268,10 +269,10 @@ class _RegisterPaymentDialogState extends State<_RegisterPaymentDialog> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 if (widget.client == null && !_membershipOnly) ...[
-                  PickClient(
+                  ClientSearchFormField(
                     name: 'client',
                     isRequired: true,
-                    onChange: (picked) {
+                    onChanged: (picked) {
                       setState(() {
                         _client = picked;
                         _active = const [];
@@ -408,7 +409,7 @@ class _RegisterPaymentDialogState extends State<_RegisterPaymentDialog> {
         FilledButton(
           onPressed: _saving || _clientId == null ? null : _save,
           child: _saving
-              ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
+              ? const InlineSpinner(size: 16)
               : Text(total == null || total <= 0 ? 'Registrar' : 'Registrar ${money(total)}'),
         ),
       ],

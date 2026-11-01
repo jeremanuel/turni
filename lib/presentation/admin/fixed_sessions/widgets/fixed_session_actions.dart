@@ -2,13 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../core/config/service_locator.dart';
+import '../../../../core/presentation/components/inputs/client_search_field.dart';
 import '../../../../core/presentation/components/inputs/snackbars/snackbars_functions.dart';
 import '../../../../core/utils/either.dart';
 import '../../../../core/utils/permissions.dart';
 import '../../../../domain/entities/client.dart';
 import '../../../../domain/entities/fixed_session.dart';
+import '../../../../domain/entities/person.dart';
 import '../../../../domain/repositories/fixed_session_repository.dart';
-import 'client_search_field.dart';
 import 'fixed_session_form_dialog.dart';
 import 'fixed_session_texts.dart';
 
@@ -271,6 +272,9 @@ class _ParticipantsDialogState extends State<_ParticipantsDialog> {
   bool _saving = false;
   String? _error;
 
+  static Client _asClient(FixedSessionPerson p) =>
+      Client(clientId: '${p.clientId}', person: Person(name: p.name, lastName: p.lastName, email: null));
+
   Future<void> _save() async {
     setState(() {
       _saving = true;
@@ -294,7 +298,6 @@ class _ParticipantsDialogState extends State<_ParticipantsDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final excluded = {widget.fixedSession.client.clientId, ..._participants.map((p) => p.clientId)};
     return AlertDialog(
       title: const Text('Integrantes'),
       content: SizedBox(
@@ -308,25 +311,17 @@ class _ParticipantsDialogState extends State<_ParticipantsDialog> {
               style: Theme.of(context).textTheme.bodySmall,
             ),
             const SizedBox(height: 12),
-            if (_participants.isEmpty) const Text('Sin integrantes.'),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                for (final p in _participants)
-                  InputChip(label: Text(p.fullName), onDeleted: () => setState(() => _participants.remove(p))),
-              ],
-            ),
-            const SizedBox(height: 12),
-            ClientSearchField(
-              label: 'Sumar integrante',
-              excludeIds: excluded,
-              clearOnSelect: true,
-              onSelected: (client) => setState(() => _participants.add(FixedSessionPerson(
-                    clientId: client.intClientId,
-                    name: client.person?.name ?? '',
-                    lastName: client.person?.lastName ?? '',
-                  ))),
+            ClientSearchField.multiple(
+              label: 'Integrantes',
+              values: [for (final p in _participants) _asClient(p)],
+              rowInfo: (c) => c.clientId == '${widget.fixedSession.client.clientId}' ? const ClientRowInfo('Es el titular', disabled: true) : null,
+              onValuesChanged: (clients) => setState(() => _participants
+                ..clear()
+                ..addAll(clients.map((c) => FixedSessionPerson(
+                      clientId: c.intClientId,
+                      name: c.person?.name ?? '',
+                      lastName: c.person?.lastName ?? '',
+                    )))),
             ),
             if (_error != null) ...[
               const SizedBox(height: 12),

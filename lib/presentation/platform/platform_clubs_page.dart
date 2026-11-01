@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/presentation/components/loading/app_skeleton.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -196,7 +197,7 @@ class _PlatformClubsPageState extends State<PlatformClubsPage> {
                 child: FilledButton(
                   onPressed: _saving ? null : _submit,
                   child: _saving
-                      ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
+                      ? const InlineSpinner()
                       : const Text('Dar de alta'),
                 ),
               ),

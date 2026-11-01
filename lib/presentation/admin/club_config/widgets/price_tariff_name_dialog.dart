@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/presentation/components/loading/app_skeleton.dart';
 
 import '../../../../core/config/service_locator.dart';
 import '../../../../core/utils/domain_error.dart';
@@ -112,7 +113,7 @@ class _PriceTariffNameDialogState extends State<PriceTariffNameDialog> {
         FilledButton(
           onPressed: _isSaving ? null : _submit,
           child: _isSaving
-              ? const SizedBox(height: 16, width: 16, child: CircularProgressIndicator(strokeWidth: 2))
+              ? const InlineSpinner(size: 16)
               : Text(_isEditing ? 'Guardar' : 'Crear'),
         ),
       ],

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import '../loading/app_skeleton.dart';
 import 'package:flutter/services.dart';
 
 import '../../../../infrastructure/localstorage/provider/local_storage.dart';
@@ -326,7 +327,7 @@ class _OnboardingOverlayState extends State<_OnboardingOverlay> {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)),
+                      const InlineSpinner(size: 16),
                       const SizedBox(width: 12),
                       const Text('Cargando…'),
                       const SizedBox(width: 8),

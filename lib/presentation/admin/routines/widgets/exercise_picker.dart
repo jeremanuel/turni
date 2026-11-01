@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import '../../../../core/presentation/components/loading/app_skeleton.dart';
 import 'package:flutter/services.dart';
+
+import '../../../../core/presentation/components/inputs/dropdown_placement.dart';
 
 import '../../../../domain/entities/gym/gym.dart';
 
@@ -111,7 +114,7 @@ class _Results extends StatelessWidget {
             child: Row(
               children: [
                 creating
-                    ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
+                    ? const InlineSpinner()
                     : Icon(Icons.add, size: 18, color: colorScheme.primary),
                 const SizedBox(width: 10),
                 Expanded(
@@ -302,6 +305,7 @@ class InlineExerciseSearch extends StatefulWidget {
 class _InlineExerciseSearchState extends State<InlineExerciseSearch> with _PickerState<InlineExerciseSearch> {
   final _overlay = OverlayPortalController();
   final _link = LayerLink();
+  final _fieldKey = GlobalKey();
   double _width = 400;
 
   @override
@@ -355,12 +359,16 @@ class _InlineExerciseSearchState extends State<InlineExerciseSearch> with _Picke
       onTapOutside: (_) => _close(),
       child: OverlayPortal(
         controller: _overlay,
-        overlayChildBuilder: (context) => CompositedTransformFollower(
+        overlayChildBuilder: (context) {
+          // Cerca del borde de abajo (el último grupo) se abre hacia arriba.
+          final placement = DropdownPlacement.of(_fieldKey.currentContext, preferredHeight: 380, gap: 6);
+          return CompositedTransformFollower(
           link: _link,
-          targetAnchor: Alignment.bottomLeft,
-          offset: const Offset(0, 6),
+          targetAnchor: placement.targetAnchor,
+          followerAnchor: placement.followerAnchor,
+          offset: placement.offset,
           child: Align(
-            alignment: Alignment.topLeft,
+            alignment: placement.alignment,
             child: TapRegion(
               groupId: this,
               child: SizedBox(
@@ -371,7 +379,7 @@ class _InlineExerciseSearchState extends State<InlineExerciseSearch> with _Picke
                   borderRadius: BorderRadius.circular(4),
                   clipBehavior: Clip.antiAlias,
                   child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxHeight: 380),
+                    constraints: BoxConstraints(maxHeight: placement.maxHeight),
                     child: _Results(
                       search: current,
                       clientFirstName: widget.clientFirstName,
@@ -390,10 +398,12 @@ class _InlineExerciseSearchState extends State<InlineExerciseSearch> with _Picke
               ),
             ),
           ),
-        ),
+        );
+        },
         child: LayoutBuilder(builder: (context, constraints) {
           _width = constraints.maxWidth;
           return CompositedTransformTarget(
+            key: _fieldKey,
             link: _link,
             child: Focus(
               onKeyEvent: (node, event) {

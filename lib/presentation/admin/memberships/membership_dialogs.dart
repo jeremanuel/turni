@@ -1,5 +1,6 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
+import '../../../core/presentation/components/loading/app_skeleton.dart';
 import 'package:flutter/services.dart';
 
 import '../../../core/config/service_locator.dart';
@@ -278,7 +279,7 @@ class _PauseDialogState extends State<_PauseDialog> {
         TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Cancelar')),
         FilledButton(
           onPressed: _saving ? null : _save,
-          child: _saving ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)) : const Text('Pausar abono'),
+          child: _saving ? const InlineSpinner(size: 16) : const Text('Pausar abono'),
         ),
       ],
     );
@@ -574,7 +575,7 @@ class _ResumeDialogState extends State<_ResumeDialog> {
         FilledButton(
           onPressed: _saving ? null : _save,
           child: _saving
-              ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
+              ? const InlineSpinner(size: 16)
               : Text(_pay ? 'Retomar y registrar ${money(ThousandsFormat.parsePrice(_amount.text.trim()) ?? 0)}' : 'Retomar'),
         ),
       ],

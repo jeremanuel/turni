@@ -51,6 +51,16 @@ class ClubPartitionCard extends StatelessWidget {
     // Sin nombre propio se llama como su tipo: el chip del tipo sobraría.
     final title = ownName == null || ownName.isEmpty ? clubTypeName : ownName;
 
+    final columns = [
+      'Nombre',
+      if (features.capacity) vocabulary.participant.plural,
+      if (features.cover) vocabulary.space.g('Cubierta', 'Cubierto'),
+      'Duración',
+      'Precio default',
+      vocabulary.space.g('Activa', 'Activo'),
+      '',
+    ];
+
     return Card(
       shape: highlighted
           ? RoundedRectangleBorder(
@@ -109,10 +119,7 @@ class ClubPartitionCard extends StatelessWidget {
               ),
               const Divider(),
               if (isLoadingPhysical)
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 24),
-                  child: Center(child: CircularProgressIndicator()),
-                )
+                AdminTableSkeleton(columns: columns, rows: 2, mobileNested: true)
               else if (physicalPartitions.isEmpty)
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 12),
@@ -126,15 +133,7 @@ class ClubPartitionCard extends StatelessWidget {
                 AdminTableScroll(
                   child: AdminDataTable(
                     mobileNested: true,
-                    columns: [
-                      'Nombre',
-                      if (features.capacity) vocabulary.participant.plural,
-                      if (features.cover) vocabulary.space.g('Cubierta', 'Cubierto'),
-                      'Duración',
-                      'Precio default',
-                      vocabulary.space.g('Activa', 'Activo'),
-                      '',
-                    ],
+                    columns: columns,
                     rows: physicalPartitions
                         .map(
                           (partition) => [

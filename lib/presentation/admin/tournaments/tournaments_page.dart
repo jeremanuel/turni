@@ -93,14 +93,26 @@ class _TournamentsTabState extends State<_TournamentsTab> with ReloadOnDataChang
     _load();
   }
 
+  static const _columns = ['Torneo', 'Modalidad', 'Categoría', 'Formato', 'Equipos', 'Entrada', 'Estado'];
+  static const _widths = {
+    0: FlexColumnWidth(2.2),
+    1: FlexColumnWidth(1.3),
+    2: FlexColumnWidth(1.3),
+    3: FlexColumnWidth(1.4),
+    4: FlexColumnWidth(),
+    5: FlexColumnWidth(1.2),
+    6: FlexColumnWidth(1.3),
+  };
+
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final text = Theme.of(context).textTheme;
 
-    if (_error != null) return LoadError(message: _error!, onRetry: _load);
-    final all = _tournaments;
-    if (all == null) return const Center(child: CircularProgressIndicator());
+    if (_error != null) return LoadError(message: _error!, onRetry: _load, center: true);
+    // Primera carga: el encabezado real y la tabla como esqueleto.
+    final loading = _tournaments == null;
+    final all = _tournaments ?? const [];
 
     final shown = _filter == null ? all : all.where((t) => t.status == _filter).toList();
     final counts = {for (final s in TournamentStatus.values) s: all.where((t) => t.status == s).length};
@@ -126,7 +138,7 @@ class _TournamentsTabState extends State<_TournamentsTab> with ReloadOnDataChang
             ],
           ),
           const SizedBox(height: 16),
-          TourAnchor(id: 'tournaments.filters', child: Wrap(
+          if (!loading) TourAnchor(id: 'tournaments.filters', child: Wrap(
             spacing: 8,
             runSpacing: 8,
             children: [
@@ -151,7 +163,9 @@ class _TournamentsTabState extends State<_TournamentsTab> with ReloadOnDataChang
             ],
           )),
           const SizedBox(height: 16),
-          if (shown.isEmpty)
+          if (loading)
+            const AdminTableSkeleton(columns: _columns, columnWidths: _widths)
+          else if (shown.isEmpty)
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 48),
               child: Column(
@@ -164,16 +178,8 @@ class _TournamentsTabState extends State<_TournamentsTab> with ReloadOnDataChang
             )
           else
             TourAnchor(id: 'tournaments.table', child: AdminDataTable(
-              columns: const ['Torneo', 'Modalidad', 'Categoría', 'Formato', 'Equipos', 'Entrada', 'Estado'],
-              columnWidths: const {
-                0: FlexColumnWidth(2.2),
-                1: FlexColumnWidth(1.3),
-                2: FlexColumnWidth(1.3),
-                3: FlexColumnWidth(1.4),
-                4: FlexColumnWidth(),
-                5: FlexColumnWidth(1.2),
-                6: FlexColumnWidth(1.3),
-              },
+              columns: _columns,
+              columnWidths: _widths,
               rows: [
                 for (final t in shown)
                   [

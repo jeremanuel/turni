@@ -6,6 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/config/router/app_routes.dart';
 import '../../../../core/config/service_locator.dart';
 import '../../../../core/presentation/components/links/entity_links.dart';
+import '../../../../core/presentation/components/loading/app_skeleton.dart';
 import '../../../../core/utils/admin_features.dart';
 import '../../../../core/utils/either.dart';
 import '../../../../core/utils/permissions.dart';
@@ -13,6 +14,7 @@ import '../../../../core/utils/responsive_builder.dart';
 import '../../../../core/utils/thousands_format.dart';
 import '../../../../domain/entities/client.dart';
 import '../../../../domain/entities/client_summary.dart';
+import '../../../../domain/entities/person.dart';
 import '../../../../domain/repositories/fixed_session_repository.dart';
 import '../../memberships/client_membership_card.dart';
 import '../../memberships/register_payment_dialog.dart';
@@ -122,7 +124,7 @@ class _ClientProfileBodyState extends State<ClientProfileBody> {
       if (_showLegacySubscription) _SideCard(title: 'Abono', child: widget.subscription),
       TourAnchor(id: 'client.labels', child: Card(margin: EdgeInsets.zero, child: widget.labels)),
       TourAnchor(id: 'client.notes', child: _NotesCard(client: widget.client, onEdit: widget.onEdit)),
-      TourAnchor(id: 'client.activity', child: _ActivityCard(summary: _summary)),
+      TourAnchor(id: 'client.activity', child: _ActivityCard(summary: _summary, error: _summaryError)),
       TourAnchor(
         id: 'client.notifications',
         child: ClientNotificationsCard(key: ValueKey('notifications-${widget.client.clientId}'), clientId: widget.client.intClientId),
@@ -144,7 +146,7 @@ class _ClientProfileBodyState extends State<ClientProfileBody> {
           else
             TourAnchor(id: 'client.header', child: _HeaderCard(client: widget.client, onEdit: widget.onEdit, onPaymentCreated: _moneyChanged)),
           const SizedBox(height: 20),
-          TourAnchor(id: 'client.kpis', child: _KpiRow(summary: _summary)),
+          TourAnchor(id: 'client.kpis', child: _KpiRow(summary: _summary, loading: _summary == null && _summaryError == null)),
           const SizedBox(height: 20),
           if (desktop)
             Row(
@@ -345,12 +347,23 @@ class _Tag extends StatelessWidget {
 }
 
 class _KpiRow extends StatelessWidget {
-  const _KpiRow({required this.summary});
+  const _KpiRow({required this.summary, this.loading = false});
 
   final ClientSummary? summary;
 
+  /// Mientras carga: los mismos indicadores con números de mentira.
+  final bool loading;
+
   @override
   Widget build(BuildContext context) {
+    if (loading) {
+      return AppSkeleton(
+        child: _grid([
+          for (final label in const ['Turnos · últimos 90 días', 'Días cancelados · 90 días', 'Saldo pendiente', 'Último pago'])
+            _Kpi(label: label, value: '00', detail: skeletonText(3)),
+        ]),
+      );
+    }
     final s = summary;
     final last = s?.lastPayment;
     final tiles = [
@@ -376,12 +389,14 @@ class _KpiRow extends StatelessWidget {
         detail: last == null ? 'Sin pagos' : [_money(last.amount), if (last.method != null) last.method!].join(' · '),
       ),
     ];
-    return LayoutBuilder(builder: (context, constraints) {
-      final columns = constraints.maxWidth > 900 ? 4 : 2;
-      final width = (constraints.maxWidth - (columns - 1) * 16) / columns;
-      return Wrap(spacing: 16, runSpacing: 16, children: [for (final t in tiles) SizedBox(width: width, child: t)]);
-    });
+    return _grid(tiles);
   }
+
+  static Widget _grid(List<Widget> tiles) => LayoutBuilder(builder: (context, constraints) {
+        final columns = constraints.maxWidth > 900 ? 4 : 2;
+        final width = (constraints.maxWidth - (columns - 1) * 16) / columns;
+        return Wrap(spacing: 16, runSpacing: 16, children: [for (final t in tiles) SizedBox(width: width, child: t)]);
+      });
 }
 
 class _Kpi extends StatelessWidget {
@@ -402,7 +417,7 @@ class _Kpi extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(label, style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant)),
+            Skeleton.keep(child: Text(label, style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant))),
             const SizedBox(height: 4),
             Text(value, style: TextStyle(fontSize: 28, fontWeight: FontWeight.w500, color: alert ? scheme.error : scheme.onSurface)),
             Text(detail, style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant)),
@@ -429,7 +444,7 @@ class _UpcomingCard extends StatelessWidget {
     if (error != null) {
       body = Text(error!, style: TextStyle(color: scheme.error));
     } else if (upcoming == null) {
-      body = const LinearProgressIndicator();
+      body = const SkeletonRows();
     } else if (upcoming.isEmpty) {
       body = Text('No tiene turnos próximos.', style: textTheme.bodyMedium?.copyWith(color: scheme.onSurfaceVariant));
     } else {
@@ -558,9 +573,10 @@ class _NotesCard extends StatelessWidget {
 }
 
 class _ActivityCard extends StatelessWidget {
-  const _ActivityCard({required this.summary});
+  const _ActivityCard({required this.summary, this.error});
 
   final ClientSummary? summary;
+  final String? error;
 
   @override
   Widget build(BuildContext context) {
@@ -575,8 +591,10 @@ class _ActivityCard extends StatelessWidget {
 
     return _SideCard(
       title: 'Actividad',
-      child: activity == null
-          ? const LinearProgressIndicator()
+      child: error != null
+          ? Text(error!, style: TextStyle(color: scheme.error))
+          : activity == null
+          ? const SkeletonRows(dividers: false, padding: EdgeInsets.only(bottom: 12))
           : activity.isEmpty
               ? Text('Sin actividad todavía.', style: TextStyle(color: scheme.onSurfaceVariant))
               : Column(
@@ -612,6 +630,52 @@ class _ActivityCard extends StatelessWidget {
                       ),
                   ],
                 ),
+    );
+  }
+}
+
+/// La ficha mientras llega el cliente (entrando por link o recargando): el
+/// encabezado, los indicadores y las cards con su forma, sin datos.
+class ClientProfileSkeleton extends StatelessWidget {
+  const ClientProfileSkeleton({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final desktop = ResponsiveBuilder.isDesktop(context);
+    final client = Client(
+      person: Person(name: skeletonText(1), lastName: skeletonText(1), email: BoneMock.email, phone: BoneMock.phone),
+    );
+
+    Widget card(String title, {int rows = 3}) => _SideCard(title: title, child: SkeletonRows(count: rows));
+    Widget column(List<Widget> children) => Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [for (final (i, child) in children.indexed) ...[if (i > 0) const SizedBox(height: 20), child]],
+        );
+    final main = [card('Turnos fijos', rows: 2), card('Próximos turnos'), card('Pagos')];
+    final side = [card('Etiquetas', rows: 1), card('Notas', rows: 1), card('Actividad')];
+
+    return SingleChildScrollView(
+      padding: EdgeInsets.all(desktop ? 24 : 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          AppSkeleton(child: _HeaderCard(client: client, onEdit: () {}, onPaymentCreated: () {})),
+          const SizedBox(height: 20),
+          const _KpiRow(summary: null, loading: true),
+          const SizedBox(height: 20),
+          if (desktop)
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(flex: 2, child: column(main)),
+                const SizedBox(width: 20),
+                Expanded(child: column(side)),
+              ],
+            )
+          else
+            column([...main, ...side]),
+        ],
+      ),
     );
   }
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/presentation/components/loading/app_skeleton.dart';
 
 import '../../../../core/presentation/components/permission_lock.dart';
 import '../../../../core/utils/permissions.dart';
@@ -103,11 +104,9 @@ class _SessionRequestSettingsTabState
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
-    }
-
-    return SingleChildScrollView(
+    return AppSkeleton(
+      enabled: _isLoading,
+      child: SingleChildScrollView(
       padding: EdgeInsets.all(ResponsiveBuilder.isMobile(context) ? 16 : 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -164,11 +163,7 @@ class _SessionRequestSettingsTabState
                 child: FilledButton(
                   onPressed: _isSaving ? null : _save,
                   child: _isSaving
-                      ? const SizedBox(
-                          height: 16,
-                          width: 16,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
+                      ? const InlineSpinner(size: 16)
                       : const Text("Guardar"),
                 ),
               )),
@@ -179,6 +174,7 @@ class _SessionRequestSettingsTabState
       )),
         ],
       ),
+    ),
     );
   }
 }

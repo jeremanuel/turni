@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/presentation/components/loading/app_skeleton.dart';
 
 import '../../../../core/presentation/components/permission_lock.dart';
 import '../../../../core/utils/permissions.dart';
@@ -430,10 +431,20 @@ class _PriceTariffsTabState extends State<PriceTariffsTab> {
     );
   }
 
+  /// Mientras cargan las tarifas: la lista a la izquierda y el detalle.
+  Widget _loadingBody() => const Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(width: 300, child: SkeletonCard(rows: 4, margin: EdgeInsets.zero)),
+          SizedBox(width: 24),
+          Expanded(child: SkeletonCard(rows: 5, margin: EdgeInsets.zero)),
+        ],
+      );
+
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return Padding(padding: EdgeInsets.all(ResponsiveBuilder.isMobile(context) ? 16 : 24), child: _loadingBody());
     }
 
     if (_errorMessage != null && _clubPartitions.isEmpty) {
@@ -474,7 +485,7 @@ class _PriceTariffsTabState extends State<PriceTariffsTab> {
           const SizedBox(height: 16),
           Expanded(
             child: _isLoadingTariffs
-                ? const Center(child: CircularProgressIndicator())
+                ? _loadingBody()
                 : Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -819,7 +830,7 @@ class _PriceTariffsTabState extends State<PriceTariffsTab> {
               child: OutlinedButton(
                 onPressed: _isCreatingRule ? null : () => _createRule(tariff),
                 child: _isCreatingRule
-                    ? const SizedBox(height: 16, width: 16, child: CircularProgressIndicator(strokeWidth: 2))
+                    ? const InlineSpinner(size: 16)
                     : const Text('Agregar franja'),
               ),
             ),

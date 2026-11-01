@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/presentation/components/loading/app_skeleton.dart';
 
 import '../../../../core/presentation/components/permission_lock.dart';
 import '../../../../core/utils/permissions.dart';
@@ -240,11 +241,7 @@ class _ProductsTabState extends State<ProductsTab> {
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
-    }
-
-    if (_errorMessage != null && _products.isEmpty && _categories.isEmpty) {
+    if (!_isLoading && _errorMessage != null && _products.isEmpty && _categories.isEmpty) {
       return Center(child: Text(_errorMessage!));
     }
 
@@ -284,7 +281,9 @@ class _ProductsTabState extends State<ProductsTab> {
                     ],
                   ),
                   const SizedBox(height: 16),
-                  if (_visibleProducts.isEmpty)
+                  if (_isLoading)
+                    const AdminTableSkeleton(columns: ['Nombre', 'Categoría', 'Precio', 'Activo', ''], rows: 4, mobileNested: true)
+                  else if (_visibleProducts.isEmpty)
                     const Padding(
                       padding: EdgeInsets.symmetric(vertical: 12),
                       child: Text('Todavía no hay productos.'),
@@ -458,7 +457,7 @@ class _ProductsTabState extends State<ProductsTab> {
               child: OutlinedButton(
                 onPressed: _isCreatingProduct ? null : _createProduct,
                 child: _isCreatingProduct
-                    ? const SizedBox(height: 16, width: 16, child: CircularProgressIndicator(strokeWidth: 2))
+                    ? const InlineSpinner(size: 16)
                     : const Text('Agregar producto'),
               ),
             ),
