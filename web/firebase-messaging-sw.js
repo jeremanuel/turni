@@ -23,13 +23,15 @@ const messaging = firebase.messaging();
 messaging.onBackgroundMessage((payload) => {
   console.log('[firebase-messaging-sw.js] Mensaje en background:', payload);
 
-  // Registrar `onBackgroundMessage` le saca a Firebase el manejo automático
-  // de mostrar la notificación del sistema — a partir de acá es
-  // responsabilidad nuestra, si no el mensaje llega pero nunca se ve nada.
-  const notification = payload.notification || {};
-  self.registration.showNotification(notification.title || 'Turni', {
-    body: notification.body,
+  // Si el mensaje trae `notification` (los del back siempre), la notificación
+  // ya la mostró el SDK antes de llamar a este handler: mostrarla acá también
+  // hacía que llegara doble. Solo un mensaje de datos se muestra a mano.
+  if (payload.notification) return;
+  const data = payload.data || {};
+  if (!data.title) return;
+  return self.registration.showNotification(data.title, {
+    body: data.body,
     icon: '/icons/Icon-192.png',
-    data: payload.data,
+    data,
   });
 });

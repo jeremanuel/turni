@@ -1,3 +1,12 @@
+import '../../domain/repositories/membership_repository.dart';
+import '../../domain/repositories/notification_repository.dart';
+import '../../infrastructure/api/repositories/notification_repository_impl.dart';
+import '../../domain/repositories/notification_history_repository.dart';
+import '../../infrastructure/api/repositories/notification_history_repository_impl.dart';
+import '../../presentation/admin/notifications/notifications_cubit.dart';
+import '../services/push_notification_service.dart';
+import '../services/data_changes.dart';
+import '../../infrastructure/api/repositories/membership_repository_impl.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_localization/flutter_localization.dart';
 import 'package:get_it/get_it.dart';
@@ -13,7 +22,7 @@ import '../../domain/repositories/tournament_repository.dart';
 import '../../domain/repositories/club_payment_account_repository.dart';
 import '../../domain/repositories/label_repository.dart';
 import '../../domain/repositories/payment_repository.dart';
-import '../../domain/repositories/routine_repository.dart';
+import '../../domain/repositories/gym_repository.dart';
 import '../../domain/repositories/product_repository.dart';
 import '../../domain/repositories/session_repository.dart';
 import '../../domain/repositories/subscription_repository.dart';
@@ -35,7 +44,7 @@ import '../../infrastructure/api/repositories/payment_repository_impl.dart';
 import '../../infrastructure/api/repositories/product_repository_impl.dart';
 import '../../infrastructure/api/repositories/session_repository_impl.dart';
 import '../../infrastructure/api/repositories/subscription_repository_impl.dart';
-import '../../infrastructure/mock/routine_repository_mock.dart';
+import '../../infrastructure/api/repositories/gym_repository_impl.dart';
 import '../../presentation/admin/states/global_data/global_data_cubit.dart';
 import '../../presentation/admin/states/scaffold_cubit/scaffold_cubit.dart';
 import '../utils/dio_init.dart';
@@ -43,9 +52,11 @@ import '../../domain/repositories/auth_repository.dart';
 import '../../domain/usercases/auth_user_cases.dart';
 import '../../infrastructure/api/providers/auth_provider.dart';
 import '../../domain/repositories/admin_access_repository.dart';
+import '../../domain/repositories/platform_repository.dart';
 import '../../domain/repositories/fixed_session_repository.dart';
 import '../../infrastructure/api/repositories/fixed_session_repository_impl.dart';
 import '../../infrastructure/api/repositories/admin_access_repository_impl.dart';
+import '../../infrastructure/api/repositories/platform_repository_impl.dart';
 import '../../infrastructure/api/repositories/auth_repository_impl.dart';
 import '../../presentation/core/cubit/auth/auth_cubit.dart';
 
@@ -93,6 +104,8 @@ class ServiceLocator {
 
     sl.registerSingleton<AdminAccessRepository>(AdminAccessRepositoryImpl());
 
+    sl.registerSingleton<PlatformRepository>(PlatformRepositoryImpl());
+
     sl.registerSingleton<FixedSessionRepository>(FixedSessionRepositoryImpl());
 
     sl.registerSingleton<SessionRepository>(SessionRepositoryImplementation(sessionProvider: SessionProvider()));
@@ -117,7 +130,12 @@ class ServiceLocator {
 
     sl.registerLazySingleton<CreateSesssionsFormBloc>(() => CreateSesssionsFormBloc());
 
-    sl.registerLazySingleton<RoutineRepository>(() => RoutineRepositoryMock());
+    sl.registerLazySingleton<GymRepository>(() => GymRepositoryImpl());
+    sl.registerLazySingleton<MembershipRepository>(() => MembershipRepositoryImpl());
+    sl.registerLazySingleton<NotificationRepository>(() => NotificationRepositoryImpl());
+    sl.registerLazySingleton<NotificationHistoryRepository>(() => NotificationHistoryRepositoryImpl());
+    sl.registerLazySingleton<NotificationsCubit>(
+        () => NotificationsCubit(pushes: PushNotificationService.messages, changes: DataChanges.on(const {DataTopic.notifications})));
 
     sl.registerLazySingleton<IARepository>(
       () => GeminiRepository(),

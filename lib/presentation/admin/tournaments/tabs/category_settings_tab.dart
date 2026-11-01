@@ -7,6 +7,7 @@ import '../../../../domain/entities/tournament/tournament.dart';
 import '../../../../domain/repositories/tournament_repository.dart';
 import '../../../../core/utils/responsive_builder.dart';
 import '../widgets/tournament_ui.dart';
+import '../../../../core/presentation/components/onboarding/tour_anchor.dart';
 
 /// Qué deportes categoriza el club (asigna su propia categoría a los
 /// jugadores y tiene ranking) y la ciudad del club (ranking de la ciudad).
@@ -98,7 +99,7 @@ class _CategorySettingsTabState extends State<CategorySettingsTab> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                SectionCard(
+                TourAnchor(id: 'categories.sports', child: SectionCard(
                   title: 'Deportes que categoriza el club',
                   subtitle: 'Si lo activás, el club asigna su propia categoría a cada jugador (desde su ficha) y tiene ranking de ese deporte. '
                       'En tus torneos cuenta esa categoría; si un jugador no tiene, cuenta la que declaró él.',
@@ -116,9 +117,9 @@ class _CategorySettingsTabState extends State<CategorySettingsTab> {
                         ),
                     ],
                   ),
-                ),
+                )),
                 const SizedBox(height: 16),
-                SectionCard(
+                TourAnchor(id: 'categories.city', child: SectionCard(
                   title: 'Ciudad del club',
                   subtitle: 'Agrupa el ranking de la ciudad: suma los torneos de todos los clubes de la misma ciudad.',
                   child: Wrap(
@@ -137,7 +138,7 @@ class _CategorySettingsTabState extends State<CategorySettingsTab> {
                       FilledButton(onPressed: _saving ? null : _saveCity, child: const Text('Guardar')),
                     ],
                   ),
-                ),
+                )),
               ],
             ),
           ),

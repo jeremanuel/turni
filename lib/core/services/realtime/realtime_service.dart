@@ -182,6 +182,8 @@ Set<DataTopic> topicsForRealtime(Iterable<String> topics) {
       'matches' => DataTopic.matches,
       'club_config' => DataTopic.clubConfig,
       'admins' => DataTopic.admins,
+      'gym' => DataTopic.gym,
+      'notifications' => DataTopic.notifications,
       _ => null,
     };
     if (match != null) result.add(match);

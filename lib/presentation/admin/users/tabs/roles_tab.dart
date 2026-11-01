@@ -10,6 +10,7 @@ import '../users_access.dart';
 import '../widgets/role_form_dialog.dart';
 import '../../../../core/utils/responsive_builder.dart';
 import '../../../../core/services/data_changes.dart';
+import '../../../../core/presentation/components/onboarding/tour_anchor.dart';
 
 /// Roles del club: qué pantallas ve y qué puede hacer cada uno.
 class RolesTab extends StatefulWidget {
@@ -118,16 +119,19 @@ class _RolesTabState extends State<RolesTab> with ReloadOnDataChange {
               ),
               if (_canEdit) ...[
                 const SizedBox(width: 16),
-                FilledButton.icon(
-                  onPressed: _catalog.isEmpty ? null : () => _openForm(),
-                  icon: const Icon(Icons.add),
-                  label: const Text('Nuevo rol'),
+                TourAnchor(
+                  id: 'roles.new',
+                  child: FilledButton.icon(
+                    onPressed: _catalog.isEmpty ? null : () => _openForm(),
+                    icon: const Icon(Icons.add),
+                    label: const Text('Nuevo rol'),
+                  ),
                 ),
               ],
             ],
           ),
           const SizedBox(height: 16),
-          AdminTableCard(
+          TourAnchor(id: 'roles.table', child: AdminTableCard(
             child: LayoutBuilder(
                 builder: (context, constraints) => AdminTableScroll(
                   child: ConstrainedBox(
@@ -145,7 +149,7 @@ class _RolesTabState extends State<RolesTab> with ReloadOnDataChange {
                   ),
                 ),
             ),
-          ),
+          )),
         ],
       ),
     );

@@ -10,6 +10,7 @@ import '../../../../core/utils/responsive_builder.dart';
 import '../../states/global_data/global_data_cubit.dart';
 import '../bloc/clients_list_bloc.dart';
 import '../list_utils/client_list_filters.dart';
+import '../../../../core/presentation/components/onboarding/tour_anchor.dart';
 
 class ClientListFiltersContainer extends StatefulWidget {
   const ClientListFiltersContainer({
@@ -83,7 +84,10 @@ class _ClientListFiltersContainerState extends State<ClientListFiltersContainer>
                   child: Row(
                     spacing: 10,
                     children: [
-                      if (isMobile) const Expanded(child: _SearchBarFilter()) else const _SearchBarFilter(),
+                      if (isMobile)
+                        const Expanded(child: TourAnchor(id: 'clients.search', child: _SearchBarFilter()))
+                      else
+                        const TourAnchor(id: 'clients.search', child: _SearchBarFilter()),
                       if (ResponsiveBuilder.isDesktop(context)) ...[
                         const Padding(
                           padding: EdgeInsets.symmetric(vertical: 12),

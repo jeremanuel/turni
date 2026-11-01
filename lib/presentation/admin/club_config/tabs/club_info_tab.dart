@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:latlong2/latlong.dart';
 
 import '../../../../core/presentation/components/permission_lock.dart';
 import '../../../../core/utils/permissions.dart';
@@ -7,11 +8,22 @@ import '../../../../core/config/service_locator.dart';
 import '../../../../core/presentation/components/inputs/snackbars/snackbars_functions.dart';
 import '../../../../core/utils/domain_error.dart';
 import '../../../../core/utils/either.dart';
+import '../../../../core/presentation/components/maps/location_picker_map.dart';
+import '../../../../core/services/address_geocoder.dart';
+import '../../../../domain/entities/club_info.dart';
 import '../../../../domain/repositories/club_info_repository.dart';
+import '../../../../core/presentation/components/onboarding/tour_anchor.dart';
 import '../../../../core/utils/responsive_builder.dart';
 
+/// Datos del establecimiento. Es también el alta del club: un club nuevo
+/// llega sin dirección ni ubicación y su dueño los completa acá (con el
+/// recorrido de `ClubConfigTour`).
 class ClubInfoTab extends StatefulWidget {
-  const ClubInfoTab({super.key});
+  const ClubInfoTab({super.key, this.onLoaded});
+
+
+  /// Al cargar los datos del club (ej. para ofrecer el recorrido si está incompleto).
+  final ValueChanged<ClubInfo>? onLoaded;
 
   @override
   State<ClubInfoTab> createState() => _ClubInfoTabState();
@@ -22,11 +34,14 @@ class _ClubInfoTabState extends State<ClubInfoTab> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _addressController = TextEditingController();
-  final _latController = TextEditingController();
-  final _lngController = TextEditingController();
+  final _mapKey = GlobalKey<LocationPickerMapState>();
+
+  /// Ubicación confirmada en el mapa (se guarda con "Guardar cambios").
+  LatLng? _location;
 
   bool _isLoading = true;
   bool _isSaving = false;
+  bool _isSearchingAddress = false;
   String? _errorMessage;
 
   @override
@@ -39,8 +54,6 @@ class _ClubInfoTabState extends State<ClubInfoTab> {
   void dispose() {
     _nameController.dispose();
     _addressController.dispose();
-    _latController.dispose();
-    _lngController.dispose();
     super.dispose();
   }
 
@@ -65,10 +78,10 @@ class _ClubInfoTabState extends State<ClubInfoTab> {
         setState(() {
           _nameController.text = info.name ?? '';
           _addressController.text = info.address ?? '';
-          _latController.text = info.lat?.toString() ?? '';
-          _lngController.text = info.lng?.toString() ?? '';
+          _location = info.lat != null && info.lng != null ? LatLng(info.lat!, info.lng!) : null;
           _isLoading = false;
         });
+        widget.onLoaded?.call(info);
       },
     );
   }
@@ -76,19 +89,22 @@ class _ClubInfoTabState extends State<ClubInfoTab> {
   Future<void> _save() async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
 
+    final location = _location;
+    if (location == null) {
+      setState(() => _errorMessage = "Marcá en el mapa dónde está el establecimiento y confirmá la ubicación.");
+      return;
+    }
+
     setState(() {
       _isSaving = true;
       _errorMessage = null;
     });
 
-    final latText = _latController.text.trim();
-    final lngText = _lngController.text.trim();
-
     final result = await _repository.updateClubInfo(
       name: _nameController.text.trim(),
       address: _addressController.text.trim(),
-      lat: latText.isEmpty ? null : double.tryParse(latText),
-      lng: lngText.isEmpty ? null : double.tryParse(lngText),
+      lat: location.latitude,
+      lng: location.longitude,
     );
 
     if (!mounted) return;
@@ -111,14 +127,27 @@ class _ClubInfoTabState extends State<ClubInfoTab> {
 
   void _resetForm() => _load();
 
-  String? _latLngValidator(String? value) {
-    if (value == null || value.trim().isEmpty) return null;
-
-    if (double.tryParse(value.trim()) == null) {
-      return "Ingresá un número válido.";
+  /// Ubica la dirección escrita en el mapa (pin sin confirmar).
+  Future<void> _searchAddress() async {
+    final address = _addressController.text.trim();
+    if (address.isEmpty) {
+      SnackbarsFunctions.showErrorsSnackbar(context, "Escribí la dirección para buscarla en el mapa.");
+      return;
     }
 
-    return null;
+    setState(() => _isSearchingAddress = true);
+    final point = await AddressGeocoder.search(address);
+    if (!mounted) return;
+    setState(() => _isSearchingAddress = false);
+
+    if (point == null) {
+      SnackbarsFunctions.showErrorsSnackbar(
+        context,
+        "No encontramos esa dirección. Probá agregando la localidad, o marcala directo en el mapa.",
+      );
+      return;
+    }
+    _mapKey.currentState?.placePin(point);
   }
 
   @override
@@ -161,83 +190,62 @@ class _ClubInfoTabState extends State<ClubInfoTab> {
                             ?.copyWith(color: colorScheme.onSurfaceVariant),
                       ),
                       const SizedBox(height: 16),
-                      TextFormField(
-                        controller: _nameController,
-                        decoration: const InputDecoration(
-                          labelText: "Nombre del establecimiento",
-                          border: OutlineInputBorder(),
+                      TourAnchor(
+                        id: 'clubInfo.name',
+                        child: TextFormField(
+                          controller: _nameController,
+                          decoration: const InputDecoration(
+                            labelText: "Nombre del establecimiento",
+                            border: OutlineInputBorder(),
+                          ),
+                          validator: (value) => (value == null || value.trim().isEmpty)
+                              ? "Ingresá un nombre."
+                              : null,
                         ),
-                        validator: (value) => (value == null || value.trim().isEmpty)
-                            ? "Ingresá un nombre."
-                            : null,
                       ),
                       const SizedBox(height: 16),
-                      TextFormField(
+                      TourAnchor(
+                        id: 'clubInfo.address',
+                        child: TextFormField(
                         controller: _addressController,
-                        decoration: const InputDecoration(
+                        decoration: InputDecoration(
                           labelText: "Dirección",
-                          border: OutlineInputBorder(),
+                          helperText: "Calle, número y localidad.",
+                          border: const OutlineInputBorder(),
+                          suffixIcon: _isSearchingAddress
+                              ? const Padding(
+                                  padding: EdgeInsets.all(14),
+                                  child: SizedBox(
+                                    width: 18,
+                                    height: 18,
+                                    child: CircularProgressIndicator(strokeWidth: 2),
+                                  ),
+                                )
+                              : IconButton(
+                                  tooltip: "Buscar en el mapa",
+                                  icon: const Icon(Icons.search),
+                                  onPressed: _searchAddress,
+                                ),
                         ),
+                        onFieldSubmitted: (_) => _searchAddress(),
                         validator: (value) => (value == null || value.trim().isEmpty)
                             ? "Ingresá una dirección."
                             : null,
                       ),
+                      ),
                       const SizedBox(height: 16),
                       Text("Ubicación en el mapa", style: Theme.of(context).textTheme.labelLarge),
                       const SizedBox(height: 6),
-                      Container(
-                        height: 260,
-                        decoration: BoxDecoration(
-                          border: Border.all(color: colorScheme.outlineVariant),
-                          borderRadius: BorderRadius.circular(12),
-                          color: colorScheme.surfaceContainerLow,
-                        ),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.place, color: colorScheme.onSurfaceVariant, size: 28),
-                            const SizedBox(height: 8),
-                            Text(
-                              "Tocá el mapa para mover el pin",
-                              style: Theme.of(context).textTheme.bodySmall
-                                  ?.copyWith(color: colorScheme.onSurfaceVariant),
-                            ),
-                          ],
-                        ),
+                      TourAnchor(
+                        id: 'clubInfo.map',
+                        child: LocationPickerMap(
+                        key: _mapKey,
+                        confirmed: _location,
+                        onConfirmed: (point) => setState(() {
+                          _location = point;
+                          _errorMessage = null;
+                        }),
                       ),
-                      const SizedBox(height: 12),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: TextFormField(
-                              controller: _latController,
-                              decoration: const InputDecoration(
-                                labelText: "Latitud",
-                                border: OutlineInputBorder(),
-                              ),
-                              keyboardType: const TextInputType.numberWithOptions(
-                                decimal: true,
-                                signed: true,
-                              ),
-                              validator: _latLngValidator,
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: TextFormField(
-                              controller: _lngController,
-                              decoration: const InputDecoration(
-                                labelText: "Longitud",
-                                border: OutlineInputBorder(),
-                              ),
-                              keyboardType: const TextInputType.numberWithOptions(
-                                decimal: true,
-                                signed: true,
-                              ),
-                              validator: _latLngValidator,
-                            ),
-                          ),
-                        ],
                       ),
                       if (_errorMessage != null) ...[
                         const SizedBox(height: 8),
@@ -255,15 +263,18 @@ class _ClubInfoTabState extends State<ClubInfoTab> {
                             child: const Text("Cancelar"),
                           ),
                           const SizedBox(width: 8),
-                          FilledButton(
-                            onPressed: _isSaving ? null : _save,
-                            child: _isSaving
-                                ? const SizedBox(
-                                    height: 16,
-                                    width: 16,
-                                    child: CircularProgressIndicator(strokeWidth: 2),
-                                  )
-                                : const Text("Guardar cambios"),
+                          TourAnchor(
+                            id: 'clubInfo.save',
+                            child: FilledButton(
+                              onPressed: _isSaving ? null : _save,
+                              child: _isSaving
+                                  ? const SizedBox(
+                                      height: 16,
+                                      width: 16,
+                                      child: CircularProgressIndicator(strokeWidth: 2),
+                                    )
+                                  : const Text("Guardar cambios"),
+                            ),
                           ),
                         ],
                       ),

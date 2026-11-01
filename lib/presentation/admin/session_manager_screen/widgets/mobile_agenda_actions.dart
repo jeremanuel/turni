@@ -12,6 +12,7 @@ import '../bloc/session_manager_bloc.dart';
 import '../bloc/session_manager_event.dart';
 import '../bloc/session_manager_state.dart';
 import 'side_panel/day_summary_panel.dart';
+import '../../../../core/presentation/components/onboarding/tour_anchor.dart';
 
 /// Celular: lo que en escritorio está en la barra de arriba y en el panel
 /// lateral de la agenda (diseño "Admin mobile"): ir a hoy, buscar un cliente
@@ -41,12 +42,17 @@ class MobileAgendaToolbar extends StatelessWidget {
               style: TextButton.styleFrom(padding: const EdgeInsets.fromLTRB(0, 10, 14, 10)),
             ),
             const Spacer(),
-            IconButton(
-              tooltip: 'Buscar cliente o turno',
-              icon: const Icon(Icons.search),
-              onPressed: () => _openSearch(context, state),
+            TourAnchor(
+              id: 'agenda.search',
+              child: IconButton(
+                tooltip: 'Buscar cliente o turno',
+                icon: const Icon(Icons.search),
+                onPressed: () => _openSearch(context, state),
+              ),
             ),
-            IconButton(
+            TourAnchor(
+              id: 'agenda.summary',
+              child: IconButton(
               padding: const EdgeInsets.fromLTRB(8, 8, 0, 8),
               tooltip: pending == 0 ? 'Resumen del día' : 'Resumen del día · $pending por aprobar',
               icon: Badge(
@@ -56,6 +62,7 @@ class MobileAgendaToolbar extends StatelessWidget {
                 child: const Icon(Icons.insights_outlined),
               ),
               onPressed: () => _openSummary(context),
+            ),
             ),
           ],
         );
@@ -115,7 +122,7 @@ class MobileAgendaAddButton extends StatelessWidget {
     final canFixed = Permissions.can(Permissions.TURNOS_FIJOS_VER);
     if (!canAdd && !canEdit && !canFixed) return const SizedBox.shrink();
 
-    return FloatingActionButton.extended(
+    return TourAnchor(id: 'agenda.bulk', child: FloatingActionButton.extended(
       heroTag: 'mobile-agenda-add',
       onPressed: () => showModalBottomSheet<void>(
         context: context,
@@ -168,6 +175,6 @@ class MobileAgendaAddButton extends StatelessWidget {
       ),
       icon: const Icon(Icons.add),
       label: const Text('Agregar'),
-    );
+    ));
   }
 }

@@ -12,6 +12,7 @@ import '../../../../domain/entities/club_map/court_usage.dart';
 import '../../../../domain/entities/session.dart';
 import 'court_tile.dart';
 import 'plan_canvas.dart';
+import '../../../../core/presentation/components/onboarding/tour_anchor.dart';
 
 /// Qué muestra el plano: la ocupación de ahora o el uso de un período.
 enum ClubMapMode { live, usage }
@@ -133,14 +134,21 @@ class _ClubMapOverviewState extends State<ClubMapOverview> {
                     Text('Así están ubicad${widget.view.vocabulary.space.g('a', 'o')}s ${widget.view.vocabulary.space.definitePlural} y cuáles están ocupad${widget.view.vocabulary.space.g('a', 'o')}s ahora.', style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
                   ],
                 ),
-                if (map != null && widget.onEdit != null) FilledButton.icon(onPressed: widget.onEdit, icon: const Icon(Icons.edit_outlined), label: const Text('Editar plano')),
+                if (map != null && widget.onEdit != null)
+                  TourAnchor(
+                    id: 'map.edit',
+                    child: FilledButton.icon(onPressed: widget.onEdit, icon: const Icon(Icons.edit_outlined), label: const Text('Editar plano')),
+                  ),
               ],
             ),
           ),
           const SizedBox(height: 20),
           if (map != null && missing.isNotEmpty && widget.onAddSports != null) ...[_MissingBanner(sports: missing, onAdd: widget.onAddSports!), const SizedBox(height: 20)],
-          if (map != null && widget.loadUsage != null) ...[_buildModeBar(context), const SizedBox(height: 16)],
-          if (map == null) _EmptyState(hasCourts: _hasCourts(), onDesign: widget.onAddSports) else _buildPlan(context, map),
+          if (map != null && widget.loadUsage != null) ...[TourAnchor(id: 'map.modes', child: _buildModeBar(context)), const SizedBox(height: 16)],
+          if (map == null)
+            TourAnchor(id: 'map.empty', child: _EmptyState(hasCourts: _hasCourts(), onDesign: widget.onAddSports))
+          else
+            _buildPlan(context, map),
         ],
       ),
     );
@@ -246,14 +254,18 @@ class _ClubMapOverviewState extends State<ClubMapOverview> {
     return LayoutBuilder(
       builder: (context, constraints) {
         if (constraints.maxWidth < 900) {
-          return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [plan, const SizedBox(height: 20), detail]);
+          return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            TourAnchor(id: 'map.plan', child: plan),
+            const SizedBox(height: 20),
+            TourAnchor(id: 'map.detail', child: detail),
+          ]);
         }
         return Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Expanded(child: plan),
+            Expanded(child: TourAnchor(id: 'map.plan', child: plan)),
             const SizedBox(width: 24),
-            detail,
+            TourAnchor(id: 'map.detail', child: detail),
           ],
         );
       },

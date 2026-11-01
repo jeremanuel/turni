@@ -20,6 +20,18 @@ class PaymentListItem {
   /// Solo para pagos online; null en los cargados a mano por el admin.
   final PaymentProviderStatus? providerStatus;
 
+  /// Qué se pagó: MEMBERSHIP (abono), SESSION (turno), PRODUCT, OTHER.
+  final String conceptKind;
+
+  /// "Abono 3 veces por semana", "Turno · Pádel", "Agua 500 ml".
+  final String conceptLabel;
+
+  /// "Cuota de octubre", "Cancha 2 · 18:00".
+  final String? conceptDetail;
+
+  /// Quién lo registró (null en pagos online).
+  final String? adminName;
+
   const PaymentListItem({
     required this.paymentId,
     required this.clientId,
@@ -32,6 +44,10 @@ class PaymentListItem {
     required this.sessionId,
     required this.type,
     this.providerStatus,
+    this.conceptKind = 'OTHER',
+    this.conceptLabel = 'Pago',
+    this.conceptDetail,
+    this.adminName,
   });
 
   bool get isSessionPayment => type == PaymentListItemType.sessionPayment;
@@ -50,6 +66,7 @@ class PaymentListItem {
     final subscription = clientSubscription?['subscription'] as Map<String, dynamic>?;
 
     final sessionId = ValueTransformers.fromJsonIntNullable(json['session_id']);
+    final concept = json['concept'] as Map<String, dynamic>?;
 
     return PaymentListItem(
       paymentId: ValueTransformers.fromJsonInt(json['payment_id']),
@@ -67,6 +84,10 @@ class PaymentListItem {
           ? PaymentListItemType.sessionPayment
           : PaymentListItemType.payment,
       providerStatus: PaymentProviderStatus.fromApiValue(json['provider_status']),
+      conceptKind: concept?['kind']?.toString() ?? (sessionId != null ? 'SESSION' : 'OTHER'),
+      conceptLabel: concept?['label']?.toString() ?? subscription?['name']?.toString() ?? (sessionId != null ? 'Turno' : 'Pago'),
+      conceptDetail: concept?['detail']?.toString(),
+      adminName: json['admin_name']?.toString(),
     );
   }
 }

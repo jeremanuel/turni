@@ -18,6 +18,7 @@ import '../../../../../domain/entities/extra.dart';
 import '../../../../../domain/entities/fixed_session.dart';
 import '../../../../../domain/entities/partition_vocabulary.dart';
 import '../../../fixed_sessions/widgets/fixed_session_actions.dart';
+import '../../../notifications/session_notifications_section.dart';
 import '../../../../../domain/entities/physical_partition.dart';
 import '../../../../../domain/entities/session.dart';
 import '../../../../../domain/repositories/admin_repository.dart';
@@ -31,6 +32,7 @@ import 'free_session_view.dart';
 import 'new_client_view.dart';
 import 'panel_common.dart';
 import 'payment_view.dart';
+import '../../../../../core/presentation/components/onboarding/tour_anchor.dart';
 
 enum _PanelView { detail, payment, consumo, newClient }
 
@@ -134,7 +136,9 @@ class _SessionPanelState extends State<SessionPanel> {
             ? PanelStatusChip(label: 'Fijo cancelado hoy', foreground: scheme.tertiary, dashedBorder: scheme.tertiary)
             : null;
 
-    return PanelSessionHeader(
+    return TourAnchor(
+      id: 'session.header',
+      child: PanelSessionHeader(
       status: fixedTag == null ? status : Row(mainAxisSize: MainAxisSize.min, children: [status, const SizedBox(width: 8), fixedTag]),
       title: panelRange(session),
       subtitle: [
@@ -144,6 +148,7 @@ class _SessionPanelState extends State<SessionPanel> {
         '${session.duration} min',
       ].whereType<String>().where((t) => t.isNotEmpty).join(' · '),
       onClose: () => context.go(AppRoutes.SESSION_MANAGER_ROUTE.path),
+    ),
     );
   }
 }
@@ -192,7 +197,9 @@ class _BookedDetail extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
 
     return PanelFrame(
-      footer: Row(
+      footer: TourAnchor(
+        id: 'session.footer',
+        child: Row(
         children: [
           if (Permissions.can(session.isPending ? Permissions.AGENDA_SOLICITUDES : Permissions.AGENDA_RESERVAR))
             PanelTextButton(
@@ -207,14 +214,17 @@ class _BookedDetail extends StatelessWidget {
             PanelTextButton(label: 'Eliminar turno', color: scheme.onSurfaceVariant, onPressed: () => _delete(context)),
         ],
       ),
+      ),
       children: [
         header,
-        if (session.client != null) _ClientCard(client: session.client!),
-        if (session.fixedSession != null) _FixedSessionBanner(session: session),
-        if (session.isPending) _PendingBanner(session: session),
-        if (!session.isPending) _AccountCard(session: session, onCharge: onCharge, onAddConsumo: onAddConsumo),
-        _NotesField(session: session),
-        _Activity(session: session),
+        if (session.client != null) TourAnchor(id: 'session.client', child: _ClientCard(client: session.client!)),
+        if (session.fixedSession != null) TourAnchor(id: 'session.fixed', child: _FixedSessionBanner(session: session)),
+        if (session.isPending) TourAnchor(id: 'session.pending', child: _PendingBanner(session: session)),
+        if (!session.isPending)
+          TourAnchor(id: 'session.account', child: _AccountCard(session: session, onCharge: onCharge, onAddConsumo: onAddConsumo)),
+        TourAnchor(id: 'session.notes', child: _NotesField(session: session)),
+        TourAnchor(id: 'session.activity', child: _Activity(session: session)),
+        TourAnchor(id: 'session.notifications', child: SessionNotificationsSection(sessionId: session.sessionId)),
       ],
     );
   }
@@ -601,13 +611,18 @@ class _AccountCardState extends State<_AccountCard> {
             children: [
               Expanded(
                 flex: 5,
-                child: PanelFilledButton(label: 'Cobrar', icon: Icons.credit_card, onPressed: settled || !Permissions.can(Permissions.AGENDA_COBRAR) ? null : widget.onCharge),
+                child: TourAnchor(
+                  id: 'session.charge',
+                  child: PanelFilledButton(label: 'Cobrar', icon: Icons.credit_card, onPressed: settled || !Permissions.can(Permissions.AGENDA_COBRAR) ? null : widget.onCharge),
+                ),
               ),
               const SizedBox(width: 8),
               Expanded(
                 // Un poco más ancho que "Cobrar" para que entre el texto completo.
                 flex: 6,
-                child: OutlinedButton.icon(
+                child: TourAnchor(
+                  id: 'session.addExtra',
+                  child: OutlinedButton.icon(
                   onPressed: Permissions.can(Permissions.AGENDA_COBRAR) ? widget.onAddConsumo : null,
                   style: OutlinedButton.styleFrom(
                     minimumSize: const Size(0, 40),
@@ -620,6 +635,7 @@ class _AccountCardState extends State<_AccountCard> {
                   ),
                   icon: const Icon(Icons.add, size: 18),
                   label: const Text('Agregar adicional', maxLines: 1, overflow: TextOverflow.ellipsis),
+                ),
                 ),
               ),
             ],

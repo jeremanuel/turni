@@ -18,6 +18,12 @@ enum DataTopic {
   matches,
   clubConfig,
   admins,
+
+  /// Rutinas, progresos y abonos del gimnasio.
+  gym,
+
+  /// Llegó (o se leyó) un aviso de la bandeja.
+  notifications,
 }
 
 /// Un aviso de que algo cambió. [data] trae los ids que haya

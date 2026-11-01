@@ -14,8 +14,10 @@ import '../../../presentation/auth/check_status_page.dart';
 import '../../../presentation/auth/login_page.dart';
 import '../../../presentation/auth/admin_invite_page.dart';
 import '../../../presentation/auth/no_access_page.dart';
+import '../../../presentation/platform/platform_clubs_page.dart';
 import '../../../presentation/admin/users/users_page.dart';
 import 'route_permissions.dart';
+import '../../utils/permissions.dart';
 import '../../utils/responsive_builder.dart';
 import '../../../presentation/admin/widgets/admin_destinations.dart';
 import '../../../presentation/core/cubit/auth/auth_cubit.dart';
@@ -62,7 +64,18 @@ GoRouter buildGoRouter(RouterType routerType) {
 
       if (location == AppRoutes.ROOT_ROUTE.path || location == AppRoutes.LOGIN_ROUTE.path) {
         final initialRoute = authCubit.initialRoute;
-        if (initialRoute != null && !_isAuthRoute(Uri.parse(initialRoute).path)) {
+        final initialPath = initialRoute == null ? null : Uri.parse(initialRoute).path;
+
+        // Antes que la ruta pedida (que al abrir la app es `/clients`, el
+        // initialLocation): sin servicios no hay otra pantalla que sirva.
+        if (routerType == RouterType.adminRoute &&
+            _isNewClub(authCubit) &&
+            !(initialPath?.startsWith('/invite/') ?? false)) {
+          authCubit.initialRoute = null;
+          return AppRoutes.ADMIN_SETTINGS_ROUTE.path;
+        }
+
+        if (initialRoute != null && !_isAuthRoute(initialPath!)) {
           return initialRoute;
         }
 
@@ -75,8 +88,15 @@ GoRouter buildGoRouter(RouterType routerType) {
       if (isInvite) return null;
 
       if (routerType == RouterType.adminRoute) {
+        // El alta de clubes no depende de ser admin de un club.
+        if (location == AppRoutes.PLATFORM_CLUBS_ROUTE.path) {
+          return authCubit.isPlatformOperator() ? null : AppRoutes.DASHBOARD_ROUTE.path;
+        }
+
         final hasAccess = authCubit.isAdmin() && !authCubit.isDisabledAdmin();
         if (!hasAccess) {
+          // Un operador sin club propio solo tiene el alta de clubes.
+          if (authCubit.isPlatformOperator()) return AppRoutes.PLATFORM_CLUBS_ROUTE.path;
           return location == AppRoutes.NO_ACCESS_ROUTE.path ? null : AppRoutes.NO_ACCESS_ROUTE.path;
         }
         if (location == AppRoutes.NO_ACCESS_ROUTE.path) return AppRoutes.DASHBOARD_ROUTE.path;
@@ -110,6 +130,11 @@ GoRouter buildGoRouter(RouterType routerType) {
         name: AppRoutes.NO_ACCESS_ROUTE.name,
         builder: (context, state) => const NoAccessPage(),
       ),
+      GoRoute(
+        path: AppRoutes.PLATFORM_CLUBS_ROUTE.path,
+        name: AppRoutes.PLATFORM_CLUBS_ROUTE.name,
+        builder: (context, state) => const PlatformClubsPage(),
+      ),
       StatefulShellRoute.indexedStack(
         branches: buildBranches(routerType),
         builder: (context, state, navigationShell) {
@@ -120,6 +145,15 @@ GoRouter buildGoRouter(RouterType routerType) {
   );
 
   return goRouter;
+}
+
+/// Club recién dado de alta: todavía sin servicios no se puede usar nada más
+/// que la configuración, así que el dueño arranca ahí (con su recorrido).
+bool _isNewClub(AuthCubit authCubit) {
+  final user = authCubit.state.userCredential;
+  return authCubit.isAdmin() &&
+      (user?.admin?.clubPartitions.isEmpty ?? false) &&
+      authCubit.can(Permissions.CONFIGURACION_CLUB);
 }
 
 List<StatefulShellBranch> buildBranches(RouterType routerType) {

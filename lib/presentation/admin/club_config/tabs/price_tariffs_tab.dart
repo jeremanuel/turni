@@ -21,6 +21,7 @@ import '../widgets/price_rule_form_dialog.dart';
 import '../widgets/price_tariff_name_dialog.dart';
 import '../widgets/time_field.dart';
 import '../../../../core/utils/responsive_builder.dart';
+import '../../../../core/presentation/components/onboarding/tour_anchor.dart';
 
 const _dayLabels = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
 
@@ -456,7 +457,7 @@ class _PriceTariffsTabState extends State<PriceTariffsTab> {
           ),
           const SizedBox(height: 16),
           const ReadOnlyNotice(permissions: [Permissions.CONFIGURACION_TARIFAS]),
-          Wrap(
+          TourAnchor(id: 'tariffs.services', child: Wrap(
             spacing: 8,
             children: _clubPartitions.map((partition) {
               final selected = partition.club_partition_id == _selectedClubPartitionId;
@@ -469,7 +470,7 @@ class _PriceTariffsTabState extends State<PriceTariffsTab> {
                 },
               );
             }).toList(),
-          ),
+          )),
           const SizedBox(height: 16),
           Expanded(
             child: _isLoadingTariffs
@@ -491,7 +492,7 @@ class _PriceTariffsTabState extends State<PriceTariffsTab> {
                                   style: Theme.of(context).textTheme.bodyMedium,
                                 ),
                               )
-                            : SingleChildScrollView(child: _buildTariffDetail(_selectedTariff!)),
+                            : TourAnchor(id: 'tariffs.card', child: SingleChildScrollView(child: _buildTariffDetail(_selectedTariff!))),
                       ),
                     ],
                   ),
@@ -511,12 +512,12 @@ class _PriceTariffsTabState extends State<PriceTariffsTab> {
           crossAxisAlignment: WrapCrossAlignment.center,
           children: [
             Text('Tarifas', style: Theme.of(context).textTheme.titleMedium),
-            if (_canEdit) TextButton.icon(
+            if (_canEdit) TourAnchor(id: 'tariffs.new', child: TextButton.icon(
               onPressed: _createTariff,
               icon: const Icon(Icons.add, size: 18),
               label: const Text('Nueva tarifa'),
               style: TextButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 8)),
-            ),
+            )),
           ],
         ),
         const SizedBox(height: 8),
