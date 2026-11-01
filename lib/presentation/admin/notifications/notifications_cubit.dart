@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../core/config/router/app_routes.dart';
 import '../../../core/config/service_locator.dart';
 import '../../../core/services/data_changes.dart';
+import '../../../core/services/realtime/realtime_service.dart';
 import '../../../core/utils/domain_error.dart';
 import '../../../core/utils/either.dart';
 import '../../../domain/entities/admin_notification.dart';
@@ -106,16 +107,24 @@ class NotificationsCubit extends Cubit<NotificationsState> {
   final NotificationRepository _repository;
   final SessionUserCases? _sessions;
   final DateTime Function() _now;
+
+  /// Si el canal en tiempo real está conectado (ver [RealtimeService]).
+  final bool Function() _live;
   StreamSubscription<Map<String, dynamic>>? _pushes;
   StreamSubscription<DataChange>? _changes;
   final _arrivals = StreamController<List<AdminNotification>>.broadcast();
 
-  NotificationsCubit({NotificationRepository? repository, SessionUserCases? sessions, Stream<Map<String, dynamic>>? pushes, Stream<DataChange>? changes, DateTime Function()? now})
+  NotificationsCubit({NotificationRepository? repository, SessionUserCases? sessions, Stream<Map<String, dynamic>>? pushes, Stream<DataChange>? changes, DateTime Function()? now, bool Function()? isLive})
     : _repository = repository ?? sl<NotificationRepository>(),
       _sessions = sessions,
       _now = now ?? DateTime.now,
+      _live = isLive ?? (() => RealtimeService.instance.isConnected),
       super(const NotificationsState()) {
-    _pushes = pushes?.listen((_) => onPush());
+    // La push con la app abierta: si el socket está conectado, el aviso ya
+    // llegó (o va a llegar) por ahí; sonar acá también lo duplicaría.
+    _pushes = pushes?.listen((_) {
+      if (!_live()) onPush();
+    });
     // El canal en tiempo real: en la web no hay push, así que un aviso nuevo
     // llega por acá. Un evento solo de `notifications` = llegó o se leyó uno;
     // la recarga general (reconexión, vuelta a la pestaña) trae todos los

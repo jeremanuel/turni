@@ -198,7 +198,7 @@ void main() {
     setUp(() {
       repo = _FakeRepository([_notice(5), _notice(4), _notice(3, read: true)]);
       pushes = StreamController<Map<String, dynamic>>.broadcast();
-      cubit = NotificationsCubit(repository: repo, pushes: pushes.stream, now: () => _now);
+      cubit = NotificationsCubit(repository: repo, pushes: pushes.stream, now: () => _now, isLive: () => false);
     });
 
     tearDown(() async {
@@ -257,6 +257,18 @@ void main() {
       cubit.panelOpened();
       expect(cubit.state.attention, isFalse);
       await sub.cancel();
+    });
+
+    test('con el socket conectado, la push no vuelve a sonar la campana', () async {
+      final live = NotificationsCubit(repository: repo, pushes: pushes.stream, now: () => _now, isLive: () => true);
+      addTearDown(live.close);
+      await live.load();
+      repo.all.insert(0, _notice(6));
+
+      pushes.add({'type': 'SESSION_REQUESTED', 'session_id': '6'});
+      await Future<void>.delayed(const Duration(milliseconds: 10));
+
+      expect(live.state.rings, 0);
     });
 
     test('por el socket: suena solo si llegó un aviso nuevo, no al leer en otra pestaña', () async {
