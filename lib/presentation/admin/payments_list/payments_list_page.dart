@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -17,6 +19,7 @@ import '../../../domain/repositories/payment_repository.dart';
 import '../memberships/membership_board_view.dart';
 import '../memberships/register_payment_dialog.dart';
 import '../../../core/presentation/components/onboarding/tour_anchor.dart';
+import '../../../core/services/data_changes.dart';
 
 /// Pagos. Con algún servicio con abonos con cuotas: pestañas "Estado de
 /// cuotas" y "Pagos registrados"; si no, directo los pagos registrados.
@@ -78,7 +81,7 @@ class PaymentsRegisteredView extends StatefulWidget {
   State<PaymentsRegisteredView> createState() => _PaymentsRegisteredViewState();
 }
 
-class _PaymentsRegisteredViewState extends State<PaymentsRegisteredView> {
+class _PaymentsRegisteredViewState extends State<PaymentsRegisteredView> with ReloadOnDataChange {
   final _repository = sl<PaymentRepository>();
   final _items = <PaymentListItem>[];
   DateTime _from = DateTime.now().subtract(const Duration(days: 30));
@@ -91,6 +94,26 @@ class _PaymentsRegisteredViewState extends State<PaymentsRegisteredView> {
   int _page = 1;
   bool _loading = false;
   String? _error;
+  Timer? _liveDebounce;
+
+  @override
+  Set<DataTopic> get refreshTopics => const {DataTopic.payments};
+
+  /// En vivo: un pago nuevo aparece solo. Solo si se ve la primera página,
+  /// para no sacar al usuario de lo que está mirando.
+  @override
+  void onDataChanged(DataChange change) {
+    _liveDebounce?.cancel();
+    _liveDebounce = Timer(const Duration(milliseconds: 500), () {
+      if (mounted && !_loading && _page <= 2) _load(reset: true);
+    });
+  }
+
+  @override
+  void dispose() {
+    _liveDebounce?.cancel();
+    super.dispose();
+  }
 
   @override
   void initState() {

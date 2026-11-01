@@ -34,7 +34,7 @@ class ButtonNavigation extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             SvgPicture.asset(
-              color: color,
+              colorFilter: const ColorFilter.mode(color, BlendMode.srcIn),
               svg ?? 'assets/img/tennis.svg',
               semanticsLabel: accesibility ?? "",
               width: 32,

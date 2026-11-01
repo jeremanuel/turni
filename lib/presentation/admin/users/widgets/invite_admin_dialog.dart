@@ -89,7 +89,7 @@ class _InviteAdminDialogState extends State<InviteAdminDialog> {
               ),
               const SizedBox(height: 12),
               DropdownButtonFormField<int>(
-                value: _roleId,
+                initialValue: _roleId,
                 decoration: const InputDecoration(labelText: 'Rol', border: OutlineInputBorder()),
                 items: [for (final role in widget.roles) DropdownMenuItem(value: role.roleId, child: Text(role.name))],
                 onChanged: (value) => setState(() => _roleId = value),

@@ -37,7 +37,7 @@ class Labelchip extends StatelessWidget {
       //backgroundColor: backgroundColor, 
       visualDensity: const VisualDensity(vertical: -4),
        side: BorderSide(
-        color: borderColor.withOpacity(0.5),
+        color: borderColor.withValues(alpha: 0.5),
       )  
     );
   }

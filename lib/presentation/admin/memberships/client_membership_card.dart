@@ -11,6 +11,7 @@ import '../client_page/client_page.dart';
 import 'membership_dialogs.dart';
 import 'register_payment_dialog.dart';
 import 'widgets/membership_widgets.dart';
+import '../../../core/services/data_changes.dart';
 
 /// Card "Abono" de la ficha para servicios con abonos con cuotas: el abono,
 /// si está al día o debe, las últimas cuotas, pausas y las acciones (pagar,
@@ -28,7 +29,16 @@ class ClientMembershipCard extends StatefulWidget {
   State<ClientMembershipCard> createState() => _ClientMembershipCardState();
 }
 
-class _ClientMembershipCardState extends State<ClientMembershipCard> {
+class _ClientMembershipCardState extends State<ClientMembershipCard> with ReloadOnDataChange {
+  @override
+  Set<DataTopic> get refreshTopics => const {DataTopic.gym, DataTopic.payments};
+
+  @override
+  bool shouldReload(DataChange change) => change.isFor('client_id', widget.client.intClientId);
+
+  /// En vivo: una cuota, pausa o cambio de plan de este cliente (acá o desde otro lado).
+  @override
+  void onDataChanged(DataChange change) => _load();
   final _repository = sl<MembershipRepository>();
   ClientMemberships? _data;
   String? _error;
