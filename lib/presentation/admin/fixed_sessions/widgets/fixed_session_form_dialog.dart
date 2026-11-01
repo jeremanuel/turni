@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../core/config/service_locator.dart';
+import '../../../../core/presentation/components/inputs/option_chip.dart';
 import '../../../../core/utils/admin_vocabulary.dart';
 import '../../../../core/utils/either.dart';
 import '../../../../core/utils/physical_partition_naming.dart';
@@ -384,7 +385,6 @@ class _FixedSessionSheetState extends State<FixedSessionSheet> {
   }
 
   Widget _whereSection(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
     final custom = !_durations.contains(_duration);
 
@@ -396,10 +396,10 @@ class _FixedSessionSheetState extends State<FixedSessionSheet> {
           runSpacing: 8,
           children: [
             for (final sport in _sports)
-              ChoiceChip(
-                label: Text(sport),
+              OptionChip(
+                label: sport,
                 selected: _sport == sport,
-                onSelected: (_) => _update(() {
+                onTap: () => _update(() {
                   _sport = sport;
                   if (_courts.where((c) => c.id == _courtId).firstOrNull?.sport != sport) _courtId = null;
                 }),
@@ -467,10 +467,10 @@ class _FixedSessionSheetState extends State<FixedSessionSheet> {
                     crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
                       for (final minutes in _durations)
-                        ChoiceChip(
-                          label: Text('$minutes min'),
+                        OptionChip(
+                          label: '$minutes min',
                           selected: _duration == minutes,
-                          onSelected: (_) => _update(() => _duration = minutes),
+                          onTap: () => _update(() => _duration = minutes),
                         ),
                       SizedBox(
                         width: 96,
@@ -584,7 +584,7 @@ class _CourtTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     return Material(
-      color: selected ? scheme.primaryContainer : scheme.surfaceContainer,
+      color: selected ? scheme.primaryContainer : Colors.transparent,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
         side: BorderSide(color: selected ? scheme.primary : scheme.outlineVariant, width: selected ? 2 : 1),

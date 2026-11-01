@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/presentation/components/inputs/option_chip.dart';
 import '../../../core/presentation/components/links/entity_links.dart';
 import 'package:intl/intl.dart';
 
@@ -142,9 +143,9 @@ class _FixedSessionsTabState extends State<FixedSessionsTab> with ReloadOnDataCh
       onSelectionChanged: (s) => setState(() => _selectedView = s.first),
     ));
     final sportChips = [
-      ChoiceChip(label: const Text('Todos'), selected: _sport == null, onSelected: (_) => setState(() => _sport = null)),
+      OptionChip(label: 'Todos', selected: _sport == null, onTap: () => setState(() => _sport = null)),
       for (final sport in _sports)
-        ChoiceChip(label: Text(sport), selected: _sport == sport, onSelected: (_) => setState(() => _sport = sport)),
+        OptionChip(label: sport, selected: _sport == sport, onTap: () => setState(() => _sport = sport)),
     ];
 
     // Celular: cada bloque a todo el ancho (en el Wrap de escritorio las
@@ -212,9 +213,9 @@ class _FixedSessionsTabState extends State<FixedSessionsTab> with ReloadOnDataCh
                   ),
                 ),
               ),
-              ChoiceChip(label: const Text('Todos'), selected: _sport == null, onSelected: (_) => setState(() => _sport = null)),
+              OptionChip(label: 'Todos', selected: _sport == null, onTap: () => setState(() => _sport = null)),
               for (final sport in _sports)
-                ChoiceChip(label: Text(sport), selected: _sport == sport, onSelected: (_) => setState(() => _sport = sport)),
+                OptionChip(label: sport, selected: _sport == sport, onTap: () => setState(() => _sport = sport)),
               viewToggle,
               if (_canCreate)
                 TourAnchor(
