@@ -10,6 +10,7 @@ import '../../../core/config/router/app_routes.dart';
 import '../../../core/config/service_locator.dart';
 import '../../../core/services/app_version/app_version.dart';
 import '../../../core/presentation/components/onboarding/tour_anchor.dart';
+import '../../../core/presentation/components/realtime_indicator.dart';
 import '../../../infrastructure/localstorage/provider/local_storage.dart';
 import '../../core/cubit/auth/auth_cubit.dart';
 import '../guides/guides_dialog.dart';
@@ -761,6 +762,7 @@ class _Footer extends StatelessWidget {
               width: rowWidth,
               height: 44,
               child: Stack(children: [
+                // Avatar con el punto de conexión en vivo (ver RealtimeIndicator).
                 Positioned(
                   left: 2,
                   top: 0,
@@ -779,6 +781,7 @@ class _Footer extends StatelessWidget {
                     ),
                   ),
                 ),
+                Positioned(left: 36, top: 32, child: RealtimeIndicator(size: 12, borderColor: scheme.surface)),
                 if (labels > 0)
                   Positioned(
                     left: 58,

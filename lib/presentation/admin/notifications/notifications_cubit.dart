@@ -4,6 +4,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../core/config/router/app_routes.dart';
 import '../../../core/config/service_locator.dart';
+import '../../../core/services/data_changes.dart';
+import '../../../core/services/realtime/realtime_service.dart';
 import '../../../core/utils/domain_error.dart';
 import '../../../core/utils/either.dart';
 import '../../../domain/entities/admin_notification.dart';
@@ -105,15 +107,37 @@ class NotificationsCubit extends Cubit<NotificationsState> {
   final NotificationRepository _repository;
   final SessionUserCases? _sessions;
   final DateTime Function() _now;
+
+  /// Si el canal en tiempo real está conectado (ver [RealtimeService]).
+  final bool Function() _live;
   StreamSubscription<Map<String, dynamic>>? _pushes;
+  StreamSubscription<DataChange>? _changes;
   final _arrivals = StreamController<List<AdminNotification>>.broadcast();
 
-  NotificationsCubit({NotificationRepository? repository, SessionUserCases? sessions, Stream<Map<String, dynamic>>? pushes, DateTime Function()? now})
+  NotificationsCubit({NotificationRepository? repository, SessionUserCases? sessions, Stream<Map<String, dynamic>>? pushes, Stream<DataChange>? changes, DateTime Function()? now, bool Function()? isLive})
     : _repository = repository ?? sl<NotificationRepository>(),
       _sessions = sessions,
       _now = now ?? DateTime.now,
+      _live = isLive ?? (() => RealtimeService.instance.isConnected),
       super(const NotificationsState()) {
-    _pushes = pushes?.listen((_) => onPush());
+    // La push con la app abierta: si el socket está conectado, el aviso ya
+    // llegó (o va a llegar) por ahí; sonar acá también lo duplicaría.
+    _pushes = pushes?.listen((_) {
+      if (!_live()) onPush();
+    });
+    // El canal en tiempo real: en la web no hay push, así que un aviso nuevo
+    // llega por acá. Un evento solo de `notifications` = llegó o se leyó uno;
+    // la recarga general (reconexión, vuelta a la pestaña) trae todos los
+    // temas y solo actualiza, sin sonar la campana.
+    _changes = changes?.listen((change) {
+      if (change.topics.length == 1) {
+        onLiveChange();
+      } else if (state.loaded) {
+        load(silent: true);
+      } else {
+        refreshUnread();
+      }
+    });
   }
 
   /// Los avisos nuevos que trajo cada push, ya con su contexto: los muestran
@@ -125,6 +149,7 @@ class NotificationsCubit extends Cubit<NotificationsState> {
   @override
   Future<void> close() {
     _pushes?.cancel();
+    _changes?.cancel();
     _arrivals.close();
     return super.close();
   }
@@ -144,6 +169,24 @@ class NotificationsCubit extends Cubit<NotificationsState> {
       return wasLoaded || now.difference(n.createdAt) < const Duration(minutes: 2);
     }).toList();
     if (fresh.isNotEmpty) _arrivals.add(fresh);
+  }
+
+  /// El canal en tiempo real avisó que cambió la bandeja (llegó un aviso, o
+  /// se leyó en otra pestaña). Recarga y, solo si hay avisos nuevos sin leer,
+  /// suena la campana y salen los avisos flotantes.
+  Future<void> onLiveChange() async {
+    final known = state.items.map((n) => n.id).toSet();
+    final wasLoaded = state.loaded;
+    await load(silent: true);
+    if (isClosed) return;
+    final now = _now();
+    final fresh = state.items.where((n) {
+      if (n.isRead || known.contains(n.id)) return false;
+      return wasLoaded || now.difference(n.createdAt) < const Duration(minutes: 2);
+    }).toList();
+    if (fresh.isEmpty) return;
+    emit(state.copyWith(attention: true, rings: state.rings + 1));
+    _arrivals.add(fresh);
   }
 
   Future<void> refreshUnread() async {

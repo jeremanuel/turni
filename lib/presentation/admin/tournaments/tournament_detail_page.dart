@@ -15,6 +15,7 @@ import 'widgets/bracket_view.dart';
 import 'widgets/match_dialogs.dart';
 import '../../../core/utils/responsive_builder.dart';
 import 'widgets/tournament_ui.dart';
+import '../../../core/services/data_changes.dart';
 import '../../../core/presentation/components/onboarding/tour_anchor.dart';
 
 /// Un torneo del club: estado, inscripciones con pagos, cuadro y partidos.
@@ -27,7 +28,19 @@ class TournamentDetailPage extends StatefulWidget {
   State<TournamentDetailPage> createState() => _TournamentDetailPageState();
 }
 
-class _TournamentDetailPageState extends State<TournamentDetailPage> {
+class _TournamentDetailPageState extends State<TournamentDetailPage> with ReloadOnDataChange {
+  @override
+  Set<DataTopic> get refreshTopics => const {DataTopic.tournaments, DataTopic.matches};
+
+  @override
+  bool shouldReload(DataChange change) => change.isFor('tournament_id', widget.tournamentId);
+
+  @override
+  void onDataChanged(DataChange change) {
+    // Mientras corre una acción propia, su respuesta ya trae el torneo nuevo.
+    if (!_busy) _load();
+  }
+
   final _repository = sl<TournamentRepository>();
 
   Tournament? _t;

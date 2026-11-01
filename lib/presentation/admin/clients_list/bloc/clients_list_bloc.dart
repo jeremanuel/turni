@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:bloc/bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:trina_grid/trina_grid.dart';
 
+import '../../../../../core/services/data_changes.dart';
 import '../../../../../core/utils/either.dart';
 import '../../../../../domain/entities/client.dart';
 import '../../../../../domain/entities/request/page_response.dart';
@@ -27,6 +30,14 @@ class ClientsListBloc extends Bloc<ClientsListEvent, ClientsListState> {
   ClientsListBloc(BuildContext context, this.adminRepository, ClientListFilters filters, String? columnNameSort,bool? isAscending): 
   super(ClientsListState.initial(context, adminRepository, filters, columnNameSort, isAscending))
   {
+    // En vivo: un cliente nuevo o editado (por otro admin, o que reservó
+    // desde la app) aparece solo.
+    _liveChanges = DataChanges.on(const {DataTopic.clients}).listen((_) {
+      _liveDebounce?.cancel();
+      _liveDebounce = Timer(const Duration(milliseconds: 500), () {
+        if (!isClosed) refetchClients();
+      });
+    });
 
   
 
@@ -59,6 +70,16 @@ class ClientsListBloc extends Bloc<ClientsListEvent, ClientsListState> {
     };
 
     return decodedResponse!;
+  }
+
+  StreamSubscription<DataChange>? _liveChanges;
+  Timer? _liveDebounce;
+
+  @override
+  Future<void> close() {
+    _liveDebounce?.cancel();
+    _liveChanges?.cancel();
+    return super.close();
   }
 
   void refetchClients(){

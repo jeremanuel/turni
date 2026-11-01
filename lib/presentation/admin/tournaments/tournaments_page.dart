@@ -12,6 +12,7 @@ import 'tabs/category_settings_tab.dart';
 import 'tabs/ranking_tab.dart';
 import '../../../core/utils/responsive_builder.dart';
 import 'widgets/tournament_ui.dart';
+import '../../../core/services/data_changes.dart';
 import '../../../core/presentation/components/onboarding/tour_anchor.dart';
 
 /// Torneos del club: el listado, el ranking (club y ciudad) y qué deportes
@@ -53,7 +54,13 @@ class _TournamentsTab extends StatefulWidget {
   State<_TournamentsTab> createState() => _TournamentsTabState();
 }
 
-class _TournamentsTabState extends State<_TournamentsTab> {
+class _TournamentsTabState extends State<_TournamentsTab> with ReloadOnDataChange {
+  @override
+  Set<DataTopic> get refreshTopics => const {DataTopic.tournaments};
+
+  @override
+  void onDataChanged(DataChange change) => _load();
+
   final _repository = sl<TournamentRepository>();
 
   List<Tournament>? _tournaments;

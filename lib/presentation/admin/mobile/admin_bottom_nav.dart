@@ -9,6 +9,7 @@ import '../../core/cubit/auth/auth_cubit.dart';
 import '../guides/guides_dialog.dart';
 import '../widgets/admin_destinations.dart';
 import '../widgets/admin_rail.dart';
+import '../../../core/presentation/components/realtime_indicator.dart';
 
 /// Barra de navegación inferior del admin en el celular: los primeros
 /// destinos que el rol puede ver y, si no entran todos, «Más» con el resto.
@@ -42,7 +43,25 @@ class AdminBottomNav extends StatelessWidget {
       },
       destinations: [
         for (final d in inBar) TourAnchor(id: d.anchor, child: NavigationDestination(icon: Icon(d.icon), label: d.label)),
-        if (needsMore) const TourAnchor(id: 'nav.more', child: NavigationDestination(icon: Icon(Icons.more_horiz), label: 'Más')),
+        if (needsMore)
+          TourAnchor(
+            id: 'nav.more',
+            child: NavigationDestination(
+              // Punto de conexión en vivo: la cuenta y su estado están en «Más».
+              icon: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  const Icon(Icons.more_horiz),
+                  Positioned(
+                    right: -4,
+                    top: -2,
+                    child: RealtimeIndicator(size: 10, interactive: false, borderColor: Theme.of(context).colorScheme.surfaceContainer),
+                  ),
+                ],
+              ),
+              label: 'Más',
+            ),
+          ),
       ],
     );
   }
@@ -79,6 +98,7 @@ Future<void> showAdminMoreSheet(
               title: Text(person == null ? '' : '${person.name} ${person.lastName}'.trim()),
               subtitle: role == null ? null : Text(role),
             ),
+            const RealtimeStatusTile(),
             const Divider(height: 1),
             for (final d in destinations)
               ListTile(

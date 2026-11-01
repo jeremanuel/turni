@@ -13,6 +13,7 @@ import '../../../core/utils/admin_vocabulary.dart';
 import '../club_config/widgets/admin_data_table.dart';
 import 'widgets/fixed_session_actions.dart';
 import 'widgets/fixed_session_texts.dart';
+import '../../../core/services/data_changes.dart';
 import '../../../core/presentation/components/onboarding/tour_anchor.dart';
 
 enum _View { week, list }
@@ -26,7 +27,7 @@ class FixedSessionsTab extends StatefulWidget {
   State<FixedSessionsTab> createState() => _FixedSessionsTabState();
 }
 
-class _FixedSessionsTabState extends State<FixedSessionsTab> {
+class _FixedSessionsTabState extends State<FixedSessionsTab> with ReloadOnDataChange {
   final _repository = sl<FixedSessionRepository>();
   final _search = TextEditingController();
 
@@ -54,11 +55,20 @@ class _FixedSessionsTabState extends State<FixedSessionsTab> {
     super.dispose();
   }
 
-  Future<void> _load() async {
-    setState(() {
-      _loading = true;
-      _error = null;
-    });
+  @override
+  Set<DataTopic> get refreshTopics => const {DataTopic.fixedSessions};
+
+  /// En vivo: sin spinner, la lista se reemplaza cuando llega.
+  @override
+  void onDataChanged(DataChange change) => _load(silent: true);
+
+  Future<void> _load({bool silent = false}) async {
+    if (!silent) {
+      setState(() {
+        _loading = true;
+        _error = null;
+      });
+    }
     final result = await _repository.list();
     if (!mounted) return;
     setState(() {

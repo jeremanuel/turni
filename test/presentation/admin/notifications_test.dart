@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:turni/core/config/app_theme.dart';
+import 'package:turni/core/services/data_changes.dart';
 import 'package:turni/core/utils/domain_error.dart';
 import 'package:turni/core/utils/either.dart';
 import 'package:turni/core/utils/repository_response.dart';
@@ -197,7 +198,7 @@ void main() {
     setUp(() {
       repo = _FakeRepository([_notice(5), _notice(4), _notice(3, read: true)]);
       pushes = StreamController<Map<String, dynamic>>.broadcast();
-      cubit = NotificationsCubit(repository: repo, pushes: pushes.stream, now: () => _now);
+      cubit = NotificationsCubit(repository: repo, pushes: pushes.stream, now: () => _now, isLive: () => false);
     });
 
     tearDown(() async {
@@ -255,6 +256,47 @@ void main() {
       ]);
       cubit.panelOpened();
       expect(cubit.state.attention, isFalse);
+      await sub.cancel();
+    });
+
+    test('con el socket conectado, la push no vuelve a sonar la campana', () async {
+      final live = NotificationsCubit(repository: repo, pushes: pushes.stream, now: () => _now, isLive: () => true);
+      addTearDown(live.close);
+      await live.load();
+      repo.all.insert(0, _notice(6));
+
+      pushes.add({'type': 'SESSION_REQUESTED', 'session_id': '6'});
+      await Future<void>.delayed(const Duration(milliseconds: 10));
+
+      expect(live.state.rings, 0);
+    });
+
+    test('por el socket: suena solo si llegó un aviso nuevo, no al leer en otra pestaña', () async {
+      final changes = StreamController<DataChange>.broadcast();
+      addTearDown(changes.close);
+      final local = NotificationsCubit(repository: repo, changes: changes.stream, now: () => _now);
+      addTearDown(local.close);
+      await local.load();
+      final arrivals = <String>[];
+      final sub = local.arrivals.listen((fresh) => arrivals.addAll(fresh.map((n) => n.id)));
+
+      // Se leyó uno en otra pestaña: nada nuevo, no suena.
+      changes.add(const DataChange({DataTopic.notifications}));
+      await Future<void>.delayed(const Duration(milliseconds: 10));
+      expect(local.state.rings, 0);
+
+      // Llegó uno nuevo.
+      repo.all.insert(0, _notice(6));
+      changes.add(const DataChange({DataTopic.notifications}));
+      await Future<void>.delayed(const Duration(milliseconds: 10));
+      expect(local.state.rings, 1);
+      expect(arrivals, ['6']);
+
+      // La recarga general (reconexión) no suena.
+      repo.all.insert(0, _notice(7));
+      changes.add(DataChange(DataTopic.values.toSet()));
+      await Future<void>.delayed(const Duration(milliseconds: 10));
+      expect(local.state.rings, 1);
       await sub.cancel();
     });
 

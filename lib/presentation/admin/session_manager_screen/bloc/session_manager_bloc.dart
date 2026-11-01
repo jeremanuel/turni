@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:bloc/bloc.dart';
 import 'package:collection/collection.dart';
 
+import '../../../../core/services/data_changes.dart';
 import '../../../../core/utils/domain_error.dart';
 import '../../../../core/utils/either.dart';
 import '../../../../domain/entities/club_partition.dart';
@@ -16,6 +19,12 @@ class SessionManagerBloc extends Bloc<SessionManagerEvent, SessionManagerState> 
   final SessionUserCases _sessionUserCases; 
 
   final DatesCarrouselController datesCarrouselController = DatesCarrouselController();
+
+  /// Avisos del canal en tiempo real (ver DataChanges). Varios seguidos (una
+  /// gestión masiva) se juntan en una sola recarga.
+  StreamSubscription<DataChange>? _liveChanges;
+  Timer? _liveDebounce;
+  bool _configChanged = false;
 
   
 
@@ -90,6 +99,46 @@ class SessionManagerBloc extends Bloc<SessionManagerEvent, SessionManagerState> 
         )
       );
 
+    });
+
+    // En vivo: el día visible se recarga solo cuando cambia algo del club
+    // (otro admin, un cliente que pide o cancela, un pago, un turno fijo).
+    _liveChanges = DataChanges.on(const {
+      DataTopic.sessions,
+      DataTopic.availability,
+      DataTopic.payments,
+      DataTopic.fixedSessions,
+      DataTopic.clubConfig,
+    }).listen((change) {
+      if (change.topics.contains(DataTopic.clubConfig)) _configChanged = true;
+      _liveDebounce?.cancel();
+      _liveDebounce = Timer(const Duration(milliseconds: 300), () {
+        if (isClosed) return;
+        if (_configChanged) {
+          _configChanged = false;
+          add(ReloadClubPartitionsEvent());
+        }
+        add(LiveReloadEvent());
+      });
+    });
+
+    on<LiveReloadEvent>((event, emit) async {
+      // Antes de la primera carga no hay nada que refrescar.
+      if (state.isFirstLoad) return;
+      final day = state.currentDate;
+      final sessions = await _sessionUserCases.getSessions(day);
+      // El usuario cambió de día mientras tanto: esa carga ya trae lo nuevo.
+      if (state.currentDate != day) return;
+
+      final selectedSessionId = state.selectedSession?.sessionId;
+      emit(
+        state.copyWith(
+          sessions: sessions,
+          selectedSession: selectedSessionId == null
+              ? null
+              : sessions.firstWhereOrNull((session) => session.sessionId == selectedSessionId) ?? state.selectedSession,
+        )
+      );
     });
 
     on<ReloadSessionsEvent>((event, emit) async {
@@ -329,8 +378,10 @@ print("test desde bloc:");
     return true;
   }
 
-
-
-
-  
+  @override
+  Future<void> close() {
+    _liveDebounce?.cancel();
+    _liveChanges?.cancel();
+    return super.close();
+  }
 }

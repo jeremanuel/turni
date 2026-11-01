@@ -11,6 +11,7 @@ import '../../../../domain/entities/payment/payment_list_item.dart';
 import '../../../../domain/repositories/payment_repository.dart';
 import '../../club_config/widgets/admin_data_table.dart';
 import '../../memberships/register_payment_dialog.dart';
+import '../../../../core/services/data_changes.dart';
 
 const _months = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
 String _date(DateTime d) => '${d.day} ${_months[d.month - 1]} ${d.year}';
@@ -30,7 +31,16 @@ class ClientPaymentsCard extends StatefulWidget {
   State<ClientPaymentsCard> createState() => _ClientPaymentsCardState();
 }
 
-class _ClientPaymentsCardState extends State<ClientPaymentsCard> {
+class _ClientPaymentsCardState extends State<ClientPaymentsCard> with ReloadOnDataChange {
+  @override
+  Set<DataTopic> get refreshTopics => const {DataTopic.payments};
+
+  @override
+  bool shouldReload(DataChange change) => change.isFor('client_id', widget.client.intClientId);
+
+  /// En vivo: un pago de este cliente (cuota, turno, adicional).
+  @override
+  void onDataChanged(DataChange change) => _load(reset: true);
   final _repository = sl<PaymentRepository>();
   final _items = <PaymentListItem>[];
   int _page = 1;

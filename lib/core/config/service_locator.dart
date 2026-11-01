@@ -5,6 +5,7 @@ import '../../domain/repositories/notification_history_repository.dart';
 import '../../infrastructure/api/repositories/notification_history_repository_impl.dart';
 import '../../presentation/admin/notifications/notifications_cubit.dart';
 import '../services/push_notification_service.dart';
+import '../services/data_changes.dart';
 import '../../infrastructure/api/repositories/membership_repository_impl.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_localization/flutter_localization.dart';
@@ -134,7 +135,7 @@ class ServiceLocator {
     sl.registerLazySingleton<NotificationRepository>(() => NotificationRepositoryImpl());
     sl.registerLazySingleton<NotificationHistoryRepository>(() => NotificationHistoryRepositoryImpl());
     sl.registerLazySingleton<NotificationsCubit>(
-        () => NotificationsCubit(pushes: PushNotificationService.messages));
+        () => NotificationsCubit(pushes: PushNotificationService.messages, changes: DataChanges.on(const {DataTopic.notifications})));
 
     sl.registerLazySingleton<IARepository>(
       () => GeminiRepository(),
