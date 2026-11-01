@@ -52,4 +52,32 @@ void main() {
     expect(progress.exercise(103)!.doneBeyondPlan, isNull);
     expect(progress.lastChangeDate!.day, 14);
   });
+
+  test('descansos: formato, lectura y evolución', () {
+    expect(formatRest(90), '1:30');
+    expect(formatRest(45), '0:45');
+    expect(parseRest('2:30'), 150);
+    expect(parseRest('150'), 150);
+    expect(parseRest('1:75'), isNull);
+    expect(parseRest('31:00'), isNull);
+
+    final bench = ExerciseProgress.fromJson({
+      'routine_exercise_id': 100,
+      'name': 'Press de banca',
+      'routine_group_id': 10,
+      'group_name': 'Empuje',
+      'plan': s(4, 8, 60),
+      'plan_rest_seconds': null,
+      'points': [
+        point('2026-09-01', s(4, 8, 60), 'PLAN'),
+        {...point('2026-09-08', s(4, 8, 60), 'CLIENT'), 'rest_seconds': 120},
+        {...point('2026-09-15', s(4, 8, 60), 'CLIENT'), 'rest_seconds': 240},
+      ],
+    });
+    expect(bench.hasRests, isTrue);
+    expect(bench.lastClientRest, 240);
+    expect(bench.deltaAt(2)!.label, 'descanso 4:00');
+    expect(bench.deltaAt(2)!.up, isTrue, reason: 'más descanso no cuenta como bajar');
+    expect(metricValue(bench.points.last.series, ProgressMetric.rest, restSeconds: bench.points.last.restSeconds), 240);
+  });
 }

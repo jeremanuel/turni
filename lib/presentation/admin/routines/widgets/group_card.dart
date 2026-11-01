@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+
+import 'rest_picker.dart';
 import 'package:flutter/services.dart';
 
 import '../../../../domain/entities/gym/gym.dart';
@@ -12,6 +14,7 @@ const _gridMinWidth = 820.0;
 const _handleWidth = 40.0;
 const _numberWidth = 104.0;
 const _weightWidth = 132.0;
+const _restWidth = 124.0;
 const _actionsWidth = 116.0;
 
 /// Un grupo de la rutina en desktop: nombre, músculos, grilla de ejercicios
@@ -384,6 +387,13 @@ class _HeaderRow extends StatelessWidget {
           cell('Series', width: _numberWidth, align: TextAlign.center),
           cell('Reps', width: _numberWidth, align: TextAlign.center),
           cell('Peso (kg)', width: _weightWidth, align: TextAlign.center),
+          SizedBox(
+            width: _restWidth,
+            child: Tooltip(
+              message: 'Opcional. Sin definir, el cliente arranca con lo último que descansó en ese ejercicio.',
+              child: cell('Descanso', width: _restWidth, align: TextAlign.center),
+            ),
+          ),
           cell('Indicación para el cliente', flex: 2),
           SizedBox(width: _actionsWidth, child: Container(height: 40)),
         ],
@@ -507,9 +517,11 @@ class _ExerciseRowState extends State<ExerciseRow> {
                               _DoneHint(
                                 progress: widget.progress!,
                                 current: series,
+                                currentRest: _exercise.restSeconds,
                                 clientFirstName: widget.clientFirstName,
                                 routineStart: widget.routineStart,
                                 onUse: (done) => widget.draft.setSeries(_exercise, [...done]),
+                                onUseRest: (rest) => widget.draft.setRest(_exercise, rest),
                               ),
                           ],
                         ),
@@ -561,6 +573,14 @@ class _ExerciseRowState extends State<ExerciseRow> {
                       onStep: (delta) => _setAll(kg: (first.weightKg + delta * 2.5).clamp(0, 1000).toDouble()),
                     )
                   : _VariedCell(label: '$kgLabel kg', onTap: _editSeries),
+            ),
+            box(
+              width: _restWidth,
+              child: RestPicker(
+                exerciseName: _exercise.name,
+                value: _exercise.restSeconds,
+                onChanged: (seconds) => widget.draft.setRest(_exercise, seconds),
+              ),
             ),
             box(
               flex: 2,
@@ -620,18 +640,22 @@ class _DoneHint extends StatelessWidget {
   const _DoneHint({
     required this.progress,
     required this.current,
+    required this.currentRest,
     required this.clientFirstName,
     required this.routineStart,
     required this.onUse,
+    required this.onUseRest,
   });
 
   final ExerciseProgress progress;
 
   /// Lo que dice el plan ahora en el borrador.
   final List<Serie> current;
+  final int? currentRest;
   final String clientFirstName;
   final DateTime? routineStart;
   final ValueChanged<List<Serie>> onUse;
+  final ValueChanged<int> onUseRest;
 
   bool _same(List<Serie> a, List<Serie> b) => a.length == b.length && [for (var i = 0; i < a.length; i++) a[i] == b[i]].every((same) => same);
 
@@ -641,6 +665,9 @@ class _DoneHint extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
     final last = progress.last;
     final done = last != null && last.byClient && !_same(last.series, current) ? last : null;
+    // Lo que descansa el cliente, si es distinto de lo que dice el plan (o el plan no lo define).
+    final rested = progress.lastClientRest;
+    final restHint = rested != null && rested != currentRest ? rested : null;
     final compact = ButtonStyle(
       visualDensity: VisualDensity.compact,
       padding: const WidgetStatePropertyAll(EdgeInsets.symmetric(horizontal: 6)),
@@ -660,7 +687,7 @@ class _DoneHint extends StatelessWidget {
             ),
             child: Text(progress.changesCount == 1 ? '1 cambio' : '${progress.changesCount} cambios'),
           );
-    if (done == null && historyButton == null) return const SizedBox.shrink();
+    if (done == null && restHint == null && historyButton == null) return const SizedBox.shrink();
     return Padding(
       padding: const EdgeInsets.only(top: 4),
       child: Wrap(
@@ -675,6 +702,13 @@ class _DoneHint extends StatelessWidget {
             Tooltip(
               message: 'Pasar al plan lo último que hizo $clientFirstName',
               child: OutlinedButton(style: compact, onPressed: () => onUse(done.series), child: const Text('Usar')),
+            ),
+          ],
+          if (restHint != null) ...[
+            Text('Descansa ${formatRest(restHint)} por serie', style: textTheme.bodySmall?.copyWith(color: colorScheme.primary)),
+            Tooltip(
+              message: 'Pasar al plan el descanso de $clientFirstName',
+              child: OutlinedButton(style: compact, onPressed: () => onUseRest(restHint), child: const Text('Usar')),
             ),
           ],
           if (historyButton != null) historyButton,

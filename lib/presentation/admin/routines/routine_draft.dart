@@ -16,6 +16,7 @@ class DraftExercise {
     required this.muscles,
     required this.series,
     this.notes = '',
+    this.restSeconds,
   }) : key = _key();
 
   /// Clave local estable (para reordenar y para los campos de texto).
@@ -29,6 +30,9 @@ class DraftExercise {
   List<Serie> series;
   String notes;
 
+  /// Descanso entre series. null = sin definir: el cliente usa el suyo (o el de la app).
+  int? restSeconds;
+
   DraftExercise copy({bool keepId = false}) => DraftExercise(
         id: keepId ? id : null,
         exerciseId: exerciseId,
@@ -36,6 +40,7 @@ class DraftExercise {
         muscles: [...muscles],
         series: [...series],
         notes: notes,
+        restSeconds: restSeconds,
       );
 
   factory DraftExercise.fromRoutine(RoutineExercise exercise, {bool keepId = false}) => DraftExercise(
@@ -45,6 +50,7 @@ class DraftExercise {
         muscles: [...exercise.muscles],
         series: exercise.series.isEmpty ? [...defaultSeries] : [...exercise.series],
         notes: exercise.notes ?? '',
+        restSeconds: exercise.restSeconds,
       );
 
   factory DraftExercise.fromCatalog(CatalogExercise exercise) => DraftExercise(
@@ -59,6 +65,7 @@ class DraftExercise {
         'exercise_id': exerciseId,
         'series': series.map((s) => s.toJson()).toList(),
         'notes': notes.trim().isEmpty ? null : notes.trim(),
+        'rest_seconds': restSeconds,
       };
 }
 
@@ -234,6 +241,11 @@ class RoutineDraft extends ChangeNotifier {
 
   void setSeries(DraftExercise exercise, List<Serie> series) {
     exercise.series = series;
+    _changed();
+  }
+
+  void setRest(DraftExercise exercise, int? seconds) {
+    exercise.restSeconds = seconds;
     _changed();
   }
 

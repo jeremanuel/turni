@@ -105,4 +105,14 @@ void main() {
       expect(parseKg('abc'), isNull);
     });
   });
+
+  test('el descanso es opcional y viaja en el JSON', () {
+    final exercise = DraftExercise(exerciseId: 1, name: 'Press de banca', muscles: const [], series: const [Serie(reps: 8, weightKg: 60)]);
+    expect(exercise.toJson()['rest_seconds'], isNull);
+    final draft = RoutineDraft(startDate: DateTime(2026, 11, 1), groups: [DraftGroup(name: 'Empuje', exercises: [exercise])]);
+    draft.setRest(exercise, 120);
+    expect(draft.dirty, isTrue);
+    expect(exercise.toJson()['rest_seconds'], 120);
+    expect(exercise.copy().restSeconds, 120);
+  });
 }

@@ -11,6 +11,7 @@ Una línea por entrega, no por PR: si un PR completa una entrada que ya está, s
 ## [Unreleased]
 
 ### Agregado
+- 2026-11-01 — Descanso entre series opcional por ejercicio en el editor de rutinas, y su evolución en el historial del ejercicio ([#81](https://github.com/jeremanuel/turni/pull/81)) — requiere BE #121
 
 ### Cambiado
 

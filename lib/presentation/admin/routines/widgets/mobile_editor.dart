@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'rest_picker.dart';
+
 import '../../../../domain/entities/gym/gym.dart';
 import '../routine_draft.dart';
 import 'group_card.dart';
@@ -284,6 +286,16 @@ class _MobileExerciseCardState extends State<_MobileExerciseCard> {
               )
             else
               OutlinedButton(onPressed: _editSeries, child: Text('Series distintas: ${seriesLabel(series)}')),
+            const SizedBox(height: 8),
+            labeled(
+              'Descanso entre series (opcional)',
+              RestPicker(
+                exerciseName: _exercise.name,
+                value: _exercise.restSeconds,
+                height: 48,
+                onChanged: (seconds) => widget.draft.setRest(_exercise, seconds),
+              ),
+            ),
             const SizedBox(height: 8),
             Row(
               children: [
