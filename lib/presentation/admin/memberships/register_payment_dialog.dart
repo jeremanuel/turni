@@ -4,6 +4,8 @@ import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_portal/flutter_portal.dart';
 
 import '../../../core/config/service_locator.dart';
+import '../../../core/presentation/components/inputs/date_picker/date_dropdown_field.dart';
+import '../../../core/presentation/components/inputs/option_chip.dart';
 import '../../../core/presentation/components/links/entity_links.dart';
 import '../../../core/utils/admin_features.dart';
 import '../../../core/utils/either.dart';
@@ -155,12 +157,6 @@ class _RegisterPaymentDialogState extends State<_RegisterPaymentDialog> {
     _amount.text = total == 0 ? '' : ThousandsFormat.formatPrice(total);
   }
 
-  Future<void> _pickDate() async {
-    final now = DateTime.now();
-    final picked = await showDatePicker(context: context, initialDate: _date, firstDate: DateTime(now.year - 1), lastDate: now);
-    if (picked != null) setState(() => _date = picked);
-  }
-
   Future<void> _save() async {
     final client = _client;
     final amount = ThousandsFormat.parsePrice(_amount.text.trim());
@@ -217,19 +213,53 @@ class _RegisterPaymentDialogState extends State<_RegisterPaymentDialog> {
     final membership = _selected;
     final total = ThousandsFormat.parsePrice(_amount.text.trim());
 
+    final subtitleStyle = textTheme.bodyMedium?.copyWith(color: scheme.onSurfaceVariant);
+    Widget label(String text) => Padding(padding: const EdgeInsets.only(bottom: 8), child: Text(text, style: textTheme.titleSmall));
+    Widget fieldLabel(String text) => Padding(
+          padding: const EdgeInsets.only(bottom: 4),
+          child: Text(text, style: textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant)),
+        );
+    const gap = SizedBox(height: 18);
+
+    // "¿Qué paga?": las opciones lado a lado y todas del mismo alto. El abono,
+    // un poco más ancho que "Otra cosa" (como en el diseño).
+    final concepts = <(int, Widget)>[
+      for (final m in _active)
+        (
+          14,
+          _ConceptCard(
+            selected: membership?.id == m.id,
+            title: 'Abono ${m.plan.name}',
+            subtitle: '${money(m.plan.price)} por mes · ${dueDescription(m)}',
+            status: m.status == MembershipStatus.ok ? null : m.status,
+            onTap: () => setState(() => _select(m)),
+          ),
+        ),
+      if (!_membershipOnly)
+        (
+          10,
+          _ConceptCard(
+            selected: membership == null,
+            title: 'Otra cosa',
+            subtitle: 'Un turno, un producto o una seña',
+            onTap: () => setState(() => _select(null)),
+          ),
+        ),
+    ];
+
     return AlertDialog(
       title: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         const Text('Registrar pago'),
         if (client != null && widget.client != null) ...[
           const SizedBox(height: 4),
-          ClientLink(clientId: client.intClientId, name: client.person?.fullName.trim() ?? 'Cliente'),
+          ClientLink(clientId: client.intClientId, name: client.person?.fullName.trim() ?? 'Cliente', style: subtitleStyle),
         ] else if (_membershipOnly) ...[
           const SizedBox(height: 4),
-          ClientLink(clientId: widget.membership!.clientId, name: widget.membership!.clientName),
+          ClientLink(clientId: widget.membership!.clientId, name: widget.membership!.clientName, style: subtitleStyle),
         ],
       ]),
       content: SizedBox(
-        width: 620,
+        width: 640,
         child: FormBuilder(
           key: _formKey,
           child: SingleChildScrollView(
@@ -250,104 +280,103 @@ class _RegisterPaymentDialogState extends State<_RegisterPaymentDialog> {
                       _loadMemberships();
                     },
                   ),
-                  const SizedBox(height: 16),
+                  gap,
                 ],
                 if (client != null || _membershipOnly) ...[
-                  Text('¿Qué paga?', style: textTheme.titleSmall),
-                  const SizedBox(height: 8),
-                  if (_loadingMemberships) const LinearProgressIndicator(),
-                  Wrap(spacing: 8, runSpacing: 8, children: [
-                    for (final m in _active)
-                      _ConceptCard(
-                        selected: membership?.id == m.id,
-                        title: 'Abono ${m.plan.name}',
-                        subtitle: '${money(m.plan.price)} por mes · ${dueDescription(m)}',
-                        status: m.status == MembershipStatus.ok ? null : m.status,
-                        onTap: () => setState(() => _select(m)),
-                      ),
-                    if (!_membershipOnly)
-                      _ConceptCard(
-                      selected: membership == null,
-                      title: 'Otra cosa',
-                      subtitle: 'Un turno, un producto o una seña',
-                      onTap: () => setState(() => _select(null)),
-                    ),
-                  ]),
+                  label('¿Qué paga?'),
+                  if (_loadingMemberships) const Padding(padding: EdgeInsets.only(bottom: 8), child: LinearProgressIndicator()),
+                  IntrinsicHeight(
+                    child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+                      for (final (i, (flex, card)) in concepts.indexed) ...[
+                        if (i > 0) const SizedBox(width: 8),
+                        Expanded(flex: flex, child: card),
+                      ],
+                      // Una sola opción: no ocupa todo el ancho.
+                      if (concepts.length == 1) const Spacer(flex: 10),
+                    ]),
+                  ),
                   if (membership != null && membership.upcoming.isNotEmpty) ...[
-                    const SizedBox(height: 18),
-                    Text('¿Qué cuotas?', style: textTheme.titleSmall),
-                    const SizedBox(height: 8),
+                    gap,
+                    label('¿Qué cuotas?'),
                     Wrap(spacing: 8, runSpacing: 8, children: [
                       for (final (i, period) in membership.upcoming.indexed)
-                        FilterChip(
-                          showCheckmark: false,
+                        OptionChip(
                           selected: i < _periods,
+                          label: _capitalize(monthLong(period.start)),
+                          subtitle: _periodSubtitle(membership, period),
                           // Se paga en orden: tocar una marca todas las anteriores.
-                          onSelected: (_) => setState(() {
+                          onTap: () => setState(() {
                             _periods = (i + 1 == _periods && i > 0) ? i : i + 1;
                             _syncAmount();
                           }),
-                          label: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
-                            Text(_capitalize(monthLong(period.start)), style: const TextStyle(fontWeight: FontWeight.w500)),
-                            Text(_periodSubtitle(membership, period), style: textTheme.bodySmall),
-                          ]),
                         ),
                     ]),
                   ],
-                  const SizedBox(height: 18),
+                  gap,
                   Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
                     Expanded(
-                      child: PriceField(
-                        controller: _amount,
-                        decoration: InputDecoration(
-                          labelText: 'Monto',
-                          prefixText: '\$ ',
-                          border: const OutlineInputBorder(),
-                          helperText: membership == null
-                              ? 'Lo que pagó.'
-                              : (_periods == 1 ? 'El precio de la cuota. Podés cambiarlo si paga distinto.' : '$_periods cuotas.'),
-                          helperMaxLines: 2,
+                      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                        fieldLabel('Monto'),
+                        PriceField(
+                          controller: _amount,
+                          decoration: InputDecoration(
+                            prefixText: '\$ ',
+                            isDense: true,
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+                            border: const OutlineInputBorder(),
+                            helperText: membership == null
+                                ? 'Lo que pagó.'
+                                : (_periods == 1 ? 'El precio de la cuota. Podés cambiarlo si paga distinto.' : '$_periods cuotas.'),
+                            helperMaxLines: 2,
+                          ),
                         ),
-                      ),
+                      ]),
                     ),
                     if (membership != null) ...[
                       const SizedBox(width: 12),
                       Expanded(
-                        child: InkWell(
-                          onTap: _pickDate,
-                          child: InputDecorator(
-                            decoration: const InputDecoration(labelText: 'Fecha', border: OutlineInputBorder(), suffixIcon: Icon(Icons.calendar_today_outlined, size: 18)),
-                            child: Text(_isToday(_date) ? 'Hoy, ${weekdayLabel(_date)}' : weekdayLabel(_date)),
+                        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                          fieldLabel('Fecha'),
+                          DateDropdownField(
+                            value: _date,
+                            firstDate: DateTime(DateTime.now().year - 1),
+                            lastDate: DateTime.now(),
+                            onChanged: (picked) => setState(() => _date = picked),
                           ),
-                        ),
+                        ]),
                       ),
                     ],
                   ]),
-                  const SizedBox(height: 16),
-                  Text('Medio de pago', style: textTheme.titleSmall),
-                  const SizedBox(height: 8),
+                  gap,
+                  label('Medio de pago'),
                   if (_methods == null)
                     const LinearProgressIndicator()
                   else
                     Wrap(spacing: 8, runSpacing: 8, children: [
                       for (final method in _methods!)
-                        ChoiceChip(
-                          label: Text(method.name),
+                        OptionChip(
+                          label: method.name,
                           selected: method.paymentMethodId == _methodId,
-                          showCheckmark: false,
-                          onSelected: (_) => setState(() => _methodId = method.paymentMethodId),
+                          onTap: () => setState(() => _methodId = method.paymentMethodId),
                         ),
                     ]),
-                  const SizedBox(height: 16),
+                  gap,
+                  fieldLabel('Observación (opcional)'),
                   TextField(
                     controller: _observation,
                     maxLength: 500,
-                    decoration: const InputDecoration(labelText: 'Observación (opcional)', hintText: 'Ej.: pagó la mitad, completa el viernes', border: OutlineInputBorder(), counterText: ''),
+                    minLines: 2,
+                    maxLines: 2,
+                    decoration: const InputDecoration(
+                      hintText: 'Ej.: pagó la mitad, completa el viernes',
+                      border: OutlineInputBorder(),
+                      counterText: '',
+                    ),
                   ),
                   if (membership != null && membership.upcoming.isNotEmpty) ...[
-                    const SizedBox(height: 12),
+                    gap,
                     Container(
-                      padding: const EdgeInsets.all(12),
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                       decoration: BoxDecoration(color: scheme.secondaryContainer, borderRadius: BorderRadius.circular(12)),
                       child: Row(children: [
                         Icon(Icons.check, size: 20, color: scheme.onSecondaryContainer),
@@ -386,11 +415,6 @@ class _RegisterPaymentDialogState extends State<_RegisterPaymentDialog> {
     );
   }
 
-  static bool _isToday(DateTime date) {
-    final now = DateTime.now();
-    return date.year == now.year && date.month == now.month && date.day == now.day;
-  }
-
   static String _capitalize(String text) => text.isEmpty ? text : text[0].toUpperCase() + text.substring(1);
 
   static String _periodSubtitle(Membership membership, MembershipPeriod period) {
@@ -422,7 +446,6 @@ class _ConceptCard extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(12),
         child: Container(
-          width: 280,
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
             color: selected ? scheme.primaryContainer : null,

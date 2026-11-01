@@ -70,7 +70,7 @@ class _PickClientState extends State<PickClient> {
 
       final children = <Widget>[
           
-          if(!widget.readOnly) Text("Cliente", style: textTheme.titleMedium),
+          if(!widget.readOnly) Text("Cliente", style: textTheme.titleSmall),
 
           if(newMode) Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -94,7 +94,7 @@ class _PickClientState extends State<PickClient> {
               
           ]),
 
-          if(!widget.readOnly) const SizedBox(height: 16),
+          if(!widget.readOnly) const SizedBox(height: 8),
       ];
       
       if (field.value == null && !newMode) {
@@ -114,6 +114,7 @@ class _PickClientState extends State<PickClient> {
       }
 
         return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: children,
         );
       }
@@ -123,11 +124,11 @@ class _PickClientState extends State<PickClient> {
 
   Row buildInitialState() {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceAround,
       spacing: 8,
       children: [
         Expanded(
           child: SearchClientButton(
+            asField: true,
             onPickClient: (client) {
           
               fieldKey.currentState?.didChange(client);
@@ -135,17 +136,9 @@ class _PickClientState extends State<PickClient> {
             },
           ),
         ),
-        Expanded(
-          child: OutlinedButton.icon(
-            style:TextButton.styleFrom(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 14, vertical: 10),
-                      ),
-            icon: const Icon(Icons.add),
-            label: const Text("Crear"),
+        TextButton.icon(
+            icon: const Icon(Icons.add, size: 18),
+            label: const Text("Nuevo cliente"),
             onPressed: () {
               
               context.pushNamed(
@@ -164,39 +157,52 @@ class _PickClientState extends State<PickClient> {
               
             }
           ),
-        )
       ],
     );
   }
 
+  /// El cliente elegido: una fila con borde (avatar, nombre y contacto) y la
+  /// cruz para elegir otro.
   Widget buildPickedClientInfo() {
-    final client = fieldKey.currentState!.value;
+    final client = fieldKey.currentState!.value!;
+    final scheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    final contact = [
+      if (client.person!.hasEmail()) client.person!.email!,
+      if (client.person!.hasPhone()) client.person!.phone!,
+    ].join(' · ');
 
-    return InkWell(
-      onTap: () {
-        context.goNamed(AppRoutes.CLIENT_ROUTE.name,  pathParameters: {"clientId":client.clientId!});
-      },
-      child: ListTile(  
-        leading: CircleAvatar(
-            child: Text(client!.person!.fullName.characters.first)
-          ),
-        trailing: widget.readOnly ? null : IconButton(
-            onPressed: () {
-              fieldKey.currentState?.didChange(null);
-            },
-            icon: const Icon(Icons.close)
-          ),
-        subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      if(client.person!.hasEmail()) Text(client.person!.email!, overflow: TextOverflow.ellipsis,),
-                      if(client.person!.hasPhone()) Text(client.person!.phone!, overflow: TextOverflow.ellipsis)
-                    ],
-                  ),
-        title: Text(client.person!.fullName),
+    return Container(
+      padding: const EdgeInsets.fromLTRB(12, 10, 4, 10),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: scheme.outlineVariant),
       ),
+      child: Row(children: [
+        CircleAvatar(
+          radius: 18,
+          backgroundColor: scheme.primaryContainer,
+          foregroundColor: scheme.onPrimaryContainer,
+          child: Text(client.person!.fullName.trim().characters.first.toUpperCase()),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(client.person!.fullName, style: textTheme.titleSmall, overflow: TextOverflow.ellipsis),
+            if (contact.isNotEmpty)
+              Text(contact, style: textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant), overflow: TextOverflow.ellipsis),
+          ]),
+        ),
+        if (!widget.readOnly)
+          IconButton(
+            tooltip: 'Elegir otro cliente',
+            onPressed: () => fieldKey.currentState?.didChange(null),
+            icon: const Icon(Icons.close),
+          ),
+      ]),
     );
   }
+
 
 
 

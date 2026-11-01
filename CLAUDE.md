@@ -83,6 +83,27 @@ nueva, no solo a esa.
   El título de un servicio es `clubPartition.displayName` (su nombre propio
   o el de su tipo), nunca `physicalPartitionName`: ese es el nombre de sus
   espacios ("Sala", "Box").
+- **Fechas: nunca el calendario por defecto de Material (`showDatePicker`).**
+  Siempre el calendario propio que se despliega como dropdown debajo del
+  campo: `DateDropdownField`
+  (`lib/core/presentation/components/inputs/date_picker/date_dropdown_field.dart`)
+  para una fecha, `IntervalCalendarPanel` dentro de un `DropdownWidget` para
+  un rango. El campo va con fondo transparente y borde `outline`, como los
+  demás campos.
+- **Opciones elegibles (medio de pago, cuotas, motivo, filtros): transparentes
+  sin elegir, nunca con fondo oscuro.** Usar `OptionChip`
+  (`lib/core/presentation/components/inputs/option_chip.dart`): transparente
+  con borde `outline` y `secondaryContainer` cuando está elegida. Los chips de
+  Material heredan lo mismo del `chipTheme` (su `color`, no solo
+  `backgroundColor`: en Material 3 sin `color` pintan un fondo oscuro).
+- **Contenedores lado a lado para elegir una opción (tarjetas de "¿Qué
+  paga?", planes, etc.): siempre del mismo alto.** Una `Row` dentro de
+  `IntrinsicHeight` con `crossAxisAlignment: CrossAxisAlignment.stretch`,
+  nunca anchos fijos en un `Wrap` (cada una queda del alto de su texto).
+- **Labels de un formulario de diseño: arriba del campo y alineados a la
+  izquierda** (`bodySmall`, `onSurfaceVariant`), no el label flotante dentro
+  del borde, salvo que el diseño lo muestre así. Nunca un título de sección
+  centrado.
 - **Una sola jerarquía de navegación lateral por pantalla.** No agregar un
   segundo `NavigationRail`/menú dentro de una sección interna.
 

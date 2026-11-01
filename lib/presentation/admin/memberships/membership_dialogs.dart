@@ -12,6 +12,8 @@ import '../../core/cubit/auth/auth_cubit.dart';
 import '../../../domain/entities/payment/payment_method.dart';
 import '../../../domain/repositories/membership_repository.dart';
 import '../../../domain/repositories/payment_repository.dart';
+import '../../../core/presentation/components/inputs/date_picker/date_dropdown_field.dart';
+import '../../../core/presentation/components/inputs/option_chip.dart';
 import '../club_config/widgets/price_field.dart';
 import 'widgets/membership_widgets.dart';
 
@@ -20,35 +22,87 @@ DateTime _today() {
   return DateTime(now.year, now.month, now.day);
 }
 
-Future<DateTime?> _pickDay(BuildContext context, DateTime initial, {DateTime? first, DateTime? last}) => showDatePicker(
-      context: context,
-      initialDate: initial,
-      firstDate: first ?? DateTime(initial.year - 1),
-      lastDate: last ?? DateTime(initial.year + 1, 12, 31),
-    );
-
+/// Una fecha con su label arriba y el calendario propio desplegable
+/// ([DateDropdownField]), como en el diseño.
 class _DateField extends StatelessWidget {
-  const _DateField({required this.label, required this.value, required this.onTap, this.helper});
+  const _DateField({required this.label, required this.value, required this.onChanged, this.first, this.last, this.helper});
 
   final String label;
-  final String value;
-  final VoidCallback onTap;
+  final DateTime value;
+  final ValueChanged<DateTime> onChanged;
+  final DateTime? first;
+  final DateTime? last;
   final String? helper;
 
   @override
-  Widget build(BuildContext context) => InkWell(
-        onTap: onTap,
-        child: InputDecorator(
-          decoration: InputDecoration(
-            labelText: label,
-            helperText: helper,
-            helperMaxLines: 2,
-            border: const OutlineInputBorder(),
-            suffixIcon: const Icon(Icons.calendar_today_outlined, size: 18),
-          ),
-          child: Text(value),
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    final muted = textTheme.bodySmall?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant);
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Padding(padding: const EdgeInsets.only(bottom: 4), child: Text(label, style: muted)),
+      DateDropdownField(
+        value: value,
+        onChanged: onChanged,
+        firstDate: first ?? DateTime(value.year - 1),
+        lastDate: last ?? DateTime(value.year + 1, 12, 31),
+      ),
+      if (helper != null) Padding(padding: const EdgeInsets.only(top: 4, left: 12), child: Text(helper!, style: muted)),
+    ]);
+  }
+}
+
+/// Una opción de una lista para elegir una sola (radio), como tarjeta: la
+/// elegida en `primaryContainer` con borde `primary`.
+class _ChoiceCard extends StatelessWidget {
+  const _ChoiceCard({required this.selected, required this.title, required this.subtitle, required this.onTap});
+
+  final bool selected;
+  final String title;
+  final String subtitle;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    return Semantics(
+      selected: selected,
+      inMutuallyExclusiveGroup: true,
+      button: true,
+      child: Material(
+        color: selected ? scheme.primaryContainer : Colors.transparent,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: BorderSide(color: selected ? scheme.primary : scheme.outlineVariant),
         ),
-      );
+        child: InkWell(
+          borderRadius: BorderRadius.circular(12),
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            child: Row(children: [
+              Container(
+                width: 18,
+                height: 18,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: selected ? scheme.primary : scheme.outline, width: selected ? 5 : 2),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Text(title, style: textTheme.titleSmall?.copyWith(color: selected ? scheme.onPrimaryContainer : null)),
+                  const SizedBox(height: 2),
+                  Text(subtitle, style: textTheme.bodySmall?.copyWith(color: selected ? scheme.onPrimaryContainer : scheme.onSurfaceVariant)),
+                ]),
+              ),
+            ]),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class _Info extends StatelessWidget {
@@ -143,78 +197,73 @@ class _PauseDialogState extends State<_PauseDialog> {
         child: SingleChildScrollView(
           child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, mainAxisSize: MainAxisSize.min, children: [
             Text('¿Desde cuándo?', style: textTheme.titleSmall),
-            const SizedBox(height: 4),
-            RadioGroup<bool>(
-              groupValue: _fromDue,
-              onChanged: (value) => setState(() => _fromDue = value ?? _fromDue),
-              child: Column(children: [
-                if (unpaid != null)
-                  RadioListTile<bool>(
-                    value: true,
-                    contentPadding: EdgeInsets.zero,
-                    title: Text('Desde el vencimiento impago: ${weekdayLabel(unpaid)}'),
-                    subtitle: const Text('No vino desde que venció: esa cuota no se cobra y deja de figurar como deuda.'),
-                  ),
-                RadioListTile<bool>(
-                  value: false,
-                  contentPadding: EdgeInsets.zero,
-                  title: Text(unpaid != null ? 'Desde otra fecha' : 'Desde'),
-                  subtitle: Text(unpaid != null ? 'Lo que venció antes sigue como deuda.' : 'No genera cuotas desde ese día.'),
-                ),
-              ]),
-            ),
-            if (!_fromDue || unpaid == null)
-              Padding(
-                padding: const EdgeInsets.only(left: 48, bottom: 8),
-                child: _DateField(
-                  label: 'Arranca la pausa',
-                  value: weekdayLabel(_start),
-                  onTap: () async {
-                    final picked = await _pickDay(context, _start, first: m.startDate);
-                    if (picked != null) setState(() => _start = picked);
-                  },
-                ),
+            const SizedBox(height: 8),
+            if (unpaid != null) ...[
+              _ChoiceCard(
+                selected: _fromDue,
+                title: 'Desde el vencimiento impago: ${weekdayLabel(unpaid)}',
+                subtitle: 'No vino desde que venció: esa cuota no se cobra y deja de figurar como deuda.',
+                onTap: () => setState(() => _fromDue = true),
               ),
-            const SizedBox(height: 12),
+              const SizedBox(height: 8),
+              _ChoiceCard(
+                selected: !_fromDue,
+                title: 'Desde otra fecha',
+                subtitle: 'Lo que venció antes sigue como deuda.',
+                onTap: () => setState(() => _fromDue = false),
+              ),
+            ],
+            if (!_fromDue || unpaid == null) ...[
+              const SizedBox(height: 12),
+              _DateField(
+                label: 'Arranca la pausa',
+                value: _start,
+                first: m.startDate,
+                onChanged: (picked) => setState(() => _start = picked),
+              ),
+            ],
+            const SizedBox(height: 18),
             Text('¿Hasta cuándo?', style: textTheme.titleSmall),
             const SizedBox(height: 8),
             Wrap(spacing: 8, runSpacing: 8, children: [
-              ChoiceChip(label: const Text('Hasta que vuelva'), selected: _untilBack, showCheckmark: false, onSelected: (_) => setState(() => _untilBack = true)),
-              ChoiceChip(
-                label: Text(_end == null ? 'Hasta una fecha' : 'Hasta el ${dayLabel(_end!)}'),
+              OptionChip(label: 'Hasta que vuelva', selected: _untilBack, onTap: () => setState(() => _untilBack = true)),
+              OptionChip(
+                label: 'Hasta una fecha',
                 selected: !_untilBack,
-                showCheckmark: false,
-                onSelected: (_) async {
-                  final picked = await _pickDay(context, _end ?? _effectiveStart.add(const Duration(days: 15)), first: _effectiveStart.add(const Duration(days: 1)));
-                  if (picked != null) {
-                    setState(() {
-                      _end = picked;
-                      _untilBack = false;
-                    });
-                  }
-                },
+                onTap: () => setState(() {
+                  _untilBack = false;
+                  _end ??= _effectiveStart.add(const Duration(days: 15));
+                }),
               ),
             ]),
-            const SizedBox(height: 4),
+            if (!_untilBack && _end != null) ...[
+              const SizedBox(height: 12),
+              _DateField(
+                label: 'Vuelve el',
+                value: _end!,
+                first: _effectiveStart.add(const Duration(days: 1)),
+                onChanged: (picked) => setState(() => _end = picked),
+              ),
+            ],
+            const SizedBox(height: 8),
             Text(
               _untilBack
                   ? 'Queda en pausa hasta que alguien toque "Retomar" (o registre un pago, que la retoma sola).'
                   : 'Ese día vuelve a estar activo y vence su próxima cuota. Se puede retomar antes.',
               style: textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 18),
             Text('Motivo (opcional)', style: textTheme.titleSmall),
             const SizedBox(height: 8),
             Wrap(spacing: 8, runSpacing: 8, children: [
               for (final option in const ['Vacaciones', 'Lesión', 'Viaje', 'Otro'])
-                ChoiceChip(
-                  label: Text(option),
+                OptionChip(
+                  label: option,
                   selected: _reason == option,
-                  showCheckmark: false,
-                  onSelected: (_) => setState(() => _reason = _reason == option ? null : option),
+                  onTap: () => setState(() => _reason = _reason == option ? null : option),
                 ),
             ]),
-            const SizedBox(height: 16),
+            const SizedBox(height: 18),
             _Info(
               icon: Icons.pause,
               text: m.plan.billingMode == BillingMode.anniversary
@@ -287,22 +336,31 @@ class _EditPauseDialogState extends State<_EditPauseDialog> {
         child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, mainAxisSize: MainAxisSize.min, children: [
           Text('En pausa desde el ${weekdayLabel(_pause.start)}.', style: textTheme.bodyMedium),
           const SizedBox(height: 16),
+          Text('¿Hasta cuándo?', style: textTheme.titleSmall),
+          const SizedBox(height: 8),
           Wrap(spacing: 8, runSpacing: 8, children: [
-            ChoiceChip(label: const Text('Hasta que vuelva'), selected: _end == null, showCheckmark: false, onSelected: (_) => setState(() => _end = null)),
-            ChoiceChip(
-              label: Text(_end == null ? 'Hasta una fecha' : 'Hasta el ${dayLabel(_end!)}'),
+            OptionChip(label: 'Hasta que vuelva', selected: _end == null, onTap: () => setState(() => _end = null)),
+            OptionChip(
+              label: 'Hasta una fecha',
               selected: _end != null,
-              showCheckmark: false,
-              onSelected: (_) async {
-                final picked = await _pickDay(context, _end ?? _today().add(const Duration(days: 7)), first: _pause.start.add(const Duration(days: 1)));
-                if (picked != null) setState(() => _end = picked);
-              },
+              onTap: () => setState(() => _end ??= _today().add(const Duration(days: 7))),
             ),
           ]),
-          const SizedBox(height: 16),
+          if (_end != null) ...[
+            const SizedBox(height: 12),
+            _DateField(
+              label: 'Vuelve el',
+              value: _end!,
+              first: _pause.start.add(const Duration(days: 1)),
+              onChanged: (picked) => setState(() => _end = picked),
+            ),
+          ],
+          const SizedBox(height: 18),
+          Text('Motivo (opcional)', style: textTheme.titleSmall),
+          const SizedBox(height: 8),
           Wrap(spacing: 8, runSpacing: 8, children: [
             for (final option in const ['Vacaciones', 'Lesión', 'Viaje', 'Otro'])
-              ChoiceChip(label: Text(option), selected: _reason == option, showCheckmark: false, onSelected: (_) => setState(() => _reason = _reason == option ? null : option)),
+              OptionChip(label: option, selected: _reason == option, onTap: () => setState(() => _reason = _reason == option ? null : option)),
           ]),
           if (_error != null) ...[const SizedBox(height: 12), Text(_error!, style: TextStyle(color: Theme.of(context).colorScheme.error))],
         ]),
@@ -440,17 +498,14 @@ class _ResumeDialogState extends State<_ResumeDialog> {
           child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, mainAxisSize: MainAxisSize.min, children: [
             _DateField(
               label: 'Vuelve el',
-              value: _back == _today() ? 'Hoy, ${weekdayLabel(_back)}' : weekdayLabel(_back),
+              value: _back,
               helper: 'Desde este día se cuenta su nuevo mes.',
-              onTap: () async {
-                final picked = await _pickDay(context, _back, first: pause?.start.add(const Duration(days: 1)), last: _today());
-                if (picked != null) {
-                  setState(() {
-                    _back = picked;
-                    _amount.text = ThousandsFormat.formatPrice(_estimate());
-                  });
-                }
-              },
+              first: pause?.start.add(const Duration(days: 1)),
+              last: _today(),
+              onChanged: (picked) => setState(() {
+                _back = picked;
+                _amount.text = ThousandsFormat.formatPrice(_estimate());
+              }),
             ),
             const SizedBox(height: 12),
             SwitchListTile(
@@ -477,7 +532,7 @@ class _ResumeDialogState extends State<_ResumeDialog> {
               else
                 Wrap(spacing: 8, runSpacing: 8, children: [
                   for (final method in _methods!)
-                    ChoiceChip(label: Text(method.name), selected: method.paymentMethodId == _methodId, showCheckmark: false, onSelected: (_) => setState(() => _methodId = method.paymentMethodId)),
+                    OptionChip(label: method.name, selected: method.paymentMethodId == _methodId, onTap: () => setState(() => _methodId = method.paymentMethodId)),
                 ]),
             ],
             const SizedBox(height: 16),
@@ -632,9 +687,9 @@ class _ReminderDialogState extends State<_ReminderDialog> {
           Text('Por dónde', style: textTheme.titleSmall),
           const SizedBox(height: 8),
           Wrap(spacing: 8, runSpacing: 8, children: [
-            FilterChip(label: const Text('Notificación en la app'), selected: _app, showCheckmark: false, onSelected: (v) => setState(() => _app = v)),
+            OptionChip(label: 'Notificación en la app', selected: _app, onTap: () => setState(() => _app = !_app)),
             if (_single)
-              FilterChip(label: const Text('WhatsApp (copia el mensaje)'), selected: _whatsApp, showCheckmark: false, onSelected: (v) => setState(() => _whatsApp = v)),
+              OptionChip(label: 'WhatsApp (copia el mensaje)', selected: _whatsApp, onTap: () => setState(() => _whatsApp = !_whatsApp)),
           ]),
           const SizedBox(height: 4),
           Text(

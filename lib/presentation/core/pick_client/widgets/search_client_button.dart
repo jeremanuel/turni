@@ -11,9 +11,13 @@ import '../../../../domain/repositories/admin_repository.dart';
 
 class SearchClientButton extends StatefulWidget {
 
-  const SearchClientButton({super.key, required this.onPickClient});
+  const SearchClientButton({super.key, required this.onPickClient, this.asField = false});
 
   final Function(Client) onPickClient;
+
+  /// Se ve como un campo de búsqueda ("Buscar por nombre, email o teléfono")
+  /// en vez de un botón.
+  final bool asField;
 
   @override
   State<SearchClientButton> createState() => _SearchClientButtonState();
@@ -30,13 +34,53 @@ class _SearchClientButtonState extends State<SearchClientButton> {
       onPickClient: widget.onPickClient,
     ), 
     dropdownController: controller,
-    child: FilledButton.icon(
+    width: widget.asField ? 420 : 300,
+    child: widget.asField
+        ? _SearchField(onTap: () => controller.toggle!())
+        : FilledButton.icon(
             onPressed: (){
               controller.toggle!();
             }, 
             label: const Text("Buscar"),
             icon: const Icon(Icons.search),
           ),
+    );
+  }
+}
+
+/// El disparador con forma de campo: borde `outline`, lupa y la pista.
+class _SearchField extends StatelessWidget {
+  const _SearchField({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Material(
+      color: Colors.transparent,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4), side: BorderSide(color: scheme.outline)),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(4),
+        onTap: onTap,
+        child: SizedBox(
+          height: 48,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            child: Row(children: [
+              Icon(Icons.search, size: 20, color: scheme.onSurfaceVariant),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  'Buscar por nombre, email o teléfono',
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(fontSize: 15, color: scheme.onSurfaceVariant),
+                ),
+              ),
+            ]),
+          ),
+        ),
+      ),
     );
   }
 }
