@@ -3,12 +3,14 @@ import 'package:intl/intl.dart';
 
 import '../../../../core/config/service_locator.dart';
 import '../../../../core/presentation/components/links/entity_links.dart';
+import '../../../../core/presentation/components/loading/app_skeleton.dart';
 import '../../../../core/utils/either.dart';
 import '../../../../core/utils/permissions.dart';
 import '../../../../domain/entities/client.dart';
 import '../../../../domain/entities/fixed_session.dart';
 import '../../../../domain/repositories/fixed_session_repository.dart';
 import '../../fixed_sessions/widgets/fixed_session_actions.dart';
+import '../../fixed_sessions/widgets/fixed_session_texts.dart';
 
 /// Turnos fijos del cliente en su ficha: los que tiene como titular o como
 /// integrante, con sus próximos días (los cancelados tachados) y acciones.
@@ -102,29 +104,31 @@ class _ClientFixedSessionsState extends State<ClientFixedSessions> {
               ],
             ),
             const SizedBox(height: 12),
-            if (_loading)
-              const LinearProgressIndicator()
+            if (_loading && _items.isEmpty)
+              AppSkeleton(child: _grid(placeholderFixedSessions(2, clientId: _clientId)))
             else if (_error != null)
-              Text(_error!, style: TextStyle(color: scheme.error))
+              LoadError(message: _error!, onRetry: _load)
             else if (_items.isEmpty)
               Text('No tiene turnos fijos.', style: textTheme.bodyMedium?.copyWith(color: scheme.onSurfaceVariant))
             else
-              LayoutBuilder(
-                builder: (context, constraints) {
-                  final columns = constraints.maxWidth > 640 ? 2 : 1;
-                  final width = (constraints.maxWidth - (columns - 1) * 12) / columns;
-                  return Wrap(
-                    spacing: 12,
-                    runSpacing: 12,
-                    children: [for (final item in _items) SizedBox(width: width, child: _card(item))],
-                  );
-                },
-              ),
+              _grid(_items),
           ],
         ),
       ),
     );
   }
+
+  Widget _grid(List<FixedSession> items) => LayoutBuilder(
+        builder: (context, constraints) {
+          final columns = constraints.maxWidth > 640 ? 2 : 1;
+          final width = (constraints.maxWidth - (columns - 1) * 12) / columns;
+          return Wrap(
+            spacing: 12,
+            runSpacing: 12,
+            children: [for (final item in items) SizedBox(width: width, child: _card(item))],
+          );
+        },
+      );
 
   Widget _card(FixedSession item) {
     final scheme = Theme.of(context).colorScheme;

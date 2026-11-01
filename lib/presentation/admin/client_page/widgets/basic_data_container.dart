@@ -1,5 +1,6 @@
 
 import 'package:flutter/material.dart';
+import '../../../../core/presentation/components/inputs/client_search_field.dart';
 import '../../../../core/utils/permissions.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
@@ -21,11 +22,15 @@ class BasicDataContainer extends StatelessWidget {
     required this.colorScheme, 
     required this.onToggleEditing, 
     required this.isEditing,
+    this.initialName,
   });
 
   final ColorScheme colorScheme;
   final Function(Client) onToggleEditing;
   final bool isEditing;
+
+  /// Lo escrito en un buscador de clientes al tocar "Crear cliente".
+  final String? initialName;
 
   @override
   Widget build(BuildContext context) {
@@ -44,7 +49,7 @@ class BasicDataContainer extends StatelessWidget {
                   : Border.all(color: colorScheme.outline.withValues(alpha: 0.5)),
       ),
       padding: const EdgeInsets.all(24),
-      child: (isEditing || client == null) ? EditBasicDataContainer(client: client, onToggleEditing: onToggleEditing) : InfoBasicDataContainer(client: client, onToggleEditing: onToggleEditing),
+      child: (isEditing || client == null) ? EditBasicDataContainer(client: client, onToggleEditing: onToggleEditing, initialName: initialName) : InfoBasicDataContainer(client: client, onToggleEditing: onToggleEditing),
     );
   }
 }
@@ -260,10 +265,15 @@ class EditBasicDataContainer extends StatefulWidget {
   const EditBasicDataContainer({
     super.key,
     required this.client, required this.onToggleEditing,
+    this.initialName,
   });
 
   final Client? client;
   final Function(Client) onToggleEditing;
+
+  /// Precarga del alta: "Agus" va al nombre, "Juan Pérez" a nombre y
+  /// apellido, un teléfono o un email a su campo.
+  final String? initialName;
 
   @override
   State<EditBasicDataContainer> createState() => _EditBasicDataContainerState();
@@ -274,6 +284,10 @@ class _EditBasicDataContainerState extends State<EditBasicDataContainer> {
   final formKey = GlobalKey<FormBuilderState>();
   final AdminRepository adminRepository = sl<AdminRepository>();
   bool isPostingData = false;
+
+  late final _draft = splitClientQuery(widget.initialName ?? '');
+
+  static String? _nullIfEmpty(String s) => s.isEmpty ? null : s;
 
   @override
   Widget build(BuildContext context) {
@@ -287,10 +301,10 @@ class _EditBasicDataContainerState extends State<EditBasicDataContainer> {
         onChanged: () => setState(() {}),
         key: formKey,
         initialValue: {
-          "name":widget.client?.person?.name,
-          "last_name":widget.client?.person?.lastName,
-          "phone":widget.client?.person?.phone,
-          "email":widget.client?.person?.email,
+          "name":widget.client?.person?.name ?? _nullIfEmpty(_draft.name),
+          "last_name":widget.client?.person?.lastName ?? _nullIfEmpty(_draft.lastName),
+          "phone":widget.client?.person?.phone ?? _nullIfEmpty(_draft.phone),
+          "email":widget.client?.person?.email ?? _nullIfEmpty(_draft.email),
           "bird_date":widget.client?.person?.birdDate,
           "observation":widget.client?.person?.observation
         },

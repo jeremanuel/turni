@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../keyboard_guard.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 
@@ -116,7 +117,7 @@ class _FilterChipLocalListState<T> extends State<FilterChipLocalList<T>> {
         child: Column(
           children: [
             ListTile(
-              title: TextField(
+              title: AllowAutoKeyboard(child: TextField(
                 key: formKey,
                 controller: searchController,
                 autofocus: true,
@@ -132,7 +133,7 @@ class _FilterChipLocalListState<T> extends State<FilterChipLocalList<T>> {
                     _focusedIndex = 0;
                   });
                 },
-              ),
+              )),
             ),
             Expanded(
               child: ListView.builder(

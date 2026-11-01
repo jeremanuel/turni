@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/config/router/app_routes.dart';
 import '../../../../core/config/service_locator.dart';
+import '../../../../core/presentation/components/loading/app_skeleton.dart';
 import '../../../../core/utils/admin_features.dart';
 import '../../../../core/utils/either.dart';
 import '../../../../core/utils/thousands_format.dart';
@@ -134,29 +135,37 @@ class _ClientPaymentsCardState extends State<ClientPaymentsCard> with ReloadOnDa
           ),
           const SizedBox(height: 14),
           if (_error != null)
-            Row(children: [Expanded(child: Text(_error!)), TextButton(onPressed: () => _load(reset: true), child: const Text('Reintentar'))])
+            LoadError(message: _error!, onRetry: () => _load(reset: true))
           else if (_items.isEmpty && _loading)
-            const LinearProgressIndicator()
+            // La tabla de siempre con filas de mentira: no salta al llegar.
+            AppSkeleton(
+              child: _table([
+                for (var i = 0; i < 3; i++)
+                  [
+                    Text(BoneMock.date),
+                    Text(skeletonText(2 + i % 2), style: const TextStyle(fontWeight: FontWeight.w500)),
+                    Text(skeletonText(1)),
+                    Align(alignment: Alignment.centerRight, child: Text(BoneMock.chars(8))),
+                    Text(skeletonText(1)),
+                  ],
+              ]),
+            )
           else if (_items.isEmpty)
             Text('Sin pagos todavía.', style: textTheme.bodyMedium?.copyWith(color: scheme.onSurfaceVariant))
           else ...[
-            AdminDataTable(
-              columns: const ['Fecha', 'Concepto', 'Medio', 'Monto', 'Registró'],
-              columnWidths: const {0: FixedColumnWidth(118), 1: FlexColumnWidth(1.8), 2: FlexColumnWidth(), 3: FixedColumnWidth(110), 4: FlexColumnWidth()},
-              rows: [
-                for (final payment in _items)
-                  [
-                    Text(_date(payment.paymentDate)),
-                    _Concept(payment: payment),
-                    Text(payment.paymentMethodName),
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: Text(_money(payment.amount), style: const TextStyle(fontWeight: FontWeight.w500, fontFeatures: [FontFeature.tabularFigures()])),
-                    ),
-                    Text(payment.adminName ?? (payment.providerStatus != null ? 'Online' : '—'), style: TextStyle(color: scheme.onSurfaceVariant)),
-                  ],
-              ],
-            ),
+            _table([
+              for (final payment in _items)
+                [
+                  Text(_date(payment.paymentDate)),
+                  _Concept(payment: payment),
+                  Text(payment.paymentMethodName),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: Text(_money(payment.amount), style: const TextStyle(fontWeight: FontWeight.w500, fontFeatures: [FontFeature.tabularFigures()])),
+                  ),
+                  Text(payment.adminName ?? (payment.providerStatus != null ? 'Online' : '—'), style: TextStyle(color: scheme.onSurfaceVariant)),
+                ],
+            ]),
             const SizedBox(height: 8),
             Row(children: [
               Text('${_items.length} de $_total ${_total == 1 ? 'pago' : 'pagos'}', style: textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant)),
@@ -170,6 +179,12 @@ class _ClientPaymentsCardState extends State<ClientPaymentsCard> with ReloadOnDa
     );
   }
 }
+
+Widget _table(List<List<Widget>> rows) => AdminDataTable(
+      columns: const ['Fecha', 'Concepto', 'Medio', 'Monto', 'Registró'],
+      columnWidths: const {0: FixedColumnWidth(118), 1: FlexColumnWidth(1.8), 2: FlexColumnWidth(), 3: FixedColumnWidth(110), 4: FlexColumnWidth()},
+      rows: rows,
+    );
 
 class _Concept extends StatelessWidget {
   const _Concept({required this.payment});

@@ -188,9 +188,9 @@ class _TournamentFormPageState extends State<TournamentFormPage> {
 
     Widget body;
     if (_error != null) {
-      body = LoadError(message: _error!, onRetry: _load);
+      body = LoadError(message: _error!, onRetry: _load, center: true);
     } else if (catalog == null || (_isEdit && _editing == null)) {
-      body = const Center(child: CircularProgressIndicator());
+      body = const LoadingView();
     } else if (catalog.isEmpty) {
       body = const Center(child: Text('El club no tiene canchas activas para armar un torneo.'));
     } else {

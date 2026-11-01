@@ -18,7 +18,9 @@
 
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <!-- interactive-widget: en Chrome (Android) el teclado achica la ventana
+       de verdad, en vez de taparla y dejar el tamaño viejo al cerrarse. -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
   <title>Turni para clubes</title>
   <meta name="description" content="Gestioná los turnos, clientes, pagos y torneos de tu club.">
   <meta name="theme-color" content="#672BEA">
@@ -60,6 +62,41 @@
       s.style.opacity = '0';
       setTimeout(function () { s.remove(); }, 300);
     });
+  </script>
+  <script>
+    // Al cerrar el teclado en el celular (sobre todo iPhone y la app
+    // instalada) el navegador puede dejar la página corrida o sin avisar el
+    // tamaño nuevo: queda una franja con el fondo de la página y la app no se
+    // reacomoda. Acá se vuelve la página a su lugar y se le avisa a Flutter.
+    // Solo mueve la página del navegador (que en la app siempre está en 0):
+    // el scroll de los listados es de Flutter y no se toca.
+    (function () {
+      var vv = window.visualViewport;
+      if (!vv) return;
+      var lastHeight = vv.height;
+      var timer;
+      function settle() {
+        if (window.scrollX !== 0 || window.scrollY !== 0) window.scrollTo(0, 0);
+        window.dispatchEvent(new Event('resize'));
+      }
+      vv.addEventListener('resize', function () {
+        var closed = vv.height > lastHeight;
+        lastHeight = vv.height;
+        if (!closed) return;
+        // Una vez ya y otra al terminar la animación del teclado.
+        settle();
+        clearTimeout(timer);
+        timer = setTimeout(settle, 350);
+      });
+      // iPhone: al cerrar el teclado con "OK" la página queda corrida aunque
+      // el tamaño no cambie.
+      window.addEventListener('focusout', function () {
+        clearTimeout(timer);
+        timer = setTimeout(function () {
+          if (window.scrollX !== 0 || window.scrollY !== 0) settle();
+        }, 350);
+      });
+    })();
   </script>
   <script src="flutter_bootstrap.js" async></script>
 </body>

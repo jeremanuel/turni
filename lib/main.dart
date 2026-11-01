@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'core/presentation/components/inputs/keyboard_guard.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localization/flutter_localization.dart';
 import 'package:go_router/go_router.dart';
@@ -53,6 +54,9 @@ void main() async {
   // bloquea ni rompe el arranque de la app.
   await PushNotificationService.initializeFirebase();
   PushNotificationService.setupMessageHandlers();
+
+  // Celular: el teclado no se abre solo (ver KeyboardGuard).
+  KeyboardGuard.install();
 
   runApp(const MyApp());
 }

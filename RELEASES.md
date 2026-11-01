@@ -2,6 +2,15 @@
 
 Cada versión de Admin que llegó a producción, contada en general: qué features entraron y para quién. El detalle, con los PRs, está en [CHANGELOG.md](CHANGELOG.md). Lo actualiza `/turni:release`; la más nueva va arriba.
 
+## 2026-11-01 — Buscador de clientes y cargas nuevas · v1.3.0
+
+Elegir un cliente es igual en todo el panel, con un buscador que muestra los recientes y permite crear uno nuevo sin perder lo escrito. Las pantallas cargan mostrando su forma en vez de un spinner, y en el celular el teclado ya no aparece solo.
+
+- **Buscador de clientes:** el mismo al cobrar, reservar, armar un turno fijo o sumar integrantes; con recientes, resaltado y "Crear cliente" con el nombre ya cargado.
+- **Cobros más claros:** registrar pago y pausar abono con el diseño nuevo; las opciones quedan transparentes hasta elegirlas.
+- **Cargas nuevas:** la ficha del cliente, turnos fijos, abonos, torneos, Ajustes y usuarios muestran su forma mientras cargan; si la ficha no carga, ofrece reintentar.
+- **Arreglos:** en el celular el teclado no se abre solo y la pantalla se reacomoda al cerrarlo; las listas al pie de la pantalla ya no quedan cortadas.
+
 ## 2026-11-01 — Tiempo real, bandeja nueva y menú expandible · v1.2.0
 
 Junto con BE 1.2.0 y Client 1.4.0.

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/presentation/components/loading/app_skeleton.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -251,7 +252,7 @@ class _MercadoPagoAccountCardState extends State<MercadoPagoAccountCard> with Wi
     return FilledButton.icon(
       onPressed: _isBusy ? null : _startLink,
       icon: _isBusy
-          ? const SizedBox(height: 16, width: 16, child: CircularProgressIndicator(strokeWidth: 2))
+          ? const InlineSpinner(size: 16)
           : const Icon(Icons.link),
       label: Text(label),
     );

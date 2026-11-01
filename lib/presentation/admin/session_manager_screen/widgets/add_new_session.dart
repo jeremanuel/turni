@@ -13,7 +13,7 @@ import '../../../../domain/entities/club_partition.dart';
 import '../../../../domain/entities/physical_partition.dart';
 import '../../../../domain/entities/session.dart';
 import '../../../core/custom_time_picker.dart';
-import '../../../core/pick_client/pick_client.dart';
+import '../../../../core/presentation/components/inputs/client_search_field.dart';
 import '../bloc/session_manager_bloc.dart';
 import '../bloc/session_manager_event.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -136,22 +136,9 @@ class _AddNewSessionState extends State<AddNewSession> {
                     const SizedBox(height: 16),
                     const Divider(),
                     const SizedBox(height: 16),
-                    PickClient(
-                      name: "client",
-                      onPressNew: () {
-                        setState(() {
-                          isValid = widget._formKey.currentState!.validate(
-                            focusOnInvalid: false,
-                          );
-                        });
-                      },
-                      onBackToSelection: () {
-                        setState(() {
-                          isValid = widget._formKey.currentState!.validate(
-                            focusOnInvalid: false,
-                          );
-                        });
-                      },
+                    const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 16),
+                      child: ClientSearchFormField(name: "client"),
                     ),
                     const SizedBox(height: 16),
                     const Divider(),

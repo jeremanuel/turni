@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:trina_grid/trina_grid.dart';
 import '../../../core/config/router/app_routes.dart';
 import '../../../core/config/service_locator.dart';
+import '../../../core/presentation/components/loading/app_skeleton.dart';
 import '../../../core/utils/responsive_builder.dart';
 import '../../../domain/entities/client.dart';
 import '../../../domain/entities/payment/payment.dart';
@@ -26,9 +27,13 @@ class Clientpage extends StatefulWidget {
     this.createNewClient = false,
     this.client,
     required this.onUpdateClient,
+    this.initialName,
   });
 
   final int clientId;
+
+  /// En el alta: lo escrito en el buscador de clientes ("Crear cliente “Agus”").
+  final String? initialName;
   final Client? client;
   final bool createNewClient;
   final Function(Client)? onUpdateClient;
@@ -39,7 +44,6 @@ class Clientpage extends StatefulWidget {
 
 class _ClientpageState extends State<Clientpage> {
   bool isEditingMode = false;
-  bool loadingClient = false;
 
   @override
   void initState() {
@@ -68,6 +72,12 @@ class _ClientpageState extends State<Clientpage> {
       clientId: widget.clientId,
       onUpdateClient: _onUpdateClient,
       client: widget.client,
+      placeholder: (error, retry) => buildScaffold(
+        context,
+        error == null
+            ? const ClientProfileSkeleton()
+            : LoadError(message: error, onRetry: retry, center: true),
+      ),
       child: buildScaffold(
         context,
         Container(
@@ -211,6 +221,7 @@ class _ClientpageState extends State<Clientpage> {
                     colorScheme: colorScheme,
                     onToggleEditing: onNewClient,
                     isEditing: isEditingMode,
+                    initialName: widget.initialName,
                   ),
                   const SizedBox(height: 16),
                   Container(

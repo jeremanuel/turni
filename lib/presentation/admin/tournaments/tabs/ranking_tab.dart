@@ -100,7 +100,7 @@ class _RankingTabState extends State<RankingTab> {
     final text = Theme.of(context).textTheme;
     final sports = _sports;
     if (sports == null) {
-      return _error != null ? LoadError(message: _error!, onRetry: _loadCatalog) : const Center(child: CircularProgressIndicator());
+      return _error != null ? LoadError(message: _error!, onRetry: _loadCatalog, center: true) : const LoadingView();
     }
     if (sports.isEmpty) {
       return const Center(child: Text('El club no tiene deportes con categorías.'));
@@ -174,7 +174,12 @@ class _RankingTabState extends State<RankingTab> {
     );
 
     final table = _loading
-        ? const Padding(padding: EdgeInsets.all(32), child: Center(child: CircularProgressIndicator()))
+        ? AdminTableSkeleton(
+            mobileLayout: AdminTableMobileLayout.scroll,
+            columns: ['#', 'Jugador', 'Categoría', if (_city) 'Club' else 'Torneos', 'Puntos'],
+            columnWidths: const {0: FixedColumnWidth(56), 1: FlexColumnWidth(2), 2: FlexColumnWidth(1.6), 3: FlexColumnWidth(1.4), 4: FixedColumnWidth(90)},
+            rows: 8,
+          )
         : _error != null
             ? Padding(padding: EdgeInsets.all(ResponsiveBuilder.isMobile(context) ? 16 : 24), child: Text(_error!, style: TextStyle(color: scheme.error)))
             : result == null || result.rows.isEmpty

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/config/service_locator.dart';
+import '../../../../core/presentation/components/loading/app_skeleton.dart';
 import '../../../../core/utils/either.dart';
 import '../../../../domain/entities/notification_history.dart';
 import '../../../../domain/repositories/notification_history_repository.dart';
@@ -71,13 +72,10 @@ class _ClientNotificationsCardState extends State<ClientNotificationsCard> {
           showSession: true,
         ),
       if (_error != null)
-        Row(
-          children: [
-            Expanded(child: Text(_error!, style: TextStyle(fontSize: 13, color: scheme.error))),
-            TextButton(onPressed: () => _load(more: _entries.isNotEmpty), child: const Text('Reintentar')),
-          ],
-        ),
-      if (_loading)
+        LoadError(message: _error!, onRetry: () => _load(more: _entries.isNotEmpty)),
+      if (_loading && _entries.isEmpty)
+        const SkeletonRows()
+      else if (_loading)
         const Padding(padding: EdgeInsets.symmetric(vertical: 8), child: LinearProgressIndicator())
       else if (_nextCursor != null && _error == null)
         Align(

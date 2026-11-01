@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/presentation/components/loading/app_skeleton.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_portal/flutter_portal.dart' hide Aligned;
 import 'package:go_router/go_router.dart';
@@ -2180,7 +2181,7 @@ class _RWFilledButton extends StatelessWidget {
         textStyle: RW.tButton,
       ),
       icon: loading
-          ? SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: disabled ? RW.mutedMore : RW.onPrimary))
+          ? InlineSpinner(size: 16, color: disabled ? RW.mutedMore : RW.onPrimary)
           : (icon == null ? const SizedBox.shrink() : Icon(icon, size: 16)),
       label: Text(label),
     );

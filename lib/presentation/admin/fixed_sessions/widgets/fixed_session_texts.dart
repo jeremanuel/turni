@@ -1,5 +1,6 @@
 import 'package:intl/intl.dart';
 
+import '../../../../core/presentation/components/loading/app_skeleton.dart';
 import '../../../../domain/entities/fixed_session.dart';
 
 class FixedSessionTexts {
@@ -44,4 +45,28 @@ class FixedSessionTexts {
         return 'Ocupado';
     }
   }
+}
+
+/// Turnos fijos de mentira con la forma de los reales, para el esqueleto
+/// mientras cargan. [clientId] es el titular (en la ficha, el cliente).
+List<FixedSession> placeholderFixedSessions(int count, {int clientId = -1}) {
+  final now = DateTime.now();
+  FixedSessionPerson person(int id) => FixedSessionPerson(clientId: id, name: skeletonText(1), lastName: skeletonText(1));
+  return [
+    for (var i = 0; i < count; i++)
+      FixedSession(
+        id: -1 - i,
+        client: person(clientId),
+        participants: [person(-1)],
+        partitionPhysicalId: -1,
+        courtName: skeletonText(1),
+        clubPartitionId: -1,
+        sport: skeletonText(1),
+        dayOfWeek: fixedSessionWeekOrder[i % fixedSessionWeekOrder.length],
+        startTime: '00:00',
+        duration: 60,
+        startDate: '',
+        upcoming: [for (var w = 0; w < 4; w++) FixedSessionUpcoming(sessionId: -1, startTime: now.add(Duration(days: 7 * w)))],
+      ),
+  ];
 }

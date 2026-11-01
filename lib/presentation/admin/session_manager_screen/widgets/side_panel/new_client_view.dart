@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../../core/presentation/components/inputs/client_search_field.dart';
 import '../../../../../domain/entities/client.dart';
 import '../../../../../domain/entities/person.dart';
 import '../../../../../domain/entities/session.dart';
@@ -12,11 +13,15 @@ import 'panel_common.dart';
 /// reserva del turno en un paso. El backend crea el cliente al reservar con
 /// un cliente sin id.
 class NewClientView extends StatefulWidget {
-  const NewClientView({super.key, required this.session, required this.subtitle, required this.onBack});
+  const NewClientView({super.key, required this.session, required this.subtitle, required this.onBack, this.initialName = ''});
 
   final Session session;
   final String subtitle;
   final VoidCallback onBack;
+
+  /// Lo escrito en el buscador ("Crear cliente “Juan Pérez”"): nombre y
+  /// apellido, o el teléfono/email si es eso.
+  final String initialName;
 
   @override
   State<NewClientView> createState() => _NewClientViewState();
@@ -29,6 +34,16 @@ class _NewClientViewState extends State<NewClientView> {
   final _phone = TextEditingController();
   final _email = TextEditingController();
   bool _saving = false;
+
+  @override
+  void initState() {
+    super.initState();
+    final draft = splitClientQuery(widget.initialName);
+    _name.text = draft.name;
+    _lastName.text = draft.lastName;
+    _phone.text = draft.phone;
+    _email.text = draft.email;
+  }
 
   @override
   void dispose() {

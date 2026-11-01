@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/presentation/components/loading/app_skeleton.dart';
+
 import '../../../core/config/service_locator.dart';
 import '../../../core/presentation/components/inputs/snackbars/snackbars_functions.dart';
 import '../../../core/presentation/components/permission_lock.dart';
@@ -90,8 +92,6 @@ class _MembershipPlansTabState extends State<MembershipPlansTab> with ReloadOnDa
         TextButton(onPressed: _load, child: const Text('Reintentar')),
       ]));
     }
-    if (partitions == null) return const Center(child: CircularProgressIndicator());
-
     return ListView(
       padding: EdgeInsets.all(padding),
       children: [
@@ -117,7 +117,22 @@ class _MembershipPlansTabState extends State<MembershipPlansTab> with ReloadOnDa
           ],
         ),
         const SizedBox(height: 16),
-        for (final partition in partitions) ...[
+        if (partitions == null) ...[
+          // Primera carga: un servicio con su tabla, como esqueleto.
+          Card(
+            margin: EdgeInsets.zero,
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+                AppSkeleton(child: Text(skeletonText(4), style: textTheme.titleMedium)),
+                const SizedBox(height: 14),
+                const AdminTableSkeleton(columns: _PartitionCard.columns, columnWidths: _PartitionCard.widths, rows: 3),
+              ]),
+            ),
+          ),
+          const SizedBox(height: 16),
+        ],
+        for (final partition in partitions ?? const <MembershipPlansPartition>[]) ...[
           TourAnchor(id: 'plans.list', child: _PartitionCard(
             partition: partition,
             canEdit: _canEdit,
@@ -135,6 +150,17 @@ class _MembershipPlansTabState extends State<MembershipPlansTab> with ReloadOnDa
 
 class _PartitionCard extends StatelessWidget {
   const _PartitionCard({required this.partition, required this.canEdit, required this.onEdit, required this.onCreate, required this.onArchive});
+
+  static const columns = ['Abono', 'Frecuencia', 'Precio', 'Vence', 'Clientes', 'Estado de cuotas', ''];
+  static const widths = {
+    0: FlexColumnWidth(1.5),
+    1: FlexColumnWidth(1.1),
+    2: FlexColumnWidth(),
+    3: FlexColumnWidth(1.1),
+    4: FlexColumnWidth(0.7),
+    5: FlexColumnWidth(1.8),
+    6: FixedColumnWidth(96),
+  };
 
   final MembershipPlansPartition partition;
   final bool canEdit;
@@ -176,16 +202,8 @@ class _PartitionCard extends StatelessWidget {
               ])
             else
               AdminDataTable(
-                columns: const ['Abono', 'Frecuencia', 'Precio', 'Vence', 'Clientes', 'Estado de cuotas', ''],
-                columnWidths: const {
-                  0: FlexColumnWidth(1.5),
-                  1: FlexColumnWidth(1.1),
-                  2: FlexColumnWidth(),
-                  3: FlexColumnWidth(1.1),
-                  4: FlexColumnWidth(0.7),
-                  5: FlexColumnWidth(1.8),
-                  6: FixedColumnWidth(96),
-                },
+                columns: columns,
+                columnWidths: widths,
                 rows: [
                   for (final plan in plans)
                     [
@@ -546,7 +564,7 @@ class _MembershipPlanDialogState extends State<MembershipPlanDialog> {
         FilledButton(
           onPressed: _saving ? null : _save,
           child: _saving
-              ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
+              ? const InlineSpinner(size: 16)
               : Text(editing ? 'Guardar' : 'Crear abono'),
         ),
       ],

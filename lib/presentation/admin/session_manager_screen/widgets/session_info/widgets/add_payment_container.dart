@@ -1,5 +1,6 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
+import '../../../../../../core/presentation/components/inputs/keyboard_guard.dart';
 import 'package:flutter/services.dart';
 import '../../../../../../domain/entities/extra.dart';
 import '../../../../../../domain/entities/payment/payment.dart';
@@ -525,7 +526,7 @@ class _AddPaymentContainerState extends State<AddPaymentContainer> {
           AnimatedSwitcher(
             duration: const Duration(milliseconds: 180),
             child: isCustomAmountSelected
-                ? TextField(
+                ? AllowAutoKeyboard(child: TextField(
                     key: const ValueKey('custom-amount-field'),
                     focusNode: otroFocusNode,
                     controller: otroController,
@@ -541,7 +542,7 @@ class _AddPaymentContainerState extends State<AddPaymentContainer> {
                       helperText: "Se usará este valor para el pago del turno",
                       border: const OutlineInputBorder(),
                     ),
-                  )
+                  ))
                 : Container(
                     key: const ValueKey('custom-amount-placeholder'),
                     width: double.infinity,

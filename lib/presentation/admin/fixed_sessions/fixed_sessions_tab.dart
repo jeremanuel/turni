@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/presentation/components/inputs/option_chip.dart';
 import '../../../core/presentation/components/links/entity_links.dart';
+import '../../../core/presentation/components/loading/app_skeleton.dart';
 import 'package:intl/intl.dart';
 
 import '../../../core/config/service_locator.dart';
@@ -84,7 +86,11 @@ class _FixedSessionsTabState extends State<FixedSessionsTab> with ReloadOnDataCh
 
   List<String> get _sports => {for (final f in _items) f.sport ?? 'Otros'}.toList()..sort();
 
+  /// La primera carga: el tablero con turnos de mentira, como esqueleto.
+  bool get _skeleton => _loading && _items.isEmpty && _error == null;
+
   List<FixedSession> get _visible {
+    if (_skeleton) return placeholderFixedSessions(10);
     final query = _search.text.trim().toLowerCase();
     return _items.where((f) {
       if (_sport != null && (f.sport ?? 'Otros') != _sport) return false;
@@ -114,9 +120,7 @@ class _FixedSessionsTabState extends State<FixedSessionsTab> with ReloadOnDataCh
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    if (_loading) return const Center(child: CircularProgressIndicator());
-
+    final skeleton = _skeleton;
     final visible = _visible;
     final hours = _items.fold<int>(0, (sum, f) => sum + f.duration) / 60;
     final conflicts = _items.where((f) => f.hasConflicts).length;
@@ -142,15 +146,15 @@ class _FixedSessionsTabState extends State<FixedSessionsTab> with ReloadOnDataCh
       onSelectionChanged: (s) => setState(() => _selectedView = s.first),
     ));
     final sportChips = [
-      ChoiceChip(label: const Text('Todos'), selected: _sport == null, onSelected: (_) => setState(() => _sport = null)),
+      OptionChip(label: 'Todos', selected: _sport == null, onTap: () => setState(() => _sport = null)),
       for (final sport in _sports)
-        ChoiceChip(label: Text(sport), selected: _sport == sport, onSelected: (_) => setState(() => _sport = sport)),
+        OptionChip(label: sport, selected: _sport == sport, onTap: () => setState(() => _sport = sport)),
     ];
 
     // Celular: cada bloque a todo el ancho (en el Wrap de escritorio las
     // stats, el buscador y los botones quedaban desparejos).
     final mobileHeader = <Widget>[
-      TourAnchor(id: 'fixed.stats', child: IntrinsicHeight(
+      TourAnchor(id: 'fixed.stats', child: AppSkeleton(enabled: skeleton, child: IntrinsicHeight(
         child: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -161,7 +165,7 @@ class _FixedSessionsTabState extends State<FixedSessionsTab> with ReloadOnDataCh
           Expanded(child: _StatTile(label: 'Con conflictos', value: '$conflicts', alert: conflicts > 0)),
         ],
       ),
-      )),
+      ))),
       const SizedBox(height: 12),
       search,
       const SizedBox(height: 12),
@@ -190,11 +194,11 @@ class _FixedSessionsTabState extends State<FixedSessionsTab> with ReloadOnDataCh
             children: [
               TourAnchor(
                 id: 'fixed.stats',
-                child: Wrap(spacing: 12, runSpacing: 12, children: [
+                child: AppSkeleton(enabled: skeleton, child: Wrap(spacing: 12, runSpacing: 12, children: [
                   _StatTile(label: 'Activos', value: '${_items.length}'),
                   _StatTile(label: 'Horas por semana', value: hoursLabel),
                   _StatTile(label: 'Con conflictos', value: '$conflicts', alert: conflicts > 0),
-                ]),
+                ])),
               ),
               const SizedBox(width: 12),
               TourAnchor(
@@ -212,9 +216,9 @@ class _FixedSessionsTabState extends State<FixedSessionsTab> with ReloadOnDataCh
                   ),
                 ),
               ),
-              ChoiceChip(label: const Text('Todos'), selected: _sport == null, onSelected: (_) => setState(() => _sport = null)),
+              OptionChip(label: 'Todos', selected: _sport == null, onTap: () => setState(() => _sport = null)),
               for (final sport in _sports)
-                ChoiceChip(label: Text(sport), selected: _sport == sport, onSelected: (_) => setState(() => _sport = sport)),
+                OptionChip(label: sport, selected: _sport == sport, onTap: () => setState(() => _sport = sport)),
               viewToggle,
               if (_canCreate)
                 TourAnchor(
@@ -229,9 +233,14 @@ class _FixedSessionsTabState extends State<FixedSessionsTab> with ReloadOnDataCh
           ),
           const SizedBox(height: 16),
           if (_error != null)
-            Text(_error!, style: TextStyle(color: scheme.error))
+            LoadError(message: _error!, onRetry: _load)
           else
-            Expanded(child: TourAnchor(id: 'fixed.board', child: _view == _View.week ? _week(visible) : _list(visible))),
+            Expanded(
+              child: TourAnchor(
+                id: 'fixed.board',
+                child: AppSkeleton(enabled: skeleton, child: _view == _View.week ? _week(visible) : _list(visible)),
+              ),
+            ),
         ],
       ),
     );

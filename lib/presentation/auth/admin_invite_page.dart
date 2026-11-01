@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/presentation/components/loading/app_skeleton.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
@@ -175,7 +176,7 @@ class _AdminInvitePageState extends State<AdminInvitePage> {
             FilledButton(
               onPressed: _accepting ? null : _accept,
               child: _accepting
-                  ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
+                  ? const InlineSpinner()
                   : const Text('Aceptar invitación'),
             ),
           if (alreadyAdmin)

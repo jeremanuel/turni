@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/presentation/components/loading/app_skeleton.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/config/service_locator.dart';
@@ -282,7 +283,7 @@ class _RoutineEditorPageState extends State<RoutineEditorPage> {
                 id: 'routine.save',
                 child: FilledButton.icon(
                   onPressed: _saving ? null : _save,
-                  icon: _saving ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)) : const Icon(Icons.check),
+                  icon: _saving ? const InlineSpinner(size: 16) : const Icon(Icons.check),
                   label: const Text('Guardar rutina'),
                 ),
               ),

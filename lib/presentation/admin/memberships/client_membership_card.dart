@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/presentation/components/loading/app_skeleton.dart';
+
 import '../../../core/config/service_locator.dart';
 import '../../../core/utils/either.dart';
 import '../../../core/utils/permissions.dart';
@@ -132,9 +134,9 @@ class _ClientMembershipCardState extends State<ClientMembershipCard> with Reload
 
     Widget body;
     if (_error != null) {
-      body = Row(children: [Expanded(child: Text(_error!)), TextButton(onPressed: _load, child: const Text('Reintentar'))]);
+      body = LoadError(message: _error!, onRetry: _load);
     } else if (data == null) {
-      body = const Padding(padding: EdgeInsets.all(8), child: LinearProgressIndicator());
+      body = const SkeletonRows(count: 2);
     } else if (data.active.isEmpty) {
       body = Row(children: [
         Expanded(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../../core/presentation/components/loading/app_skeleton.dart';
 import 'package:intl/intl.dart';
 import '../../../../../core/utils/responsive_builder.dart';
 import '../../../mobile/admin_mobile_sub_page.dart';
@@ -294,7 +295,7 @@ class PanelFilledButton extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           if (loading)
-            SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: scheme.outline))
+            InlineSpinner(color: scheme.outline)
           else if (icon != null)
             Icon(icon, size: 18),
           if (loading || icon != null) const SizedBox(width: 8),

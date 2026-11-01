@@ -16,6 +16,22 @@ Una línea por entrega, no por PR: si un PR completa una entrada que ya está, s
 
 ### Corregido
 
+## [1.3.0] - 2026-11-01
+
+### Agregado
+
+- 2026-11-01 — Buscador de clientes único en todos los lugares donde se elige un cliente: recientes, búsqueda con resaltado, teclado y "Crear cliente" con lo escrito ya cargado ([#79](https://github.com/jeremanuel/turni/pull/79))
+
+### Cambiado
+
+- 2026-11-01 — Registrar pago y pausar abono iguales al diseño; las opciones (medio de pago, chips de turnos fijos) son transparentes hasta elegirlas ([#79](https://github.com/jeremanuel/turni/pull/79))
+- 2026-11-01 — Las pantallas cargan mostrando su forma en vez de un spinner (ficha del cliente, turnos fijos, abonos, torneos, Ajustes, usuarios); si la ficha no carga, ofrece reintentar ([#79](https://github.com/jeremanuel/turni/pull/79))
+
+### Corregido
+
+- 2026-11-01 — En el celular el teclado ya no se abre solo al entrar a una pantalla, y al cerrarlo la app se reacomoda sin dejar una franja negra ([#79](https://github.com/jeremanuel/turni/pull/79))
+- 2026-11-01 — Las listas desplegables al pie de la pantalla se abren hacia arriba en vez de quedar cortadas ([#79](https://github.com/jeremanuel/turni/pull/79))
+
 ## [1.2.0] - 2026-11-01
 
 ### Agregado
@@ -51,6 +67,8 @@ Una línea por entrega, no por PR: si un PR completa una entrada que ya está, s
 
 - Versión de base: todo lo liberado hasta el 2026-10-25. Lo anterior está resumido en [RELEASES.md](RELEASES.md).
 
+[1.3.0]: https://github.com/jeremanuel/turni/compare/v1.2.0...v1.3.0
+[1.2.0]: https://github.com/jeremanuel/turni/compare/v1.1.2...v1.2.0
 [1.1.2]: https://github.com/jeremanuel/turni/compare/v1.1.1...v1.1.2
 [1.1.1]: https://github.com/jeremanuel/turni/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/jeremanuel/turni/compare/v1.0.0...v1.1.0

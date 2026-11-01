@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/presentation/components/loading/app_skeleton.dart';
 import '../../../../core/utils/responsive_builder.dart';
 
 /// Cómo se muestra una [AdminDataTable] en el celular.
@@ -155,6 +156,41 @@ class AdminDataTable extends StatelessWidget {
             ),
           ),
       ],
+    );
+  }
+}
+
+/// Una [AdminDataTable] mientras carga: las mismas columnas y [rows] filas
+/// de mentira, como esqueleto. Mismo alto de fila que la real.
+class AdminTableSkeleton extends StatelessWidget {
+  const AdminTableSkeleton({
+    super.key,
+    required this.columns,
+    this.rows = 5,
+    this.columnWidths,
+    this.mobileLayout = AdminTableMobileLayout.cards,
+    this.mobileNested = false,
+  });
+
+  final List<String> columns;
+  final bool mobileNested;
+  final int rows;
+  final Map<int, TableColumnWidth>? columnWidths;
+  final AdminTableMobileLayout mobileLayout;
+
+  @override
+  Widget build(BuildContext context) {
+    return AppSkeleton(
+      child: AdminDataTable(
+        columns: columns,
+        columnWidths: columnWidths,
+        mobileLayout: mobileLayout,
+        mobileNested: mobileNested,
+        rows: [
+          for (var i = 0; i < rows; i++)
+            [for (var j = 0; j < columns.length; j++) Text(skeletonText(columns[j].isEmpty ? 1 : 1 + (i + j) % 3))],
+        ],
+      ),
     );
   }
 }

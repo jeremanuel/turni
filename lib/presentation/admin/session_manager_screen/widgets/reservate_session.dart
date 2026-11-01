@@ -9,7 +9,7 @@ import '../../../../domain/entities/club_partition.dart';
 import '../../../../domain/entities/partition_vocabulary.dart';
 import '../../../../domain/entities/physical_partition.dart';
 import '../../../../domain/entities/session.dart';
-import '../../../core/pick_client/pick_client.dart';
+import '../../../../core/presentation/components/inputs/client_search_field.dart';
 import '../../bloc/session_manager_bloc.dart';
 import '../../bloc/session_manager_event.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -76,15 +76,9 @@ class _ReservateSessionState extends State<ReservateSession> {
                     const SizedBox(height: 16),
                     const Divider(),
                     const SizedBox(height: 16),
-                    PickClient(
-                      name: "client",
-                      isRequired:true,
-                      onPressNew: () {
-                  
-                      },
-                      onBackToSelection: () {
-               
-                      },
+                    const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 16),
+                      child: ClientSearchFormField(name: "client", isRequired: true),
                     ),
               
               

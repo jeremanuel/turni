@@ -84,9 +84,9 @@ class _CategorySettingsTabState extends State<CategorySettingsTab> {
 
   @override
   Widget build(BuildContext context) {
-    if (_error != null) return LoadError(message: _error!, onRetry: _load);
+    if (_error != null) return LoadError(message: _error!, onRetry: _load, center: true);
     final settings = _settings;
-    if (settings == null) return const Center(child: CircularProgressIndicator());
+    if (settings == null) return const LoadingView();
     final scheme = Theme.of(context).colorScheme;
 
     return ListView(
