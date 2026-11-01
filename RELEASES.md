@@ -2,6 +2,17 @@
 
 Cada versión de Admin que llegó a producción, contada en general: qué features entraron y para quién. El detalle, con los PRs, está en [CHANGELOG.md](CHANGELOG.md). Lo actualiza `/turni:release`; la más nueva va arriba.
 
+## 2026-11-01 — Tiempo real, bandeja nueva y menú expandible · v1.2.0
+
+Junto con BE 1.2.0 y Client 1.4.0.
+
+El panel se actualiza solo mientras está abierto, estrena una bandeja de avisos que sale de la campana y un menú lateral que ya no se corta en pantallas chicas.
+
+- **Tiempo real:** la agenda, la bandeja, los clientes, los abonos, los pagos, el mapa, los torneos y los usuarios se recargan solos cuando otro admin o un cliente cambia algo. Un punto sobre el avatar dice si está conectado.
+- **Bandeja nueva:** anclada a la campana, con filtros (Todas, Sin leer, Para resolver), el turno y el cliente de cada aviso, y aceptar o rechazar solicitudes desde ahí. Un aviso nuevo hace balancear la campana y aparece flotando.
+- **Menú lateral:** agrupado y expandible; cerrado, lo que no entra va a «Más». El logo de Turni arriba.
+- **Por dentro:** Flutter 3.47.9 y, al abrir, siempre la última versión.
+
 ## 2026-10-26 — Hotfix: el panel vuelve a deployarse · v1.1.2
 
 Las versiones 1.1.0 (guías paso a paso) y 1.1.1 (notificaciones web sin duplicar) no habían llegado a producción porque el build fallaba. Con este arreglo entran las dos.

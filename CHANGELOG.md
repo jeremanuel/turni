@@ -16,6 +16,19 @@ Una línea por entrega, no por PR: si un PR completa una entrada que ya está, s
 
 ### Corregido
 
+## [1.2.0] - 2026-11-01
+
+### Agregado
+
+- 2026-11-01 — El panel se actualiza en tiempo real: agenda, bandeja, clientes, ficha del cliente, abonos, pagos, mapa, turnos fijos, torneos y usuarios se recargan solos cuando algo cambia, con un punto de conexión sobre el avatar ([#54](https://github.com/jeremanuel/turni/pull/54))
+- 2026-11-01 — Bandeja de notificaciones nueva: sale de la campana, con filtros, avisos agrupados por día, contexto de cada aviso y aceptar o rechazar solicitudes desde la lista. Cuando llega un aviso, la campana se balancea y aparece un aviso flotante ([#74](https://github.com/jeremanuel/turni/pull/74))
+
+### Cambiado
+
+- 2026-11-01 — Menú lateral con grupos y expandible: cerrado muestra íconos y manda a «Más» lo que no entra; abierto muestra los nombres y scrollea. El logo de Turni reemplaza la "T" ([#75](https://github.com/jeremanuel/turni/pull/75), [#74](https://github.com/jeremanuel/turni/pull/74))
+- 2026-11-01 — El panel pasa a Flutter 3.47.9 y el build de Render usa la versión del repo ([#73](https://github.com/jeremanuel/turni/pull/73), [#77](https://github.com/jeremanuel/turni/pull/77))
+- 2026-11-01 — Al abrir, el panel trae siempre la última versión publicada ([#76](https://github.com/jeremanuel/turni/pull/76))
+
 ## [1.1.2] - 2026-10-26
 
 ### Corregido
