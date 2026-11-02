@@ -16,6 +16,11 @@ Una línea por entrega, no por PR: si un PR completa una entrada que ya está, s
 
 ### Corregido
 
+## [1.4.0] - 2026-11-02
+
+### Agregado
+- 2026-11-01 — Descanso entre series opcional por ejercicio en el editor de rutinas, y su evolución en el historial del ejercicio ([#81](https://github.com/jeremanuel/turni/pull/81)) — requiere BE #121
+
 ## [1.3.0] - 2026-11-01
 
 ### Agregado
@@ -67,6 +72,7 @@ Una línea por entrega, no por PR: si un PR completa una entrada que ya está, s
 
 - Versión de base: todo lo liberado hasta el 2026-10-25. Lo anterior está resumido en [RELEASES.md](RELEASES.md).
 
+[1.4.0]: https://github.com/jeremanuel/turni/compare/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/jeremanuel/turni/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/jeremanuel/turni/compare/v1.1.2...v1.2.0
 [1.1.2]: https://github.com/jeremanuel/turni/compare/v1.1.1...v1.1.2

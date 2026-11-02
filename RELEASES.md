@@ -2,6 +2,15 @@
 
 Cada versión de Admin que llegó a producción, contada en general: qué features entraron y para quién. El detalle, con los PRs, está en [CHANGELOG.md](CHANGELOG.md). Lo actualiza `/turni:release`; la más nueva va arriba.
 
+## 2026-11-02 — Entrenar con cronómetro y descansos · v1.4.0
+
+Junto con BE 1.3.0 y Client 1.5.0.
+
+En el editor de rutinas el profe puede definir, si quiere, cuánto descansar entre series en cada ejercicio. En el historial del ejercicio se ve cómo cambian los descansos del cliente, igual que los pesos.
+
+- **Descanso por ejercicio:** opcional en el editor de rutinas, en escritorio y en el celular.
+- **Historial con descansos:** columna y gráfico de descanso en la evolución de cada ejercicio.
+
 ## 2026-11-01 — Buscador de clientes y cargas nuevas · v1.3.0
 
 Elegir un cliente es igual en todo el panel, con un buscador que muestra los recientes y permite crear uno nuevo sin perder lo escrito. Las pantallas cargan mostrando su forma en vez de un spinner, y en el celular el teclado ya no aparece solo.

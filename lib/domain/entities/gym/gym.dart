@@ -47,6 +47,29 @@ double? parseKg(String text) {
 
 bool isUniform(List<Serie> series) => series.toSet().length <= 1;
 
+/// Descanso más largo que acepta el back (30 min).
+const maxRestSeconds = 1800;
+
+/// Descanso entre series: "1:30", "0:45", "3:00".
+String formatRest(int seconds) => '${seconds ~/ 60}:${(seconds % 60).toString().padLeft(2, '0')}';
+
+/// "2:30" o "150" (segundos) → 150. null si no es un descanso válido.
+int? parseRest(String text) {
+  final value = text.trim();
+  if (value.isEmpty) return null;
+  final parts = value.split(':');
+  int? seconds;
+  if (parts.length == 1) {
+    seconds = int.tryParse(parts.first);
+  } else if (parts.length == 2) {
+    final minutes = int.tryParse(parts[0].isEmpty ? '0' : parts[0]);
+    final secs = int.tryParse(parts[1]);
+    if (minutes != null && secs != null && secs < 60) seconds = minutes * 60 + secs;
+  }
+  if (seconds == null || seconds < 0 || seconds > maxRestSeconds) return null;
+  return seconds;
+}
+
 /// "4 × 8 · 60 kg", "4 × 12/10/8/6 · 50→57,5 kg", "3 × 12".
 String seriesLabel(List<Serie> series) {
   if (series.isEmpty) return 'Sin series';
@@ -121,6 +144,7 @@ class RoutineExercise {
     required this.muscles,
     required this.series,
     this.notes,
+    this.restSeconds,
   });
 
   final int id;
@@ -130,6 +154,9 @@ class RoutineExercise {
   final List<Serie> series;
   final String? notes;
 
+  /// Descanso entre series que pidió el profe. null = no lo definió (el cliente usa el suyo).
+  final int? restSeconds;
+
   factory RoutineExercise.fromJson(Map<String, dynamic> json) => RoutineExercise(
         id: _int(json['routine_exercise_id']),
         exerciseId: (json['exercise_id'] as num?)?.toInt(),
@@ -137,6 +164,7 @@ class RoutineExercise {
         muscles: ((json['muscles'] as List?) ?? const []).map((m) => '$m').toList(),
         series: seriesFromJson(json['series']),
         notes: json['notes'] as String?,
+        restSeconds: (json['rest_seconds'] as num?)?.toInt(),
       );
 }
 

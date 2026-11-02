@@ -11,43 +11,48 @@ double _maxReps(List<Serie> series) => series.fold<int>(0, (max, s) => s.reps > 
 double _maxKg(List<Serie> series) => series.fold<double>(0, (max, s) => s.weightKg > max ? s.weightKg : max);
 
 /// Qué se grafica.
-enum ProgressMetric { weight, reps, sets }
+enum ProgressMetric { weight, reps, sets, rest }
 
 extension ProgressMetricLabel on ProgressMetric {
   String get label => switch (this) {
         ProgressMetric.weight => 'Peso',
         ProgressMetric.reps => 'Reps',
         ProgressMetric.sets => 'Series',
+        ProgressMetric.rest => 'Descanso',
       };
 }
 
-double metricValue(List<Serie> series, ProgressMetric metric) => switch (metric) {
+double metricValue(List<Serie> series, ProgressMetric metric, {int? restSeconds}) => switch (metric) {
       ProgressMetric.weight => _maxKg(series),
       ProgressMetric.reps => _maxReps(series),
       ProgressMetric.sets => series.length.toDouble(),
+      ProgressMetric.rest => (restSeconds ?? 0).toDouble(),
     };
 
-/// Diferencia entre dos versiones: "+5 kg · +1 rep".
+/// Diferencia entre dos versiones: "+5 kg · +1 rep · descanso 2:00".
 class SeriesDelta {
-  const SeriesDelta({required this.label, required this.up, required this.kg, required this.reps, required this.sets});
+  const SeriesDelta({required this.label, required this.up, required this.kg, required this.reps, required this.sets, this.rest = false});
 
   final String label;
 
-  /// Nada bajó.
+  /// Nada bajó (el descanso no cuenta: más o menos descanso no es mejor ni peor).
   final bool up;
   final bool kg;
   final bool reps;
   final bool sets;
+  final bool rest;
 
-  static SeriesDelta between(List<Serie> before, List<Serie> after) {
+  static SeriesDelta between(List<Serie> before, List<Serie> after, {int? restBefore, int? restAfter}) {
     final kg = _maxKg(after) - _maxKg(before);
     final reps = _maxReps(after) - _maxReps(before);
     final sets = after.length - before.length;
+    final rest = restAfter != null && restAfter != restBefore;
     String sign(num n) => n > 0 ? '+' : '−';
     final parts = [
       if (kg != 0) '${sign(kg)}${formatKg(kg.abs())} kg',
       if (reps != 0) '${sign(reps)}${reps.abs().toStringAsFixed(0)} ${reps.abs() == 1 ? 'rep' : 'reps'}',
       if (sets != 0) '${sign(sets)}${sets.abs()} ${sets.abs() == 1 ? 'serie' : 'series'}',
+      if (rest) 'descanso ${formatRest(restAfter)}',
     ];
     return SeriesDelta(
       label: parts.isEmpty ? 'Cambiaron las series' : parts.join(' · '),
@@ -55,15 +60,19 @@ class SeriesDelta {
       kg: kg != 0,
       reps: reps != 0,
       sets: sets != 0,
+      rest: rest,
     );
   }
 }
 
 class ProgressPoint {
-  const ProgressPoint({required this.date, required this.series, required this.byClient, this.adminName, this.byMe = false});
+  const ProgressPoint({required this.date, required this.series, required this.byClient, this.adminName, this.byMe = false, this.restSeconds});
 
   final DateTime date;
   final List<Serie> series;
+
+  /// Descanso por serie en ese punto: el que descansó el cliente o el del plan. null = sin dato.
+  final int? restSeconds;
 
   /// true: lo cambió el cliente entrenando. false: una versión del plan.
   final bool byClient;
@@ -75,6 +84,7 @@ class ProgressPoint {
   factory ProgressPoint.fromJson(Map<String, dynamic> json) => ProgressPoint(
         date: DateTime.parse(json['date'] as String).toLocal(),
         series: seriesFromJson(json['series']),
+        restSeconds: (json['rest_seconds'] as num?)?.toInt(),
         byClient: json['source'] == 'CLIENT',
         adminName: json['admin_name'] as String?,
         byMe: json['by_me'] == true,
@@ -96,6 +106,7 @@ class ExerciseProgress {
     required this.groupName,
     required this.plan,
     required this.points,
+    this.planRestSeconds,
   });
 
   /// `routine_exercise_id`.
@@ -104,15 +115,33 @@ class ExerciseProgress {
   final int groupId;
   final String groupName;
   final List<Serie> plan;
+
+  /// Descanso que pide el plan actual. null = sin definir.
+  final int? planRestSeconds;
   final List<ProgressPoint> points;
+
+  /// Si en algún punto hay descanso (para mostrar la columna y el gráfico).
+  bool get hasRests => points.any((point) => point.restSeconds != null);
+
+  /// Lo último que descansó el cliente, si lo midió.
+  int? get lastClientRest {
+    for (final point in points.reversed) {
+      if (point.byClient && point.restSeconds != null) return point.restSeconds;
+    }
+    return null;
+  }
 
   int get changesCount => points.isEmpty ? 0 : points.length - 1;
   ProgressPoint? get first => points.isEmpty ? null : points.first;
   ProgressPoint? get last => points.isEmpty ? null : points.last;
   ProgressPoint? get lastChange => points.length > 1 ? points.last : null;
 
-  SeriesDelta? get totalDelta => changesCount == 0 ? null : SeriesDelta.between(first!.series, last!.series);
-  SeriesDelta? deltaAt(int index) => index <= 0 ? null : SeriesDelta.between(points[index - 1].series, points[index].series);
+  SeriesDelta? get totalDelta => changesCount == 0
+      ? null
+      : SeriesDelta.between(first!.series, last!.series, restBefore: first!.restSeconds, restAfter: last!.restSeconds);
+  SeriesDelta? deltaAt(int index) => index <= 0
+      ? null
+      : SeriesDelta.between(points[index - 1].series, points[index].series, restBefore: points[index - 1].restSeconds, restAfter: points[index].restSeconds);
 
   /// Lo último que hizo el cliente, si es distinto del plan actual (para "Usar" en el editor).
   ProgressPoint? get doneBeyondPlan {
@@ -128,6 +157,7 @@ class ExerciseProgress {
         groupId: (json['routine_group_id'] as num).toInt(),
         groupName: json['group_name'] as String? ?? 'Grupo',
         plan: seriesFromJson(json['plan']),
+        planRestSeconds: (json['plan_rest_seconds'] as num?)?.toInt(),
         points: ((json['points'] as List?) ?? const []).map((p) => ProgressPoint.fromJson(p as Map<String, dynamic>)).toList(),
       );
 }
