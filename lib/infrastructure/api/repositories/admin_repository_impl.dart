@@ -11,6 +11,7 @@ import '../../../domain/entities/generic_search_item.dart';
 import '../../../domain/entities/payment/payment_method.dart';
 import '../../../domain/entities/request/page_response.dart';
 import '../../../domain/entities/session.dart';
+import '../../../domain/entities/session_request_settings.dart';
 import '../../../domain/repositories/admin_repository.dart';
 import '../providers/admin_provider.dart';
 import 'base/base_repository.dart';
@@ -54,22 +55,20 @@ class AdminrepositroyImpl extends BaseRepository implements AdminRepository {
   }
 
   @override
-  Future<Either<DomainError, int>> getPendingRequestTtlMinutes() {
-    return safeCall<int>(() async {
+  Future<Either<DomainError, SessionRequestSettings>> getSessionRequestSettings() {
+    return safeCall<SessionRequestSettings>(() async {
       final response = await dioInstance.get("/admin/settings");
 
-      return (response.data['pending_request_ttl_minutes'] as num).toInt();
+      return SessionRequestSettings.fromJson(response.data as Map<String, dynamic>);
     });
   }
 
   @override
-  Future<Either<DomainError, int>> updatePendingRequestTtlMinutes(int minutes) {
-    return safeCall<int>(() async {
-      final response = await dioInstance.put("/admin/settings", data: {
-        "pending_request_ttl_minutes": minutes,
-      });
+  Future<Either<DomainError, SessionRequestSettings>> updateSessionRequestSettings(SessionRequestSettings settings) {
+    return safeCall<SessionRequestSettings>(() async {
+      final response = await dioInstance.put("/admin/settings", data: settings.toJson());
 
-      return (response.data['pending_request_ttl_minutes'] as num).toInt();
+      return SessionRequestSettings.fromJson(response.data as Map<String, dynamic>);
     });
   }
 

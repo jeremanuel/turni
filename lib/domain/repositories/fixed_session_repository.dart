@@ -19,6 +19,14 @@ abstract class FixedSessionRepository {
   /// Baja para siempre.
   Future<RepositoryResponse<void>> end(int id);
 
+  /// Pedidos de turno fijo pendientes, primero los más viejos.
+  Future<RepositoryResponse<List<FixedSessionRequest>>> pendingRequests();
+
+  /// Crea el turno fijo del pedido, con las mismas reglas que la carga manual.
+  Future<RepositoryResponse<FixedSessionCreated>> acceptRequest(int id);
+
+  Future<RepositoryResponse<void>> rejectRequest(int id);
+
   /// Resumen de la ficha del cliente (indicadores, próximos turnos, actividad).
   Future<RepositoryResponse<ClientSummary>> clientSummary(int clientId);
 }

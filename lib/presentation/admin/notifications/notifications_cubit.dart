@@ -24,6 +24,9 @@ String adminNotificationLocation(Map<String, dynamic> data) {
   if (tournamentId != null) {
     return AppRoutes.TOURNAMENT_DETAIL_ROUTE.path.replaceFirst(':tournamentId', '$tournamentId');
   }
+  if (data['fixed_session_request_id'] != null) {
+    return '${AppRoutes.BULK_SESSIONS_ROUTE.path}?tab=fixed';
+  }
   return AppRoutes.SESSION_MANAGER_ROUTE.path;
 }
 

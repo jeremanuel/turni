@@ -13,6 +13,7 @@ import 'package:turni/domain/entities/admin_product.dart';
 import 'package:turni/domain/entities/price_rule.dart';
 import 'package:turni/domain/entities/price_tariff.dart';
 import 'package:turni/domain/entities/product_category.dart';
+import 'package:turni/domain/entities/session_request_settings.dart';
 import 'package:turni/domain/repositories/admin_repository.dart';
 import 'package:turni/domain/repositories/club_info_repository.dart';
 import 'package:turni/domain/repositories/club_partition_admin_repository.dart';
@@ -27,8 +28,8 @@ class FakeAdminRepo implements AdminRepository {
   noSuchMethod(Invocation invocation) => throw UnimplementedError();
 
   @override
-  Future<Either<DomainError, int>> getPendingRequestTtlMinutes() async =>
-      Either.right(60);
+  Future<Either<DomainError, SessionRequestSettings>> getSessionRequestSettings() async =>
+      Either.right(const SessionRequestSettings(ttlMinutes: 60));
 }
 
 class FakeClubInfoRepo implements ClubInfoRepository {

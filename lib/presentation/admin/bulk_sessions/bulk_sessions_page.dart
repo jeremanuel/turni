@@ -56,6 +56,8 @@ class BulkSessionsPage extends StatelessWidget {
 
     final isMobile = ResponsiveBuilder.isMobile(context);
     return DefaultTabController(
+      // Un link a otra tab (ej. desde un aviso) con la pantalla ya abierta.
+      key: ValueKey(initialIndex),
       length: tabs.length,
       initialIndex: initialIndex,
       child: Scaffold(

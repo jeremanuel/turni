@@ -17,8 +17,8 @@ class PendingRequestTtl {
   static void ensureLoaded() {
     if (_requested || !sl.isRegistered<AdminRepository>()) return;
     _requested = true;
-    sl<AdminRepository>().getPendingRequestTtlMinutes().then((result) {
-      if (result case Right(:final value)) minutes.value = value;
+    sl<AdminRepository>().getSessionRequestSettings().then((result) {
+      if (result case Right(:final value)) minutes.value = value.ttlMinutes;
     });
   }
 

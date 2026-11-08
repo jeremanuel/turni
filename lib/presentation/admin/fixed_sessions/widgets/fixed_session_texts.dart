@@ -30,6 +30,21 @@ class FixedSessionTexts {
     }
   }
 
+  /// "Los 8 martes están libres.", o cuáles ya están ocupados. [dayName] va
+  /// en minúscula.
+  static String previewSummary(List<FixedSessionOccurrence> preview, String dayName) {
+    final days = dayName.endsWith('s') ? dayName : '${dayName}s';
+    final free = preview.where((o) => !o.status.isConflict).length;
+    final busy = preview.where((o) => o.status.isConflict).toList();
+    if (busy.isEmpty) return 'Los $free $days están libres.';
+    return '$free de ${preview.length} $days disponibles. '
+        '${busy.map((o) => shortDate(o.date)).join(', ')} ya '
+        '${busy.length == 1 ? 'está ocupado' : 'están ocupados'}: esos días no se tocan.';
+  }
+
+  /// "Vino 5 veces a este horario".
+  static String playsLabel(int plays) => plays == 1 ? 'Vino una vez a este horario' : 'Vino $plays veces a este horario';
+
   /// "Ocupado (Ana López)".
   static String conflictLabel(FixedSessionOccurrence o) {
     switch (o.status) {
