@@ -268,6 +268,64 @@ class FixedSessionDraft {
       };
 }
 
+/// Pedido de un cliente para dejar fijo un horario al que viene seguido
+/// (`GET /admin/fixed-sessions/requests`).
+@JsonSerializable()
+class FixedSessionRequest {
+  FixedSessionRequest({
+    required this.id,
+    required this.client,
+    this.sport,
+    required this.partitionPhysicalId,
+    required this.courtName,
+    required this.dayOfWeek,
+    required this.startTime,
+    required this.duration,
+    required this.plays,
+    required this.createdAt,
+  });
+
+  @JsonKey(name: "fixed_session_request_id")
+  final int id;
+  final FixedSessionPerson client;
+  final String? sport;
+  @JsonKey(name: "partition_physical_id")
+  final int partitionPhysicalId;
+  @JsonKey(name: "court_name")
+  final String courtName;
+
+  /// 0 = domingo … 6 = sábado.
+  @JsonKey(name: "day_of_week")
+  final int dayOfWeek;
+
+  /// "HH:mm", hora del club.
+  @JsonKey(name: "start_time")
+  final String startTime;
+  final int duration;
+
+  /// Veces que había venido a ese turno al pedirlo.
+  final int plays;
+  @JsonKey(name: "created_at")
+  final DateTime createdAt;
+
+  String get dayName => fixedSessionDayNames[dayOfWeek];
+
+  /// "Martes 15:00 · 90 min".
+  String get scheduleLabel => '$dayName $startTime · $duration min';
+
+  /// Lo que se cargaría al aceptarlo, para la vista previa.
+  FixedSessionDraft get draft => FixedSessionDraft(
+        clientId: client.clientId,
+        partitionPhysicalId: partitionPhysicalId,
+        dayOfWeek: dayOfWeek,
+        startTime: startTime,
+        duration: duration,
+      );
+
+  factory FixedSessionRequest.fromJson(Map<String, dynamic> json) => _$FixedSessionRequestFromJson(json);
+  Map<String, dynamic> toJson() => _$FixedSessionRequestToJson(this);
+}
+
 /// Resultado de cargar un turno fijo: los días que no se pudieron ocupar.
 class FixedSessionCreated {
   FixedSessionCreated({required this.fixedSession, required this.created, required this.assigned, required this.conflicts});

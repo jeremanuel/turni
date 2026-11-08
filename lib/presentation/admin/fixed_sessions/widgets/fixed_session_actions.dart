@@ -15,27 +15,39 @@ import 'fixed_session_texts.dart';
 
 final _repository = sl<FixedSessionRepository>();
 
-/// Abre el panel lateral de alta y, si se cargó, avisa qué días no se
-/// pudieron ocupar. Devuelve el turno fijo creado.
-Future<FixedSession?> openNewFixedSession(BuildContext context, {Client? client, int? dayOfWeek}) async {
-  final created = await showGeneralDialog<FixedSessionCreated>(
+/// Panel lateral que entra desde la derecha.
+Future<T?> showFixedSessionSidePanel<T>(BuildContext context, Widget panel) {
+  return showGeneralDialog<T>(
     context: context,
     barrierDismissible: true,
     barrierLabel: 'Cerrar',
     barrierColor: Colors.black54,
     transitionDuration: const Duration(milliseconds: 200),
-    pageBuilder: (context, _, __) => Align(
-      alignment: Alignment.centerRight,
-      child: FixedSessionSheet(initialClient: client, initialDayOfWeek: dayOfWeek),
-    ),
+    pageBuilder: (context, _, __) => Align(alignment: Alignment.centerRight, child: panel),
     transitionBuilder: (context, animation, _, child) => SlideTransition(
       position: Tween(begin: const Offset(1, 0), end: Offset.zero)
           .animate(CurvedAnimation(parent: animation, curve: Curves.easeOutCubic)),
       child: child,
     ),
   );
+}
+
+/// Abre el panel lateral de alta y, si se cargó, avisa qué días no se
+/// pudieron ocupar. Devuelve el turno fijo creado.
+Future<FixedSession?> openNewFixedSession(BuildContext context, {Client? client, int? dayOfWeek}) async {
+  final created = await showFixedSessionSidePanel<FixedSessionCreated>(
+    context,
+    FixedSessionSheet(initialClient: client, initialDayOfWeek: dayOfWeek),
+  );
   if (created == null || !context.mounted) return null;
 
+  await showFixedSessionCreated(context, created);
+  return created.fixedSession;
+}
+
+/// Avisa cómo quedó un turno fijo recién cargado: cuántos turnos se generaron
+/// y qué días no se pudieron ocupar.
+Future<void> showFixedSessionCreated(BuildContext context, FixedSessionCreated created) async {
   final total = created.created + created.assigned;
   if (created.conflicts.isEmpty) {
     SnackbarsFunctions.showSuccessSnackbar(context, 'Turno fijo cargado: $total turnos en la agenda.');
@@ -64,7 +76,6 @@ Future<FixedSession?> openNewFixedSession(BuildContext context, {Client? client,
       ),
     );
   }
-  return created.fixedSession;
 }
 
 /// "¿Qué querés cancelar?": solo un día (queda libre, el fijo sigue) o todo

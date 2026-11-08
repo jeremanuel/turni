@@ -12,6 +12,8 @@ Una línea por entrega, no por PR: si un PR completa una entrada que ya está, s
 
 ### Agregado
 
+- 2026-11-08 — Pedidos de turno fijo: el club define cuántas veces hay que haber venido y responde cada pedido desde Turnos fijos, viendo qué semanas están libres ([#83](https://github.com/jeremanuel/turni/pull/83)) — requiere BE #123
+
 ### Cambiado
 
 ### Corregido

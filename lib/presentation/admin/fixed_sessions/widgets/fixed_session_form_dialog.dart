@@ -480,8 +480,6 @@ class _FixedSessionSheetState extends State<FixedSessionSheet> {
     } else if (preview == null) {
       body = const LinearProgressIndicator();
     } else {
-      final free = preview.where((o) => !o.status.isConflict).length;
-      final busy = preview.where((o) => o.status.isConflict).toList();
       body = Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -490,11 +488,7 @@ class _FixedSessionSheetState extends State<FixedSessionSheet> {
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(color: scheme.primaryContainer, borderRadius: BorderRadius.circular(12)),
             child: Text(
-              busy.isEmpty
-                  ? 'Los $free $dayName están libres.'
-                  : '$free de ${preview.length} $dayName disponibles. '
-                      '${busy.map((o) => FixedSessionTexts.shortDate(o.date)).join(', ')} ya '
-                      '${busy.length == 1 ? 'está ocupado' : 'están ocupados'}: esos días no se tocan.',
+              FixedSessionTexts.previewSummary(preview, dayName),
               style: TextStyle(color: scheme.onPrimaryContainer, fontSize: 13, height: 1.4),
             ),
           ),

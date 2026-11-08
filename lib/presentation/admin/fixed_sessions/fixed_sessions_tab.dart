@@ -14,6 +14,7 @@ import '../../../domain/repositories/fixed_session_repository.dart';
 import '../../../core/utils/admin_vocabulary.dart';
 import '../club_config/widgets/admin_data_table.dart';
 import 'widgets/fixed_session_actions.dart';
+import 'widgets/fixed_session_requests_panel.dart';
 import 'widgets/fixed_session_texts.dart';
 import '../../../core/services/data_changes.dart';
 import '../../../core/presentation/components/onboarding/tour_anchor.dart';
@@ -36,6 +37,9 @@ class _FixedSessionsTabState extends State<FixedSessionsTab> with ReloadOnDataCh
   bool _loading = true;
   String? _error;
   List<FixedSession> _items = [];
+
+  /// Pedidos de turno fijo sin responder.
+  List<FixedSessionRequest> _requests = [];
   String? _sport;
   /// null = la de default: lista en el celular, semana en pantallas anchas.
   _View? _selectedView;
@@ -71,10 +75,14 @@ class _FixedSessionsTabState extends State<FixedSessionsTab> with ReloadOnDataCh
         _error = null;
       });
     }
+    final pending = _repository.pendingRequests();
     final result = await _repository.list();
+    final requests = await pending;
     if (!mounted) return;
     setState(() {
       _loading = false;
+      // Si fallan los pedidos, el tablero se muestra igual.
+      if (requests case Right(:final value)) _requests = value;
       switch (result) {
         case Right(:final value):
           _items = value;
@@ -106,6 +114,11 @@ class _FixedSessionsTabState extends State<FixedSessionsTab> with ReloadOnDataCh
 
   Future<void> _create({int? day}) async {
     if (await openNewFixedSession(context, dayOfWeek: day) != null) _load();
+  }
+
+  Future<void> _reviewRequests() async {
+    await openFixedSessionRequests(context);
+    if (mounted) _load(silent: true);
   }
 
   Future<void> _onAction(String action, FixedSession item) async {
@@ -232,6 +245,10 @@ class _FixedSessionsTabState extends State<FixedSessionsTab> with ReloadOnDataCh
             ],
           ),
           const SizedBox(height: 16),
+          if (_requests.isNotEmpty) ...[
+            TourAnchor(id: 'fixed.requests', child: _RequestsBanner(count: _requests.length, onReview: _reviewRequests)),
+            const SizedBox(height: 12),
+          ],
           if (_error != null)
             LoadError(message: _error!, onRetry: _load)
           else
@@ -365,6 +382,37 @@ class _FixedSessionsTabState extends State<FixedSessionsTab> with ReloadOnDataCh
               ),
             ),
           ),
+      ),
+    );
+  }
+}
+
+/// Hay clientes esperando respuesta: lleva al panel de pedidos.
+class _RequestsBanner extends StatelessWidget {
+  const _RequestsBanner({required this.count, required this.onReview});
+
+  final int count;
+  final VoidCallback onReview;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
+      decoration: BoxDecoration(color: scheme.primaryContainer, borderRadius: BorderRadius.circular(12)),
+      child: Row(
+        children: [
+          Icon(Icons.event_repeat, size: 20, color: scheme.onPrimaryContainer),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              count == 1 ? '1 pedido de turno fijo por revisar' : '$count pedidos de turno fijo por revisar',
+              style: TextStyle(fontWeight: FontWeight.w500, color: scheme.onPrimaryContainer),
+            ),
+          ),
+          const SizedBox(width: 8),
+          FilledButton(onPressed: onReview, child: const Text('Revisar')),
+        ],
       ),
     );
   }

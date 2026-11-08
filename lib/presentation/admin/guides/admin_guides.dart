@@ -189,6 +189,7 @@ class AdminGuides {
             const OnboardingStep(anchor: 'fixed.view', title: 'Semana o lista', body: 'La semana muestra cada día en una columna; la lista, todos juntos.'),
             const OnboardingStep(anchor: 'fixed.board', title: 'Los turnos fijos', body: 'Desde el menú de cada uno editás sus integrantes o lo cancelás (un día o para siempre).'),
             const OnboardingStep(anchor: 'fixed.new', optional: true, title: 'Nuevo turno fijo', body: 'Elegí al titular, el día, la hora y el espacio: se crea un turno por semana.'),
+            const OnboardingStep(anchor: 'fixed.requests', optional: true, title: 'Pedidos de los clientes', body: 'Quienes vienen seguido al mismo horario pueden pedir dejarlo fijo. Ves qué semanas están libres y lo aceptás o lo rechazás.'),
           ],
         ),
 

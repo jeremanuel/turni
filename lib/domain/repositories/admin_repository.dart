@@ -6,6 +6,7 @@ import '../entities/client.dart';
 import '../entities/generic_search_item.dart';
 import '../entities/payment/payment_method.dart';
 import '../entities/request/page_response.dart';
+import '../entities/session_request_settings.dart';
 
 abstract class AdminRepository {
     Future<RepositoryResponse<PageResponse<Client>>> getClients(String search, [int? page, String? sortKey, bool? isAscending]);
@@ -14,11 +15,11 @@ abstract class AdminRepository {
     Future<List<GenericSearchItem>> genericSearch(String searchType, RangeDate rangeDate, int? clubPartitionId);
     Future<RepositoryResponse<Client>> createOrSaveClient(Map<String,dynamic> clientData);
 
-    /// Minutos configurados en `club.pending_request_ttl_minutes` (TTL de
-    /// las solicitudes de turno pendientes) del club del admin autenticado.
-    Future<Either<DomainError, int>> getPendingRequestTtlMinutes();
+    /// Reglas de las solicitudes del club del admin autenticado: cuánto
+    /// espera una solicitud de turno y desde cuándo se puede pedir uno fijo.
+    Future<Either<DomainError, SessionRequestSettings>> getSessionRequestSettings();
 
-    Future<Either<DomainError, int>> updatePendingRequestTtlMinutes(int minutes);
+    Future<Either<DomainError, SessionRequestSettings>> updateSessionRequestSettings(SessionRequestSettings settings);
 
     /// Medios de pago para cobrar un turno (efectivo, transferencia, ...).
     Future<RepositoryResponse<List<PaymentMethod>>> getPaymentMethods();

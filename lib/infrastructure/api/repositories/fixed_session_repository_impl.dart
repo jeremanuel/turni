@@ -76,6 +76,29 @@ class FixedSessionRepositoryImpl implements FixedSessionRepository {
   }
 
   @override
+  Future<RepositoryResponse<List<FixedSessionRequest>>> pendingRequests() {
+    return _safeCall(() async {
+      final response = await dioInstance.get('/admin/fixed-sessions/requests');
+      return (response.data as List).map((row) => FixedSessionRequest.fromJson(row as Map<String, dynamic>)).toList();
+    });
+  }
+
+  @override
+  Future<RepositoryResponse<FixedSessionCreated>> acceptRequest(int id) {
+    return _safeCall(() async {
+      final response = await dioInstance.post('/admin/fixed-sessions/requests/$id/accept');
+      return FixedSessionCreated.fromJson(response.data as Map<String, dynamic>);
+    });
+  }
+
+  @override
+  Future<RepositoryResponse<void>> rejectRequest(int id) {
+    return _safeCall(() async {
+      await dioInstance.post('/admin/fixed-sessions/requests/$id/reject');
+    });
+  }
+
+  @override
   Future<RepositoryResponse<ClientSummary>> clientSummary(int clientId) {
     return _safeCall(() async {
       final response = await dioInstance.get('/admin/clients/$clientId/summary');
