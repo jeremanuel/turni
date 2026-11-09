@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:turni/core/presentation/components/inputs/snackbars/snackbars_functions.dart';
 import '../../../../../core/utils/permissions.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -56,7 +57,12 @@ class _FreeSessionViewState extends State<FreeSessionView> {
       confirmLabel: 'Eliminar',
     );
     if (!ok || !mounted) return;
-    context.read<SessionManagerBloc>().add(DeleteSession(widget.session.sessionId));
+    final error = await context.read<SessionManagerBloc>().deleteSession(widget.session.sessionId);
+    if (!mounted) return;
+    if (error != null) {
+      SnackbarsFunctions.showErrorsSnackbar(context, error);
+      return;
+    }
     context.go(AppRoutes.SESSION_MANAGER_ROUTE.path);
   }
 

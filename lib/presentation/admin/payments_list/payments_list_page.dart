@@ -9,6 +9,7 @@ import '../../../core/presentation/components/inputs/chips/filter_chip_interval_
 import '../../../core/presentation/components/links/entity_links.dart';
 import '../../../core/utils/admin_features.dart';
 import '../../../core/utils/either.dart';
+import '../../../core/utils/permissions.dart';
 import '../../../core/utils/responsive_builder.dart';
 import '../../../core/utils/thousands_format.dart';
 import '../../../domain/entities/payment/payment_list_item.dart';
@@ -18,6 +19,7 @@ import '../../../domain/entities/request/payment/payment_list_page_response.dart
 import '../../../domain/repositories/payment_repository.dart';
 import '../memberships/membership_board_view.dart';
 import '../memberships/register_payment_dialog.dart';
+import 'void_payment_dialog.dart';
 import '../../../core/presentation/components/onboarding/tour_anchor.dart';
 import '../../../core/services/data_changes.dart';
 
@@ -239,7 +241,8 @@ class _PaymentsRegisteredViewState extends State<PaymentsRegisteredView> with Re
               if (!mobile) const _HeaderRow(),
               for (final entry in groups.entries) ...[
                 _DayRow(day: entry.key, items: entry.value),
-                for (final item in entry.value) mobile ? _MobileRow(item: item) : _PaymentRow(item: item),
+                for (final item in entry.value)
+                  mobile ? _MobileRow(item: item, onVoided: () => _load(reset: true)) : _PaymentRow(item: item, onVoided: () => _load(reset: true)),
               ],
             ]),
           )),
@@ -264,8 +267,9 @@ class _Totals extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
     final memberships = response.byKind['MEMBERSHIP'];
     final total = response.byMethod.fold<double>(0, (s, m) => s + m.$2);
+    final paymentsCount = response.activeCount ?? response.totalCount;
     final cards = <(String, String, String?, bool)>[
-      ('Cobrado', _money(response.totalAmount), '${response.totalCount} ${response.totalCount == 1 ? 'pago' : 'pagos'}', true),
+      ('Cobrado', _money(response.totalAmount), '$paymentsCount ${paymentsCount == 1 ? 'pago' : 'pagos'}', true),
       if (showMemberships && memberships != null) ('Abonos', _money(memberships.$1), '${memberships.$2} ${memberships.$2 == 1 ? 'cuota' : 'cuotas'}', false),
       for (final (name, amount) in response.byMethod.take(3)) (name, _money(amount), total > 0 ? '${(amount * 100 / total).round()} %' : null, false),
     ];
@@ -340,7 +344,7 @@ class _DayRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
-    final total = items.where((i) => i.providerStatus == null || i.providerStatus == PaymentProviderStatus.approved).fold<double>(0, (s, i) => s + i.amount);
+    final total = items.where((i) => i.reversal == null && (i.providerStatus == null || i.providerStatus == PaymentProviderStatus.approved)).fold<double>(0, (s, i) => s + i.amount);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(color: scheme.surfaceContainer, border: Border(top: BorderSide(color: scheme.outlineVariant))),
@@ -387,8 +391,9 @@ class _ConceptCell extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
-    final detail = [item.conceptDetail, item.observation].whereType<String>().where((s) => s.trim().isNotEmpty && s.trim() != item.conceptLabel).join(' · ');
-    final status = item.providerStatus;
+    final reversal = item.reversal;
+    final detail = [item.conceptDetail, item.observation, reversal?.reason].whereType<String>().where((s) => s.trim().isNotEmpty && s.trim() != item.conceptLabel).join(' · ');
+    final status = reversal == null ? item.providerStatus : null;
     return Row(children: [
       _KindChip(kind: item.conceptKind),
       const SizedBox(width: 8),
@@ -411,16 +416,62 @@ class _ConceptCell extends StatelessWidget {
         const SizedBox(width: 6),
         Text(status.label, style: textTheme.labelSmall?.copyWith(color: status.color)),
       ],
+      if (reversal != null) ...[
+        const SizedBox(width: 6),
+        Text(reversal.label, style: textTheme.labelSmall?.copyWith(color: scheme.error)),
+      ],
     ]);
   }
 }
 
 String _time(DateTime d) => '${d.hour.toString().padLeft(2, '0')}:${d.minute.toString().padLeft(2, '0')}';
 
-class _PaymentRow extends StatelessWidget {
-  const _PaymentRow({required this.item});
+/// Monto del cobro; tachado si se anuló o se devolvió.
+TextStyle _amountStyle(BuildContext context, PaymentListItem item, TextStyle? base) {
+  final style = (base ?? const TextStyle()).copyWith(fontWeight: FontWeight.w500, fontFeatures: const [FontFeature.tabularFigures()]);
+  if (item.reversal == null) return style;
+  return style.copyWith(decoration: TextDecoration.lineThrough, color: Theme.of(context).colorScheme.onSurfaceVariant);
+}
+
+/// Acciones de un cobro. Los online no se anulan: se devuelven por el proveedor.
+class _PaymentActions extends StatelessWidget {
+  const _PaymentActions({required this.item, required this.onVoided});
 
   final PaymentListItem item;
+  final VoidCallback onVoided;
+
+  bool get _voidable => item.reversal == null && item.providerStatus == null && Permissions.can(Permissions.PAGOS_REGISTRAR);
+
+  Future<void> _void(BuildContext context) async {
+    final voided = await showVoidPaymentDialog(
+      context,
+      kind: item.isSessionPayment ? PaymentRecordKind.session : PaymentRecordKind.payment,
+      paymentId: item.paymentId,
+      subject: '${item.clientName} · ${item.conceptLabel}',
+      method: item.paymentMethodName,
+      date: item.paymentDate,
+      amount: item.amount,
+    );
+    if (voided) onVoided();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!_voidable) return const SizedBox.shrink();
+    return PopupMenuButton<void>(
+      tooltip: 'Acciones',
+      padding: EdgeInsets.zero,
+      iconSize: 18,
+      itemBuilder: (_) => [PopupMenuItem<void>(onTap: () => _void(context), child: const Text('Anular cobro'))],
+    );
+  }
+}
+
+class _PaymentRow extends StatelessWidget {
+  const _PaymentRow({required this.item, required this.onVoided});
+
+  final PaymentListItem item;
+  final VoidCallback onVoided;
 
   @override
   Widget build(BuildContext context) {
@@ -430,16 +481,20 @@ class _PaymentRow extends StatelessWidget {
       item.clientId == null ? Text(item.clientName) : ClientLink(clientId: item.clientId!, name: item.clientName),
       _ConceptCell(item: item),
       Text(item.paymentMethodName),
-      Text(_money(item.amount), style: const TextStyle(fontWeight: FontWeight.w500, fontFeatures: [FontFeature.tabularFigures()])),
-      Text(item.adminName ?? (item.providerStatus != null ? 'Online' : '—'), style: TextStyle(color: scheme.onSurfaceVariant)),
+      Text(_money(item.amount), style: _amountStyle(context, item, null)),
+      Row(children: [
+        Expanded(child: Text(item.adminName ?? (item.providerStatus != null ? 'Online' : '—'), style: TextStyle(color: scheme.onSurfaceVariant))),
+        SizedBox(height: 20, child: _PaymentActions(item: item, onVoided: onVoided)),
+      ]),
     ]);
   }
 }
 
 class _MobileRow extends StatelessWidget {
-  const _MobileRow({required this.item});
+  const _MobileRow({required this.item, required this.onVoided});
 
   final PaymentListItem item;
+  final VoidCallback onVoided;
 
   @override
   Widget build(BuildContext context) {
@@ -451,7 +506,8 @@ class _MobileRow extends StatelessWidget {
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Row(children: [
           Expanded(child: item.clientId == null ? Text(item.clientName) : ClientLink(clientId: item.clientId!, name: item.clientName)),
-          Text(_money(item.amount), style: textTheme.titleSmall),
+          Text(_money(item.amount), style: _amountStyle(context, item, textTheme.titleSmall)),
+          _PaymentActions(item: item, onVoided: onVoided),
         ]),
         const SizedBox(height: 6),
         _ConceptCell(item: item),

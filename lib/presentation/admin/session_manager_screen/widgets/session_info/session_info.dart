@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:turni/core/presentation/components/inputs/snackbars/snackbars_functions.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:go_router/go_router.dart';
 
@@ -223,7 +224,7 @@ class _SessionInfoState extends State<SessionInfo> {
                           );
 
                           result.when(
-                            left: (_) {},
+                            left: (failure) => SnackbarsFunctions.showErrorsSnackbar(context, failure.message),
                             right: (success) {
                               if (!success) return;
 
@@ -360,8 +361,13 @@ class _SessionInfoState extends State<SessionInfo> {
                           return;
                         }
 
-                        sessionManagerBloc
-                            .add(DeleteSession(widget.session.sessionId));
+                        final error = await sessionManagerBloc
+                            .deleteSession(widget.session.sessionId);
+                        if (!context.mounted) return;
+                        if (error != null) {
+                          SnackbarsFunctions.showErrorsSnackbar(context, error);
+                          return;
+                        }
                         context.go(AppRoutes.SESSION_MANAGER_ROUTE.path);
                       },
                       child: Text(widget.session.isReserved

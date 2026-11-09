@@ -16,6 +16,16 @@ class ClientPaymentsPage {
   final DateTime? lastPaymentDate;
 }
 
+/// Tabla del cobro: abonos y pagos sueltos, o cobros de turnos y consumos.
+enum PaymentRecordKind {
+  payment('payment'),
+  session('session');
+
+  const PaymentRecordKind(this.apiValue);
+
+  final String apiValue;
+}
+
 abstract class PaymentRepository {
     Future<Either<DomainError, PageResponse<Payment>>> getClientPayments(int clientId, int page);
 
@@ -26,6 +36,9 @@ abstract class PaymentRepository {
 
     /// Pagos del cliente (a su nombre y de sus turnos) con su concepto. [kind]: MEMBERSHIP u OTHERS.
     Future<Either<DomainError, ClientPaymentsPage>> getClientPaymentRows(int clientId, int page, {String? kind});
+
+    /// Anula un cobro cargado a mano (`POST /admin/payment/:kind/:id/void`).
+    Future<Either<DomainError, bool>> voidPayment(PaymentRecordKind kind, int paymentId, String reason);
 
     /// Catálogo de medios de pago del backend (`GET /payments/methods`).
     Future<Either<DomainError, List<PaymentMethod>>> getPaymentMethods();

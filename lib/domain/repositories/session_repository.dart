@@ -35,7 +35,7 @@ abstract class SessionRepository {
 
   Future<Either<DomainError, bool>> deleteSessionExtra(int sessionId, Extra extra);
 
-    Future<bool> deleteSession(int sessionId);
+    Future<Either<DomainError, bool>> deleteSession(int sessionId);
 
     Future<bool> cancelSessionReservation(int sessionId);
 

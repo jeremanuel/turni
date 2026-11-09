@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:turni/core/presentation/components/inputs/snackbars/snackbars_functions.dart';
 
 import '../../../../core/presentation/components/links/entity_links.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -252,7 +253,8 @@ class _NotReservedSessionCardState extends State<NotReservedSessionCard> {
   Future<void> _delete() async {
     final action = await showCloseSessionDialog(context, isReserved: false);
     if (!mounted || action != CloseSessionAction.deleteSession) return;
-    context.read<SessionManagerBloc>().add(DeleteSession(widget.session.sessionId));
+    final error = await context.read<SessionManagerBloc>().deleteSession(widget.session.sessionId);
+    if (error != null && mounted) SnackbarsFunctions.showErrorsSnackbar(context, error);
   }
 
   @override

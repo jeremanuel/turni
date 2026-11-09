@@ -98,14 +98,8 @@ class SessionRepositoryImplementation extends BaseRepository implements SessionR
   }
 
   @override
-  Future<bool> deleteSession(int sessionId) async {
-    try {
-      return await sessionProvider.deleteSession(sessionId);
-
-    } catch (error) {
-
-      return false;
-    }
+  Future<Either<DomainError, bool>> deleteSession(int sessionId) {
+    return safeCall<bool>(() => sessionProvider.deleteSession(sessionId));
   }
 
   @override

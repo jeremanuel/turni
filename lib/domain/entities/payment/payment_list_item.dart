@@ -6,6 +6,26 @@ enum PaymentListItemType {
   sessionPayment,
 }
 
+/// Un cobro anulado por el club o devuelto por el proveedor.
+class PaymentReversal {
+  const PaymentReversal({required this.refunded, required this.amount, this.reason});
+
+  final bool refunded;
+  final double amount;
+  final String? reason;
+
+  String get label => refunded ? 'Devuelto' : 'Anulado';
+
+  static PaymentReversal? fromJson(dynamic json) {
+    if (json is! Map<String, dynamic>) return null;
+    return PaymentReversal(
+      refunded: json['status'] == 'REFUNDED',
+      amount: ValueTransformers.fromJsonDouble(json['amount']),
+      reason: json['reason']?.toString(),
+    );
+  }
+}
+
 class PaymentListItem {
   final int paymentId;
   final int? clientId;
@@ -32,6 +52,9 @@ class PaymentListItem {
   /// Quién lo registró (null en pagos online).
   final String? adminName;
 
+  /// Si el cobro se anuló o se devolvió.
+  final PaymentReversal? reversal;
+
   const PaymentListItem({
     required this.paymentId,
     required this.clientId,
@@ -48,6 +71,7 @@ class PaymentListItem {
     this.conceptLabel = 'Pago',
     this.conceptDetail,
     this.adminName,
+    this.reversal,
   });
 
   bool get isSessionPayment => type == PaymentListItemType.sessionPayment;
@@ -88,6 +112,7 @@ class PaymentListItem {
       conceptLabel: concept?['label']?.toString() ?? subscription?['name']?.toString() ?? (sessionId != null ? 'Turno' : 'Pago'),
       conceptDetail: concept?['detail']?.toString(),
       adminName: json['admin_name']?.toString(),
+      reversal: PaymentReversal.fromJson(json['reversal']),
     );
   }
 }
