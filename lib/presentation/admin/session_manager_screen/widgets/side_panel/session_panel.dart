@@ -1,4 +1,8 @@
 import 'dart:async';
+import 'package:turni/domain/entities/payment/payment.dart';
+import 'package:turni/presentation/admin/payments_list/void_payment_dialog.dart';
+import 'package:turni/domain/repositories/payment_repository.dart';
+import 'package:turni/core/presentation/components/inputs/snackbars/snackbars_functions.dart';
 
 import 'package:flutter/material.dart';
 import '../../../../../core/presentation/components/loading/app_skeleton.dart';
@@ -196,7 +200,12 @@ class _BookedDetail extends StatelessWidget {
       confirmLabel: 'Eliminar',
     );
     if (!ok || !context.mounted) return;
-    context.read<SessionManagerBloc>().add(DeleteSession(session.sessionId));
+    final error = await context.read<SessionManagerBloc>().deleteSession(session.sessionId);
+    if (!context.mounted) return;
+    if (error != null) {
+      SnackbarsFunctions.showErrorsSnackbar(context, error);
+      return;
+    }
     context.go(AppRoutes.SESSION_MANAGER_ROUTE.path);
   }
 
@@ -500,6 +509,7 @@ class _AccountCardState extends State<_AccountCard> {
     final result = await _useCases.deleteSessionExtra(widget.session.sessionId, extra);
     if (!mounted) return;
     setState(() => _deleting.remove(extra));
+    if (result case Left(:final failure)) SnackbarsFunctions.showErrorsSnackbar(context, failure.message);
     if (result case Right(value: true)) {
       final session = widget.session;
       context.read<SessionManagerBloc>().updateSessionInState(
@@ -512,16 +522,37 @@ class _AccountCardState extends State<_AccountCard> {
     }
   }
 
+  Future<void> _voidPayment(int paymentId, String method, DateTime date, double amount) async {
+    final voided = await showVoidPaymentDialog(
+      context,
+      kind: PaymentRecordKind.session,
+      paymentId: paymentId,
+      subject: 'Cobro del turno',
+      method: method,
+      date: date,
+      amount: amount,
+    );
+    if (!voided || !mounted) return;
+    final session = widget.session;
+    context.read<SessionManagerBloc>().updateSessionInState(
+          session.copyWith(
+            payments: session.payments?.where((p) => p.paymentId != paymentId).toList(),
+            extras: session.extras?.map((e) => e.payment?.paymentId == paymentId ? e.copyWith(payment: null) : e).toList(),
+          ),
+        );
+  }
+
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final session = widget.session;
     final extras = session.extras ?? const <Extra>[];
     final payments = [
-      for (final p in session.payments ?? const []) (p.paymentMethod.name, p.paymentDate, p.amount),
+      for (final p in session.payments ?? const <Payment>[]) (p.paymentMethod.name, p.paymentDate, p.amount, p.paymentId),
       for (final e in extras)
-        if (e.payment != null) ('${e.payment!.paymentMethod.name} (adicional)', e.payment!.paymentDate, e.payment!.amount),
+        if (e.payment != null) ('${e.payment!.paymentMethod.name} (adicional)', e.payment!.paymentDate, e.payment!.amount, e.payment!.paymentId),
     ]..sort((a, b) => a.$2.compareTo(b.$2));
+    final canVoid = Permissions.can(Permissions.PAGOS_REGISTRAR);
     final remaining = session.remainingTotalPrice;
     final settled = remaining <= 0;
 
@@ -604,7 +635,32 @@ class _AccountCardState extends State<_AccountCard> {
                   TextSpan(children: [TextSpan(text: p.$1), TextSpan(text: ' · ${panelHm(p.$2)}', style: muted)]),
                   style: body,
                 ),
-                Text('−${panelPrice(p.$3)}', style: body.copyWith(color: scheme.primary)),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text('−${panelPrice(p.$3)}', style: body.copyWith(color: scheme.primary)),
+                    if (canVoid && p.$4 != null)
+                      Padding(
+                        padding: const EdgeInsets.only(left: 4),
+                        child: SizedBox(
+                          width: 24,
+                          height: 20,
+                          child: IconButton(
+                            tooltip: 'Anular cobro',
+                            padding: EdgeInsets.zero,
+                            iconSize: 16,
+                            style: IconButton.styleFrom(
+                              foregroundColor: scheme.onSurfaceVariant,
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                            ),
+                            onPressed: () => _voidPayment(p.$4!, p.$1, p.$2, p.$3),
+                            icon: const Icon(Icons.undo),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
               ),
             ],
           ],

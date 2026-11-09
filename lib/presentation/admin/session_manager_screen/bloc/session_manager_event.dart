@@ -32,7 +32,6 @@ sealed class SessionManagerEvent with _$SessionManagerEvent {
 
   factory SessionManagerEvent.loadFromSessionId(int sessionId, bool isFirstLoad) = LoadFromSessionIdEvent;
 
-  factory SessionManagerEvent.deleteSession(int sessionId) = DeleteSession;
 
   factory SessionManagerEvent.setSelectedSession(Session? session) = SetSelectedSession;
 

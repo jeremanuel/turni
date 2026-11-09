@@ -246,24 +246,6 @@ print("test desde bloc:");
     });
 
     
-    on<DeleteSession>((event, emit) async {
-      final deleted = await _sessionUserCases.deleteSession(event.sessionId);
-      if (!deleted) {
-        return;
-      }
-
-      emit(
-        state.copyWith(
-          sessions: state.sessions
-              .where((element) => element.sessionId != event.sessionId)
-              .toList(),
-          selectedSession: state.selectedSession?.sessionId == event.sessionId
-              ? null
-              : state.selectedSession,
-        )
-      );
-    });
-
     on<SetSelectedSession>((event, emit) {
       emit(state.copyWith(selectedSession: event.session));
     });
@@ -348,6 +330,24 @@ print("test desde bloc:");
         selectedSession: updatedSelectedSession,
       ),
     );
+  }
+
+  /// Borra el turno. Devuelve el mensaje de error, o null si se borró.
+  Future<String?> deleteSession(int sessionId) async {
+    final result = await _sessionUserCases.deleteSession(sessionId);
+    if (result case Left(:final failure)) return failure.message;
+
+    emit(
+      state.copyWith(
+        sessions: state.sessions
+            .where((element) => element.sessionId != sessionId)
+            .toList(),
+        selectedSession: state.selectedSession?.sessionId == sessionId
+            ? null
+            : state.selectedSession,
+      )
+    );
+    return null;
   }
 
   Future<bool> cancelSessionReservation(int sessionId) async {

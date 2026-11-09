@@ -67,7 +67,7 @@ class SessionUserCases {
     return _sessionRepository.deleteSessionExtra(sessionId, extra);
   }
 
-  Future<bool> deleteSession(int sessionId){
+  Future<Either<DomainError, bool>> deleteSession(int sessionId){
     return _sessionRepository.deleteSession(sessionId);
   }
 

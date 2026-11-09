@@ -279,6 +279,11 @@ class PaymentRepositoryMock implements PaymentRepository {
       Either.right(const ClientPaymentsPage(items: [], total: 0, yearTotal: 0));
 
   @override
+  Future<Either<DomainError, bool>> voidPayment(PaymentRecordKind kind, int paymentId, String reason) async {
+    return const Right(true);
+  }
+
+  @override
   Future<Either<DomainError, List<PaymentMethod>>> getPaymentMethods() async {
     return Right(_mockPaymentMethods);
   }

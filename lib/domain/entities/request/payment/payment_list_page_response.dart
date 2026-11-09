@@ -4,6 +4,9 @@ import '../../payment/payment_list_item.dart';
 class PaymentListPageResponse {
   final List<PaymentListItem> items;
   final int totalCount;
+
+  /// Cobros sin contar los anulados o devueltos. [totalCount] incluye todas las filas: pagina.
+  final int? activeCount;
   final double totalAmount;
 
   /// Cobrado por medio de pago (con los filtros aplicados), de mayor a menor.
@@ -15,6 +18,7 @@ class PaymentListPageResponse {
   const PaymentListPageResponse({
     required this.items,
     required this.totalCount,
+    this.activeCount,
     required this.totalAmount,
     this.byMethod = const [],
     this.byKind = const {},
@@ -30,6 +34,7 @@ class PaymentListPageResponse {
           .map(PaymentListItem.fromJson)
           .toList(),
       totalCount: ValueTransformers.fromJsonIntNullable(extraData['totalCount']) ?? 0,
+      activeCount: ValueTransformers.fromJsonIntNullable(extraData['activeCount']),
       totalAmount: ValueTransformers.fromJsonDoubleNullable(extraData['totalAmount']) ?? 0,
       byMethod: ((extraData['byMethod'] as List?) ?? const [])
           .whereType<Map<String, dynamic>>()

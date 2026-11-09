@@ -13,6 +13,7 @@ Una línea por entrega, no por PR: si un PR completa una entrada que ya está, s
 ### Agregado
 
 - 2026-11-08 — Pedidos de turno fijo: el club define cuántas veces hay que haber venido y responde cada pedido desde Turnos fijos, viendo qué semanas están libres ([#83](https://github.com/jeremanuel/turni/pull/83)) — requiere BE #123
+- 2026-11-09 — Anular un cobro con motivo desde Pagos o desde el turno; el cobro queda tachado y sale de los totales. Si un turno o un consumo cobrado no se puede borrar, el admin lo avisa ([#85](https://github.com/jeremanuel/turni/pull/85)) — requiere BE #127
 
 ### Cambiado
 

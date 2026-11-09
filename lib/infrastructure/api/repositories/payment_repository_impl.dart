@@ -85,6 +85,14 @@ class PaymentRepositoryImpl extends BaseRepository implements PaymentRepository 
   }
 
   @override
+  Future<Either<DomainError, bool>> voidPayment(PaymentRecordKind kind, int paymentId, String reason) {
+    return safeCall<bool>(() async {
+      await dioInstance.post("/admin/payment/${kind.apiValue}/$paymentId/void", data: {"reason": reason});
+      return true;
+    });
+  }
+
+  @override
   Future<Either<DomainError, List<PaymentMethod>>> getPaymentMethods() {
     return safeCall<List<PaymentMethod>>(() async {
       final response = await dioInstance.get("/payments/methods");

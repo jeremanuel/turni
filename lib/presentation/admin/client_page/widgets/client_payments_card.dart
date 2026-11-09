@@ -161,7 +161,7 @@ class _ClientPaymentsCardState extends State<ClientPaymentsCard> with ReloadOnDa
                   Text(payment.paymentMethodName),
                   Align(
                     alignment: Alignment.centerRight,
-                    child: Text(_money(payment.amount), style: const TextStyle(fontWeight: FontWeight.w500, fontFeatures: [FontFeature.tabularFigures()])),
+                    child: Text(_money(payment.amount), style: TextStyle(fontWeight: FontWeight.w500, fontFeatures: const [FontFeature.tabularFigures()], decoration: payment.reversal != null ? TextDecoration.lineThrough : null)),
                   ),
                   Text(payment.adminName ?? (payment.providerStatus != null ? 'Online' : '—'), style: TextStyle(color: scheme.onSurfaceVariant)),
                 ],
@@ -209,6 +209,7 @@ class _Concept extends StatelessWidget {
       else
         label,
       if (detail.isNotEmpty) Text(detail, style: textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant)),
+      if (payment.reversal != null) Text(payment.reversal!.label, style: textTheme.labelSmall?.copyWith(color: scheme.error)),
     ]);
   }
 }
