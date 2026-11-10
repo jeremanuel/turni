@@ -22,7 +22,9 @@ import '../../../domain/repositories/cash_repository.dart';
 import '../../../domain/repositories/payment_repository.dart';
 import '../memberships/membership_board_view.dart';
 import '../memberships/register_payment_dialog.dart';
+import 'refund_payment_dialog.dart';
 import 'void_payment_dialog.dart';
+import '../../../core/presentation/components/inputs/snackbars/snackbars_functions.dart';
 import '../../../core/presentation/components/onboarding/tour_anchor.dart';
 import '../../../core/services/data_changes.dart';
 
@@ -376,7 +378,8 @@ class _DayRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
-    final total = items.where((i) => i.reversal == null && (i.providerStatus == null || i.providerStatus == PaymentProviderStatus.approved)).fold<double>(0, (s, i) => s + i.amount);
+    // Neto: un cobro devuelto en parte suma lo que quedó.
+    final total = items.where((i) => i.providerStatus == null || i.providerStatus == PaymentProviderStatus.approved).fold<double>(0, (s, i) => s + i.netAmount);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(color: scheme.surfaceContainer, border: Border(top: BorderSide(color: scheme.outlineVariant))),
@@ -461,7 +464,7 @@ String _time(DateTime d) => '${d.hour.toString().padLeft(2, '0')}:${d.minute.toS
 /// Monto del cobro; tachado si se anuló o se devolvió.
 TextStyle _amountStyle(BuildContext context, PaymentListItem item, TextStyle? base) {
   final style = (base ?? const TextStyle()).copyWith(fontWeight: FontWeight.w500, fontFeatures: const [FontFeature.tabularFigures()]);
-  if (item.reversal == null) return style;
+  if (!item.fullyReversed) return style;
   return style.copyWith(decoration: TextDecoration.lineThrough, color: Theme.of(context).colorScheme.onSurfaceVariant);
 }
 
@@ -473,6 +476,25 @@ class _PaymentActions extends StatelessWidget {
   final VoidCallback onVoided;
 
   bool get _voidable => item.reversal == null && item.providerStatus == null && CashStatus.canVoidPayment;
+  bool get _refundable => item.refundable && Permissions.can(Permissions.CAJA_CONCILIAR);
+
+  Future<void> _refund(BuildContext context) async {
+    final outcome = await showRefundPaymentDialog(
+      context,
+      kind: item.isSessionPayment ? PaymentRecordKind.session : PaymentRecordKind.payment,
+      paymentId: item.paymentId,
+      subject: '${item.clientName} · ${item.conceptLabel}',
+      date: item.paymentDate,
+      amount: item.amount,
+      remaining: item.netAmount,
+      wholeOnly: item.conceptLabel.toLowerCase().contains('torneo'),
+    );
+    if (outcome == null) return;
+    if (outcome == RefundOutcome.pending && context.mounted) {
+      SnackbarsFunctions.showSuccessSnackbar(context, 'Devolución pedida. Se va a ver en el cobro cuando Mercado Pago la confirme.');
+    }
+    onVoided();
+  }
 
   Future<void> _void(BuildContext context) async {
     final voided = await showVoidPaymentDialog(
@@ -489,12 +511,15 @@ class _PaymentActions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (!_voidable) return const SizedBox.shrink();
+    if (!_voidable && !_refundable) return const SizedBox.shrink();
     return PopupMenuButton<void>(
       tooltip: 'Acciones',
       padding: EdgeInsets.zero,
       iconSize: 18,
-      itemBuilder: (_) => [PopupMenuItem<void>(onTap: () => _void(context), child: const Text('Anular cobro'))],
+      itemBuilder: (_) => [
+        if (_voidable) PopupMenuItem<void>(onTap: () => _void(context), child: const Text('Anular cobro')),
+        if (_refundable) PopupMenuItem<void>(onTap: () => _refund(context), child: const Text('Devolver cobro')),
+      ],
     );
   }
 }

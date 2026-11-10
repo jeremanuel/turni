@@ -1,6 +1,9 @@
 import 'dart:async';
 import 'package:turni/domain/entities/payment/payment.dart';
 import 'package:turni/presentation/admin/payments_list/void_payment_dialog.dart';
+import 'package:turni/presentation/admin/payments_list/refund_payment_dialog.dart';
+import 'package:turni/core/utils/permissions.dart';
+import 'package:turni/core/presentation/components/inputs/snackbars/snackbars_functions.dart';
 import 'package:turni/domain/repositories/payment_repository.dart';
 import 'package:turni/core/presentation/components/inputs/snackbars/snackbars_functions.dart';
 
@@ -544,17 +547,41 @@ class _AccountCardState extends State<_AccountCard> {
         );
   }
 
+  Future<void> _refundPayment(Payment payment) async {
+    final outcome = await showRefundPaymentDialog(
+      context,
+      kind: PaymentRecordKind.session,
+      paymentId: payment.paymentId!,
+      subject: 'Cobro del turno',
+      date: payment.paymentDate,
+      amount: payment.amount + payment.reversedAmount,
+      remaining: payment.amount,
+    );
+    if (outcome == null || !mounted) return;
+    if (outcome == RefundOutcome.pending) {
+      SnackbarsFunctions.showSuccessSnackbar(context, 'Devolución pedida. Se va a ver en el turno cuando Mercado Pago la confirme.');
+    }
+    // El canal en tiempo real trae el turno actualizado; mientras, una devolución total lo saca.
+    if (outcome == RefundOutcome.appliedWhole) {
+      final session = widget.session;
+      context.read<SessionManagerBloc>().updateSessionInState(
+            session.copyWith(payments: session.payments?.where((p) => p.paymentId != payment.paymentId).toList()),
+          );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final session = widget.session;
     final extras = session.extras ?? const <Extra>[];
     final payments = [
-      for (final p in session.payments ?? const <Payment>[]) (p.paymentMethod.name, p.paymentDate, p.amount, p.paymentId),
+      for (final p in session.payments ?? const <Payment>[]) (p.paymentMethod.name, p.paymentDate, p.amount, p.paymentId, p),
       for (final e in extras)
-        if (e.payment != null) ('${e.payment!.paymentMethod.name} (adicional)', e.payment!.paymentDate, e.payment!.amount, e.payment!.paymentId),
+        if (e.payment != null) ('${e.payment!.paymentMethod.name} (adicional)', e.payment!.paymentDate, e.payment!.amount, e.payment!.paymentId, e.payment!),
     ]..sort((a, b) => a.$2.compareTo(b.$2));
     final canVoid = CashStatus.canVoidPayment;
+    final canRefund = Permissions.can(Permissions.CAJA_CONCILIAR);
     final remaining = session.remainingTotalPrice;
     final settled = remaining <= 0;
 
@@ -641,7 +668,27 @@ class _AccountCardState extends State<_AccountCard> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text('−${panelPrice(p.$3)}', style: body.copyWith(color: scheme.primary)),
-                    if (canVoid && p.$4 != null)
+                    if (p.$5.isOnline && canRefund && p.$4 != null)
+                      Padding(
+                        padding: const EdgeInsets.only(left: 4),
+                        child: SizedBox(
+                          width: 24,
+                          height: 20,
+                          child: IconButton(
+                            tooltip: 'Devolver cobro',
+                            padding: EdgeInsets.zero,
+                            iconSize: 16,
+                            style: IconButton.styleFrom(
+                              foregroundColor: scheme.onSurfaceVariant,
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                            ),
+                            onPressed: () => _refundPayment(p.$5),
+                            icon: const Icon(Icons.currency_exchange),
+                          ),
+                        ),
+                      ),
+                    if (canVoid && p.$4 != null && !p.$5.isOnline)
                       Padding(
                         padding: const EdgeInsets.only(left: 4),
                         child: SizedBox(

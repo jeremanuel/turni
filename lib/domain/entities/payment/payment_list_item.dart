@@ -6,22 +6,35 @@ enum PaymentListItemType {
   sessionPayment,
 }
 
-/// Un cobro anulado por el club o devuelto por el proveedor.
+/// Un cobro anulado por el club o devuelto por el proveedor, todo o una parte.
 class PaymentReversal {
-  const PaymentReversal({required this.refunded, required this.amount, this.reason});
+  const PaymentReversal({required this.refunded, required this.amount, this.reason, this.partial = false});
 
   final bool refunded;
+
+  /// Lo revertido hasta ahora (la suma de las devoluciones parciales).
   final double amount;
   final String? reason;
 
-  String get label => refunded ? 'Devuelto' : 'Anulado';
+  /// Queda una parte del cobro sin revertir.
+  final bool partial;
 
-  static PaymentReversal? fromJson(dynamic json) {
+  String get label => switch ((refunded, partial)) {
+        (true, true) => 'Devuelto parcial',
+        (true, false) => 'Devuelto',
+        (false, true) => 'Anulado parcial',
+        (false, false) => 'Anulado',
+      };
+
+  /// [original]: el monto del cobro, para saber si se revirtió todo.
+  static PaymentReversal? fromJson(dynamic json, {double? original}) {
     if (json is! Map<String, dynamic>) return null;
+    final amount = ValueTransformers.fromJsonDouble(json['amount']);
     return PaymentReversal(
       refunded: json['status'] == 'REFUNDED',
-      amount: ValueTransformers.fromJsonDouble(json['amount']),
+      amount: amount,
       reason: json['reason']?.toString(),
+      partial: original != null && amount < original - 0.009,
     );
   }
 }
@@ -84,6 +97,15 @@ class PaymentListItem {
 
   bool get isSessionPayment => type == PaymentListItemType.sessionPayment;
 
+  /// Lo que queda del cobro después de anulaciones y devoluciones.
+  double get netAmount => amount - (reversal?.amount ?? 0);
+
+  /// Revertido entero: el monto se muestra tachado.
+  bool get fullyReversed => reversal != null && !reversal!.partial;
+
+  /// Un cobro online aprobado al que todavía le queda algo por devolver.
+  bool get refundable => providerStatus == PaymentProviderStatus.approved && netAmount > 0.009;
+
   factory PaymentListItem.fromJson(Map<String, dynamic> json) {
     final client = json['client'] as Map<String, dynamic>?;
     final person = client?['person'] as Map<String, dynamic>?;
@@ -100,6 +122,7 @@ class PaymentListItem {
     final sessionId = ValueTransformers.fromJsonIntNullable(json['session_id']);
     final concept = json['concept'] as Map<String, dynamic>?;
     final cashAccount = json['cash_account'] as Map<String, dynamic>?;
+    final amount = ValueTransformers.fromJsonDouble(json['amount']);
 
     return PaymentListItem(
       cashPointName: cashAccount != null && cashAccount['type'] == 'CASH_POINT' ? cashAccount['name']?.toString() : null,
@@ -110,7 +133,7 @@ class PaymentListItem {
       paymentDate: json['payment_date'] != null
           ? ValueTransformers.fromJsonDateTimeLocale(json['payment_date'])
           : DateTime.now(),
-      amount: ValueTransformers.fromJsonDouble(json['amount']),
+      amount: amount,
       paymentMethodName: paymentMethod?['name']?.toString() ?? 'Sin metodo',
       subscriptionName: subscription?['name']?.toString(),
       observation: json['observation']?.toString(),
@@ -123,7 +146,7 @@ class PaymentListItem {
       conceptLabel: concept?['label']?.toString() ?? subscription?['name']?.toString() ?? (sessionId != null ? 'Turno' : 'Pago'),
       conceptDetail: concept?['detail']?.toString(),
       adminName: json['admin_name']?.toString(),
-      reversal: PaymentReversal.fromJson(json['reversal']),
+      reversal: PaymentReversal.fromJson(json['reversal'], original: amount),
     );
   }
 }

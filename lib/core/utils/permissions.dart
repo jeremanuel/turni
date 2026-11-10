@@ -33,6 +33,7 @@ class Permissions {
   static const CAJA_OPERAR = 'caja.operar';
   static const CAJA_MOVIMIENTOS = 'caja.movimientos';
   static const CAJA_SUPERVISAR = 'caja.supervisar';
+  static const CAJA_CONCILIAR = 'caja.conciliar';
 
   static const CONFIGURACION_VER = 'configuracion.ver';
   static const CONFIGURACION_CLUB = 'configuracion.club';

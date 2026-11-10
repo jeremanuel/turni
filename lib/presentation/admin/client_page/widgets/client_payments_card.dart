@@ -161,7 +161,7 @@ class _ClientPaymentsCardState extends State<ClientPaymentsCard> with ReloadOnDa
                   Text(payment.paymentMethodName),
                   Align(
                     alignment: Alignment.centerRight,
-                    child: Text(_money(payment.amount), style: TextStyle(fontWeight: FontWeight.w500, fontFeatures: const [FontFeature.tabularFigures()], decoration: payment.reversal != null ? TextDecoration.lineThrough : null)),
+                    child: Text(_money(payment.amount), style: TextStyle(fontWeight: FontWeight.w500, fontFeatures: const [FontFeature.tabularFigures()], decoration: payment.fullyReversed ? TextDecoration.lineThrough : null)),
                   ),
                   Text(payment.adminName ?? (payment.providerStatus != null ? 'Online' : '—'), style: TextStyle(color: scheme.onSurfaceVariant)),
                 ],

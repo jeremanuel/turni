@@ -40,6 +40,11 @@ abstract class PaymentRepository {
     /// Anula un cobro cargado a mano (`POST /admin/payment/:kind/:id/void`).
     Future<Either<DomainError, bool>> voidPayment(PaymentRecordKind kind, int paymentId, String reason);
 
+    /// Devuelve un cobro online por Mercado Pago, todo (sin [amount]) o una
+    /// parte (`POST /admin/payment/:kind/:id/refund`). Devuelve true si ya
+    /// quedó reflejado en el cobro; false si Mercado Pago todavía no lo confirmó.
+    Future<Either<DomainError, bool>> refundPayment(PaymentRecordKind kind, int paymentId, {double? amount, required String reason});
+
     /// Catálogo de medios de pago del backend (`GET /payments/methods`).
     Future<Either<DomainError, List<PaymentMethod>>> getPaymentMethods();
 }

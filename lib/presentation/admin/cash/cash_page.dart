@@ -16,6 +16,7 @@ import '../../../domain/entities/cash/cash.dart';
 import '../../../domain/repositories/cash_repository.dart';
 import '../club_config/widgets/admin_data_table.dart';
 import 'cash_common.dart';
+import 'cash_reconciliation_view.dart';
 import 'dialogs/close_cash_dialog.dart';
 import 'dialogs/open_cash_dialog.dart';
 
@@ -26,8 +27,9 @@ class CashPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final canReconcile = Permissions.can(Permissions.CAJA_CONCILIAR);
     return DefaultTabController(
-      length: 3,
+      length: canReconcile ? 4 : 3,
       child: Scaffold(
         backgroundColor: scheme.surfaceContainer,
         body: Column(children: [
@@ -42,11 +44,19 @@ class CashPage extends StatelessWidget {
                   TourAnchor(id: 'cash.tab.points', onActivate: TourAnchor.selectTab(0), child: const Tab(text: 'Puestos')),
                   TourAnchor(id: 'cash.tab.movements', onActivate: TourAnchor.selectTab(1), child: const Tab(text: 'Movimientos')),
                   TourAnchor(id: 'cash.tab.closes', onActivate: TourAnchor.selectTab(2), child: const Tab(text: 'Cierres')),
+                  if (canReconcile) const Tab(text: 'Conciliación'),
                 ],
               ),
             ),
           ),
-          const Expanded(child: TabBarView(children: [CashPointsView(), CashMovementsView(), CashClosesView()])),
+          Expanded(
+            child: TabBarView(children: [
+              const CashPointsView(),
+              const CashMovementsView(),
+              const CashClosesView(),
+              if (canReconcile) const CashReconciliationView(),
+            ]),
+          ),
         ]),
       ),
     );
