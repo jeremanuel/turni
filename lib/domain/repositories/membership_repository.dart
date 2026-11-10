@@ -21,6 +21,7 @@ abstract class MembershipRepository {
     required int periods,
     required double amount,
     int? paymentMethodId,
+    int? cashAccountId,
     DateTime? paymentDate,
     String? observation,
   });

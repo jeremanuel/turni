@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/config/router/app_routes.dart';
+import '../../../core/services/cash_status.dart';
 import '../../../core/utils/permissions.dart';
 
 /// Un destino de la navegación principal del admin: una rama del
@@ -14,6 +15,7 @@ class AdminDestination {
     required this.path,
     required this.anchor,
     this.permissions = const [],
+    this.isEnabled,
   });
 
   final IconData icon;
@@ -31,8 +33,13 @@ class AdminDestination {
   /// Alcanza con uno; vacío = visible para todos los admins.
   final List<String> permissions;
 
-  bool get isVisible => permissions.isEmpty || Permissions.canAny(permissions);
+  /// Condición extra además de los permisos (ej. que el club use caja).
+  final bool Function()? isEnabled;
+
+  bool get isVisible => (isEnabled?.call() ?? true) && (permissions.isEmpty || Permissions.canAny(permissions));
 }
+
+bool _cashEnabled() => CashStatus.enabled.value;
 
 class AdminDestinations {
   AdminDestinations._();
@@ -46,12 +53,15 @@ class AdminDestinations {
   static const usuarios = AdminDestination(icon: Icons.manage_accounts_outlined, label: 'Usuarios', branch: 6, path: '/users', anchor: 'nav.usuarios', permissions: [Permissions.ADMINISTRADORES_VER, Permissions.ROLES_VER]);
   static const torneos = AdminDestination(icon: Icons.emoji_events_outlined, label: 'Torneos', branch: 7, path: '/tournaments', anchor: 'nav.torneos', permissions: [Permissions.TORNEOS_VER]);
 
+  /// Solo si el establecimiento usa caja.
+  static const caja = AdminDestination(icon: Icons.point_of_sale_outlined, label: 'Caja', branch: 8, path: '/cash', anchor: 'nav.caja', permissions: [Permissions.CAJA_VER], isEnabled: _cashEnabled);
+
   /// Orden del menú lateral.
-  static const rail = [inicio, turnos, clientes, pagos, mapa, torneos, configuracion, usuarios];
+  static const rail = [inicio, turnos, clientes, pagos, caja, mapa, torneos, configuracion, usuarios];
 
   /// Orden por uso en el celular (sin Inicio, que es un placeholder): los
   /// primeros van en la barra inferior y el resto en «Más».
-  static const mobile = [turnos, clientes, pagos, torneos, mapa, configuracion, usuarios];
+  static const mobile = [turnos, clientes, pagos, caja, torneos, mapa, configuracion, usuarios];
 
   /// Destinos fijos de la barra inferior antes de «Más».
   static const mobileBarSlots = 4;

@@ -13,6 +13,7 @@ import '../../../domain/repositories/tournament_repository.dart';
 import '../club_config/widgets/admin_data_table.dart';
 import 'widgets/bracket_view.dart';
 import 'widgets/match_dialogs.dart';
+import 'widgets/tournament_payment_dialog.dart';
 import '../../../core/utils/responsive_builder.dart';
 import 'widgets/tournament_ui.dart';
 import '../../../core/services/data_changes.dart';
@@ -199,15 +200,15 @@ class _TournamentDetailPageState extends State<TournamentDetailPage> with Reload
   // -- Equipos -----------------------------------------------------------------
 
   Future<void> _markPaid(TournamentEntry e, EntryPlayer p) async {
-    if (!await confirmAction(
+    final payment = await showTournamentPaymentDialog(
       context,
-      title: 'Registrar pago en el club',
       message: '${p.shownName} pagó ${money(p.amountDue)} de la inscripción de ${e.teamName}.',
-      confirm: 'Registrar pago',
-    )) {
-      return;
-    }
-    await _run(() => _repository.markPlayerPaid(_t!.id, e.id, p.id), success: 'Pago registrado');
+    );
+    if (payment == null) return;
+    await _run(
+      () => _repository.markPlayerPaid(_t!.id, e.id, p.id, paymentMethodId: payment.methodId, cashAccountId: payment.cashAccountId),
+      success: 'Pago registrado',
+    );
   }
 
   Future<void> _drop(TournamentEntry e) async {

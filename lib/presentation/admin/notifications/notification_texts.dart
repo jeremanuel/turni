@@ -18,6 +18,8 @@ String notificationTitle(AdminNotification n) => switch (n.type) {
   'SESSION_REQUESTED' => 'Solicitud de turno',
   'SESSION_DEPOSIT_PAID' => 'Seña acreditada',
   'TOURNAMENT_RESULT_DISPUTED' => 'Resultado en disputa',
+  'PAYMENT_CASH_DIFFERENCE' => 'Diferencia en un cierre',
+  'PAYMENT_CASH_LEFT_OPEN' => 'Caja sin cerrar',
   _ => n.title,
 };
 

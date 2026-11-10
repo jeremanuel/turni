@@ -47,9 +47,15 @@ class DomainError implements Exception {
         return DomainError(
           message: message,
           internalCode: code is int ? code : unknwonError,
-          details: { "code": response['error'] },
+          details: { "code": response['error'], "data": response['details'] },
           date: DateTime.now(),
         );
+      }
+      // `DomainError.invalidArguments` del backend: el texto para mostrar
+      // viene en `details`.
+      final details = response['details'];
+      if (response['error'] == 'Invalid arguments' && details is String && details.isNotEmpty) {
+        return DomainError(message: details, internalCode: code is int ? code : unknwonError, date: DateTime.now());
       }
       return DomainError(
         message: response['error'] as String,
@@ -61,6 +67,12 @@ class DomainError implements Exception {
       return DomainError(message: "Unknown Error", internalCode: unknwonError, details: { "originalError":response }, date: DateTime.now());
     }
   }
+
+  /// Código de texto del backend (`CASH_SHIFT_REQUIRED`, ...), si vino.
+  String? get errorCode => details is Map ? details['code'] as String? : null;
+
+  /// Datos que acompañan a un conflicto (`details` de la respuesta).
+  Map<String, dynamic>? get errorData => details is Map && details['data'] is Map ? Map<String, dynamic>.from(details['data'] as Map) : null;
 
   @override
   String toString() {

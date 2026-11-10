@@ -12,6 +12,9 @@ enum DataTopic {
   sessions,
   availability,
   payments,
+
+  /// Puestos, cajas abiertas, cierres y movimientos de caja.
+  cash,
   fixedSessions,
   clients,
   tournaments,

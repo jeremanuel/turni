@@ -4,15 +4,19 @@ import '../../../../../../domain/entities/extra.dart';
 import '../../../../../../domain/entities/payment/payment.dart';
 import '../../../../../../domain/entities/payment/payment_method.dart';
 import '../../../../../../domain/entities/product.dart';
+import '../../../../cash/widgets/cash_entry_row.dart';
 
 typedef OnExtraAdded = void Function(Extra extra);
 
 class AddExtraContainer extends StatefulWidget {
   const AddExtraContainer(
-      {super.key, required this.onExtraAdded, required this.products});
+      {super.key, required this.onExtraAdded, required this.products, this.sessionId});
 
   final OnExtraAdded onExtraAdded;
   final List<Product> products;
+
+  /// Turno al que se agrega: define a qué puesto entra el efectivo.
+  final int? sessionId;
 
   @override
   State<AddExtraContainer> createState() => _AddExtraContainerState();
@@ -23,6 +27,9 @@ class _AddExtraContainerState extends State<AddExtraContainer> {
   bool paidExtra = false;
   int quantity = 1;
   Product? selectedConsumption;
+  CashEntrySelection entry = const CashEntrySelection();
+
+  static final _cash = PaymentMethod(paymentMethodId: 1, name: "Efectivo", kind: 'CASH');
 
   @override
   void dispose() {
@@ -31,7 +38,7 @@ class _AddExtraContainerState extends State<AddExtraContainer> {
   }
 
   bool isValidExtra() {
-    return selectedConsumption != null && quantity >= 1;
+    return selectedConsumption != null && quantity >= 1 && !(paidExtra && entry.blocked);
   }
 
   void createExtra() {
@@ -49,7 +56,8 @@ class _AddExtraContainerState extends State<AddExtraContainer> {
       payment: paidExtra
           ? Payment.fromExtra(
               amount: totalAmount,
-              method: PaymentMethod(paymentMethodId: 1, name: "Efectivo"))
+              method: _cash,
+              cashAccountId: entry.cashAccountId)
           : null,
     );
 
@@ -209,6 +217,12 @@ class _AddExtraContainerState extends State<AddExtraContainer> {
                 style: textTheme.titleMedium
                     ?.copyWith(color: colorScheme.onSurfaceVariant)),
           ),
+          if (paidExtra)
+            CashEntryRow(
+              method: _cash,
+              sessionId: widget.sessionId,
+              onChanged: (selection) => setState(() => entry = selection),
+            ),
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [

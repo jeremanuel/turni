@@ -1,3 +1,4 @@
+import '../../../core/services/cash_status.dart';
 import 'dart:math' as math;
 import 'dart:ui' show lerpDouble;
 
@@ -56,7 +57,7 @@ class RailMetrics {
 
 /// Grupos del menú, en orden. Los vacíos (sin permisos) no se muestran.
 const adminRailGroups = <(String, List<AdminDestination>)>[
-  ('Operación', [AdminDestinations.inicio, AdminDestinations.turnos, AdminDestinations.clientes, AdminDestinations.pagos]),
+  ('Operación', [AdminDestinations.inicio, AdminDestinations.turnos, AdminDestinations.clientes, AdminDestinations.pagos, AdminDestinations.caja]),
   ('Club', [AdminDestinations.mapa, AdminDestinations.torneos]),
   ('Administración', [AdminDestinations.configuracion, AdminDestinations.usuarios]),
 ];
@@ -154,8 +155,14 @@ class _AdminRailState extends State<AdminRail> with SingleTickerProviderStateMix
     shell.goBranch(destination.branch, initialLocation: shell.currentIndex == destination.branch);
   }
 
+  // Caja aparece o se va según la configuración del club.
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => ValueListenableBuilder<bool>(
+        valueListenable: CashStatus.enabled,
+        builder: (context, _, __) => _buildRail(context),
+      );
+
+  Widget _buildRail(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final groups = [
       for (final (title, items) in adminRailGroups) (title, AdminDestinations.visible(items)),

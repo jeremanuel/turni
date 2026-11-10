@@ -30,7 +30,10 @@ sealed class Payment with _$Payment {
     required int createdByAdmin,
     @JsonKey(name: "client_subscription")  
     ClientSubscription? clientSubscription,
-    bool? isExtra
+    bool? isExtra,
+    /// Puesto elegido a mano para un cobro en efectivo; sin esto va al del espacio.
+    @JsonKey(name: "cash_account_id", includeIfNull: false)
+    int? cashAccountId,
   }) = _Payment;
 
   Payment._();
@@ -38,13 +41,14 @@ sealed class Payment with _$Payment {
   factory Payment.fromExtra({
     required double amount,
     required PaymentMethod method,
-    
+    int? cashAccountId,
   }) => Payment(
     createdByAdmin: 1, // Assuming the admin ID is 1 for simplicity
     clientId: -1,
     amount: amount,
     paymentMethod: method,
     paymentDate: DateTime.now(),
+    cashAccountId: cashAccountId,
   );
 
   factory Payment.fromJson(Map<String, dynamic> json) => _$PaymentFromJson(json);

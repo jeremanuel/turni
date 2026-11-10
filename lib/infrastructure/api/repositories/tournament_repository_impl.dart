@@ -82,8 +82,11 @@ class TournamentRepositoryImpl extends BaseRepository implements TournamentRepos
   }
 
   @override
-  Future<RepositoryResponse<Tournament>> markPlayerPaid(int tournamentId, int entryId, int entryPlayerId) {
-    return safeCall(() async => _tournament(await dioInstance.post('$_path/$tournamentId/entries/$entryId/players/$entryPlayerId/mark-paid')));
+  Future<RepositoryResponse<Tournament>> markPlayerPaid(int tournamentId, int entryId, int entryPlayerId, {int? paymentMethodId, int? cashAccountId}) {
+    return safeCall(() async => _tournament(await dioInstance.post('$_path/$tournamentId/entries/$entryId/players/$entryPlayerId/mark-paid', data: {
+          if (paymentMethodId != null) 'payment_method_id': paymentMethodId,
+          if (cashAccountId != null) 'cash_account_id': cashAccountId,
+        })));
   }
 
   @override

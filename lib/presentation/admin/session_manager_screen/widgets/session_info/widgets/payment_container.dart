@@ -200,6 +200,7 @@ class _PaymentContainerState extends State<PaymentContainer> {
                   dropdownController: extraDropdownController,
                   menuWidget: AddExtraContainer(
                     products: availableProducts,
+                    sessionId: widget.session.sessionId,
                     
                     onExtraAdded: (extra) {
                       widget.onExtraAdded(extra, extra.payed);

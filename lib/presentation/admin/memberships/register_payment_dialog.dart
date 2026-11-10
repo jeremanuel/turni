@@ -19,6 +19,7 @@ import '../../../domain/repositories/membership_repository.dart';
 import '../../../domain/repositories/payment_repository.dart';
 import '../../core/cubit/auth/auth_cubit.dart';
 import '../../../core/presentation/components/inputs/client_search_field.dart';
+import '../cash/widgets/cash_entry_row.dart';
 import '../club_config/widgets/price_field.dart';
 import 'widgets/membership_widgets.dart';
 
@@ -84,6 +85,7 @@ class _RegisterPaymentDialogState extends State<_RegisterPaymentDialog> {
   int _periods = 1;
   List<PaymentMethod>? _methods;
   int? _methodId;
+  CashEntrySelection _entry = const CashEntrySelection();
   DateTime _date = DateTime.now();
   bool _saving = false;
   String? _error;
@@ -176,6 +178,7 @@ class _RegisterPaymentDialogState extends State<_RegisterPaymentDialog> {
         periods: _periods,
         amount: amount.toDouble(),
         paymentMethodId: _methodId,
+        cashAccountId: _entry.cashAccountId,
         paymentDate: _date,
         observation: _observation.text.trim().isEmpty ? null : _observation.text.trim(),
       );
@@ -185,6 +188,7 @@ class _RegisterPaymentDialogState extends State<_RegisterPaymentDialog> {
       final result = await _payments.createPayment({
         'amount': amount.toDouble(),
         'payment_method_id': _methodId,
+        if (_entry.cashAccountId != null) 'cash_account_id': _entry.cashAccountId,
         'observation': _observation.text.trim().isEmpty ? null : _observation.text.trim(),
         'client_subscription_id': null,
         'client_id': client.intClientId,
@@ -361,6 +365,11 @@ class _RegisterPaymentDialogState extends State<_RegisterPaymentDialog> {
                           onTap: () => setState(() => _methodId = method.paymentMethodId),
                         ),
                     ]),
+                  if (_methods != null)
+                    CashEntryRow(
+                      method: _methods!.firstWhereOrNull((method) => method.paymentMethodId == _methodId),
+                      onChanged: (entry) => setState(() => _entry = entry),
+                    ),
                   gap,
                   fieldLabel('Observación (opcional)'),
                   TextField(
@@ -407,7 +416,7 @@ class _RegisterPaymentDialogState extends State<_RegisterPaymentDialog> {
       actions: [
         TextButton(onPressed: () => Navigator.of(context).pop(false), child: const Text('Cancelar')),
         FilledButton(
-          onPressed: _saving || _clientId == null ? null : _save,
+          onPressed: _saving || _clientId == null || _entry.blocked ? null : _save,
           child: _saving
               ? const InlineSpinner(size: 16)
               : Text(total == null || total <= 0 ? 'Registrar' : 'Registrar ${money(total)}'),

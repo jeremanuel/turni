@@ -12,6 +12,8 @@ import '../../../../../domain/repositories/session_repository.dart';
 import '../../../../../domain/usercases/session_user_cases.dart';
 import '../../bloc/session_manager_bloc.dart';
 import 'panel_common.dart';
+import '../../../../../domain/entities/payment/payment_method.dart';
+import '../../../cash/widgets/cash_entry_row.dart';
 import 'payment_view.dart';
 
 /// "Agregar consumo": productos del club con cantidad, filtro por categoría
@@ -35,6 +37,8 @@ class _ConsumoViewState extends State<ConsumoView> {
   String? _category;
   final _qty = <int, int>{};
   bool _payNow = false;
+  PaymentMethod? _cashMethod;
+  CashEntrySelection _entry = const CashEntrySelection();
   bool _saving = false;
   String? _error;
 
@@ -74,6 +78,18 @@ class _ConsumoViewState extends State<ConsumoView> {
 
   double get _total => (_products ?? const <Product>[]).fold(0, (t, p) => t + p.price * (_qty[p.productId] ?? 0));
 
+  void _setPayNow(bool value) {
+    setState(() {
+      _payNow = value;
+      if (!value) _entry = const CashEntrySelection();
+    });
+    if (value && _cashMethod == null) {
+      PaymentMethods.load().then((methods) {
+        if (mounted) setState(() => _cashMethod = methods.first);
+      });
+    }
+  }
+
   void _change(Product product, int delta) {
     setState(() {
       final next = ((_qty[product.productId] ?? 0) + delta).clamp(0, 99);
@@ -93,7 +109,7 @@ class _ConsumoViewState extends State<ConsumoView> {
       _error = null;
     });
 
-    final method = _payNow ? (await PaymentMethods.load()).first : null;
+    final method = _payNow ? (_cashMethod ?? (await PaymentMethods.load()).first) : null;
     final added = <Extra>[];
     final chosen = (_products ?? const <Product>[]).where((p) => (_qty[p.productId] ?? 0) > 0).toList();
 
@@ -106,7 +122,7 @@ class _ConsumoViewState extends State<ConsumoView> {
           productId: product.productId,
           name: qty > 1 ? '${product.name} x$qty' : product.name,
           amount: amount,
-          payment: method == null ? null : Payment.fromExtra(amount: amount, method: method),
+          payment: method == null ? null : Payment.fromExtra(amount: amount, method: method, cashAccountId: _entry.cashAccountId),
         ),
         paidExtra: _payNow,
       );
@@ -216,7 +232,7 @@ class _ConsumoViewState extends State<ConsumoView> {
           ),
         InkWell(
           borderRadius: BorderRadius.circular(4),
-          onTap: () => setState(() => _payNow = !_payNow),
+          onTap: () => _setPayNow(!_payNow),
           child: ConstrainedBox(
             constraints: const BoxConstraints(minHeight: 40),
             child: Row(
@@ -228,7 +244,7 @@ class _ConsumoViewState extends State<ConsumoView> {
                     value: _payNow,
                     materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                     visualDensity: VisualDensity.compact,
-                    onChanged: (v) => setState(() => _payNow = v ?? false),
+                    onChanged: (v) => _setPayNow(v ?? false),
                   ),
                 ),
                 const SizedBox(width: 10),
@@ -237,6 +253,12 @@ class _ConsumoViewState extends State<ConsumoView> {
             ),
           ),
         ),
+        if (_payNow)
+          CashEntryRow(
+            method: _cashMethod,
+            sessionId: widget.session.sessionId,
+            onChanged: (entry) => setState(() => _entry = entry),
+          ),
         if (_error != null) Text(_error!, style: TextStyle(fontSize: 12, color: scheme.error)),
       ],
     );

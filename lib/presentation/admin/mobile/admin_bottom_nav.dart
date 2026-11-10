@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/config/router/app_routes.dart';
 import '../../../core/config/service_locator.dart';
 import '../../../core/services/app_version/app_version.dart';
+import '../../../core/services/cash_status.dart';
 import '../../../core/presentation/components/onboarding/tour_anchor.dart';
 import '../../core/cubit/auth/auth_cubit.dart';
 import '../guides/guides_dialog.dart';
@@ -18,8 +19,14 @@ class AdminBottomNav extends StatelessWidget {
 
   final StatefulNavigationShell shell;
 
+  // Caja aparece o se va según la configuración del club.
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => ValueListenableBuilder<bool>(
+        valueListenable: CashStatus.enabled,
+        builder: (context, _, __) => _buildBar(context),
+      );
+
+  Widget _buildBar(BuildContext context) {
     final visible = AdminDestinations.visible(AdminDestinations.mobile);
     final needsMore = visible.length > AdminDestinations.mobileBarSlots + 1;
     final inBar = needsMore ? visible.take(AdminDestinations.mobileBarSlots).toList() : visible;

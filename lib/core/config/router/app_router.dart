@@ -16,6 +16,7 @@ import '../../../presentation/auth/admin_invite_page.dart';
 import '../../../presentation/auth/no_access_page.dart';
 import '../../../presentation/platform/platform_clubs_page.dart';
 import '../../../presentation/admin/users/users_page.dart';
+import 'branches/cash_shell_branch.dart';
 import 'route_permissions.dart';
 import '../../utils/permissions.dart';
 import '../../utils/responsive_builder.dart';
@@ -216,6 +217,7 @@ List<StatefulShellBranch> buildBranches(RouterType routerType) {
     // Rama 7 (Torneos): va al final para no renumerar las anteriores; el
     // menú lateral la muestra después de Mapa (ver AdminRail).
     tournamentShellBranch(),
+    cashShellBranch(),
   ];
 }
  String? setCurrentRoute(BuildContext context, GoRouterState state) {

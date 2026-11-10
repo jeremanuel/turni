@@ -15,6 +15,7 @@ import 'tabs/products_tab.dart';
 import 'tabs/session_request_settings_tab.dart';
 import '../../../core/utils/admin_features.dart';
 import '../memberships/plans_tab.dart';
+import 'tabs/cash_points_tab.dart';
 import '../settings_screen/widgets/mercado_pago_account_card.dart';
 import '../../../core/presentation/components/onboarding/tour_anchor.dart';
 
@@ -231,6 +232,14 @@ List<_ClubConfigSection> _sections(
             ),
           ),
         )),
+      ),
+      _ClubConfigSection(
+        tabLabel: 'Cajas',
+        title: 'Cajas',
+        subtitle: 'Puestos de cobro y cómo se cierra la caja',
+        icon: Icons.point_of_sale_outlined,
+        anchor: 'clubConfig.tab.cash',
+        builder: () => const CashPointsTab(),
       ),
       if (AdminFeatures.memberships)
         _ClubConfigSection(

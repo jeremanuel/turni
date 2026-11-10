@@ -176,6 +176,7 @@ Set<DataTopic> topicsForRealtime(Iterable<String> topics) {
       'sessions' => DataTopic.sessions,
       'availability' => DataTopic.availability,
       'payments' => DataTopic.payments,
+      'cash' => DataTopic.cash,
       'fixed_sessions' => DataTopic.fixedSessions,
       'clients' => DataTopic.clients,
       'tournaments' => DataTopic.tournaments,

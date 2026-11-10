@@ -1,5 +1,6 @@
 import '../../domain/entities/club_partition.dart';
 import '../../presentation/core/cubit/auth/auth_cubit.dart';
+import '../services/cash_status.dart';
 import '../config/service_locator.dart';
 
 /// Qué secciones tienen sentido para el admin logueado según los servicios
@@ -17,6 +18,9 @@ class AdminFeatures {
       _partitions.where((partition) => partition.clubType?.usesMemberships == true).toList();
 
   static bool get memberships => membershipPartitions.isNotEmpty;
+
+  /// true si el establecimiento usa caja (ver [CashStatus]).
+  static bool get cash => CashStatus.enabled.value;
 
   /// true si ve algún servicio que arma rutinas (gimnasio, funcional).
   static bool get routines => _partitions.any((partition) => partition.clubType?.usesRoutines == true);

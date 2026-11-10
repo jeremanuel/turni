@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import '../../../../../core/presentation/components/loading/app_skeleton.dart';
 
 import '../../../../../core/presentation/components/links/entity_links.dart';
+import '../../../../../core/services/cash_status.dart';
 import '../../../../../core/utils/permissions.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -94,6 +95,7 @@ class _SessionPanelState extends State<SessionPanel> {
           session: session,
           subtitle: '$_clientName · ${panelRange(session)}',
           players: widget.physicalPartition.maxPlayers ?? widget.physicalPartition.minPlayers,
+          spaceLabel: widget.physicalPartition.spaceLabel(fallback: widget.clubPartition),
           vocabulary: PartitionVocabulary.of(widget.clubPartition),
           onBack: back,
         ),
@@ -552,7 +554,7 @@ class _AccountCardState extends State<_AccountCard> {
       for (final e in extras)
         if (e.payment != null) ('${e.payment!.paymentMethod.name} (adicional)', e.payment!.paymentDate, e.payment!.amount, e.payment!.paymentId),
     ]..sort((a, b) => a.$2.compareTo(b.$2));
-    final canVoid = Permissions.can(Permissions.PAGOS_REGISTRAR);
+    final canVoid = CashStatus.canVoidPayment;
     final remaining = session.remainingTotalPrice;
     final settled = remaining <= 0;
 

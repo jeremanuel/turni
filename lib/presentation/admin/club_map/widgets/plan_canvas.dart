@@ -35,6 +35,9 @@ class PlanCanvas extends StatefulWidget {
 
   /// Vista de uso: cada cancha pintada según cuánto se usó. `null`: no se muestra.
   final CourtUsageView? usage;
+
+  /// Color fijo por cancha, en lugar del uso (ej. a qué puesto pertenece).
+  final Map<int, Color>? courtColors;
   final ValueChanged<int>? onCourtTap;
 
   /// Edición: nueva posición (en metros) de una cancha arrastrada.
@@ -62,6 +65,7 @@ class PlanCanvas extends StatefulWidget {
     this.issues,
     this.liveStatus,
     this.usage,
+    this.courtColors,
     this.onCourtTap,
     this.onCourtMoved,
     this.onSpaceTap,
@@ -181,7 +185,7 @@ class _PlanCanvasState extends State<PlanCanvas> {
       height: fp.h * scale,
       ringColor: hasIssue ? colors.error : (selected ? colors.primary : null),
       liveStatus: widget.liveStatus?[element.courtId],
-      usageColor: widget.usage == null ? null : UsageScale.colorOf(widget.usage!.byCourt[element.courtId]?.usage),
+      usageColor: widget.courtColors != null ? widget.courtColors![element.courtId] : widget.usage == null ? null : UsageScale.colorOf(widget.usage!.byCourt[element.courtId]?.usage),
       usageLabel: widget.usage == null ? null : (widget.usage!.byCourt[element.courtId]?.percentLabel ?? 'Sin turnos'),
     );
 

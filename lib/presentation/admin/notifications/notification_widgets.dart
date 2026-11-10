@@ -14,6 +14,7 @@ import 'notification_texts.dart';
 ({Color background, Color foreground, IconData icon}) notificationTileStyle(ColorScheme scheme, NotificationKind kind) => switch (kind) {
   NotificationKind.request => (background: scheme.primaryContainer, foreground: scheme.onPrimaryContainer, icon: Icons.event_outlined),
   NotificationKind.deposit => (background: scheme.tertiaryContainer, foreground: scheme.onTertiaryContainer, icon: Icons.payments_outlined),
+  NotificationKind.cash => (background: scheme.errorContainer, foreground: scheme.onErrorContainer, icon: Icons.point_of_sale_outlined),
   NotificationKind.tournament => (background: scheme.secondaryContainer, foreground: scheme.onSecondaryContainer, icon: Icons.emoji_events_outlined),
   NotificationKind.gym => (background: scheme.secondaryContainer, foreground: scheme.onSecondaryContainer, icon: Icons.fitness_center),
   NotificationKind.other => (background: scheme.surfaceContainerHighest, foreground: scheme.onSurfaceVariant, icon: Icons.notifications_outlined),
