@@ -15,6 +15,7 @@ Una línea por entrega, no por PR: si un PR completa una entrada que ya está, s
 - 2026-11-08 — Pedidos de turno fijo: el club define cuántas veces hay que haber venido y responde cada pedido desde Turnos fijos, viendo qué semanas están libres ([#83](https://github.com/jeremanuel/turni/pull/83)) — requiere BE #123
 - 2026-11-09 — Anular un cobro con motivo desde Pagos o desde el turno; el cobro queda tachado y sale de los totales. Si un turno o un consumo cobrado no se puede borrar, el admin lo avisa ([#85](https://github.com/jeremanuel/turni/pull/85)) — requiere BE #127
 - 2026-11-10 — Caja: menú Caja con puestos, movimientos y cierres; en Configuración › Cajas se arman los puestos con sus espacios (también sobre el plano), y al cobrar en efectivo se ve en qué puesto entra ([#86](https://github.com/jeremanuel/turni/pull/86)) — requiere BE #129
+- 2026-11-10 — Devolver un cobro de Mercado Pago, entero o una parte, desde Pagos o desde el turno; Caja › Conciliación compara cada cobro con lo que informó Mercado Pago, y un aviso cuenta cuando se devolvió un pago ([#87](https://github.com/jeremanuel/turni/pull/87)) — requiere BE #130
 
 ### Cambiado
 
