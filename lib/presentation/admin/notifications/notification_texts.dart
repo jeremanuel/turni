@@ -20,6 +20,7 @@ String notificationTitle(AdminNotification n) => switch (n.type) {
   'TOURNAMENT_RESULT_DISPUTED' => 'Resultado en disputa',
   'PAYMENT_CASH_DIFFERENCE' => 'Diferencia en un cierre',
   'PAYMENT_CASH_LEFT_OPEN' => 'Caja sin cerrar',
+  'PAYMENT_REFUNDED' => _isChargeback(n) ? 'Contracargo en Mercado Pago' : 'Pago devuelto',
   _ => n.title,
 };
 
@@ -38,6 +39,13 @@ String notificationTitle(AdminNotification n) => switch (n.type) {
     case 'SESSION_DEPOSIT_PAID' when client != null:
       final confirmed = n.title.toLowerCase().contains('confirmado');
       return (who: client, rest: confirmed ? ' pagó la seña y el turno quedó confirmado.' : ' pagó la seña por Mercado Pago.');
+    case 'PAYMENT_REFUNDED' when client != null:
+      final amount = notificationAmountLabel(n);
+      final what = amount == null ? 'su pago' : '$amount de su pago';
+      return (
+        who: client,
+        rest: _isChargeback(n) ? ' desconoció $what en Mercado Pago (contracargo).' : ': se le devolvió $what por Mercado Pago.',
+      );
     case 'TOURNAMENT_RESULT_DISPUTED':
       final t = context?.tournament;
       if (t?.teamA != null && t?.teamB != null) {
@@ -46,6 +54,9 @@ String notificationTitle(AdminNotification n) => switch (n.type) {
   }
   return (who: '', rest: n.body);
 }
+
+/// El back titula los contracargos "Contracargo en Mercado Pago".
+bool _isChargeback(AdminNotification n) => n.title.toLowerCase().contains('contracargo');
 
 /// "hoy", "mañana", "el sábado" (en la semana), "el 27/10".
 String _requestDay(DateTime at, DateTime now) {

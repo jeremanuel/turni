@@ -284,6 +284,11 @@ class PaymentRepositoryMock implements PaymentRepository {
   }
 
   @override
+  Future<Either<DomainError, bool>> refundPayment(PaymentRecordKind kind, int paymentId, {double? amount, required String reason}) async {
+    return const Right(true);
+  }
+
+  @override
   Future<Either<DomainError, List<PaymentMethod>>> getPaymentMethods() async {
     return Right(_mockPaymentMethods);
   }

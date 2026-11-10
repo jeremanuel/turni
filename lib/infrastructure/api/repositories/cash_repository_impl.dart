@@ -5,6 +5,7 @@ import '../../../core/utils/domain_error.dart';
 import '../../../core/utils/either.dart';
 import '../../../core/utils/repository_response.dart';
 import '../../../domain/entities/cash/cash.dart';
+import '../../../domain/entities/cash/cash_reconciliation.dart';
 import '../../../domain/repositories/cash_repository.dart';
 
 class CashRepositoryImpl implements CashRepository {
@@ -73,6 +74,10 @@ class CashRepositoryImpl implements CashRepository {
   @override
   Future<RepositoryResponse<CashShift>> getShift(String id) =>
       _safeCall(() async => CashShift.fromJson(_map(await dioInstance.get('$_path/shifts/$id'))));
+
+  @override
+  Future<RepositoryResponse<CashReconciliation>> getReconciliation({required DateTime from, required DateTime to}) =>
+      _safeCall(() async => CashReconciliation.fromJson(_map(await dioInstance.get('$_path/reconciliation', queryParameters: {'from': _day(from), 'to': _day(to)}))));
 
   @override
   Future<RepositoryResponse<CashShiftsPage>> getClosedShifts(CashListFilters filters) =>

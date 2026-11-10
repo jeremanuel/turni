@@ -40,6 +40,7 @@ class AdminNotification {
     'SESSION_REQUESTED' => NotificationKind.request,
     'SESSION_DEPOSIT_PAID' => NotificationKind.deposit,
     'PAYMENT_CASH_DIFFERENCE' || 'PAYMENT_CASH_LEFT_OPEN' => NotificationKind.cash,
+    'PAYMENT_REFUNDED' => NotificationKind.refund,
     _ when category == 'PAYMENT' => NotificationKind.deposit,
     _ when category == 'TOURNAMENT' => NotificationKind.tournament,
     _ when category == 'GYM' => NotificationKind.gym,
@@ -86,7 +87,7 @@ class AdminNotification {
 }
 
 /// Cómo se muestra un aviso: color e ícono de su cuadrado y qué acciones tiene.
-enum NotificationKind { request, deposit, cash, tournament, gym, other }
+enum NotificationKind { request, deposit, refund, cash, tournament, gym, other }
 
 /// Estado de una solicitud de turno (ver `AdminNotificationContext.ts` en el back).
 enum SessionRequestState {

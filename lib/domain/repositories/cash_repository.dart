@@ -1,5 +1,6 @@
 import '../../core/utils/repository_response.dart';
 import '../entities/cash/cash.dart';
+import '../entities/cash/cash_reconciliation.dart';
 
 /// Filtros comunes de los listados de caja.
 class CashListFilters {
@@ -49,4 +50,7 @@ abstract class CashRepository {
 
   /// A qué puesto entraría el efectivo de [sessionId] (o el principal, sin turno).
   Future<RepositoryResponse<CashResolution>> resolveAccount({int? sessionId});
+
+  /// Cobros online del período contra lo que informó Mercado Pago (`caja.conciliar`).
+  Future<RepositoryResponse<CashReconciliation>> getReconciliation({required DateTime from, required DateTime to});
 }
