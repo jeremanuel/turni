@@ -68,6 +68,15 @@ class AppRoutes {
 
   static const CLUB_MAP_ROUTE = RouteDefinition("CLUB_MAP", '/club_map');
 
+  /// Puestos de cobro, cajas abiertas, movimientos y cierres.
+  static const CASH_ROUTE = RouteDefinition("CASH", '/cash');
+
+  static const CASH_SHIFT_ROUTE = RouteDefinition(
+    "CASH_SHIFT",
+    "/cash/shifts/:shiftId",
+    mobileAppBar: MobileAppBarConfig(title: 'Caja', backToPath: '/cash'),
+  );
+
   /// Torneos del club, ranking y deportes que categoriza.
   static const TOURNAMENTS_ROUTE = RouteDefinition(
     "TOURNAMENTS",
@@ -145,6 +154,8 @@ class AppRoutes {
     PROFILE_SECURITY_ROUTE.name: PROFILE_SECURITY_ROUTE,
     PAYMENTS_LIST.name: PAYMENTS_LIST,
     CLUB_MAP_ROUTE.name: CLUB_MAP_ROUTE,
+    CASH_ROUTE.name: CASH_ROUTE,
+    CASH_SHIFT_ROUTE.name: CASH_SHIFT_ROUTE,
     TOURNAMENTS_ROUTE.name: TOURNAMENTS_ROUTE,
     TOURNAMENT_NEW_ROUTE.name: TOURNAMENT_NEW_ROUTE,
     TOURNAMENT_DETAIL_ROUTE.name: TOURNAMENT_DETAIL_ROUTE,

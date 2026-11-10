@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/config/service_locator.dart';
+import '../../../core/services/cash_status.dart';
 import '../../../core/utils/responsive_builder.dart';
 import '../../admin/desktop_layout.dart';
 import '../../admin/mobile/admin_mobile_layout.dart';
@@ -21,6 +22,7 @@ class CustomLayout extends StatelessWidget {
 
     // Admin: barra inferior en el celular, menú lateral desde tablet.
     if (sl<AuthCubit>().isAdmin()) {
+      CashStatus.ensureStarted();
       if (width < ResponsiveBuilder.mobileMaxWidth) return AdminMobileLayout(shell: child);
       return DesktopLayout(scaffoldKey: scaffoldKey, child: child);
     }

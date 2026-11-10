@@ -7,15 +7,18 @@ import '../../../core/config/router/app_routes.dart';
 import '../../../core/config/service_locator.dart';
 import '../../../core/presentation/components/inputs/chips/filter_chip_interval_date.dart';
 import '../../../core/presentation/components/links/entity_links.dart';
+import '../../../core/services/cash_status.dart';
 import '../../../core/utils/admin_features.dart';
 import '../../../core/utils/either.dart';
 import '../../../core/utils/permissions.dart';
 import '../../../core/utils/responsive_builder.dart';
 import '../../../core/utils/thousands_format.dart';
+import '../../../domain/entities/cash/cash.dart';
 import '../../../domain/entities/payment/payment_list_item.dart';
 import '../../../domain/entities/payment/payment_method.dart';
 import '../../../domain/entities/payment/payment_provider_status.dart';
 import '../../../domain/entities/request/payment/payment_list_page_response.dart';
+import '../../../domain/repositories/cash_repository.dart';
 import '../../../domain/repositories/payment_repository.dart';
 import '../memberships/membership_board_view.dart';
 import '../memberships/register_payment_dialog.dart';
@@ -90,6 +93,8 @@ class _PaymentsRegisteredViewState extends State<PaymentsRegisteredView> with Re
   DateTime _to = DateTime.now();
   String? _kind;
   int? _methodId;
+  int? _cashAccountId;
+  List<CashPoint> _cashPoints = const [];
   String _search = '';
   List<PaymentMethod> _methods = const [];
   PaymentListPageResponse? _last;
@@ -123,6 +128,11 @@ class _PaymentsRegisteredViewState extends State<PaymentsRegisteredView> with Re
     _repository.getPaymentMethods().then((r) {
       if (mounted) r.when(left: (_) {}, right: (methods) => setState(() => _methods = methods));
     });
+    if (AdminFeatures.cash && Permissions.can(Permissions.CAJA_VER)) {
+      sl<CashRepository>().getOverview().then((r) {
+        if (mounted) r.when(left: (_) {}, right: (overview) => setState(() => _cashPoints = overview.points));
+      });
+    }
     _load(reset: true);
   }
 
@@ -132,7 +142,7 @@ class _PaymentsRegisteredViewState extends State<PaymentsRegisteredView> with Re
       _items.clear();
     }
     setState(() => _loading = true);
-    final result = await _repository.getPayments(_page, fechaDesde: _from, fechaHasta: _to, kind: _kind, paymentMethodId: _methodId, search: _search);
+    final result = await _repository.getPayments(_page, fechaDesde: _from, fechaHasta: _to, kind: _kind, paymentMethodId: _methodId, cashAccountId: _cashAccountId, search: _search);
     if (!mounted) return;
     setState(() {
       _loading = false;
@@ -154,6 +164,8 @@ class _PaymentsRegisteredViewState extends State<PaymentsRegisteredView> with Re
     final textTheme = Theme.of(context).textTheme;
     final mobile = ResponsiveBuilder.isMobile(context);
     final last = _last;
+    // Quien no lee la configuración igual ve la caja de lo que ya se cobró.
+    final showCash = AdminFeatures.cash || _items.any((item) => item.cashPointName != null);
 
     // Agrupados por día, en el orden en que llegan (más nuevos primero).
     final groups = <DateTime, List<PaymentListItem>>{};
@@ -209,6 +221,22 @@ class _PaymentsRegisteredViewState extends State<PaymentsRegisteredView> with Re
                 avatar: const Icon(Icons.arrow_drop_down, size: 18),
               ),
             ),
+          if (_cashPoints.isNotEmpty)
+            PopupMenuButton<int?>(
+              tooltip: 'Caja',
+              onSelected: (id) {
+                _cashAccountId = id;
+                _load(reset: true);
+              },
+              itemBuilder: (_) => [
+                const PopupMenuItem<int?>(value: null, child: Text('Todas las cajas')),
+                for (final point in _cashPoints) PopupMenuItem<int?>(value: point.id, child: Text(point.name)),
+              ],
+              child: Chip(
+                label: Text(_cashPoints.where((point) => point.id == _cashAccountId).firstOrNull?.name ?? 'Todas las cajas'),
+                avatar: const Icon(Icons.arrow_drop_down, size: 18),
+              ),
+            ),
           SizedBox(
             width: 220,
             child: TextField(
@@ -238,11 +266,11 @@ class _PaymentsRegisteredViewState extends State<PaymentsRegisteredView> with Re
             margin: EdgeInsets.zero,
             clipBehavior: Clip.antiAlias,
             child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-              if (!mobile) const _HeaderRow(),
+              if (!mobile) _HeaderRow(showCash: showCash),
               for (final entry in groups.entries) ...[
                 _DayRow(day: entry.key, items: entry.value),
                 for (final item in entry.value)
-                  mobile ? _MobileRow(item: item, onVoided: () => _load(reset: true)) : _PaymentRow(item: item, onVoided: () => _load(reset: true)),
+                  mobile ? _MobileRow(item: item, showCash: showCash, onVoided: () => _load(reset: true)) : _PaymentRow(item: item, showCash: showCash, onVoided: () => _load(reset: true)),
               ],
             ]),
           )),
@@ -299,17 +327,19 @@ class _Totals extends StatelessWidget {
 }
 
 const _flex = [70.0, 1.3, 1.8, 1.0, 120.0, 1.0];
+const _flexWithCash = [70.0, 1.3, 1.8, 1.0, 1.0, 120.0, 1.0];
 
 Widget _cells(BuildContext context, List<Widget> children, {Color? background, TextStyle? style}) {
   final scheme = Theme.of(context).colorScheme;
+  final flex = children.length == _flexWithCash.length ? _flexWithCash : _flex;
   Widget cell(int i, Widget child) {
     final content = Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(border: Border(left: i == 0 ? BorderSide.none : BorderSide(color: scheme.outlineVariant))),
-      alignment: i == 4 ? Alignment.centerRight : Alignment.centerLeft,
+      alignment: i == flex.length - 2 ? Alignment.centerRight : Alignment.centerLeft,
       child: DefaultTextStyle.merge(style: style, child: child),
     );
-    final w = _flex[i];
+    final w = flex[i];
     return w > 10 ? SizedBox(width: w, child: content) : Expanded(flex: (w * 10).round(), child: content);
   }
 
@@ -320,14 +350,16 @@ Widget _cells(BuildContext context, List<Widget> children, {Color? background, T
 }
 
 class _HeaderRow extends StatelessWidget {
-  const _HeaderRow();
+  const _HeaderRow({required this.showCash});
+
+  final bool showCash;
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     return _cells(
       context,
-      const [Text('Hora'), Text('Cliente'), Text('Concepto'), Text('Medio'), Text('Monto'), Text('Registró')],
+      [const Text('Hora'), const Text('Cliente'), const Text('Concepto'), const Text('Medio'), if (showCash) const Text('Caja'), const Text('Monto'), const Text('Registró')],
       background: scheme.surfaceContainerHighest,
       style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w500, color: scheme.onSurfaceVariant),
     );
@@ -440,7 +472,7 @@ class _PaymentActions extends StatelessWidget {
   final PaymentListItem item;
   final VoidCallback onVoided;
 
-  bool get _voidable => item.reversal == null && item.providerStatus == null && Permissions.can(Permissions.PAGOS_REGISTRAR);
+  bool get _voidable => item.reversal == null && item.providerStatus == null && CashStatus.canVoidPayment;
 
   Future<void> _void(BuildContext context) async {
     final voided = await showVoidPaymentDialog(
@@ -467,9 +499,30 @@ class _PaymentActions extends StatelessWidget {
   }
 }
 
-class _PaymentRow extends StatelessWidget {
-  const _PaymentRow({required this.item, required this.onVoided});
+/// Puesto donde entró el cobro, avisando si quedó para revisar.
+class _CashCell extends StatelessWidget {
+  const _CashCell({required this.item});
 
+  final PaymentListItem item;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final name = item.cashPointName;
+    return Row(children: [
+      Flexible(child: Text(name ?? 'No aplica', style: name == null ? TextStyle(color: scheme.onSurfaceVariant) : null, overflow: TextOverflow.ellipsis)),
+      if (item.needsReview) ...[
+        const SizedBox(width: 4),
+        Tooltip(message: 'Para revisar', child: Icon(Icons.error_outline, size: 16, color: scheme.error)),
+      ],
+    ]);
+  }
+}
+
+class _PaymentRow extends StatelessWidget {
+  const _PaymentRow({required this.item, required this.onVoided, required this.showCash});
+
+  final bool showCash;
   final PaymentListItem item;
   final VoidCallback onVoided;
 
@@ -481,6 +534,7 @@ class _PaymentRow extends StatelessWidget {
       item.clientId == null ? Text(item.clientName) : ClientLink(clientId: item.clientId!, name: item.clientName),
       _ConceptCell(item: item),
       Text(item.paymentMethodName),
+      if (showCash) _CashCell(item: item),
       Text(_money(item.amount), style: _amountStyle(context, item, null)),
       Row(children: [
         Expanded(child: Text(item.adminName ?? (item.providerStatus != null ? 'Online' : '—'), style: TextStyle(color: scheme.onSurfaceVariant))),
@@ -491,8 +545,9 @@ class _PaymentRow extends StatelessWidget {
 }
 
 class _MobileRow extends StatelessWidget {
-  const _MobileRow({required this.item, required this.onVoided});
+  const _MobileRow({required this.item, required this.onVoided, required this.showCash});
 
+  final bool showCash;
   final PaymentListItem item;
   final VoidCallback onVoided;
 
@@ -512,7 +567,7 @@ class _MobileRow extends StatelessWidget {
         const SizedBox(height: 6),
         _ConceptCell(item: item),
         const SizedBox(height: 4),
-        Text('${_time(item.paymentDate)} · ${item.paymentMethodName}${item.adminName != null ? ' · ${item.adminName}' : ''}', style: textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant)),
+        Text('${_time(item.paymentDate)} · ${item.paymentMethodName}${showCash ? ' · ${item.cashPointName ?? 'No aplica'}' : ''}${item.adminName != null ? ' · ${item.adminName}' : ''}', style: textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant)),
       ]),
     );
   }

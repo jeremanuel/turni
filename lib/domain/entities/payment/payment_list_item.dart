@@ -55,6 +55,12 @@ class PaymentListItem {
   /// Si el cobro se anuló o se devolvió.
   final PaymentReversal? reversal;
 
+  /// Puesto donde entró el cobro; null si no pasó por ninguno.
+  final String? cashPointName;
+
+  /// Quedó sin caja o sin clasificar: lo tiene que mirar un supervisor.
+  final bool needsReview;
+
   const PaymentListItem({
     required this.paymentId,
     required this.clientId,
@@ -72,6 +78,8 @@ class PaymentListItem {
     this.conceptDetail,
     this.adminName,
     this.reversal,
+    this.cashPointName,
+    this.needsReview = false,
   });
 
   bool get isSessionPayment => type == PaymentListItemType.sessionPayment;
@@ -91,8 +99,11 @@ class PaymentListItem {
 
     final sessionId = ValueTransformers.fromJsonIntNullable(json['session_id']);
     final concept = json['concept'] as Map<String, dynamic>?;
+    final cashAccount = json['cash_account'] as Map<String, dynamic>?;
 
     return PaymentListItem(
+      cashPointName: cashAccount != null && cashAccount['type'] == 'CASH_POINT' ? cashAccount['name']?.toString() : null,
+      needsReview: json['needs_review'] == true,
       paymentId: ValueTransformers.fromJsonInt(json['payment_id']),
       clientId: ValueTransformers.fromJsonIntNullable(json['client_id']),
       clientName: clientName.isEmpty ? 'Sin cliente' : clientName,

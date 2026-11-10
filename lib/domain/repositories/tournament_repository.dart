@@ -31,7 +31,7 @@ abstract class TournamentRepository {
 
   Future<RepositoryResponse<Tournament>> dropEntry(int tournamentId, int entryId);
 
-  Future<RepositoryResponse<Tournament>> markPlayerPaid(int tournamentId, int entryId, int entryPlayerId);
+  Future<RepositoryResponse<Tournament>> markPlayerPaid(int tournamentId, int entryId, int entryPlayerId, {int? paymentMethodId, int? cashAccountId});
 
   /// Aviso de pagos pendientes ya. Devuelve a cuántos equipos.
   Future<RepositoryResponse<int>> sendPaymentReminders(int tournamentId);

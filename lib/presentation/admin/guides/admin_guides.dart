@@ -280,6 +280,22 @@ class AdminGuides {
           ],
         ),
         Guide(
+          id: 'cash.daily',
+          section: 'Pagos',
+          title: 'Abrir y cerrar la caja',
+          description: 'Cuánto efectivo debería haber en cada puesto y cómo se hace el cierre.',
+          icon: Icons.point_of_sale_outlined,
+          keywords: const ['caja', 'puesto', 'efectivo', 'cierre', 'arqueo', 'retiro', 'gasto', 'diferencia'],
+          permissions: const [Permissions.CAJA_VER],
+          isAvailable: () => AdminFeatures.cash,
+          route: AppRoutes.CASH_ROUTE.path,
+          steps: (v) => [
+            OnboardingStep(anchor: 'cash.stats', before: activate('cash.tab.points'), title: 'Lo de hoy', body: 'El efectivo que debería haber en las cajas abiertas y lo que entró por otros medios.'),
+            const OnboardingStep(anchor: 'cash.points', optional: true, title: 'Cada puesto', body: 'Abrí la caja al empezar y cerrala al terminar. Con "Ver" registrás gastos, retiros e ingresos.'),
+            OnboardingStep(anchor: 'cash.tab.closes', optional: true, before: activate('cash.tab.closes'), title: 'Cierres', body: 'Todos los cierres con su diferencia. Los que superan la tolerancia quedan para revisar.'),
+          ],
+        ),
+        Guide(
           id: 'payments.memberships',
           section: 'Pagos',
           title: 'Estado de las cuotas',
@@ -460,6 +476,20 @@ class AdminGuides {
           steps: (v) => [
             OnboardingStep(anchor: 'requests.settings', before: reveal('requests.settings', via: 'clubConfig.tab.requests'), title: 'Reglas de las solicitudes', body: 'Cuánto tiempo tenés para responder una solicitud, hasta cuándo el cliente puede cancelar y si tiene que dejar seña.'),
             const OnboardingStep(anchor: 'requests.save', optional: true, title: 'Guardar', body: 'Los cambios valen para las solicitudes nuevas.'),
+          ],
+        ),
+        Guide(
+          id: 'config.cash',
+          section: 'Configuración',
+          title: 'Cajas y puestos',
+          description: 'Usar caja en el establecimiento y decidir qué espacios cobra cada puesto.',
+          icon: Icons.point_of_sale_outlined,
+          keywords: const ['caja', 'puesto', 'arqueo ciego', 'tolerancia', 'efectivo', 'recepción'],
+          permissions: const [Permissions.CAJA_VER, Permissions.CONFIGURACION_CAJAS],
+          route: _clubConfig,
+          steps: (v) => [
+            OnboardingStep(anchor: 'cash.config.settings', before: reveal('cash.config.settings', via: 'clubConfig.tab.cash'), title: 'Gestión de caja', body: 'Prendé la caja, elegí si hace falta tenerla abierta para cobrar en efectivo y cuánta diferencia se tolera.'),
+            const OnboardingStep(anchor: 'cash.config.points', optional: true, title: 'Puestos', body: 'Cada puesto cobra sus espacios. El principal recibe abonos, torneos, productos sueltos y los espacios sin puesto.'),
           ],
         ),
         Guide(

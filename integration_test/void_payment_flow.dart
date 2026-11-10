@@ -61,6 +61,9 @@ Future<void> _confirmVoid(WidgetTester tester) async {
 }
 
 Future<void> _tapDeleteSession(WidgetTester tester) async {
+  // Los avisos de superposición de la agenda (turnos del seed) tapan el pie del panel.
+  ScaffoldMessenger.of(tester.element(find.text('Eliminar turno'))).clearSnackBars();
+  await _settle(tester);
   await tester.tap(find.text('Eliminar turno'));
   await _wait(tester, () => _visible(find.byType(AlertDialog)), 'la confirmación de eliminar');
   await _settle(tester);

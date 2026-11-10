@@ -16,6 +16,8 @@ sealed class PaymentMethod with _$PaymentMethod {
     /// manuales (Efectivo, Transferencia).
     @JsonKey(name: "provider_type")
     String? providerType,
+    /// Qué es el medio para la caja: CASH, TRANSFER, CARD, PROVIDER u OTHER.
+    String? kind,
   }) = _PaymentMethod;
 
   factory PaymentMethod.fromJson(Map<String, dynamic> json) => _$PaymentMethodFromJson(json);

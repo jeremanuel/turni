@@ -29,6 +29,11 @@ class Permissions {
   static const PAGOS_VER = 'pagos.ver';
   static const PAGOS_REGISTRAR = 'pagos.registrar';
 
+  static const CAJA_VER = 'caja.ver';
+  static const CAJA_OPERAR = 'caja.operar';
+  static const CAJA_MOVIMIENTOS = 'caja.movimientos';
+  static const CAJA_SUPERVISAR = 'caja.supervisar';
+
   static const CONFIGURACION_VER = 'configuracion.ver';
   static const CONFIGURACION_CLUB = 'configuracion.club';
   static const CONFIGURACION_CANCHAS = 'configuracion.canchas';
@@ -37,6 +42,7 @@ class Permissions {
   static const CONFIGURACION_ABONOS = 'configuracion.abonos';
   static const CONFIGURACION_SOLICITUDES = 'configuracion.solicitudes';
   static const CONFIGURACION_COBROS_ONLINE = 'configuracion.cobros_online';
+  static const CONFIGURACION_CAJAS = 'configuracion.cajas';
 
   static const TORNEOS_VER = 'torneos.ver';
   static const TORNEOS_EDITAR = 'torneos.editar';

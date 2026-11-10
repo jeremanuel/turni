@@ -201,7 +201,7 @@ class PaymentRepositoryMock implements PaymentRepository {
   }
 
   @override
-  Future<Either<DomainError, PaymentListPageResponse>> getPayments(int page, {DateTime? fechaDesde, DateTime? fechaHasta, String? kind, int? paymentMethodId, String? search}) async {
+  Future<Either<DomainError, PaymentListPageResponse>> getPayments(int page, {DateTime? fechaDesde, DateTime? fechaHasta, String? kind, int? paymentMethodId, String? search, int? cashAccountId}) async {
     // Simular delay de red
     await Future.delayed(const Duration(milliseconds: 600));
 

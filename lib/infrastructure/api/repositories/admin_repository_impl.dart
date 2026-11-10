@@ -38,6 +38,7 @@ class AdminrepositroyImpl extends BaseRepository implements AdminRepository {
           .map((row) => PaymentMethod(
                 paymentMethodId: (row['payment_method_id'] as num).toInt(),
                 name: (row['name'] ?? '').toString(),
+                kind: row['kind']?.toString(),
               ))
           .toList();
     });

@@ -6,9 +6,9 @@ void main() {
   final groups = adminRailGroups;
 
   test('alto de la lista cerrada: filas, separadores y «Más»', () {
-    // 8 filas de 44, 7 espacios de 2 y 2 separadores de 13.
-    expect(collapsedListHeight(groups), 8 * 44 + 7 * 2 + 2 * 13);
-    expect(collapsedListHeight(groups, withMore: true), 9 * 44 + 8 * 2 + 2 * 13);
+    // 9 filas de 44, 8 espacios de 2 y 2 separadores de 13.
+    expect(collapsedListHeight(groups), 9 * 44 + 8 * 2 + 2 * 13);
+    expect(collapsedListHeight(groups, withMore: true), 10 * 44 + 9 * 2 + 2 * 13);
   });
 
   test('si entra todo, no hay «Más»', () {
@@ -21,7 +21,7 @@ void main() {
     final split = splitForHeight(groups, 380);
     final shown = [for (final (_, items) in split.shown) ...items];
     expect(collapsedListHeight(split.shown, withMore: true), lessThanOrEqualTo(380));
-    expect(shown, [AdminDestinations.inicio, AdminDestinations.turnos, AdminDestinations.clientes, AdminDestinations.pagos, AdminDestinations.mapa, AdminDestinations.torneos]);
+    expect(shown, [AdminDestinations.inicio, AdminDestinations.turnos, AdminDestinations.clientes, AdminDestinations.pagos, AdminDestinations.caja, AdminDestinations.mapa, AdminDestinations.torneos]);
     expect(split.hidden, [AdminDestinations.configuracion, AdminDestinations.usuarios]);
   });
 
@@ -39,6 +39,6 @@ void main() {
   test('con muy poco alto quedan al menos uno y «Más»', () {
     final split = splitForHeight(groups, 60);
     expect([for (final (_, items) in split.shown) ...items], hasLength(1));
-    expect(split.hidden, hasLength(7));
+    expect(split.hidden, hasLength(8));
   });
 }

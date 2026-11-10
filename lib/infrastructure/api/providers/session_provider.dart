@@ -33,6 +33,7 @@ class SessionProvider {
       'payed': paidExtra,
       if (extra.payment != null)
         'payment_method_id': extra.payment!.paymentMethod.paymentMethodId,
+      if (extra.payment?.cashAccountId != null) 'cash_account_id': extra.payment!.cashAccountId,
     };
 
     final response = await dioInstance.post(
@@ -54,6 +55,7 @@ class SessionProvider {
           'amount': extra.amount,
           // Medio elegido en "Cobrar" (si viene); Efectivo por compatibilidad.
           'payment_method_id': extra.payment?.paymentMethod.paymentMethodId ?? 1,
+          if (extra.payment?.cashAccountId != null) 'cash_account_id': extra.payment!.cashAccountId,
         }
       },
     );

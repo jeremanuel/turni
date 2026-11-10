@@ -69,11 +69,12 @@ class MembershipRepositoryImpl implements MembershipRepository {
               .data));
 
   @override
-  Future<RepositoryResponse<Membership>> registerPayment(int membershipId, {required int periods, required double amount, int? paymentMethodId, DateTime? paymentDate, String? observation}) =>
+  Future<RepositoryResponse<Membership>> registerPayment(int membershipId, {required int periods, required double amount, int? paymentMethodId, int? cashAccountId, DateTime? paymentDate, String? observation}) =>
       _safeCall(() async => _membership((await dioInstance.post('/memberships/client-subscriptions/$membershipId/payments', data: {
             'periods_count': periods,
             'amount': amount,
             'payment_method_id': paymentMethodId,
+            if (cashAccountId != null) 'cash_account_id': cashAccountId,
             if (paymentDate != null) 'payment_date': dayToJson(paymentDate),
             'observation': observation,
           }))

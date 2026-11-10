@@ -6,6 +6,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../core/config/service_locator.dart';
 import '../../../../../core/utils/either.dart';
 import '../../../../../core/utils/thousands_format.dart';
+import '../../../../../domain/repositories/cash_repository.dart';
+import '../../../cash/widgets/cash_entry_row.dart';
 import '../../../../../domain/entities/extra.dart';
 import '../../../../../domain/entities/partition_vocabulary.dart';
 import '../../../../../domain/entities/payment/payment.dart';
@@ -31,7 +33,7 @@ class PaymentMethods {
     if (_cache != null) return _cache!;
     final result = await sl<AdminRepository>().getPaymentMethods();
     if (result case Right(:final value) when value.isNotEmpty) _cache = value;
-    return _cache ?? [PaymentMethod(paymentMethodId: 1, name: 'Efectivo')];
+    return _cache ?? [PaymentMethod(paymentMethodId: 1, name: 'Efectivo', kind: 'CASH')];
   }
 }
 
@@ -43,11 +45,15 @@ class PaymentView extends StatefulWidget {
     required this.session,
     required this.subtitle,
     required this.players,
+    this.spaceLabel,
     this.vocabulary = PartitionVocabulary.court,
     required this.onBack,
   });
 
   final Session session;
+
+  /// "Cancha 5": a qué espacio corresponde el cobro.
+  final String? spaceLabel;
   final String subtitle;
   final int players;
 
@@ -63,6 +69,8 @@ class _PaymentViewState extends State<PaymentView> {
   final _useCases = SessionUserCases(sl<SessionRepository>());
   final _otherController = TextEditingController();
   final _otherFocus = FocusNode();
+  final _cashEntry = GlobalKey<CashEntryRowState>();
+  CashEntrySelection _entry = const CashEntrySelection();
 
   late _Concept _concept = widget.session.remainingSessionPrice > 0 || widget.session.remainingExtrasPrice <= 0
       ? _Concept.turno
@@ -112,7 +120,7 @@ class _PaymentViewState extends State<PaymentView> {
     };
   }
 
-  bool get _valid => _method != null && _chosen > 0 && _chosen <= _pending;
+  bool get _valid => _method != null && _chosen > 0 && _chosen <= _pending && !_entry.blocked;
 
   Future<void> _charge() async {
     final method = _method!;
@@ -133,6 +141,7 @@ class _PaymentViewState extends State<PaymentView> {
           createdByAdmin: 1,
           amount: _chosen,
           isExtra: false,
+          cashAccountId: _entry.cashAccountId,
         ),
       );
       if (result case Right(:final value)) {
@@ -140,15 +149,17 @@ class _PaymentViewState extends State<PaymentView> {
         widget.onBack();
         return;
       }
+      if (result case Left(:final failure) when failure.errorCode == CashErrors.shiftRequired) return _cashClosed(failure.message);
     } else {
       // Los consumos se cobran enteros: uno por uno con el medio elegido.
       final paid = <int?, Extra>{};
       for (final extra in _unpaidExtras) {
         final result = await _useCases.paySessionExtra(
           session.sessionId,
-          extra.copyWith(payment: Payment.fromExtra(amount: extra.amount, method: method)),
+          extra.copyWith(payment: Payment.fromExtra(amount: extra.amount, method: method, cashAccountId: _entry.cashAccountId)),
         );
         if (result case Right(:final value)) paid[extra.extraId] = value;
+        if (result case Left(:final failure) when failure.errorCode == CashErrors.shiftRequired) return _cashClosed(failure.message);
       }
       if (paid.isNotEmpty) {
         bloc.updateSessionInState(
@@ -166,6 +177,16 @@ class _PaymentViewState extends State<PaymentView> {
       _saving = false;
       _error = 'No se pudo registrar el cobro. Probá de nuevo.';
     });
+  }
+
+  /// La caja se cerró mientras se cobraba: se actualiza la fila "Entra en".
+  void _cashClosed(String message) {
+    if (!mounted) return;
+    setState(() {
+      _saving = false;
+      _error = message;
+    });
+    _cashEntry.currentState?.reload();
   }
 
   @override
@@ -296,6 +317,14 @@ class _PaymentViewState extends State<PaymentView> {
                     onTap: () => setState(() => _method = m),
                   ),
               ],
+            ),
+            const SizedBox(height: 8),
+            CashEntryRow(
+              key: _cashEntry,
+              method: _method,
+              sessionId: session.sessionId,
+              spaceLabel: widget.spaceLabel,
+              onChanged: (entry) => setState(() => _entry = entry),
             ),
           ],
         ),

@@ -45,7 +45,7 @@ class PaymentRepositoryImpl extends BaseRepository implements PaymentRepository 
   }
 
   @override
-  Future<Either<DomainError, PaymentListPageResponse>> getPayments(int page, {DateTime? fechaDesde, DateTime? fechaHasta, String? kind, int? paymentMethodId, String? search}) {
+  Future<Either<DomainError, PaymentListPageResponse>> getPayments(int page, {DateTime? fechaDesde, DateTime? fechaHasta, String? kind, int? paymentMethodId, String? search, int? cashAccountId}) {
     return safeCall<PaymentListPageResponse>(() async {
       final queryParams = <String, dynamic>{
         'page': page,
@@ -62,6 +62,7 @@ class PaymentRepositoryImpl extends BaseRepository implements PaymentRepository 
       if (kind != null) queryParams['kind'] = kind;
       if (paymentMethodId != null) queryParams['payment_method_id'] = paymentMethodId;
       if (search != null && search.trim().isNotEmpty) queryParams['search'] = search.trim();
+      if (cashAccountId != null) queryParams['cash_account_id'] = cashAccountId;
 
       final response = await dioInstance.get("/payments", queryParameters: queryParams);
 

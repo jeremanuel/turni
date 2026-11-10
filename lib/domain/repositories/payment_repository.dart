@@ -32,7 +32,7 @@ abstract class PaymentRepository {
     Future<Either<DomainError, Payment>> createPayment(Map<String, dynamic> paymentData);
 
     /// [kind]: MEMBERSHIP, SESSION, PRODUCT u OTHER. [search]: nombre del cliente.
-    Future<Either<DomainError, PaymentListPageResponse>> getPayments(int page, {DateTime? fechaDesde, DateTime? fechaHasta, String? kind, int? paymentMethodId, String? search});
+    Future<Either<DomainError, PaymentListPageResponse>> getPayments(int page, {DateTime? fechaDesde, DateTime? fechaHasta, String? kind, int? paymentMethodId, String? search, int? cashAccountId});
 
     /// Pagos del cliente (a su nombre y de sus turnos) con su concepto. [kind]: MEMBERSHIP u OTHERS.
     Future<Either<DomainError, ClientPaymentsPage>> getClientPaymentRows(int clientId, int page, {String? kind});
