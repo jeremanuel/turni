@@ -20,6 +20,8 @@ String notificationTitle(AdminNotification n) => switch (n.type) {
   'TOURNAMENT_RESULT_DISPUTED' => 'Resultado en disputa',
   'PAYMENT_CASH_DIFFERENCE' => 'Diferencia en un cierre',
   'PAYMENT_CASH_LEFT_OPEN' => 'Caja sin cerrar',
+  'PAYMENT_FISCAL_REJECTED' => 'Comprobante rechazado',
+  'PAYMENT_FISCAL_BLOCKED' => 'ARCA desconectada',
   'PAYMENT_REFUNDED' => _isChargeback(n) ? 'Contracargo en Mercado Pago' : 'Pago devuelto',
   _ => n.title,
 };

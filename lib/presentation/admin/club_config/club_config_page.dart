@@ -16,6 +16,7 @@ import 'tabs/session_request_settings_tab.dart';
 import '../../../core/utils/admin_features.dart';
 import '../memberships/plans_tab.dart';
 import 'tabs/cash_points_tab.dart';
+import 'tabs/fiscal_settings_tab.dart';
 import '../settings_screen/widgets/mercado_pago_account_card.dart';
 import '../../../core/presentation/components/onboarding/tour_anchor.dart';
 
@@ -240,6 +241,14 @@ List<_ClubConfigSection> _sections(
         icon: Icons.point_of_sale_outlined,
         anchor: 'clubConfig.tab.cash',
         builder: () => const CashPointsTab(),
+      ),
+      _ClubConfigSection(
+        tabLabel: 'Facturación',
+        title: 'Facturación',
+        subtitle: 'Datos fiscales y conexión con ARCA',
+        icon: Icons.receipt_long_outlined,
+        anchor: 'clubConfig.tab.fiscal',
+        builder: () => const FiscalSettingsTab(),
       ),
       if (AdminFeatures.memberships)
         _ClubConfigSection(

@@ -8,28 +8,54 @@ import '../../../core/config/service_locator.dart';
 import '../../../core/presentation/components/inputs/chips/filter_chip_interval_date.dart';
 import '../../../core/presentation/components/inputs/snackbars/snackbars_functions.dart';
 import '../../../core/presentation/components/onboarding/tour_anchor.dart';
+import '../../../core/services/cash_status.dart';
 import '../../../core/services/data_changes.dart';
+import '../../../core/services/fiscal_status.dart';
 import '../../../core/utils/either.dart';
 import '../../../core/utils/permissions.dart';
 import '../../../core/utils/responsive_builder.dart';
 import '../../../domain/entities/cash/cash.dart';
 import '../../../domain/repositories/cash_repository.dart';
 import '../club_config/widgets/admin_data_table.dart';
+import '../widgets/admin_destinations.dart';
 import 'cash_common.dart';
 import 'cash_reconciliation_view.dart';
 import 'dialogs/close_cash_dialog.dart';
 import 'dialogs/open_cash_dialog.dart';
+import 'fiscal/fiscal_documents_view.dart';
 
-/// Caja: los puestos con su estado, todos los movimientos y los cierres.
+/// Caja: los puestos con su estado, todos los movimientos y los cierres. Si
+/// el club factura con ARCA, también los comprobantes (y solo eso, si no usa
+/// caja).
 class CashPage extends StatelessWidget {
-  const CashPage({super.key});
+  const CashPage({super.key, this.initialTab});
+
+  /// `comprobantes` abre esa pestaña (ej. desde un aviso de comprobante rechazado).
+  final String? initialTab;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => ListenableBuilder(listenable: AdminDestinations.changes, builder: (context, _) => _build(context));
+
+  Widget _build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final canReconcile = Permissions.can(Permissions.CAJA_CONCILIAR);
+    final showFiscal = FiscalStatus.enabled.value && Permissions.can(Permissions.FACTURACION_VER);
+    final showCash = (CashStatus.enabled.value || !showFiscal) && Permissions.can(Permissions.CAJA_VER);
+    final canReconcile = showCash && Permissions.can(Permissions.CAJA_CONCILIAR);
+    final tabs = <(Widget, Widget)>[
+      if (showCash) ...[
+        (TourAnchor(id: 'cash.tab.points', onActivate: TourAnchor.selectTab(0), child: const Tab(text: 'Puestos')), const CashPointsView()),
+        (TourAnchor(id: 'cash.tab.movements', onActivate: TourAnchor.selectTab(1), child: const Tab(text: 'Movimientos')), const CashMovementsView()),
+        (TourAnchor(id: 'cash.tab.closes', onActivate: TourAnchor.selectTab(2), child: const Tab(text: 'Cierres')), const CashClosesView()),
+        if (canReconcile) (const Tab(text: 'Conciliación'), const CashReconciliationView()),
+      ],
+      if (showFiscal) (const TourAnchor(id: 'cash.tab.fiscal', child: Tab(text: 'Comprobantes')), const FiscalDocumentsView()),
+    ];
+    if (tabs.isEmpty) return const Center(child: CashMessage('Tu rol no puede ver la caja ni los comprobantes.'));
+    final initialIndex = initialTab == 'comprobantes' && showFiscal ? tabs.length - 1 : 0;
     return DefaultTabController(
-      length: canReconcile ? 4 : 3,
+      key: ValueKey('${tabs.length}-$initialIndex'),
+      length: tabs.length,
+      initialIndex: initialIndex,
       child: Scaffold(
         backgroundColor: scheme.surfaceContainer,
         body: Column(children: [
@@ -40,23 +66,11 @@ class CashPage extends StatelessWidget {
               child: TabBar(
                 isScrollable: true,
                 tabAlignment: TabAlignment.start,
-                tabs: [
-                  TourAnchor(id: 'cash.tab.points', onActivate: TourAnchor.selectTab(0), child: const Tab(text: 'Puestos')),
-                  TourAnchor(id: 'cash.tab.movements', onActivate: TourAnchor.selectTab(1), child: const Tab(text: 'Movimientos')),
-                  TourAnchor(id: 'cash.tab.closes', onActivate: TourAnchor.selectTab(2), child: const Tab(text: 'Cierres')),
-                  if (canReconcile) const Tab(text: 'Conciliación'),
-                ],
+                tabs: [for (final (tab, _) in tabs) tab],
               ),
             ),
           ),
-          Expanded(
-            child: TabBarView(children: [
-              const CashPointsView(),
-              const CashMovementsView(),
-              const CashClosesView(),
-              if (canReconcile) const CashReconciliationView(),
-            ]),
-          ),
+          Expanded(child: TabBarView(children: [for (final (_, view) in tabs) view])),
         ]),
       ),
     );

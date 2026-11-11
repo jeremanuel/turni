@@ -14,6 +14,8 @@ import '../../../../domain/entities/product_category.dart';
 import '../../../../domain/repositories/product_admin_repository.dart';
 import '../widgets/admin_data_table.dart';
 import '../widgets/price_field.dart';
+import '../../../../domain/entities/fiscal/fiscal.dart';
+import '../../../../domain/repositories/fiscal_repository.dart';
 import '../../../../core/utils/responsive_builder.dart';
 import '../../../../core/presentation/components/onboarding/tour_anchor.dart';
 
@@ -43,10 +45,59 @@ class _ProductsTabState extends State<ProductsTab> {
 
   bool get _canEdit => Permissions.can(Permissions.CONFIGURACION_PRODUCTOS);
 
+  /// Para la columna IVA: solo si el club factura como Responsable Inscripto.
+  FiscalSettings? _fiscal;
+
+  bool get _showIva => _fiscal?.profile?.isResponsableInscripto ?? false;
+
   @override
   void initState() {
     super.initState();
     _loadAll();
+    _loadFiscal();
+  }
+
+  Future<void> _loadFiscal() async {
+    if (!Permissions.canAny(const [Permissions.FACTURACION_VER, Permissions.CONFIGURACION_FACTURACION])) return;
+    final result = await sl<FiscalRepository>().getSettings();
+    if (!mounted) return;
+    if (result case Right(:final value)) setState(() => _fiscal = value);
+  }
+
+  String _ivaLabel(AdminProduct product) {
+    final options = _fiscal!.options;
+    return switch (product.taxTreatment) {
+      'EXEMPT' => 'Exento',
+      'NOT_TAXED' => 'No gravado',
+      'TAXED' when product.ivaRateId != null => 'IVA ${options.ivaRateLabel(product.ivaRateId)}',
+      _ => 'El del club (${options.ivaRateLabel(_fiscal!.profile!.defaultIvaRateId)})',
+    };
+  }
+
+  Future<void> _setIva(AdminProduct product, ({String? treatment, int? rateId}) tax) async {
+    final result = await _repository.updateProduct(product.productId, tax: tax);
+    if (!mounted) return;
+    result.when(
+      left: (DomainError failure) => SnackbarsFunctions.showErrorsSnackbar(context, failure.message),
+      right: (AdminProduct updated) => setState(() => _products = [for (final p in _products) p.productId == updated.productId ? updated : p]),
+    );
+  }
+
+  Widget _ivaCell(AdminProduct product) {
+    final label = Text(_ivaLabel(product));
+    if (!_canEdit) return label;
+    final options = _fiscal!.options;
+    return PopupMenuButton<({String? treatment, int? rateId})>(
+      tooltip: 'IVA del producto',
+      onSelected: (tax) => _setIva(product, tax),
+      itemBuilder: (_) => [
+        const PopupMenuItem(value: (treatment: null, rateId: null), child: Text('El del club')),
+        for (final rate in options.ivaRates) PopupMenuItem(value: (treatment: 'TAXED', rateId: rate.id), child: Text('IVA ${rate.label}')),
+        const PopupMenuItem(value: (treatment: 'EXEMPT', rateId: null), child: Text('Exento')),
+        const PopupMenuItem(value: (treatment: 'NOT_TAXED', rateId: null), child: Text('No gravado')),
+      ],
+      child: Row(mainAxisSize: MainAxisSize.min, children: [Flexible(child: label), const Icon(Icons.arrow_drop_down, size: 18)]),
+    );
   }
 
   @override
@@ -282,7 +333,7 @@ class _ProductsTabState extends State<ProductsTab> {
                   ),
                   const SizedBox(height: 16),
                   if (_isLoading)
-                    const AdminTableSkeleton(columns: ['Nombre', 'Categoría', 'Precio', 'Activo', ''], rows: 4, mobileNested: true)
+                    AdminTableSkeleton(columns: ['Nombre', 'Categoría', 'Precio', if (_showIva) 'IVA', 'Activo', ''], rows: 4, mobileNested: true)
                   else if (_visibleProducts.isEmpty)
                     const Padding(
                       padding: EdgeInsets.symmetric(vertical: 12),
@@ -292,7 +343,7 @@ class _ProductsTabState extends State<ProductsTab> {
                     AdminTableScroll(
                       child: AdminDataTable(
                     mobileNested: true,
-                        columns: const ['Nombre', 'Categoría', 'Precio', 'Activo', ''],
+                        columns: ['Nombre', 'Categoría', 'Precio', if (_showIva) 'IVA', 'Activo', ''],
                         rows: _visibleProducts
                             .map((product) => [
                                   Text(product.name),
@@ -302,6 +353,7 @@ class _ProductsTabState extends State<ProductsTab> {
                                     materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                                   ),
                                   Text('\$${ThousandsFormat.formatPrice(product.price)}'),
+                                  if (_showIva) _ivaCell(product),
                                   Switch(
                                     value: product.active,
                                     onChanged: _canEdit ? (_) => _toggleProductActive(product) : null,

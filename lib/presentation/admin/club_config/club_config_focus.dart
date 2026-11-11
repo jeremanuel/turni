@@ -12,12 +12,13 @@ abstract final class ClubConfigTab {
   static const sessionRequests = 4;
   static const onlinePayments = 5;
   static const cash = 6;
+  static const fiscal = 7;
 
   /// Solo si el admin ve algún servicio con abonos con cuotas (va última, así
   /// los índices de las demás no cambian).
-  static const memberships = 7;
+  static const memberships = 8;
 
-  static int get count => AdminFeatures.memberships ? 8 : 7;
+  static int get count => AdminFeatures.memberships ? 9 : 8;
 }
 
 /// A qué parte de la configuración apunta un acceso directo desde otra
@@ -45,6 +46,9 @@ class ClubConfigFocus {
           clubPartitionId: clubPartitionId,
           partitionPhysicalId: partitionPhysicalId,
         );
+
+  /// Facturación: datos fiscales y conexión con ARCA.
+  const ClubConfigFocus.fiscal() : this._(tab: ClubConfigTab.fiscal);
 
   /// Las tarifas de un sector, con [priceTariffId] (y opcionalmente la franja
   /// [priceRuleId]) seleccionada si viene.

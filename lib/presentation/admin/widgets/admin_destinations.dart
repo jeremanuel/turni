@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/config/router/app_routes.dart';
 import '../../../core/services/cash_status.dart';
+import '../../../core/services/fiscal_status.dart';
 import '../../../core/utils/permissions.dart';
 
 /// Un destino de la navegación principal del admin: una rama del
@@ -10,16 +11,23 @@ import '../../../core/utils/permissions.dart';
 class AdminDestination {
   const AdminDestination({
     required this.icon,
-    required this.label,
+    required String label,
     required this.branch,
     required this.path,
     required this.anchor,
     this.permissions = const [],
     this.isEnabled,
-  });
+    this.labelOf,
+  }) : _label = label;
 
   final IconData icon;
-  final String label;
+  final String _label;
+
+  /// Nombre que depende de la configuración (ej. «Comprobantes» si el club
+  /// factura pero no usa caja).
+  final String Function()? labelOf;
+
+  String get label => labelOf?.call() ?? _label;
 
   /// Índice de la rama en `buildBranches`.
   final int branch;
@@ -39,7 +47,10 @@ class AdminDestination {
   bool get isVisible => (isEnabled?.call() ?? true) && (permissions.isEmpty || Permissions.canAny(permissions));
 }
 
-bool _cashEnabled() => CashStatus.enabled.value;
+bool _usesCash() => CashStatus.enabled.value && Permissions.can(Permissions.CAJA_VER);
+bool _usesFiscal() => FiscalStatus.enabled.value && Permissions.can(Permissions.FACTURACION_VER);
+bool _cashEnabled() => _usesCash() || _usesFiscal();
+String _cashLabel() => _usesCash() ? 'Caja' : 'Comprobantes';
 
 class AdminDestinations {
   AdminDestinations._();
@@ -53,8 +64,20 @@ class AdminDestinations {
   static const usuarios = AdminDestination(icon: Icons.manage_accounts_outlined, label: 'Usuarios', branch: 6, path: '/users', anchor: 'nav.usuarios', permissions: [Permissions.ADMINISTRADORES_VER, Permissions.ROLES_VER]);
   static const torneos = AdminDestination(icon: Icons.emoji_events_outlined, label: 'Torneos', branch: 7, path: '/tournaments', anchor: 'nav.torneos', permissions: [Permissions.TORNEOS_VER]);
 
-  /// Solo si el establecimiento usa caja.
-  static const caja = AdminDestination(icon: Icons.point_of_sale_outlined, label: 'Caja', branch: 8, path: '/cash', anchor: 'nav.caja', permissions: [Permissions.CAJA_VER], isEnabled: _cashEnabled);
+  /// Solo si el establecimiento usa caja o factura con ARCA.
+  static const caja = AdminDestination(
+    icon: Icons.point_of_sale_outlined,
+    label: 'Caja',
+    branch: 8,
+    path: '/cash',
+    anchor: 'nav.caja',
+    permissions: [Permissions.CAJA_VER, Permissions.FACTURACION_VER],
+    isEnabled: _cashEnabled,
+    labelOf: _cashLabel,
+  );
+
+  /// Cambia cuando el club prende o apaga la caja o la facturación.
+  static final Listenable changes = Listenable.merge([CashStatus.enabled, FiscalStatus.enabled]);
 
   /// Orden del menú lateral.
   static const rail = [inicio, turnos, clientes, pagos, caja, mapa, torneos, configuracion, usuarios];

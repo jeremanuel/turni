@@ -15,6 +15,8 @@ class AdminProduct {
     required this.name,
     required this.price,
     required this.active,
+    this.taxTreatment,
+    this.ivaRateId,
   });
 
   @JsonKey(name: 'product_id')
@@ -27,6 +29,13 @@ class AdminProduct {
   @JsonKey(fromJson: ValueTransformers.fromJsonDouble)
   final double price;
   final bool active;
+
+  /// IVA del producto para la factura (club Responsable Inscripto). null =
+  /// el del club.
+  @JsonKey(name: 'tax_treatment')
+  final String? taxTreatment;
+  @JsonKey(name: 'iva_rate_id')
+  final int? ivaRateId;
 
   Map<String, dynamic> toJson() => _$AdminProductToJson(this);
   factory AdminProduct.fromJson(Map<String, dynamic> json) =>
