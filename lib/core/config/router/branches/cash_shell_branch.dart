@@ -11,7 +11,7 @@ StatefulShellBranch cashShellBranch() {
       GoRoute(
         path: AppRoutes.CASH_ROUTE.path,
         name: AppRoutes.CASH_ROUTE.name,
-        builder: (context, state) => const CashPage(),
+        builder: (context, state) => CashPage(initialTab: state.uri.queryParameters['tab']),
         routes: [
           GoRoute(
             path: 'shifts/:shiftId',

@@ -7,6 +7,7 @@ import '../../../../core/config/router/app_routes.dart';
 import '../../../../core/config/service_locator.dart';
 import '../../../../core/presentation/components/links/entity_links.dart';
 import '../../../../core/presentation/components/loading/app_skeleton.dart';
+import '../../../../core/services/fiscal_status.dart';
 import '../../../../core/utils/admin_features.dart';
 import '../../../../core/utils/either.dart';
 import '../../../../core/utils/permissions.dart';
@@ -18,6 +19,7 @@ import '../../../../domain/entities/person.dart';
 import '../../../../domain/repositories/fixed_session_repository.dart';
 import '../../memberships/client_membership_card.dart';
 import '../../memberships/register_payment_dialog.dart';
+import 'client_fiscal_card.dart';
 import 'client_payments_card.dart';
 import 'client_notifications_card.dart';
 import 'client_fixed_sessions.dart';
@@ -124,6 +126,7 @@ class _ClientProfileBodyState extends State<ClientProfileBody> {
       if (_showLegacySubscription) _SideCard(title: 'Abono', child: widget.subscription),
       TourAnchor(id: 'client.labels', child: Card(margin: EdgeInsets.zero, child: widget.labels)),
       TourAnchor(id: 'client.notes', child: _NotesCard(client: widget.client, onEdit: widget.onEdit)),
+      if (FiscalStatus.enabled.value) ClientFiscalCard(key: ValueKey('fiscal-${widget.client.clientId}'), clientId: widget.client.intClientId),
       TourAnchor(id: 'client.activity', child: _ActivityCard(summary: _summary, error: _summaryError)),
       TourAnchor(
         id: 'client.notifications',

@@ -1,4 +1,5 @@
 import '../../domain/repositories/cash_repository.dart';
+import '../../domain/repositories/fiscal_repository.dart';
 import '../../domain/repositories/membership_repository.dart';
 import '../../domain/repositories/notification_repository.dart';
 import '../../infrastructure/api/repositories/notification_repository_impl.dart';
@@ -8,6 +9,7 @@ import '../../presentation/admin/notifications/notifications_cubit.dart';
 import '../services/push_notification_service.dart';
 import '../services/data_changes.dart';
 import '../../infrastructure/api/repositories/cash_repository_impl.dart';
+import '../../infrastructure/api/repositories/fiscal_repository_impl.dart';
 import '../../infrastructure/api/repositories/membership_repository_impl.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_localization/flutter_localization.dart';
@@ -135,6 +137,7 @@ class ServiceLocator {
     sl.registerLazySingleton<GymRepository>(() => GymRepositoryImpl());
     sl.registerLazySingleton<MembershipRepository>(() => MembershipRepositoryImpl());
     sl.registerLazySingleton<CashRepository>(() => CashRepositoryImpl());
+    sl.registerLazySingleton<FiscalRepository>(() => FiscalRepositoryImpl());
     sl.registerLazySingleton<NotificationRepository>(() => NotificationRepositoryImpl());
     sl.registerLazySingleton<NotificationHistoryRepository>(() => NotificationHistoryRepositoryImpl());
     sl.registerLazySingleton<NotificationsCubit>(

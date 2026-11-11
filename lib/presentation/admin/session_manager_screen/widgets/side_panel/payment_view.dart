@@ -7,6 +7,7 @@ import '../../../../../core/config/service_locator.dart';
 import '../../../../../core/utils/either.dart';
 import '../../../../../core/utils/thousands_format.dart';
 import '../../../../../domain/repositories/cash_repository.dart';
+import '../../../cash/fiscal/fiscal_receipt_row.dart';
 import '../../../cash/widgets/cash_entry_row.dart';
 import '../../../../../domain/entities/extra.dart';
 import '../../../../../domain/entities/partition_vocabulary.dart';
@@ -326,6 +327,7 @@ class _PaymentViewState extends State<PaymentView> {
               spaceLabel: widget.spaceLabel,
               onChanged: (entry) => setState(() => _entry = entry),
             ),
+            FiscalReceiptRow(clientId: session.clientId, amount: chosen),
           ],
         ),
         Column(

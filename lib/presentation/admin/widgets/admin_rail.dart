@@ -1,4 +1,3 @@
-import '../../../core/services/cash_status.dart';
 import 'dart:math' as math;
 import 'dart:ui' show lerpDouble;
 
@@ -155,11 +154,11 @@ class _AdminRailState extends State<AdminRail> with SingleTickerProviderStateMix
     shell.goBranch(destination.branch, initialLocation: shell.currentIndex == destination.branch);
   }
 
-  // Caja aparece o se va según la configuración del club.
+  // Caja aparece o se va según la configuración del club (caja o facturación).
   @override
-  Widget build(BuildContext context) => ValueListenableBuilder<bool>(
-        valueListenable: CashStatus.enabled,
-        builder: (context, _, __) => _buildRail(context),
+  Widget build(BuildContext context) => ListenableBuilder(
+        listenable: AdminDestinations.changes,
+        builder: (context, _) => _buildRail(context),
       );
 
   Widget _buildRail(BuildContext context) {

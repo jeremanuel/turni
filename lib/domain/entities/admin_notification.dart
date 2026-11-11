@@ -39,7 +39,7 @@ class AdminNotification {
   NotificationKind get kind => switch (type) {
     'SESSION_REQUESTED' => NotificationKind.request,
     'SESSION_DEPOSIT_PAID' => NotificationKind.deposit,
-    'PAYMENT_CASH_DIFFERENCE' || 'PAYMENT_CASH_LEFT_OPEN' => NotificationKind.cash,
+    'PAYMENT_CASH_DIFFERENCE' || 'PAYMENT_CASH_LEFT_OPEN' || 'PAYMENT_FISCAL_REJECTED' || 'PAYMENT_FISCAL_BLOCKED' => NotificationKind.cash,
     'PAYMENT_REFUNDED' => NotificationKind.refund,
     _ when category == 'PAYMENT' => NotificationKind.deposit,
     _ when category == 'TOURNAMENT' => NotificationKind.tournament,

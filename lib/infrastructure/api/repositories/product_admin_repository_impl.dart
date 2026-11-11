@@ -100,12 +100,15 @@ class ProductAdminRepositoryImpl implements ProductAdminRepository {
     String? name,
     double? price,
     int? categoryId,
+    ({String? treatment, int? rateId})? tax,
   }) {
     return _safeCall(() async {
       final response = await dioInstance.put('/admin/product/$productId', data: {
         if (name != null) 'name': name,
         if (price != null) 'price': price,
         if (categoryId != null) 'category_id': categoryId,
+        // null en los dos vuelve al IVA del club.
+        if (tax != null) ...{'tax_treatment': tax.treatment, 'iva_rate_id': tax.rateId},
       });
 
       return AdminProduct.fromJson(response.data as Map<String, dynamic>);

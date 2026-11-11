@@ -17,6 +17,8 @@ import 'package:turni/domain/entities/session_request_settings.dart';
 import 'package:turni/domain/repositories/admin_repository.dart';
 import 'package:turni/domain/repositories/club_info_repository.dart';
 import 'package:turni/domain/repositories/club_partition_admin_repository.dart';
+import 'package:turni/domain/repositories/fiscal_repository.dart';
+import 'package:turni/domain/entities/fiscal/fiscal.dart';
 import 'package:turni/domain/repositories/price_tariff_repository.dart';
 import 'package:turni/domain/repositories/product_admin_repository.dart';
 import 'package:turni/presentation/admin/club_config/club_config_page.dart';
@@ -119,6 +121,15 @@ class FakeProductAdminRepo implements ProductAdminRepository {
       ]);
 }
 
+/// Club sin facturación: Productos no muestra la columna IVA.
+class FakeFiscalRepo implements FiscalRepository {
+  @override
+  noSuchMethod(Invocation invocation) => throw UnimplementedError();
+
+  @override
+  Future<Either<DomainError, FiscalSettings>> getSettings() async => Either.left(DomainError.unknownError());
+}
+
 void main() {
   setUp(() {
     registerLoggedAdmin();
@@ -129,12 +140,14 @@ void main() {
     }
     if (sl.isRegistered<PriceTariffRepository>()) sl.unregister<PriceTariffRepository>();
     if (sl.isRegistered<ProductAdminRepository>()) sl.unregister<ProductAdminRepository>();
+    if (sl.isRegistered<FiscalRepository>()) sl.unregister<FiscalRepository>();
 
     sl.registerSingleton<AdminRepository>(FakeAdminRepo());
     sl.registerSingleton<ClubInfoRepository>(FakeClubInfoRepo());
     sl.registerSingleton<ClubPartitionAdminRepository>(FakeClubPartitionAdminRepo());
     sl.registerSingleton<PriceTariffRepository>(FakePriceTariffRepo());
     sl.registerSingleton<ProductAdminRepository>(FakeProductAdminRepo());
+    sl.registerSingleton<FiscalRepository>(FakeFiscalRepo());
   });
 
   testWidgets('ClubConfigPage builds with its tabs and loads club info', (tester) async {

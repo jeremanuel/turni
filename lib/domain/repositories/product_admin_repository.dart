@@ -21,6 +21,7 @@ abstract class ProductAdminRepository {
     String? name,
     double? price,
     int? categoryId,
+    ({String? treatment, int? rateId})? tax,
   });
   Future<RepositoryResponse<AdminProduct>> setProductActive(int productId, bool active);
 }

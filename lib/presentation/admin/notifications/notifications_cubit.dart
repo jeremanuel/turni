@@ -16,6 +16,8 @@ import '../../../domain/usercases/session_user_cases.dart';
 /// Adónde lleva un aviso (el tap en el push o en la bandeja): el turno en la
 /// agenda, el torneo o, si no trae ninguno, la agenda.
 String adminNotificationLocation(Map<String, dynamic> data) {
+  // Un comprobante para resolver: a Caja › Comprobantes, no al turno.
+  if (data['fiscal_document_id'] != null) return '${AppRoutes.CASH_ROUTE.path}?tab=comprobantes';
   final sessionId = int.tryParse('${data['session_id'] ?? ''}');
   if (sessionId != null) {
     return AppRoutes.SESSION_MANAGER_RESERVE_ROUTE.path.replaceFirst(':idSession', '$sessionId');

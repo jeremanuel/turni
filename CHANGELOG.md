@@ -16,6 +16,7 @@ Una línea por entrega, no por PR: si un PR completa una entrada que ya está, s
 - 2026-11-09 — Anular un cobro con motivo desde Pagos o desde el turno; el cobro queda tachado y sale de los totales. Si un turno o un consumo cobrado no se puede borrar, el admin lo avisa ([#85](https://github.com/jeremanuel/turni/pull/85)) — requiere BE #127
 - 2026-11-10 — Caja: menú Caja con puestos, movimientos y cierres; en Configuración › Cajas se arman los puestos con sus espacios (también sobre el plano), y al cobrar en efectivo se ve en qué puesto entra ([#86](https://github.com/jeremanuel/turni/pull/86)) — requiere BE #129
 - 2026-11-10 — Devolver un cobro de Mercado Pago, entero o una parte, desde Pagos o desde el turno; Caja › Conciliación compara cada cobro con lo que informó Mercado Pago, y un aviso cuenta cuando se devolvió un pago ([#87](https://github.com/jeremanuel/turni/pull/87)) — requiere BE #130
+- 2026-11-10 — Facturación electrónica (todavía con un simulador de ARCA): se configura en Configuración › Facturación, el Panel Cobrar muestra qué comprobante sale, y en Caja › Comprobantes se corrige y reintenta un rechazado; datos fiscales en la ficha del cliente e IVA en los productos ([#88](https://github.com/jeremanuel/turni/pull/88)) — requiere BE #131
 
 ### Cambiado
 
